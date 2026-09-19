@@ -7,13 +7,19 @@ sources = [
   "board/uno_r4_minima/**/*.cpp",
   "board/uno_r4_minima/**/*.hpp",
   "board/uno_r4_minima/*.S",
+  "board/nucleo_h753zi/**/*.cpp",
+  "board/nucleo_h753zi/**/*.hpp",
+  "board/nucleo_h753zi/*.S",
 ]
 build_files = [
   "CMakeLists.txt",
   "cmake/*.cmake",
   "board/uno_r4_minima/*.ld",
+  "board/nucleo_h753zi/*.ld",
   "tests/CMakeLists.txt",
   "tools/run-uno-r4-minima-tests.sh",
+  "tools/run-nucleo-h753zi-*.sh",
+  "tools/read-serial-banner.py",
 ]
 
 [[artifacts]]
@@ -38,6 +44,14 @@ importer = "mcutest"
 
 [[artifacts]]
 path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_all_tests.mcucov.json"
+importer = "mcucov"
+
+[[artifacts]]
+path = "build/nucleo-h753zi/artifacts/mcuhw_nucleo_h753zi_native_peripherals.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/nucleo-h753zi/artifacts/mcuhw_nucleo_h753zi_native_peripherals.mcucov.json"
 importer = "mcucov"
 
 [validation]

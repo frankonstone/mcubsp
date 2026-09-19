@@ -51,6 +51,9 @@ struct uart_baud_timing {
     bool double_speed;
     bool asynchronous_base_clock_select;
     bool extended_base_clock_select;
+    // Vendor backends with a wider baud register retain their exact encoding
+    // here. RA4M1 continues to use the fields above.
+    std::uint32_t backend_encoding{};
 
     friend constexpr bool operator==(uart_baud_timing,
                                      uart_baud_timing) = default;

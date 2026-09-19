@@ -13,7 +13,10 @@ add_executable(mcuhw_tests
     test_spi.cpp
     test_adc.cpp
     test_pwm.cpp
+    test_stm32h753_clock.cpp
     test_stm32h753_description.cpp
+    test_stm32h753_gpio.cpp
+    test_stm32h753_drivers.cpp
     test_three_description_gate.cpp
     test_register.cpp
     test_recording_mmio.cpp

@@ -57,6 +57,17 @@
       }
     },
     {
+      "name": "nucleo-h753zi",
+      "displayName": "NUCLEO-H753ZI bare-metal board tests",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/nucleo-h753zi",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake",
+      "cacheVariables": {
+        "BUILD_TESTING": "OFF",
+        "MCUHW_BUILD_NUCLEO_H753ZI_TESTS": "ON"
+      }
+    },
+    {
       "name": "esp32p4-riscv",
       "displayName": "ESP32-P4 RISC-V compile probe",
       "inherits": "base",
@@ -72,6 +83,7 @@
     { "name": "arm-cortex-m4", "configurePreset": "arm-cortex-m4" },
     { "name": "uno-r4-minima", "configurePreset": "uno-r4-minima" },
     { "name": "arm-cortex-m7", "configurePreset": "arm-cortex-m7" },
+    { "name": "nucleo-h753zi", "configurePreset": "nucleo-h753zi" },
     { "name": "esp32p4-riscv", "configurePreset": "esp32p4-riscv" }
   ],
   "testPresets": [

@@ -20,6 +20,8 @@ set(MCUHW_MCUCOV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mcucov"
     CACHE PATH "Path to the sibling mcucov checkout")
 option(MCUHW_BUILD_UNO_R4_MINIMA_TESTS
     "Build the bootloader-preserving UNO R4 Minima mcutest firmware" OFF)
+option(MCUHW_BUILD_NUCLEO_H753ZI_TESTS
+    "Build the NUCLEO-H753ZI bare-metal smoke-test firmware" OFF)
 
 # @req REQ-0003
 add_library(mcuhw INTERFACE)
@@ -60,6 +62,228 @@ if(CMAKE_CROSSCOMPILING)
             -DREPORT=${CMAKE_CURRENT_BINARY_DIR}/barrier-report.txt
             -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/VerifyBarrierInstructions.cmake"
         DEPENDS mcuhw_barrier_probe
+        VERBATIM
+    )
+endif()
+
+# The first STM32H753 runtime slice deliberately has no dependency on the
+# unfinished cross-target fixture. It proves reset/startup, the reset HSI,
+# GPIO clocking and the built-in PE1 LED through the common GPIO driver.
+# @req REQ-0003 REQ-0009 REQ-0021 REQ-0031 REQ-0033 REQ-0036
+if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
+    if(NOT MCUHW_ARCH STREQUAL "cortex-m7")
+        message(FATAL_ERROR
+            "MCUHW_BUILD_NUCLEO_H753ZI_TESTS requires the Cortex-M7 toolchain")
+    endif()
+    if(NOT EXISTS "${MCUHW_MCUTEST_SOURCE_DIR}/include/mcutest/mcutest.hpp")
+        message(FATAL_ERROR "mcutest headers not found at ${MCUHW_MCUTEST_SOURCE_DIR}")
+    endif()
+    if(NOT EXISTS "${MCUHW_MCUJSON_SOURCE_DIR}/include/mcujson/mcujson.hpp")
+        message(FATAL_ERROR "mcujson headers not found at ${MCUHW_MCUJSON_SOURCE_DIR}")
+    endif()
+
+    set(MCUJSON_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(MCUJSON_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+    set(MCUJSON_BUILD_FUZZING OFF CACHE BOOL "" FORCE)
+    set(MCUJSON_INSTALL OFF CACHE BOOL "" FORCE)
+    if(NOT TARGET mcujson::mcujson)
+        add_subdirectory("${MCUHW_MCUJSON_SOURCE_DIR}"
+                         "${CMAKE_CURRENT_BINARY_DIR}/_deps/mcujson"
+                         EXCLUDE_FROM_ALL)
+    endif()
+
+    if(NOT mcucov_DIR)
+        file(GLOB _mcuhw_mcucov_configs
+            "${MCUHW_MCUCOV_SOURCE_DIR}/output/install/*/lib/cmake/mcucov/mcucov-config.cmake")
+        list(LENGTH _mcuhw_mcucov_configs _mcuhw_mcucov_config_count)
+        if(_mcuhw_mcucov_config_count EQUAL 0)
+            message(FATAL_ERROR
+                "No installed mcucov package found below ${MCUHW_MCUCOV_SOURCE_DIR}/output/install; "
+                "run ../mcucov/make.sh all or set mcucov_DIR")
+        endif()
+        list(GET _mcuhw_mcucov_configs 0 _mcuhw_mcucov_config)
+        get_filename_component(mcucov_DIR "${_mcuhw_mcucov_config}" DIRECTORY)
+    endif()
+    find_package(mcucov CONFIG REQUIRED)
+
+    set(nucleo_linker_script
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/nucleo_h753zi/linker.ld")
+    find_program(MCUHW_ARM_SIZE arm-none-eabi-size REQUIRED)
+
+    add_library(mcuhw_nucleo_h753zi_platform OBJECT
+        board/nucleo_h753zi/startup.S
+        board/nucleo_h753zi/restricted_runtime.cpp
+    )
+    add_library(mcuhw_nucleo_h753zi_early_init_coverage OBJECT
+        board/nucleo_h753zi/early_init.cpp
+    )
+    target_compile_definitions(mcuhw_nucleo_h753zi_early_init_coverage PRIVATE
+        MCUCOV_BYTE_PER_PROBE=1
+        MCUCOV_COMPACT_RUNTIME=1
+    )
+    target_compile_options(mcuhw_nucleo_h753zi_early_init_coverage PRIVATE
+        -include
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/tests/mcucov_compat.hpp"
+    )
+    mcucov_instrument_target(
+        mcuhw_nucleo_h753zi_early_init_coverage
+        PROFILE FULL
+        BUILD_ID 0x4d487501
+        SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
+        OUTPUT_DIR
+            "${CMAKE_CURRENT_BINARY_DIR}/mcucov/mcuhw_nucleo_h753zi_early_init_coverage"
+    )
+    add_executable(mcuhw_nucleo_h753zi_startup_gpio_smoke
+        board/nucleo_h753zi/tests/startup_gpio.cpp
+        $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_platform>
+        $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_early_init_coverage>
+    )
+    add_executable(mcuhw_nucleo_h753zi_native_peripherals
+        board/nucleo_h753zi/tests/native_peripherals.cpp
+        $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_platform>
+        $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_early_init_coverage>
+    )
+    target_link_libraries(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+        mcujson::mcujson)
+    target_include_directories(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+        "${MCUHW_MCUTEST_SOURCE_DIR}/include"
+    )
+    target_compile_definitions(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+        MCUTEST_MAX_TESTS=8
+        MCUTEST_SOURCE_LOCATION=1
+        MCUCOV_BYTE_PER_PROBE=1
+        MCUCOV_COMPACT_RUNTIME=1
+    )
+    target_compile_options(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+        -include
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/tests/mcucov_compat.hpp"
+    )
+    mcucov_instrument_target(
+        mcuhw_nucleo_h753zi_native_peripherals
+        PROFILE FULL
+        BUILD_ID 0x4d487501
+        SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
+        OUTPUT_DIR
+            "${CMAKE_CURRENT_BINARY_DIR}/mcucov/mcuhw_nucleo_h753zi_native_peripherals"
+    )
+
+    # The instrumented board translation unit can embed more modules than one
+    # mcucov manifest serializes. These analysis-only objects regenerate the
+    # identical source manifests for the remaining STM32 backend headers; they
+    # are not linked into the firmware.
+    function(mcuhw_add_stm32h753_coverage_manifest_probe name definition)
+        set(target "mcuhw_nucleo_h753zi_${name}_coverage_manifest")
+        add_library(${target} OBJECT
+            tests/compile/stm32h753_backend_coverage_probe.cpp)
+        target_link_libraries(${target} PRIVATE mcuhw::mcuhw)
+        target_compile_features(${target} PRIVATE cxx_std_23)
+        target_compile_definitions(${target} PRIVATE
+            ${definition}=1
+            MCUCOV_BYTE_PER_PROBE=1
+            MCUCOV_COMPACT_RUNTIME=1
+        )
+        target_compile_options(${target} PRIVATE
+            ${MCUHW_RESTRICTED_COMPILE_OPTIONS}
+            -mcpu=cortex-m7
+            -mthumb
+            -mfpu=fpv5-d16
+            -mfloat-abi=hard
+            -ffunction-sections
+            -fdata-sections
+            -fno-unwind-tables
+            -fno-asynchronous-unwind-tables
+            -include
+            "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/tests/mcucov_compat.hpp"
+        )
+        mcucov_instrument_target(
+            ${target}
+            PROFILE FULL
+            BUILD_ID 0x4d487501
+            SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
+            OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/mcucov/${target}"
+        )
+    endfunction()
+
+    mcuhw_add_stm32h753_coverage_manifest_probe(
+        i2c MCUHW_COVERAGE_PROBE_I2C)
+    mcuhw_add_stm32h753_coverage_manifest_probe(
+        memory MCUHW_COVERAGE_PROBE_MEMORY)
+    mcuhw_add_stm32h753_coverage_manifest_probe(
+        spi MCUHW_COVERAGE_PROBE_SPI)
+    mcuhw_add_stm32h753_coverage_manifest_probe(
+        timer MCUHW_COVERAGE_PROBE_TIMER)
+    mcuhw_add_stm32h753_coverage_manifest_probe(
+        usart MCUHW_COVERAGE_PROBE_USART)
+    foreach(nucleo_target IN ITEMS
+            mcuhw_nucleo_h753zi_startup_gpio_smoke
+            mcuhw_nucleo_h753zi_native_peripherals)
+        set_target_properties(${nucleo_target} PROPERTIES
+            SUFFIX ".elf"
+            LINK_DEPENDS "${nucleo_linker_script}"
+        )
+    endforeach()
+    foreach(compiled_target IN ITEMS
+            mcuhw_nucleo_h753zi_platform
+            mcuhw_nucleo_h753zi_early_init_coverage
+            mcuhw_nucleo_h753zi_startup_gpio_smoke
+            mcuhw_nucleo_h753zi_native_peripherals)
+        target_link_libraries(${compiled_target} PRIVATE mcuhw::mcuhw)
+        if(compiled_target STREQUAL mcuhw_nucleo_h753zi_native_peripherals)
+            # mcujson uses hosted C++23 headers but remains allocation-free;
+            # keep the restricted language options without -ffreestanding.
+            target_compile_features(${compiled_target} PRIVATE cxx_std_23)
+            target_compile_options(${compiled_target} PRIVATE
+                ${MCUHW_RESTRICTED_COMPILE_OPTIONS})
+        else()
+            mcuhw_apply_restricted_runtime(${compiled_target})
+        endif()
+        target_compile_options(${compiled_target} PRIVATE
+            -mcpu=cortex-m7
+            -mthumb
+            -mfpu=fpv5-d16
+            -mfloat-abi=hard
+            -ffunction-sections
+            -fdata-sections
+            -fno-unwind-tables
+            -fno-asynchronous-unwind-tables
+        )
+    endforeach()
+    foreach(nucleo_target IN ITEMS
+            mcuhw_nucleo_h753zi_startup_gpio_smoke
+            mcuhw_nucleo_h753zi_native_peripherals)
+        target_link_options(${nucleo_target} PRIVATE
+            -mcpu=cortex-m7
+            -mthumb
+            -mfpu=fpv5-d16
+            -mfloat-abi=hard
+            -nostartfiles
+            --specs=nosys.specs
+            "-T${nucleo_linker_script}"
+            -Wl,--gc-sections
+            -Wl,--print-memory-usage
+            "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${nucleo_target}.map"
+        )
+    endforeach()
+    add_custom_command(TARGET mcuhw_nucleo_h753zi_startup_gpio_smoke POST_BUILD
+        COMMAND "${CMAKE_OBJCOPY}" -O binary
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_startup_gpio_smoke>
+            "${CMAKE_CURRENT_BINARY_DIR}/mcuhw_nucleo_h753zi_startup_gpio_smoke.bin"
+        COMMAND "${CMAKE_OBJCOPY}" -O ihex
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_startup_gpio_smoke>
+            "${CMAKE_CURRENT_BINARY_DIR}/mcuhw_nucleo_h753zi_startup_gpio_smoke.hex"
+        COMMAND "${MCUHW_ARM_SIZE}" -A
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_startup_gpio_smoke>
+        VERBATIM
+    )
+    add_custom_command(TARGET mcuhw_nucleo_h753zi_native_peripherals POST_BUILD
+        COMMAND "${CMAKE_OBJCOPY}" -O binary
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_native_peripherals>
+            "${CMAKE_CURRENT_BINARY_DIR}/mcuhw_nucleo_h753zi_native_peripherals.bin"
+        COMMAND "${CMAKE_OBJCOPY}" -O ihex
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_native_peripherals>
+            "${CMAKE_CURRENT_BINARY_DIR}/mcuhw_nucleo_h753zi_native_peripherals.hex"
+        COMMAND "${MCUHW_ARM_SIZE}" -A
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_native_peripherals>
         VERBATIM
     )
 endif()

@@ -63,6 +63,9 @@ struct i2c_timing {
     std::uint8_t clock_select;
     std::uint8_t brl;
     std::uint8_t brh;
+    // Exact vendor timing-register value when the common BRL/BRH form does
+    // not describe the peripheral (for example STM32 TIMINGR).
+    std::uint32_t backend_encoding{};
 
     friend constexpr bool operator==(i2c_timing, i2c_timing) = default;
 };

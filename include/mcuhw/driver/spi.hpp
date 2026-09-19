@@ -44,6 +44,8 @@ struct spi_timing {
     std::uint32_t error_ppm;
     std::uint8_t spbr;
     std::uint8_t brdv;
+    // Exact vendor baud-rate encoding when SPBR/BRDV are not native fields.
+    std::uint32_t backend_encoding{};
 
     friend constexpr bool operator==(spi_timing, spi_timing) = default;
 };

@@ -36,7 +36,8 @@ using backend_type = mcuhw::backend::ra4m1::adc14_backend<
 TEST(adc_contract, validates_channels_and_sample_timing, "REQ-0029") {
     EXPECT_TRUE(mcuhw::driver::make_adc_channel(0U).has_value());
     EXPECT_TRUE(mcuhw::driver::make_adc_channel(14U).has_value());
-    EXPECT_TRUE(mcuhw::driver::make_adc_channel(15U).error()
+    EXPECT_TRUE(mcuhw::driver::make_adc_channel(19U).has_value());
+    EXPECT_TRUE(mcuhw::driver::make_adc_channel(20U).error()
                 == mcuhw::driver::adc_error::invalid_channel);
 
     mmio_type mmio{0x4001'E000U};

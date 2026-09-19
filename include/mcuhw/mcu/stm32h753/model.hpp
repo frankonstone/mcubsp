@@ -184,10 +184,13 @@ enum class signal : std::uint16_t {
     i2c1_sda,
     usart1_tx,
     usart1_rx,
+    usart3_tx,
+    usart3_rx,
     spi1_nss,
     spi1_sck,
     spi1_miso,
     spi1_mosi,
+    adc1_inp15,
     adc1_inp16,
 };
 

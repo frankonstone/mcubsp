@@ -1,0 +1,6 @@
+{
+  "mcucov.coverageFiles": [
+    "build/uno-r4-minima/artifacts/coverage.lcov",
+    "build/nucleo-h753zi/artifacts/coverage.lcov"
+  ]
+}

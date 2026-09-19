@@ -1,6 +1,6 @@
 # mcuhw implementation plan
 
-Revised baseline, 18 September 2026. Implements [requirements.md](requirements.md). The current sequence is: **preserve the completed three-MCU description and RA4M1 driver foundation; design and electrically qualify reusable instrumentation shields; finish software features and physical acceptance using those fixtures; integrate MCUOS last**. Status annotations below track execution; a completed plan is not itself requirement evidence. Existing plan IDs and evidence are retained. Read in the phase order below, not numeric ID order.
+Revised baseline, 19 September 2026. Implements [requirements.md](requirements.md). The current sequence is: **preserve the completed three-MCU description and RA4M1 driver foundation; continue adapter-independent implementation and board-native verification while reusable instrumentation hardware is built; join the two tracks for deferred electrical acceptance; integrate MCUOS last**. Status annotations below track execution; a completed plan is not itself requirement evidence. Existing plan IDs and evidence are retained. Read in the phase order below, not numeric ID order.
 
 ## Delivery phases
 
@@ -9,11 +9,11 @@ Revised baseline, 18 September 2026. Implements [requirements.md](requirements.m
 | A: description foundation | Sources and coverage inventories for RA4M1, STM32H753 and ESP32-P4; core metadata/MMIO contracts; native and cross-compile probes | Shared model can express real differences without vendor register-layout assumptions |
 | B: three complete descriptions | Reviewed block-sized increments across all three, followed by remaining documented blocks | All three declared baselines pass the common description and coverage gate, before any backend/driver implementation |
 | C: completed bare-metal foundation | Preserve completed RA4M1 startup, GPIO, execution, transfer, timer and basic-PWM work | Stable fixture-facing baseline; existing evidence remains valid |
-| D: instrumentation hardware | Common Arduino shield, ESP32-P4-NANO carrier, STM32 expansion adapter, supervisor firmware and complete feature/peripheral coverage matrix | Rev-A fixtures are electrically safe, calibrated and usable as independent test peers |
-| E: remaining bare-metal features | Finish pending RA4M1 physical acceptance, DMA, STM32H753 and ESP32-P4 backends using the fixtures | Common driver contracts and physical bare-metal acceptance for each claimed target |
+| D: parallel hardware and board work | Build the common Arduino shield, ESP32-P4-NANO carrier and STM32 expansion adapter while continuing adapter-independent target work | Rev-A fixtures are safe/calibrated, and board-native implementation has not been needlessly stalled |
+| E: staged bare-metal completion | Finish pending driver implementations and target backends first; execute adapter-dependent cases after fixture qualification | Implementation evidence stays distinct from complete physical acceptance for each claimed target |
 | F: MCUOS | Optional adapter using `../mcuos`, tested natively and then on an executable MCUOS hardware target | RTOS portability demonstrated independently of earlier bare-metal releases |
 
-Motor PWM and other extensions remain later milestones. MCUOS source, API readiness and hardware ports are not prerequisites for phases A–E. During fixture design and fabrication, work is limited to the fixture, documentation, maintenance and already-scoped host verification; new software feature slices resume after Rev-A electrical bring-up.
+Motor PWM and other extensions remain later milestones. MCUOS source, API readiness and hardware ports are not prerequisites for phases A–E. During fixture design and fabrication, new software slices may proceed when they can be verified with host models, cross-builds, debug access, built-in board features, documented bridges/direct wiring, native connectors and ordinary peers, or internal known-answer tests. Only adapter-dependent electrical acceptance waits for Rev-A bring-up.
 
 ## Intended structure
 
@@ -228,9 +228,9 @@ On 17 September 2026 the new standalone PWM image independently passed with
 at 75% duty, followed by stopped-low verification. Its artifact is separate
 from the startup, GPIO-loopback and UART results.
 
-## Phase D: cross-target instrumentation hardware
+## Phase D: parallel fixture construction and board-native implementation
 
-This phase takes precedence over the remaining software-feature work. Existing UART/I2C/SPI/ADC code and evidence are preserved, but their unfinished physical acceptance and new DMA/target-port work wait for Rev-A fixture electrical bring-up. Fixture design, procurement and fabrication may overlap only with maintenance, documentation and already-scoped host verification.
+After the completed description gate, work proceeds on two parallel tracks. PLN-0021 designs, fabricates and qualifies the reusable fixture. The software track continues backend implementation, host verification, cross-builds and target tests that use debug access, built-in board features, documented bridges or point-to-point jumpers, native connectors with ordinary peers, or internal known-answer/self-tests. Only tests whose stimulus or independent observation comes from the shared adapter wait for Rev-A electrical bring-up. Each plan and evidence record must say which track it belongs to.
 
 ## PLN-0021 Design and qualify the cross-target test-fixture family
 @status(planned)
@@ -253,17 +253,17 @@ The Rev-A planning baseline is recorded in [the PLN-0021 fixture workbook](outpu
 
 Exit: REQ-0042 acceptance is met; the same Arduino shield passes safe startup and the common digital/analog/bus self-tests on UNO R4 Minima and the selected STM32H753 board, the ESP32-P4-NANO carrier passes the equivalent checks, and every described peripheral instance and board feature has an executable test path or an explicit blocking gap.
 
-## Phase E: remaining bare-metal features and acceptance
+## Phase E: bare-metal implementation and staged acceptance
 
-## PLN-0008 Deliver UART and I2C
-@status(planned)
-@link(REQ-0024, REQ-0025, REQ-0026, REQ-0027, REQ-0036, REQ-0038, REQ-0041, REQ-0042)
+## PLN-0008 Implement UART and I2C
+@status(in_progress)
+@link(REQ-0024, REQ-0025, REQ-0026, REQ-0027, REQ-0036, REQ-0038, REQ-0041)
 
-Prerequisite: PLN-0005 and PLN-0006. The implemented host/cross-build work is preserved; remaining physical I2C acceptance resumes after PLN-0021 Rev-A bring-up.
+Prerequisite: PLN-0005 and PLN-0006. No fixture prerequisite. Use on-board VCP where available, documented loopback bridges/jumpers, or a directly wired I2C target for pre-fixture target tests. Translated-voltage operation, supervised fault injection and reusable-fixture coverage move to PLN-0022.
 
 Implement SCI UART/baud solving and IIC timing/transactions against existing metadata. Add finite IRQ-backed operations, write/read/repeated-start semantics, error recovery and a fixed-storage external-device demonstrator. Test blocking/polling use on native models and real UART/I2C fixtures, including errors, timeout and reuse.
 
-Exit: protocol captures, transfer lifetimes and error paths pass on bare metal; the same external-device source runs against fake and real bus bindings.
+Exit: implementation, native tests, cross-builds and available direct-wired/board-native target procedures pass; the same external-device source runs against fake and real bus bindings. Deferred adapter-dependent rows are enumerated for PLN-0022. This implementation exit is not full physical release acceptance.
 
 Current evidence: SCI UART and IIC controller backends, timing solvers, finite
 IRQ-backed transfers, typed errors, cancellation/recovery and the fixed-storage
@@ -281,7 +281,7 @@ TEI. The physical test exposed and verified the fix for a false startup frame:
 while TE is disabled, SPTR now drives TXD at the asynchronous mark level rather
 than leaving it high-impedance. The imported hardware artifact passes
 REQ-0027 and REQ-0036. A real A4/A5 I2C device, pull-ups and protocol capture
-are still absent, so this plan remains planned rather than done.
+are still absent, so this plan remains in progress.
 
 On 17 September 2026, after board tests were split into independent images,
 the standalone startup/GPIO image passed four tests and the standalone UART
@@ -294,18 +294,19 @@ cross-built for a dedicated 24LC256-compatible EEPROM on A4/A5. It preserves
 and restores its scratch bytes while exercising IRQ-driven page writes and
 combined repeated-START reads at 100 kHz and 400 kHz. The runner and aggregate
 coverage flow include the new suite, but it is not registered as trace evidence
-until the physical fixture passes and produces its artifact. Independent logic-
-analyzer captures remain required.
+until a physical execution produces its artifact. A directly wired target may
+complete this implementation plan; independent logic-analyzer capture and
+fixture-controlled error cases remain PLN-0022 work.
 
-## PLN-0009 Deliver SPI and ADC
-@status(planned)
-@link(REQ-0028, REQ-0029, REQ-0036, REQ-0038, REQ-0041, REQ-0042)
+## PLN-0009 Implement SPI and ADC
+@status(in_progress)
+@link(REQ-0028, REQ-0029, REQ-0036, REQ-0038, REQ-0041)
 
-Prerequisite: PLN-0005 and PLN-0006. Independent of PLN-0008 once shared contracts stabilize. The implemented host/cross-build work is preserved; remaining physical SPI/ADC acceptance resumes after PLN-0021 Rev-A bring-up.
+Prerequisite: PLN-0005 and PLN-0006. Independent of PLN-0008 once shared contracts stabilize; no fixture prerequisite. Temporary SPI loopback/device wiring and documented ADC ties or bench sources may be used now. Calibrated multi-level stimulus, fixture-controlled error cases and reusable-fixture coverage move to PLN-0022.
 
 Implement SPI master behavior, segmented chip-select ownership, dummy reads and final-wire completion. Implement ADC single/finite-sequence conversion with validated channels/reference/sample timing and raw-result ordering. Exercise native failure/configuration cases and physical SPI/ADC fixtures with controlled ADC inputs.
 
-Exit: both drivers pass their bare-metal configuration, transfer and cleanup acceptance cases.
+Exit: both drivers pass native configuration/transfer/cleanup cases, cross-build, and every applicable direct-wired or board-native target procedure. Deferred adapter-dependent rows are enumerated for PLN-0022. This implementation exit is not full calibrated analog or electrical acceptance.
 
 On 17 September 2026, the portable SPI/ADC contracts and RA4M1 backends were
 implemented. Native evidence covers SPI rate selection, mode/order/width
@@ -314,7 +315,7 @@ SPII/IDLNF final-wire completion, fault and timeout cleanup; ADC evidence
 covers channel/sample validation, 12/14-bit setup, finite scans, raw result
 ordering, rejection and timeout cleanup. The complete example cross-compiles
 for Cortex-M4. Physical D11-D12 SPI loopback and controlled A1/A2 ADC board
-artifacts remain outstanding, so the plan remains planned rather than done.
+artifacts remain outstanding, so the plan remains in progress.
 
 The standalone `spi` and `adc` UNO images were then added and cross-built on
 17 September 2026. SPI exercises mode 0/MSB at 1 MHz and mode 3/LSB at 6 MHz,
@@ -325,43 +326,130 @@ merge include both suites. Neither unrun artifact is registered in mcutrace.
 
 ## PLN-0010 Implement DMAC and peripheral DMA paths
 @status(planned)
-@link(REQ-0013, REQ-0018, REQ-0019, REQ-0027, REQ-0028, REQ-0029, REQ-0030, REQ-0036, REQ-0041, REQ-0042)
+@link(REQ-0013, REQ-0018, REQ-0019, REQ-0027, REQ-0028, REQ-0029, REQ-0030, REQ-0036, REQ-0041)
 
-Prerequisite: PLN-0006, PLN-0008, PLN-0009 and PLN-0021 Rev-A bring-up. Standalone DMAC design review and host cases may be prepared earlier, but new target feature implementation resumes in this phase.
+Prerequisite: PLN-0006 plus the relevant implementation portions of PLN-0008 and PLN-0009. No fixture prerequisite. Memory-to-memory tests, internal known-answer cases, native-connector traffic and directly wired peripheral paths may be implemented and run immediately; only fixture-observed electrical and fault cases move to PLN-0022.
 
 Implement fixed DMAC ownership and operations using already-reviewed request/memory/width constraints. Add source-confirmed UART/SPI/ADC paths while preserving non-DMA operation. Test quiescence, stale completion, bounds and peripheral-versus-DMA completion ordering. DTC remains a separate driver extension even though its hardware is described.
 
-Exit: documented directions/modes pass physical DMA and peripheral checks without buffer-lifetime violations.
+Exit: documented directions/modes pass native tests, cross-builds and available internal/direct target checks without buffer-lifetime violations. Adapter-dependent observation rows are enumerated for PLN-0022.
 
 ## PLN-0011 Accept the first RA4M1 bare-metal driver release
 @status(planned)
 @link(REQ-0001, REQ-0002, REQ-0015, REQ-0016, REQ-0031, REQ-0035, REQ-0036, REQ-0037, REQ-0038, REQ-0039, REQ-0041, REQ-0042)
 
-Prerequisite: PLN-0005 through PLN-0010 and PLN-0021. MCUOS is explicitly not a prerequisite.
+Prerequisite: PLN-0005 through PLN-0010, PLN-0021, and the RA4M1 rows of PLN-0022. MCUOS is explicitly not a prerequisite. Implementation plans may finish before the fixture; this release-acceptance plan may not.
 
 Run native contracts, compile examples, cross-build/link checks, physical driver scenarios and measurements. Establish numeric resource/latency budgets from measured results with the user before claiming acceptance. Publish source/coverage identities, API/storage/context rules, flash/debug procedures and reproducible evidence.
 
 Exit: all D04 drivers are accepted on RA4M1 bare metal. Missing hardware tests or resource budgets remain blockers for this release; missing MCUOS code does not. REQ-0041's later three-target portability evidence continues in PLN-0018/PLN-0019.
 
 ## PLN-0018 Implement STM32H753 bare-metal backends
+@status(done)
+@link(REQ-0003, REQ-0004, REQ-0009, REQ-0013, REQ-0014, REQ-0017, REQ-0019, REQ-0021, REQ-0022, REQ-0024, REQ-0025, REQ-0026, REQ-0027, REQ-0028, REQ-0029, REQ-0031, REQ-0033, REQ-0036, REQ-0037, REQ-0041)
+
+Prerequisite: the accepted STM32 descriptions and PLN-0017. Neither the RA4M1 release nor PLN-0021 is a prerequisite. Use NUCLEO-H753ZI MB1364 Rev E and keep board configuration separate from MCU metadata. Fixture connector bindings may be added only after PLN-0021 freezes them, but that does not block peripheral backends or board-native bindings.
+
+1. Inventory the physical board assembly, jumper state and relevant solder bridges. Before changing a bridge, record its schematic designator, original and target state, purpose and restoration procedure.
+2. Complete startup, clocks, memory layout, vectors, GPIO and debug procedures using ST-LINK and built-in board features.
+3. Implement the common driver set against the existing descriptions. Prefer tests available without the adapter: built-in LEDs/buttons, ST-LINK virtual COM, documented point-to-point jumper/bridge loopbacks, native USB where selected, and the on-board Ethernet PHY/connector with an ordinary network peer. Ethernet scope here is clock/pin setup, MDIO/PHY control, link state and raw MAC-frame exchange, not an implicit TCP/IP stack.
+4. Validate cache/MPU behavior and DMA constraints with internal memory/peripheral known-answer tests and native-connector traffic where that gives independent observation.
+5. Reuse functional tests and external-device sources with hardware bindings changed. Revalidate all three description contracts if the port exposes a model error. Enumerate, but do not simulate away, the cases that require translated shared buses, calibrated analog stimulus, independent PWM capture, supervised fault injection or the fixture CAN peer.
+
+Completed 19 September 2026. The NUCLEO-H753ZI MB1364 Rev E startup boots
+from `0x08000000`, verifies reset-state HSI at 64 MHz, owns the vector table and
+AXI-SRAM runtime, and drives on-board LD2 through the shared GPIO interface.
+The STM32H753 backends now implement TIM/PWM, USART, I2C, SPI and ADC against
+the same functional interfaces used by RA4M1. They retain STM-native timing
+encodings, compile-time package/AF bindings, finite operation pools, typed
+errors, cancellation and final-event completion. GPIO, startup/clock and the
+Cortex-M7 barrier path remain covered by their earlier shared implementations.
+
+The native host suite instantiates all backends with instrumented MMIO and fake
+events: 123 mcutest cases pass, and all 23 CTest entries pass including negative
+compile constraints. Public headers build independently; the Cortex-M7 probe
+and barrier-instruction check pass. The all-backend Nucleo image evaluates its
+timing solvers at compile time, links without a hosted runtime or heap, and its
+build reports flash/static-RAM use.
+
+The Cortex-M7 board image is also an instrumented mcutest/mcucov suite. Eight
+requirement-tagged tests run on the Nucleo and pass with no registry overflow.
+The SWD runner extracts the binary coverage frame from cache-cleaned AXI SRAM
+and produces JSON, HTML and VS Code-compatible LCOV reports. The imported target-specific report covers
+startup/clock plus every STM32 backend module in this plan: 96/171 functions,
+512/1062 statements, 564/1061 lines, 185/602 branches and 19/502 MC/DC
+conditions. mcucov records 46 unsupported or constant-evaluated constructs as
+not instrumented rather than presenting them as coverage. mcutrace imports both
+the on-board mcutest and mcucov artifacts with no validation error.
+
+The reproducible `run-nucleo-h753zi-native.sh` procedure passed on the connected
+board with STLINK V3J5M2 at 3.28 V. Its result mask was `0x000000ff`: the
+built-in LED passed set/read/clear through the common GPIO driver; TIM1
+configured ARR=3199/CCR1=800 for the 20 kHz 25% case; USART3 BRR=556 and the
+physical PD8/PD9 ST-LINK VCP delivered `MCUHW H753 USART3 OK`; I2C1 and SPI1
+initialized on the source-backed Arduino pins; ADC1 calibrated and converted
+floating A0/PA3 within the 14-bit range. The test also enabled the Cortex-M7
+D-cache, cleaned a 64-byte aligned AXI-SRAM DMA1 source, and independently read
+back `0xCACE0000..3` through SWD. No board jumper or solder bridge was changed.
+
+`board/nucleo_h753zi/README.md` records the board/source identity, received
+configuration, commands, resource model, observation limits and deferred rows.
+PWM waveform measurement, controlled/calibrated ADC levels, real I2C/SPI
+targets, peripheral-DMA traffic and supervised fault/electrical cases remain
+PLN-0022 acceptance work. A D11-D12 SPI bridge and controlled A0 ties are safe
+pre-adapter procedures but were not installed and are recorded as unexecuted,
+not simulated evidence. Ethernet and native USB are independent board-native
+extensions tracked by PLN-0023 rather than silently folded into this agreed
+GPIO/PWM/UART/I2C/SPI/ADC backend exit.
+
+Exit: the agreed STM32 backends pass native tests, Cortex-M7 builds and every applicable board-native/direct-wired procedure; board modifications and deferred adapter rows are documented. Full STM32 electrical acceptance is completed later under PLN-0022. No MCUOS Cortex-M7 port is required.
+
+## PLN-0023 Implement Nucleo native USB and Ethernet connectivity
 @status(planned)
-@link(REQ-0003, REQ-0004, REQ-0009, REQ-0013, REQ-0031, REQ-0033, REQ-0036, REQ-0037, REQ-0041, REQ-0042)
+@link(REQ-0003, REQ-0004, REQ-0009, REQ-0013, REQ-0033, REQ-0036, REQ-0037, REQ-0041, REQ-0042)
 
-Prerequisite: PLN-0011, PLN-0021 and the already accepted STM32 descriptions. The exact STM32 board/revision and shield-plus-morpho mapping are frozen by PLN-0021 before backend pin bindings are added.
+Prerequisite: PLN-0018 startup, memory/cache rules and board binding. This work
+is explicitly before and independent of fixture completion. Use the received
+MB1364 Rev E assembly and ordinary USB/Ethernet peers; record any required
+solder-bridge or jumper change before making it.
 
-Choose the physical board and boot configuration, then implement the common driver set against its existing descriptions. Validate clocks, memory/cache/MPU and DMA constraints in execution. Reuse the functional tests and external-device source with hardware bindings changed. Revalidate all three description contracts if the port exposes a model error.
+- Extend the source-backed STM32 description only where the USB or Ethernet
+  backend needs currently absent MAC/PHY, MDIO, DMA descriptor, USB OTG or pin
+  metadata. Re-run the three-description gate after shared-model changes.
+- Bring up the on-board Ethernet PHY and connector: source/validate clocks and
+  pins, read/write PHY registers over MDIO, observe link state, and exchange
+  raw Ethernet frames with an ordinary peer. Do not introduce an implicit
+  TCP/IP-stack dependency.
+- Select the native USB role and connector path, implement the bounded endpoint
+  and transfer subset required by the chosen smoke protocol, and exchange data
+  with an ordinary host. Keep USB clock, FIFO and cache/DMA constraints explicit.
+- Record link/USB captures, image sizes, cache maintenance, board state and
+  repeatable host-side procedures. Route only fixture-supplied fault/electrical
+  cases to PLN-0022.
 
-Exit: shared functional interfaces pass the STM32 bare-metal support matrix and physical tests. No MCUOS Cortex-M7 port is required.
+Exit: Ethernet MDIO/PHY/link/raw-frame and the selected native USB smoke path
+pass repeatable board-native procedures with source-backed metadata and bounded
+storage. No network stack, adapter hardware or MCUOS dependency is implied.
 
 ## PLN-0019 Implement ESP32-P4 bare-metal backends
 @status(planned)
-@link(REQ-0003, REQ-0004, REQ-0009, REQ-0013, REQ-0016, REQ-0031, REQ-0034, REQ-0036, REQ-0037, REQ-0041, REQ-0042)
+@link(REQ-0003, REQ-0004, REQ-0009, REQ-0013, REQ-0016, REQ-0031, REQ-0034, REQ-0036, REQ-0037, REQ-0041)
 
-Prerequisite: PLN-0018, PLN-0021 and the already accepted ESP32-P4 descriptions.
+Prerequisite: PLN-0018 and the already accepted ESP32-P4 descriptions. PLN-0021 is not a prerequisite for implementation or board-native tests; only carrier-specific fixture bindings and deferred electrical acceptance depend on it.
 
 Choose the board, toolchain/boot path and initial core ownership. Implement the common driver set against existing Espressif descriptions, validating actual clock, routing, memory/cache and DMA behavior. Keep selected boot support separate from functional drivers and ensure the delivered execution mode does not require an RTOS scheduler. Run common and physical target tests; concurrent multicore/LP support needs separate evidence.
 
-Exit: all three declared bare-metal targets have real backends supporting the shared interfaces and independent hardware evidence. Description compatibility and runtime portability are now separately demonstrated.
+Exit: all three declared bare-metal targets have real backends supporting the shared interfaces, with host/cross-build evidence and every applicable board-native/direct-wired target procedure. Deferred adapter rows are explicit. Description compatibility and runtime portability are separately demonstrated; complete electrical acceptance remains PLN-0022 work.
+
+## PLN-0022 Execute deferred adapter-dependent physical acceptance
+@status(planned)
+@link(REQ-0021, REQ-0022, REQ-0024, REQ-0025, REQ-0026, REQ-0027, REQ-0028, REQ-0029, REQ-0030, REQ-0036, REQ-0041, REQ-0042)
+
+Prerequisite: PLN-0021 Rev-A electrical qualification and the relevant implemented backend/test image. This plan is intentionally after fixture completion. It owns only the cases that need fixture-provided stimulus or independent observation; board-native results from PLN-0008 through PLN-0010, PLN-0018 and PLN-0019 are inputs and are not repeated without cause.
+
+Execute translated-voltage digital/bus tests, real shared I2C/SPI targets, calibrated ADC/DAC paths, independent timer/PWM capture, supervisor-driven error injection, power/current cases and the CAN/CAN-FD peer scenarios. Run the applicable matrix rows on UNO R4 Minima, NUCLEO-H753ZI and ESP32-P4-NANO. Record fixture revision, firmware, calibration, jumper state, captures, tolerances and failures/ECOs. Keep unavailable instances as explicit gaps.
+
+Exit: every deferred row has passing evidence or an explicit unresolved gap. These results join the earlier implementation and board-native evidence for target/release acceptance; they do not retroactively change what the earlier observations proved.
 
 ## Phase F: deferred MCUOS integration
 
@@ -369,7 +457,7 @@ Exit: all three declared bare-metal targets have real backends supporting the sh
 @status(planned)
 @link(REQ-0002, REQ-0015, REQ-0016, REQ-0018, REQ-0019, REQ-0031, REQ-0032, REQ-0038, REQ-0041, REQ-0042)
 
-Prerequisite: PLN-0011, PLN-0018 and PLN-0019. Hardware MCUOS acceptance additionally needs an executable MCUOS target; its absence does not reopen prior bare-metal acceptance.
+Prerequisite: PLN-0011, PLN-0018, PLN-0019 and the required PLN-0022 target rows. Hardware MCUOS acceptance additionally needs an executable MCUOS target; its absence does not reopen prior bare-metal acceptance.
 
 - Reinspect `../mcuos` when this stage begins and pin the actual source/configuration identity. Its facade and target APIs may have changed since the planning review.
 - Add optional MCUOS build integration with an explicit source-path setting. Implement the adapter using task-level facade calls and supplied ISR context, bounded completion transport, absolute deadlines and task-owned bus synchronization.
@@ -402,6 +490,6 @@ Exit: each selected extension preserves storage, ownership and portability contr
 
 ## Critical path and evidence boundaries
 
-The path is all-three sources → shared metadata foundation → three incremental complete descriptions → common description gate → completed RA4M1 foundation → cross-target fixture design and Rev-A electrical qualification → remaining RA4M1 features and acceptance → STM32H753 and ESP32-P4 backends → MCUOS. The test-fixture coverage matrix, not the Uno header alone, defines how every peripheral instance and board feature is exercised. MCUOS ports matter only in the later RTOS phase.
+The path is all-three sources → shared metadata foundation → three incremental complete descriptions → common description gate → completed RA4M1 foundation, then two parallel branches. The implementation branch completes remaining RA4M1 features and the STM32H753/ESP32-P4 backends using host, cross-build, board-native, native-connector and direct-wired evidence. The hardware branch designs, fabricates and qualifies the Rev-A fixture. The branches join at PLN-0022 adapter-dependent physical acceptance and the target release-acceptance plans, followed by MCUOS. The test-fixture coverage matrix, not the Uno header alone, defines final physical coverage, but it does not gate unrelated implementation. MCUOS ports matter only in the later RTOS phase.
 
 Compile-time tests establish representability and reject invalid configurations; they do not verify hardware register behavior, electrical timing or driver portability by themselves. Those claims require subsequent native behavioral tests and independent physical observations. Keep the coverage denominator, verification state and explicit exclusions visible throughout.

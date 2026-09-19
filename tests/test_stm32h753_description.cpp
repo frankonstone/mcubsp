@@ -102,7 +102,7 @@ TEST(stm32h753_description, validates_package_membership_and_af_routes,
                                         stm::package_memberships));
     EXPECT_TRUE(mcuhw::core::route_exists(
         stm::pin_routes, {0, 5}, stm::signal_id(stm::signal::spi1_sck)));
-    EXPECT_EQ(stm::package_pins[4].package_position, 67U);
+    EXPECT_EQ(stm::package_pins[5].package_position, 67U);
 }
 
 TEST(stm32h753_description, models_clock_domains_corrected_adc_limit_and_reset,
@@ -125,7 +125,7 @@ TEST(stm32h753_description, keeps_fixed_nvic_lines_distinct_from_events,
     static_assert(!stm::interrupt_database::valid_cpu_route(stm::event::tim2, 29));
     static_assert(stm::interrupt_database::valid_cpu_route(stm::event::tim8_break, 43));
     static_assert(stm::interrupt_database::valid_cpu_route(stm::event::tim12, 43));
-    EXPECT_EQ(stm::interrupt_routes.size(), 35U);
+    EXPECT_EQ(stm::interrupt_routes.size(), 36U);
 }
 
 TEST(stm32h753_description, separates_dma_engines_reachability_and_cache_policy,

@@ -40,7 +40,7 @@ struct adc_channel {
 
 [[nodiscard]] constexpr std::expected<adc_channel, adc_error>
 make_adc_channel(std::uint8_t channel) noexcept {
-    if (channel > 14U) {
+    if (channel > 19U) {
         return std::unexpected(adc_error::invalid_channel);
     }
     return adc_channel{channel};

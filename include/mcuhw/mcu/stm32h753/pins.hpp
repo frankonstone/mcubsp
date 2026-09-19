@@ -35,22 +35,37 @@ constexpr core::package_pin pin(std::uint16_t port, std::uint16_t index,
 // Source-reviewed LQFP100 pins consumed by the initial peripheral routes.
 // The full Table 8 bond-out remains a child item of the coverage inventory.
 inline constexpr std::array package_pins{
-    pin(0, 0, 22, true), pin(0, 5, 29, true), pin(0, 6, 30, true),
+    pin(0, 0, 22, true), pin(0, 3, 25, true), pin(0, 5, 29, true),
+    pin(0, 6, 30, true),
     pin(0, 7, 31, true), pin(0, 8, 67, true), pin(0, 9, 68),
-    pin(0, 10, 69), pin(1, 6, 92), pin(1, 7, 93),
+    pin(0, 10, 69), pin(1, 5, 91), pin(1, 6, 92), pin(1, 7, 93),
+    pin(1, 8, 95), pin(1, 9, 96),
+    pin(3, 8, 77), pin(3, 9, 78), pin(3, 14, 86), pin(4, 1, 142),
 };
 
 inline constexpr auto every_package = std::uint8_t{0xFFU};
 inline constexpr std::array package_memberships{
     package_membership{{0, 0}, every_package, package_source},
+    package_membership{{0, 3}, every_package, package_source},
     package_membership{{0, 5}, every_package, package_source},
     package_membership{{0, 6}, every_package, package_source},
     package_membership{{0, 7}, every_package, package_source},
     package_membership{{0, 8}, every_package, package_source},
     package_membership{{0, 9}, every_package, package_source},
     package_membership{{0, 10}, every_package, package_source},
+    package_membership{{1, 5}, every_package, package_source},
     package_membership{{1, 6}, every_package, package_source},
     package_membership{{1, 7}, every_package, package_source},
+    package_membership{{1, 8}, every_package, package_source},
+    package_membership{{1, 9}, every_package, package_source},
+    package_membership{{3, 8}, package_bit(package_variant::lqfp144),
+                       package_source},
+    package_membership{{3, 9}, package_bit(package_variant::lqfp144),
+                       package_source},
+    package_membership{{3, 14}, package_bit(package_variant::lqfp144),
+                       package_source},
+    package_membership{{4, 1}, package_bit(package_variant::lqfp144),
+                       package_source},
     package_membership{{10, 0}, static_cast<std::uint8_t>(
         package_bit(package_variant::lqfp208)
         | package_bit(package_variant::tfbga240_plus_25)), package_source},
@@ -70,11 +85,18 @@ inline constexpr std::array pin_routes{
     route(0, 5, signal::tim2_ch1, 1),
     route(1, 6, signal::i2c1_scl, 4),
     route(1, 7, signal::i2c1_sda, 4),
+    route(1, 8, signal::i2c1_scl, 4),
+    route(1, 9, signal::i2c1_sda, 4),
     route(0, 9, signal::usart1_tx, 7),
     route(0, 10, signal::usart1_rx, 7),
+    route(3, 8, signal::usart3_tx, 7),
+    route(3, 9, signal::usart3_rx, 7),
     route(0, 5, signal::spi1_sck, 5),
     route(0, 6, signal::spi1_miso, 5),
     route(0, 7, signal::spi1_mosi, 5),
+    route(1, 5, signal::spi1_mosi, 5),
+    core::pin_route{{0, 3}, signal_id(signal::adc1_inp15),
+        core::pin_route_kind::fixed, 15U, alternate_function_source},
     core::pin_route{{0, 0}, signal_id(signal::adc1_inp16),
         core::pin_route_kind::fixed, 16U, alternate_function_source},
 };
@@ -94,7 +116,8 @@ struct pin_database {
             return Mode == core::electrical_mode::push_pull
                 || Mode == core::electrical_mode::open_drain;
         }
-        if (Signal == signal_id(signal::adc1_inp16)
+        if ((Signal == signal_id(signal::adc1_inp15)
+             || Signal == signal_id(signal::adc1_inp16))
             && Mode != core::electrical_mode::analog) {
             return false;
         }
@@ -103,6 +126,7 @@ struct pin_database {
 };
 
 using lqfp100_pin_database = pin_database<package_variant::lqfp100>;
+using lqfp144_pin_database = pin_database<package_variant::lqfp144>;
 
 [[nodiscard]] constexpr std::uintptr_t gpio_base(std::uint16_t port) noexcept {
     return 0x5802'0000U + static_cast<std::uintptr_t>(port) * 0x400U;
