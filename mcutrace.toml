@@ -1,0 +1,44 @@
+[project]
+root = "."
+requirements = ["requirements.md"]
+plans = ["implementation-plan.md"]
+sources = [
+  "include/mcuhw/**/*.hpp",
+  "board/uno_r4_minima/**/*.cpp",
+  "board/uno_r4_minima/**/*.hpp",
+  "board/uno_r4_minima/*.S",
+]
+build_files = [
+  "CMakeLists.txt",
+  "cmake/*.cmake",
+  "board/uno_r4_minima/*.ld",
+  "tests/CMakeLists.txt",
+  "tools/run-uno-r4-minima-tests.sh",
+]
+
+[[artifacts]]
+path = "build/host/artifacts/mcutest.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_startup_gpio_tests.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_gpio_loopback_tests.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_pwm_tests.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_uart_tests.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_all_tests.mcucov.json"
+importer = "mcucov"
+
+[validation]
+fail_at_or_above = "error"

@@ -1,0 +1,6 @@
+# BEGIN mcutrace VS Code managed MCP
+[mcp_servers.mcutrace]
+command = "/Users/frank/Library/Application Support/Code/User/globalStorage/mcutrace.mcutrace-requirements/bin/mcutrace-mcp"
+args = ["--config", "/Users/frank/Projects/pocs/mcuhw/mcutrace.toml"]
+cwd = "/Users/frank/Projects/pocs/mcuhw"
+# END mcutrace VS Code managed MCP

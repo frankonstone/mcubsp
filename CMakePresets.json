@@ -1,0 +1,84 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "host",
+      "displayName": "Host verification",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/host",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON",
+        "MCUHW_ARCH": "native"
+      }
+    },
+    {
+      "name": "arm-cortex-m4",
+      "displayName": "Arm Cortex-M4 compile probe",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/arm-cortex-m4",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m4.cmake",
+      "cacheVariables": {
+        "BUILD_TESTING": "OFF"
+      }
+    },
+    {
+      "name": "uno-r4-minima",
+      "displayName": "UNO R4 Minima bare-metal board tests",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/uno-r4-minima",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m4.cmake",
+      "cacheVariables": {
+        "BUILD_TESTING": "OFF",
+        "MCUHW_BUILD_UNO_R4_MINIMA_TESTS": "ON"
+      }
+    },
+    {
+      "name": "arm-cortex-m7",
+      "displayName": "Arm Cortex-M7 compile probe",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/arm-cortex-m7",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake",
+      "cacheVariables": {
+        "BUILD_TESTING": "OFF"
+      }
+    },
+    {
+      "name": "esp32p4-riscv",
+      "displayName": "ESP32-P4 RISC-V compile probe",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/esp32p4-riscv",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-esp32p4.cmake",
+      "cacheVariables": {
+        "BUILD_TESTING": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "host", "configurePreset": "host" },
+    { "name": "arm-cortex-m4", "configurePreset": "arm-cortex-m4" },
+    { "name": "uno-r4-minima", "configurePreset": "uno-r4-minima" },
+    { "name": "arm-cortex-m7", "configurePreset": "arm-cortex-m7" },
+    { "name": "esp32p4-riscv", "configurePreset": "esp32p4-riscv" }
+  ],
+  "testPresets": [
+    {
+      "name": "host",
+      "configurePreset": "host",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}
