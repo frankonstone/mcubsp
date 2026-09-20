@@ -5,8 +5,11 @@ add_executable(mcuhw_tests
     test_esp32p4_gpio.cpp
     test_esp32p4_i2c.cpp
     test_esp32p4_i2s.cpp
+    test_esp32p4_sdmmc.cpp
     test_esp32p4_spi.cpp
     test_esp32p4_uart.cpp
+    test_sdmmc.cpp
+    test_sdio.cpp
     test_metadata.cpp
     test_ownership.cpp
     test_protected_access.cpp

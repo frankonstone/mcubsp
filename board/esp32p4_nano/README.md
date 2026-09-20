@@ -4,9 +4,9 @@ PLN-0019 uses two separately linked images on HP CPU0:
 
 - a custom ESP-IDF v6.1 second-stage bootloader, containing only hardware/image
   initialization and a fixed policy that loads the factory partition; and
-- a factory application containing the `mcuhw` GPIO, UART, I2C, I2S/audio and
-  SPI backends, registered `mcutest` cases, UART result adapter and MCUCOV
-  runtime.
+- a factory application containing the `mcuhw` GPIO, UART, I2C, I2S/audio,
+  SDMMC/SDIO and SPI backends, registered `mcutest` cases, UART result adapter
+  and MCUCOV runtime.
 
 The immutable ESP32-P4 ROM remains the first-stage loader. The custom
 second-stage loader supplies flash/cache setup, reads the partition table and
@@ -99,6 +99,30 @@ It intentionally produces a human-audible tone, but the automated result is
 not an independent acoustic oracle: confirming speaker output level, frequency
 and distortion still requires a microphone or audio analyzer supplied by
 PLN-0022 fixture work.
+
+The microSD case powers the dedicated pads from ESP32-P4 LDO channel 4, pulses
+the NANO's active-low GPIO45 card-power control, and initializes native SDMMC
+slot 0 on GPIO39-GPIO44. It identifies the inserted 30,007 MiB SDHC card in
+4-bit mode at 20 MHz, reads sector 0 through the internal DMA controller, then
+saves, overwrites, reads back and restores the final sector. A second read-back
+verifies the restoration before the test passes, so the procedure does not
+leave its test pattern on the card. The current driver intentionally exposes
+card initialization and single-sector block I/O only; filesystem mounting and
+multi-block transfers remain outside this increment.
+
+The Wi-Fi coprocessor case drives GPIO54 low and then high to reset and enable
+the on-board ESP32-C5-MINI-1U, waits the ESP-Hosted default 1.5 s startup
+interval, and initializes SDMMC slot 1 through the GPIO matrix on GPIO14-GPIO19.
+It issues CMD5, assigns/selects RCA `0x0001`, reads CCCR revision `0x32`, walks
+the CIS at `0x01000`, and requires the Espressif manufacturer/card identity
+`0x0092`/`0x6666`. The connected C5 firmware advertises two IO functions. The
+test enables function 1, observes its ready bit, programs 512-byte function-0
+and function-1 block sizes, and switches the card and host to four-bit mode.
+This is physical SDIO enumeration and identity evidence. It does not yet run
+ESP-Hosted packet queues, exchange control/data packets, initialize the remote
+Wi-Fi API, scan, associate, or obtain network connectivity. Slot 0 and slot 1
+share the ESP32-P4 SDMMC controller and are deliberately exercised
+sequentially under the backend's single-owner rule.
 
 The application also configures GPSPI2 at 1 MHz on the free expansion-header
 GPIO20-GPIO23 pins and executes one four-frame, two-segment CPU-buffer command.

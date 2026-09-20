@@ -22,8 +22,8 @@ mcuhw_esp32p4_gpio_test_link_anchor() noexcept {}
 namespace mcuhw::board_test::esp32p4_nano {
 namespace {
 
-constexpr core::pin_id smoke_pin{0, 45};
-constexpr std::uint32_t smoke_mask = 1U << (smoke_pin.index - 32U);
+constexpr core::pin_id smoke_pin{0, 2};
+constexpr std::uint32_t smoke_mask = 1U << smoke_pin.index;
 
 [[nodiscard]] volatile const std::uint32_t&
 register_at(std::uintptr_t address) noexcept {
@@ -32,7 +32,7 @@ register_at(std::uintptr_t address) noexcept {
 
 } // namespace
 
-TEST(esp32p4_gpio, gpio45_initializes_toggles_and_releases,
+TEST(esp32p4_gpio, gpio2_initializes_toggles_and_releases,
      "REQ-0009", "REQ-0034", "REQ-0036") {
     core::direct_mmio mmio;
     backend::esp32p4::gpio_backend backend{mmio};
@@ -53,7 +53,7 @@ TEST(esp32p4_gpio, gpio45_initializes_toggles_and_releases,
     const auto output_select = register_at(
         gpio_base + 0x558U + smoke_pin.index * 4U);
     const auto pad = register_at(io_mux_base + 0x04U + smoke_pin.index * 4U);
-    ASSERT_TRUE((register_at(gpio_base + 0x2CU) & smoke_mask) != 0U);
+    ASSERT_TRUE((register_at(gpio_base + 0x20U) & smoke_mask) != 0U);
     ASSERT_TRUE((output_select & 0xFFFU) == (256U | (1U << 10U)));
     ASSERT_TRUE(((pad >> 12U) & 0x7U) == 1U);
 
@@ -63,7 +63,7 @@ TEST(esp32p4_gpio, gpio45_initializes_toggles_and_releases,
         static_cast<void>(pin.release());
         return;
     }
-    ASSERT_TRUE((register_at(gpio_base + 0x10U) & smoke_mask) != 0U);
+    ASSERT_TRUE((register_at(gpio_base + 0x04U) & smoke_mask) != 0U);
 
     const auto cleared = pin.clear();
     ASSERT_TRUE(cleared.has_value());
@@ -71,12 +71,12 @@ TEST(esp32p4_gpio, gpio45_initializes_toggles_and_releases,
         static_cast<void>(pin.release());
         return;
     }
-    ASSERT_TRUE((register_at(gpio_base + 0x10U) & smoke_mask) == 0U);
+    ASSERT_TRUE((register_at(gpio_base + 0x04U) & smoke_mask) == 0U);
 
     const auto released = pin.release();
     ASSERT_TRUE(released.has_value());
     if (!released) return;
-    ASSERT_TRUE((register_at(gpio_base + 0x2CU) & smoke_mask) == 0U);
+    ASSERT_TRUE((register_at(gpio_base + 0x20U) & smoke_mask) == 0U);
     ASSERT_TRUE(((register_at(io_mux_base + 0x04U + smoke_pin.index * 4U)
                   >> 9U) & 0x1U) == 1U);
 }

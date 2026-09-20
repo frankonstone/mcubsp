@@ -41,6 +41,22 @@ inline constexpr core::pin_id audio_i2s_ws{0, 10};
 inline constexpr core::pin_id audio_i2s_data_out{0, 9};
 inline constexpr core::pin_id audio_i2s_data_in{0, 11};
 inline constexpr core::pin_id audio_amplifier_enable{0, 53};
+inline constexpr core::pin_id microsd_d0{0, 39};
+inline constexpr core::pin_id microsd_d1{0, 40};
+inline constexpr core::pin_id microsd_d2{0, 41};
+inline constexpr core::pin_id microsd_d3{0, 42};
+inline constexpr core::pin_id microsd_clock{0, 43};
+inline constexpr core::pin_id microsd_command{0, 44};
+// The NANO schematic switches microSD power with an active-low GPIO45.
+inline constexpr core::pin_id microsd_power_enable{0, 45};
+inline constexpr core::pin_id wifi_sdio_d0{0, 14};
+inline constexpr core::pin_id wifi_sdio_d1{0, 15};
+inline constexpr core::pin_id wifi_sdio_d2{0, 16};
+inline constexpr core::pin_id wifi_sdio_d3{0, 17};
+inline constexpr core::pin_id wifi_sdio_clock{0, 18};
+inline constexpr core::pin_id wifi_sdio_command{0, 19};
+// ESP32-C5 CHIP_PU is active high; driving it low resets the coprocessor.
+inline constexpr core::pin_id wifi_coprocessor_enable{0, 54};
 // Free expansion-header GPIOs on the NANO. Unlike the microSD and Wi-Fi
 // links, these pins are not committed to an on-board SDIO peripheral.
 inline constexpr core::pin_id default_spi_miso{0, 20};

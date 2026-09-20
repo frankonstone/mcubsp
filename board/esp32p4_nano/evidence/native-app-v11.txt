@@ -1,0 +1,90 @@
+PLN-0019 ESP32-P4-NANO native microSD application evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO
+part: ESP32-P4NRW32
+port: /dev/cu.usbmodem5A7A0368561
+firmware: pln-0019-native-app-v11
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+execution: HP CPU0; ESP-IDF pre-scheduler application startup; no RTOS scheduler
+
+flash layout and images:
+  0x00002000 custom second-stage loader, 21968 bytes,
+    sha256 bcfba850bd8fe28e80556bbaf7376b2fccbb6fcc51e69585a078e88afb45828e
+  0x00008000 partition table, 3072 bytes,
+    sha256 7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820
+  0x00010000 factory application, 274208 bytes (1 MiB partition),
+    sha256 e8394415d22de8c4c868a892813ded6bd190b7767b883438f9ddcc873ac8e205
+boot policy: custom loader validates the partition table and boots only factory
+flash verification: esptool post-write hash verification passed
+
+test framework: six registered mcutest TEST cases, mcutest::Runner UART output
+GPIO observation: GPIO2 output-enable, route, IO-MUX and output register readback
+I2C observation: I2C0 at 100 kHz on GPIO8 SCL and GPIO7 SDA performed physical
+  register-select write/repeated-START/read/STOP transactions against the
+  on-board ES8311 at address 0x18; identity 0x8311, version 0x01
+audio observation: ES8311 configured for 48 kHz stereo 16-bit Philips I2S;
+  I2S0 and AHB-PDMA captured 4032 bytes from the analog microphone with 2016
+  nonzero samples, minimum -1595 and maximum 409; TX DMA then completed 193536
+  bytes of a 1008 ms, 1 kHz triangle wave with peak sample magnitude 6000 while
+  GPIO53 enabled the amplifier
+audio scope: codec configuration, live microphone data and RX/TX DMA completion
+  are observed; a human-audible stimulus is intentionally generated, but no
+  independent microphone/audio analyzer was present
+microSD observation: ESP32-P4 LDO channel 4 powered the dedicated SD pads;
+  active-low GPIO45 card power was cycled before native SDMMC slot 0 initialized
+  GPIO39-GPIO44 in 4-bit mode at 20 MHz
+microSD card: SDHC, manufacturer 0x6f, product CBADS, 61454336 sectors of
+  512 bytes (30007 MiB); sector 0 had MBR signature 0xaa55
+microSD destructive-safe check: sector 0 was read; the final sector was saved,
+  overwritten with a deterministic 512-byte pattern, read back and compared,
+  restored from the saved copy, then read back and compared again
+microSD scope: physical single-sector DMA read/write is observed; filesystem
+  mounting and multi-block transfer are not claimed
+SPI observation: GPSPI2 at 1 MHz on GPIO20 MISO, GPIO21 MOSI, GPIO22 SCK and
+  GPIO23 CS completed one four-frame, two-segment CPU-buffer command; no slave,
+  loopback or logic analyzer was connected
+UART observation: UART0 physical marker received through the on-board CH343
+  bridge only after finite transfer TX_DONE completion
+result: 6 tests, 0 failures, registry overflow 0
+mcutest JSON: 5277 bytes,
+  sha256 02de5e4baa1354eeb3859140b3b79a28f4dd55bfd9d5980108f99462e977ac2b
+
+coverage: MCUCOV FULL profile, build id 0x4d48500b, UART hex transport
+instrumented targets: board GPIO/I2C/I2S-audio/SDMMC/SPI/UART tests and included
+  mcuhw headers; loader, application startup and transport are harness code
+coverage frame: 10194 bytes,
+  sha256 4b74ca33d9ccb873bbde3a59163a625eb757588fe714bce64a6a6fada79d7221
+coverage JSON: 924303 bytes,
+  sha256 1b1a0bb59a066e12f52edd6c8e9051c8e2b9da4ca8076a656a24c6215a60555a
+coverage HTML: 782980 bytes,
+  sha256 daf4eda0c649ead9f35541d116cca20daa68dd50c0be850180b8ab8f9f6ba22d
+coverage summary: functions 157/233, statements 988/1621, lines 1118/1726,
+  branches 439/972, MC/DC conditions 66/759, invalid MC/DC decisions 0
+target-filtered mcutrace coverage JSON: 754346 bytes,
+  sha256 71e38c3fd4f4e98eec7fa91e0af35dd2aa11ab610919b3c4d95685992aa9b043
+target-filtered summary: functions 125/170, statements 893/1360, lines 998/1414,
+  branches 407/830, MC/DC conditions 63/660, invalid MC/DC decisions 0
+
+MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v11 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=2 observation=mixed_board_native qualification=development
+MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+esp32p4_gpio/gpio2_initializes_toggles_and_releases:PASS
+MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
+esp32p4_i2c/i2c0_reads_onboard_es8311_identity_with_repeated_start:PASS
+MCUHW_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=philips16 capture_bytes=4032 mic_nonzero=2016 mic_min=-1595 mic_max=409 playback_bytes=193536 tone_hz=1000 tone_peak=6000 duration_ms=1008 amp_gpio=53 verification=dma_codec_readback_no_acoustic_oracle
+esp32p4_audio/captures_onboard_microphone_and_plays_audible_tone:PASS
+MCUHW_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 write_read_restore=last_sector capacity_sectors=61454336 high_capacity=1 mid=0x6f product=CBADS mbr_signature=aa55
+esp32p4_sdmmc/identifies_reads_writes_and_restores_onboard_card:PASS
+MCUHW_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none
+esp32p4_spi/gpspi2_executes_one_native_multisegment_command:PASS
+esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
+6 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_native tests=6 failures=0 registry_overflow=0 coverage=captured
+
+Original second-stage bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce
+This backup does not include the original partition table or application.

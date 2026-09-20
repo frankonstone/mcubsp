@@ -1,0 +1,82 @@
+PLN-0019 ESP32-P4-NANO native ESP32-C5 SDIO application evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO-WIFI6-DB
+part: ESP32-P4NRW32 with on-board ESP32-C5-MINI-1U
+port: /dev/cu.usbmodem5A7A0368561
+firmware: pln-0019-native-app-v12
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+execution: HP CPU0; ESP-IDF pre-scheduler application startup; no RTOS scheduler
+
+flash layout and images:
+  0x00002000 custom second-stage loader, 21968 bytes,
+    sha256 bcfba850bd8fe28e80556bbaf7376b2fccbb6fcc51e69585a078e88afb45828e
+  0x00008000 partition table, 3072 bytes,
+    sha256 7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820
+  0x00010000 factory application, 293040 bytes (1 MiB partition),
+    sha256 0fd327d349c5bf59a83565c61ef0934f439fdd6c864b13fd9b673dc50d89a4b2
+boot policy: custom loader validates the partition table and boots only factory
+flash verification: esptool post-write hash verification passed
+
+test framework: seven registered mcutest TEST cases, mcutest::Runner UART output
+GPIO observation: GPIO2 output-enable, route, IO-MUX and output register readback
+I2C observation: on-board ES8311 identity 0x8311 over physical I2C0 repeated-START
+audio observation: 4032 microphone bytes with 2016 nonzero samples followed by
+  193536 bytes of 1 kHz playback over completed I2S/AHB-PDMA transfers
+microSD observation: 61454336-sector SDHC identified; sector 0 read; final
+  sector saved, overwritten, verified, restored and verified again
+Wi-Fi SDIO observation: GPIO54 reset/enabled the ESP32-C5-MINI-1U; SDMMC slot 1
+  used GPIO14 D0, GPIO15 D1, GPIO16 D2, GPIO17 D3, GPIO18 CLK and GPIO19 CMD;
+  CMD5 reported two IO functions; RCA 0x0001; CCCR revision 0x32; CIS pointer
+  0x01000; manufacturer 0x0092; card 0x6666; function 1 enabled and ready;
+  function-0/function-1 block sizes set to 512 bytes; card and host switched to
+  four-bit mode
+Wi-Fi SDIO scope: physical enumeration, identity and function readiness are
+  observed; ESP-Hosted packet transport, remote Wi-Fi APIs, scan, association
+  and IP connectivity are not claimed
+SPI observation: GPSPI2 controller completed one 1 MHz four-frame, two-segment
+  command on GPIO20-GPIO23; no external target was connected
+UART observation: UART0 marker physically received through the CH343 bridge
+result: 7 tests, 0 failures, registry overflow 0
+mcutest JSON: 6433 bytes,
+  sha256 313de6eb1c60cc011dddd88672cbbf3a1c258d33a04ab660de86931db65ef5aa
+
+coverage: MCUCOV FULL profile, build id 0x4d48500c, UART hex transport
+coverage frame: 12394 bytes,
+  sha256 d17d15c51300c88311e8e24712d72b43ea51c2daf7ecb69b9b15aeac20d37bed
+coverage JSON: 954943 bytes,
+  sha256 d9c25b8e38e257e6a43c719339ca4fcea2c408d36d85ece33957f5a66e2d0e9f
+coverage HTML: 808040 bytes,
+  sha256 b8889054286b7559133246dbcf04da02adc98d6fd1181c00cf2d4f711281411e
+coverage summary: functions 161/237, statements 1039/1679, lines 1169/1782,
+  branches 453/994, MC/DC conditions 69/777, invalid MC/DC decisions 0
+target-filtered mcutrace coverage JSON: 784986 bytes,
+  sha256 69aa70e7077d0a8184266d985b1f364c9705dee3016fd88f558ebb8310fd4c05
+target-filtered summary: functions 129/174, statements 944/1418,
+  lines 1049/1470, branches 421/852, MC/DC conditions 66/678,
+  invalid MC/DC decisions 0
+
+MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v12 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=2 observation=mixed_board_native qualification=development
+MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+esp32p4_gpio/gpio2_initializes_toggles_and_releases:PASS
+MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
+esp32p4_i2c/i2c0_reads_onboard_es8311_identity_with_repeated_start:PASS
+MCUHW_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=philips16 capture_bytes=4032 mic_nonzero=2016 mic_min=-1684 mic_max=439 playback_bytes=193536 tone_hz=1000 tone_peak=6000 duration_ms=1008 amp_gpio=53 verification=dma_codec_readback_no_acoustic_oracle
+esp32p4_audio/captures_onboard_microphone_and_plays_audible_tone:PASS
+MCUHW_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 write_read_restore=last_sector capacity_sectors=61454336 high_capacity=1 mid=0x6f product=CBADS mbr_signature=aa55
+esp32p4_sdmmc/identifies_reads_writes_and_restores_onboard_card:PASS
+MCUHW_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 d2=16 d3=17 clk=18 cmd=19 enable_gpio=54 functions=2 rca=0x0001 cccr=0x32 cis=0x01000 manf=0x0092 card=0x6666 function1=ready transport=identity_only
+esp32p4_wifi_sdio/enumerates_onboard_c5_and_enables_function_one:PASS
+MCUHW_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none
+esp32p4_spi/gpspi2_executes_one_native_multisegment_command:PASS
+esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
+7 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_native tests=7 failures=0 registry_overflow=0 coverage=captured
+
+Original second-stage bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce
+This backup does not include the original partition table or application.

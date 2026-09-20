@@ -46,10 +46,15 @@ MCUHW_MONITOR_ELF="$smoke_dir/build/mcuhw_esp32p4_baremetal_smoke.elf" \
 MCUHW_MONITOR_TIMEOUT=$timeout_seconds \
 expect <<'EOF'
     set timeout $env(MCUHW_MONITOR_TIMEOUT)
-    log_file -noappend $env(MCUHW_MONITOR_LOG)
+    log_user 0
+    log_file -a -noappend $env(MCUHW_MONITOR_LOG)
     spawn -noecho $env(MCUHW_MONITOR_PYTHON) -m esp_idf_monitor \
         -p $env(MCUHW_MONITOR_PORT) -b 115200 --target esp32p4 \
         --revision 100 --disable-address-decoding $env(MCUHW_MONITOR_ELF)
+    # Reset only after the monitor owns the port so early custom-bootloader
+    # evidence cannot be lost in the flash-to-monitor handoff.
+    after 200
+    send "\024\022"
     expect {
         -re {MCUHW_CONTEXT board=ESP32-P4-NANO .*qualification=development} {}
         timeout { exit 124 }
@@ -65,7 +70,9 @@ expect <<'EOF'
 EOF
 
 tr -d '\r' < "$monitor_log" > "$normalized_log"
-cat "$normalized_log"
+# Keep the terminal log readable; the complete coverage frame remains in the
+# normalized UART artifact and is decoded below.
+sed '/^MCUHW_COVERAGE_HEX:/d' "$normalized_log"
 
 result=$(sed -n 's/^MCUHW_RESULT //p' "$normalized_log" | tail -n 1)
 boot=$(sed -n 's/^MCUHW_BOOT //p' "$normalized_log" | tail -n 1)
@@ -84,7 +91,7 @@ if grep -q 'Starting scheduler' "$normalized_log"; then
     echo "ESP32-P4 smoke application unexpectedly started the scheduler" >&2
     exit 1
 fi
-if [ "$result" != "status=pass suite=esp32p4_native tests=5 failures=0 registry_overflow=0 coverage=captured" ]; then
+if [ "$result" != "status=pass suite=esp32p4_native tests=7 failures=0 registry_overflow=0 coverage=captured" ]; then
     echo "ESP32-P4 smoke test did not pass: ${result:-missing result}" >&2
     exit 1
 fi
@@ -102,6 +109,14 @@ if ! grep -q 'MCUHW_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=p
 fi
 if ! grep -q 'MCUHW_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none' "$normalized_log"; then
     echo "ESP32-P4 GPSPI2 transaction marker was not observed" >&2
+    exit 1
+fi
+if ! grep -q 'MCUHW_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 write_read_restore=last_sector capacity_sectors=[1-9][0-9]* high_capacity=[01] mid=0x[0-9a-fA-F][0-9a-fA-F] product=' "$normalized_log"; then
+    echo "ESP32-P4 microSD write/read/restore transaction marker was not observed" >&2
+    exit 1
+fi
+if ! grep -q 'MCUHW_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 d2=16 d3=17 clk=18 cmd=19 enable_gpio=54 functions=[1-7] rca=0x[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F] cccr=0x[0-9a-fA-F][0-9a-fA-F] cis=0x0*1000 manf=0x0092 card=0x6666 function1=ready transport=identity_only' "$normalized_log"; then
+    echo "ESP32-P4 ESP32-C5 SDIO identity transaction was not observed" >&2
     exit 1
 fi
 case "$coverage_hex" in
@@ -129,23 +144,23 @@ jq -n --arg project_dir "$project_dir" '
             board: "Waveshare ESP32-P4-NANO",
             mcu: "Espressif ESP32-P4NRW32 revision v1.0",
             suite: "esp32p4_native",
-            firmware: "pln-0019-native-app-v9",
-            fixture: "on-board CH343 USB-to-UART bridge, ES8311 codec, analog microphone and speaker; unconnected SPI header",
-            interface: "direct USB UART0; I2C0 and I2S0 to onboard ES8311; GPSPI2 on GPIO20-GPIO23",
+            firmware: "pln-0019-native-app-v12",
+            fixture: "on-board CH343 USB-to-UART bridge, ES8311 codec, analog microphone, speaker, microSD slot and ESP32-C5 wireless coprocessor; unconnected SPI header",
+            interface: "direct USB UART0; I2C0 and I2S0 to onboard ES8311; native SDMMC slot 0; SDIO slot 1 to ESP32-C5; GPSPI2 on GPIO20-GPIO23",
             toolchain: "riscv32-esp-elf GCC 15.2.0",
             qualification: "development",
             clocks_hz: {cpu: 360000000, apb: 90000000, uart_source: 40000000},
             coverage: {
                 producer: "mcucov",
                 profile: "full",
-                build_id: 1296584713,
+                build_id: 1296584716,
                 transport_encoding: "UART hexadecimal frame"
             }
         },
-        summary: {tests: 5, failures: 0, passed: 5, registry_overflow: 0},
+        summary: {tests: 7, failures: 0, passed: 7, registry_overflow: 0},
         tests: [
             {
-                name: "esp32p4_gpio/gpio45_initializes_toggles_and_releases",
+                name: "esp32p4_gpio/gpio2_initializes_toggles_and_releases",
                 status: "passed",
                 file: ($project_dir + "/board/esp32p4_nano/tests/gpio.cpp"),
                 line: 35,
@@ -173,6 +188,28 @@ jq -n --arg project_dir "$project_dir" '
                 ]
             },
             {
+                name: "esp32p4_sdmmc/identifies_reads_writes_and_restores_onboard_card",
+                status: "passed",
+                file: ($project_dir + "/board/esp32p4_nano/tests/sdmmc.cpp"),
+                line: 79,
+                requirements: [
+                    "REQ-0009", "REQ-0010", "REQ-0011", "REQ-0013",
+                    "REQ-0014", "REQ-0016", "REQ-0019", "REQ-0034",
+                    "REQ-0036", "REQ-0037"
+                ]
+            },
+            {
+                name: "esp32p4_wifi_sdio/enumerates_onboard_c5_and_enables_function_one",
+                status: "passed",
+                file: ($project_dir + "/board/esp32p4_nano/tests/wifi_sdio.cpp"),
+                line: 37,
+                requirements: [
+                    "REQ-0003", "REQ-0009", "REQ-0010", "REQ-0011",
+                    "REQ-0014", "REQ-0016", "REQ-0019", "REQ-0034",
+                    "REQ-0036", "REQ-0037"
+                ]
+            },
+            {
                 name: "esp32p4_spi/gpspi2_executes_one_native_multisegment_command",
                 status: "passed",
                 file: ($project_dir + "/board/esp32p4_nano/tests/spi.cpp"),
@@ -197,7 +234,7 @@ jq -n --arg project_dir "$project_dir" '
             uart0_achieved_baud: 115191,
             uart0_completion: "tx_done",
             uart0_transport: "CH343 USB-to-UART",
-            gpio: 45,
+            gpio: 2,
             i2c0: {
                 sda_gpio: 7,
                 scl_gpio: 8,
@@ -225,6 +262,32 @@ jq -n --arg project_dir "$project_dir" '
                 amplifier_enable_gpio: 53,
                 verification: "codec configuration plus completed RX/TX DMA; no independent acoustic oracle"
             },
+            sdmmc0: {
+                d0_gpio: 39,
+                d1_gpio: 40,
+                d2_gpio: 41,
+                d3_gpio: 42,
+                clock_gpio: 43,
+                command_gpio: 44,
+                power_enable_gpio: 45,
+                width: 4,
+                transaction: "card identification, sector 0 read, and last-sector write/read/restore verification"
+            },
+            sdio1: {
+                d0_gpio: 14,
+                d1_gpio: 15,
+                d2_gpio: 16,
+                d3_gpio: 17,
+                clock_gpio: 18,
+                command_gpio: 19,
+                coprocessor_enable_gpio: 54,
+                width: 4,
+                target: "onboard ESP32-C5-MINI-1U",
+                transaction: "CMD5 enumeration, RCA/select, CCCR/CIS identity, function-1 enable, 512-byte block-size setup and four-bit switch",
+                manufacturer_id: "0x0092",
+                card_id: "0x6666",
+                verification: "physical SDIO identity and function readiness; ESP-Hosted packet transport and Wi-Fi association not exercised"
+            },
             gpspi2: {
                 miso_gpio: 20,
                 mosi_gpio: 21,
@@ -237,7 +300,7 @@ jq -n --arg project_dir "$project_dir" '
                 target: "none; controller/register execution only"
             },
             board_changes: "none",
-            deferred: "independent acoustic/logic-analyzer audio verification, SPI loopback/device and logic-analyzer capture, logic-analyzer I2C timing capture, UART RX and injected line errors"
+            deferred: "ESP-Hosted packet transport and Wi-Fi association, filesystem mounting, independent acoustic/logic-analyzer audio verification, SPI loopback/device and logic-analyzer capture, logic-analyzer I2C timing capture, UART RX and injected line errors"
         }
     }
 ' > "$artifact_dir/esp32p4_native_smoke.mcutest.json.tmp"
