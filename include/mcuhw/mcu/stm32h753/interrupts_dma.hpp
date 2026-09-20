@@ -24,6 +24,7 @@ enum class event : std::uint16_t {
     tim5,
     dma2_stream0, dma2_stream1, dma2_stream2, dma2_stream3,
     dma2_stream4, dma2_stream5, dma2_stream6, dma2_stream7,
+    ethernet,
 };
 
 [[nodiscard]] constexpr std::uint16_t event_number(event value) noexcept {
@@ -57,6 +58,7 @@ inline constexpr std::array interrupt_routes{
     fixed_irq(event::dma2_stream2, 58), fixed_irq(event::dma2_stream3, 59),
     fixed_irq(event::dma2_stream4, 60), fixed_irq(event::dma2_stream5, 68),
     fixed_irq(event::dma2_stream6, 69), fixed_irq(event::dma2_stream7, 70),
+    fixed_irq(event::ethernet, 61),
 };
 
 struct interrupt_database {
@@ -136,6 +138,10 @@ inline constexpr std::array dma_reachability{
     core::dma_reachability{core::dma_engine_kind::stm32_mdma, 7, true, true},
     core::dma_reachability{core::dma_engine_kind::stm32_mdma, 8, true, true},
     core::dma_reachability{core::dma_engine_kind::stm32_mdma, 9, true, true},
+    core::dma_reachability{core::dma_engine_kind::stm32_ethernet, 4, true, true},
+    core::dma_reachability{core::dma_engine_kind::stm32_ethernet, 5, true, true},
+    core::dma_reachability{core::dma_engine_kind::stm32_ethernet, 6, true, true},
+    core::dma_reachability{core::dma_engine_kind::stm32_ethernet, 7, true, true},
 };
 
 inline constexpr std::uintptr_t dma1_base = 0x4002'0000U;

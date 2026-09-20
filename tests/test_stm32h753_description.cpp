@@ -47,7 +47,7 @@ TEST(stm32h753_description, identifies_exact_part_packages_revisions_and_sources
 
 TEST(stm32h753_description, records_reviewed_slices_and_deferred_breadth,
      "REQ-0006") {
-    ASSERT_EQ(stm::review_ledger.size(), 14U);
+    ASSERT_EQ(stm::review_ledger.size(), 15U);
     for (const auto& review : stm::review_ledger) {
         EXPECT_TRUE(review.state == stm::coverage_state::verified);
         EXPECT_TRUE(review.described_registers <= review.register_denominator);
@@ -66,7 +66,7 @@ TEST(stm32h753_description, exposes_native_capability_differences,
         stm::peripheral_capability::tcm_access>);
     static_assert(!stm::dma12_capabilities::contains<
         stm::peripheral_capability::tcm_access>);
-    EXPECT_EQ(stm::instances.size(), 49U);
+    EXPECT_EQ(stm::instances.size(), 50U);
 }
 
 TEST(stm32h753_description, preserves_register_offsets_widths_and_side_effects,
@@ -87,6 +87,7 @@ TEST(stm32h753_description, preserves_register_offsets_widths_and_side_effects,
     EXPECT_EQ(stm::gpio_registers.size(), 10U);
     EXPECT_EQ(stm::timer_registers.size(), 17U);
     EXPECT_EQ(stm::dma_registers.size(), 16U);
+    EXPECT_EQ(stm::ethernet_registers.size(), 19U);
 }
 
 TEST(stm32h753_description, validates_package_membership_and_af_routes,
@@ -102,7 +103,10 @@ TEST(stm32h753_description, validates_package_membership_and_af_routes,
                                         stm::package_memberships));
     EXPECT_TRUE(mcuhw::core::route_exists(
         stm::pin_routes, {0, 5}, stm::signal_id(stm::signal::spi1_sck)));
-    EXPECT_EQ(stm::package_pins[5].package_position, 67U);
+    EXPECT_EQ(stm::package_pins[7].package_position, 67U);
+    EXPECT_TRUE(mcuhw::core::route_exists(
+        stm::pin_routes, {6, 13},
+        stm::signal_id(stm::signal::eth_rmii_txd0)));
 }
 
 TEST(stm32h753_description, models_clock_domains_corrected_adc_limit_and_reset,
@@ -125,7 +129,7 @@ TEST(stm32h753_description, keeps_fixed_nvic_lines_distinct_from_events,
     static_assert(!stm::interrupt_database::valid_cpu_route(stm::event::tim2, 29));
     static_assert(stm::interrupt_database::valid_cpu_route(stm::event::tim8_break, 43));
     static_assert(stm::interrupt_database::valid_cpu_route(stm::event::tim12, 43));
-    EXPECT_EQ(stm::interrupt_routes.size(), 36U);
+    EXPECT_EQ(stm::interrupt_routes.size(), 37U);
 }
 
 TEST(stm32h753_description, separates_dma_engines_reachability_and_cache_policy,

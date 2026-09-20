@@ -105,6 +105,7 @@ inline constexpr std::array clock_nodes{
     core::clock_node{static_cast<std::uint16_t>(clock_id::timx_ker), {1U}, {240'000'000U}, clock_source},
     core::clock_node{static_cast<std::uint16_t>(clock_id::timy_ker), {1U}, {240'000'000U}, clock_source},
     core::clock_node{static_cast<std::uint16_t>(clock_id::adc_ker), {1U}, {80'000'000U}, clock_source},
+    core::clock_node{static_cast<std::uint16_t>(clock_id::eth_ker), {50'000'000U}, {50'000'000U}, clock_source},
 };
 
 constexpr core::clock_edge clock_edge(clock_id source, clock_id destination,

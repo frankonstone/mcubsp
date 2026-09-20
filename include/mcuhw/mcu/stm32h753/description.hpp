@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include <mcuhw/mcu/stm32h753/peripherals.hpp>
+#include <mcuhw/mcu/stm32h753/ethernet.hpp>
 #include <mcuhw/mcu/stm32h753/coverage.hpp>
 
 namespace mcuhw::mcu::stm32h753 {
@@ -25,6 +26,7 @@ enum class peripheral_capability : std::uint8_t {
     dma,
     domain_limited_dma,
     tcm_access,
+    ethernet_mac,
 };
 
 struct advanced_timer_capabilities : core::capability_set<peripheral_capability,
@@ -146,6 +148,7 @@ inline constexpr std::array instances{
     native_instance(peripheral_kind::dma, 2, dma2_base, clock_id::hclk, no_kernel_clock, ahb1enr, 1U << 1, rcc_base + 0x80U, transfer_cap, dma_source),
     native_instance(peripheral_kind::bdma, 1, 0x5802'5400U, clock_id::hclk, no_kernel_clock, ahb4enr, 1U << 21, rcc_base + 0x88U, transfer_cap | capability_bit(peripheral_capability::domain_limited_dma), dma_source),
     native_instance(peripheral_kind::mdma, 1, 0x5200'0000U, clock_id::hclk, no_kernel_clock, ahb3enr, 1U << 0, rcc_base + 0x7CU, transfer_cap | capability_bit(peripheral_capability::tcm_access), dma_source),
+    native_instance(peripheral_kind::ethernet, 1, ethernet_base, clock_id::hclk, static_cast<std::uint16_t>(clock_id::eth_ker), ahb1enr, 0x7U << 15U, rcc_base + 0x80U, transfer_cap | capability_bit(peripheral_capability::ethernet_mac), ethernet_source),
 };
 
 inline constexpr std::array hclk_input{static_cast<std::uint16_t>(clock_id::hclk)};
@@ -153,6 +156,7 @@ inline constexpr std::array tim1_clocks{static_cast<std::uint16_t>(clock_id::pcl
 inline constexpr std::array tim2_clocks{static_cast<std::uint16_t>(clock_id::pclk1), static_cast<std::uint16_t>(clock_id::timx_ker)};
 inline constexpr std::array i2c1_clocks{static_cast<std::uint16_t>(clock_id::pclk1)};
 inline constexpr std::array adc_clocks{static_cast<std::uint16_t>(clock_id::hclk), static_cast<std::uint16_t>(clock_id::adc_ker)};
+inline constexpr std::array ethernet_clocks{static_cast<std::uint16_t>(clock_id::hclk), static_cast<std::uint16_t>(clock_id::eth_ker)};
 inline constexpr std::array<std::uint16_t, 0> no_relations{};
 inline constexpr std::array tim1_events{event_number(event::tim1_break), event_number(event::tim1_update), event_number(event::tim1_trigger_commutation), event_number(event::tim1_capture_compare)};
 inline constexpr std::array tim2_events{event_number(event::tim2)};
@@ -160,6 +164,7 @@ inline constexpr std::array i2c1_events{event_number(event::i2c1_event), event_n
 inline constexpr std::array usart1_events{event_number(event::usart1)};
 inline constexpr std::array spi1_events{event_number(event::spi1)};
 inline constexpr std::array adc_events{event_number(event::adc12)};
+inline constexpr std::array ethernet_events{event_number(event::ethernet)};
 inline constexpr std::array tim1_dma{std::uint16_t{11}, std::uint16_t{12}, std::uint16_t{13}, std::uint16_t{14}, std::uint16_t{15}, std::uint16_t{16}, std::uint16_t{17}};
 inline constexpr std::array tim2_dma{std::uint16_t{18}, std::uint16_t{19}, std::uint16_t{20}, std::uint16_t{21}, std::uint16_t{22}};
 inline constexpr std::array i2c1_dma{std::uint16_t{33}, std::uint16_t{34}};
@@ -175,6 +180,7 @@ inline constexpr std::array peripheral_instances{
     core::peripheral_metadata{peripheral(peripheral_kind::spi, 1), tim1_clocks, no_relations, spi1_events, spi1_dma, spi_source},
     core::peripheral_metadata{peripheral(peripheral_kind::adc, 1), adc_clocks, no_relations, adc_events, adc_dma, adc_source},
     core::peripheral_metadata{peripheral(peripheral_kind::dma, 1), hclk_input, no_relations, no_relations, no_relations, dma_source},
+    core::peripheral_metadata{peripheral(peripheral_kind::ethernet, 1), ethernet_clocks, no_relations, ethernet_events, no_relations, ethernet_source},
 };
 
 inline constexpr std::array errata{
@@ -207,6 +213,7 @@ inline constexpr std::array review_ledger{
     block_review{"USART/UART initial registers", coverage_state::verified, usart_registers.size(), usart_registers.size(), "Full source-unit scope reconciled in complete_source_inventory", usart_source},
     block_review{"SPI initial registers", coverage_state::verified, spi_registers.size(), spi_registers.size(), "Full source-unit scope reconciled in complete_source_inventory", spi_source},
     block_review{"ADC initial registers", coverage_state::verified, adc_registers.size(), adc_registers.size(), "Full source-unit scope reconciled in complete_source_inventory", adc_source},
+    block_review{"Ethernet RMII/MDIO/DMA consumed registers", coverage_state::verified, ethernet_registers.size(), ethernet_registers.size(), "PLN-0023 consumes only the source-reviewed fixed-ring slice", ethernet_source},
 };
 
 // This is declarative metadata only: no MMIO execution, startup, interrupt

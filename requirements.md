@@ -1,6 +1,6 @@
 # mcuhw requirements
 
-Requirements baseline, 19 September 2026. Derived from [proposal.md](proposal.md), the supplied manuals, the local MCUOS project, and the user's decisions below. All twelve scope decisions are recorded; the latest decisions separate adapter-independent implementation and board-native verification from physical acceptance that requires the reusable test-fixture hardware. NUCLEO-H753ZI remains the STM32 carrier and the proposed Rev-A component families remain the fixture baseline. This document specifies intended behavior; it does not claim implementation or verification. Detailed integration choices and measured resource budgets remain implementation milestones. The proposal's code snippets are illustrative API sketches, not verified register definitions or compilable specifications.
+Requirements baseline, 19 September 2026. Derived from [proposal.md](proposal.md), the supplied manuals, the local MCUOS and MCUIP projects, and the user's decisions below. All thirteen scope decisions are recorded; the latest decisions separate adapter-independent implementation and board-native verification from physical acceptance that requires the reusable test-fixture hardware. NUCLEO-H753ZI remains the STM32 carrier, MCUIP is the selected TCP/IP stack, and the proposed Rev-A component families remain the fixture baseline. This document specifies intended behavior; it does not claim implementation or verification. Detailed integration choices and measured resource budgets remain implementation milestones. The proposal's code snippets are illustrative API sketches, not verified register definitions or compilable specifications.
 
 ## Decisions and scope
 
@@ -18,6 +18,7 @@ Requirements baseline, 19 September 2026. Derived from [proposal.md](proposal.md
 | D10 | Develop a KiCad test-fixture family in parallel with the remaining software milestones: one Arduino Uno R3 shield design reusable on UNO R4 Minima and NUCLEO-H753ZI, an ESP32-P4-NANO carrier using the same fixture core, and board-specific adapters for features not routed to the common headers. Prefer hand-solderable, broadly available parts. Fixture completion gates only adapter-dependent physical acceptance, not backend implementation or board-native tests. | Revised by user; NUCLEO-H753ZI MB1364 revision E confirmed |
 | D11 | Use the proposed Rev-A component families as the schematic baseline: socketed Raspberry Pi Pico 2 supervisor; direction-controlled SN74LVC8T245-class push-pull translation and PCA9306 I2C translation; 24AA/24LC256 and 25LC256 bus targets; MCP6004, ADS1115 and INA226 analog/power instrumentation; and MCP2518FD plus MCP2562FD CAN-FD peer circuitry. Final orderable suffixes and approved alternates remain a schematic-freeze procurement check. | Accepted by user |
 | D12 | Classify target work by the observation hardware it needs. Work using debug access, built-in LEDs/buttons, documented solder bridges or point-to-point jumpers, native USB/Ethernet/storage connectors, ordinary network peers, or internal known-answer/self-tests may proceed before the Rev-A adapter. Tests needing the shared translated buses, calibrated analog stimulus/measurement, supervised fault injection, independent PWM capture, or the fixture CAN peer wait for qualified fixture hardware. Implementation completion and full physical acceptance remain separate claims. | Accepted by user |
+| D13 | Use the sibling `../mcuip` project as the TCP/IP stack for mcuhw Ethernet targets and keep the MAC/MDIO/PHY/DMA boundary compatible with its public target contracts. MCUIP replaces lwIP; no lwIP dependency or compatibility layer is required. | Accepted by user |
 
 Existing proposal decisions are retained: C++23; compile-time configuration and validation; metadata separate from drivers; functional abstraction with capabilities; RA4M1 as the first physical driver target after all three descriptions; `transfer<T>` as the async primitive; optional coroutine adapters.
 
@@ -52,6 +53,18 @@ The [port contracts](../mcuos/docs/port-contracts.md) and [wait/interrupt rules]
 The current source tree contains native execution, while the README identifies Cortex-M execution as next target work. A Cortex-M compile preset is not an executable RA4M1 RTOS port. Within the later MCUOS stage, native adapter tests precede hardware RTOS acceptance, which additionally requires context switching, physical interrupt delivery, monotonic clock/alarm, and boot integration for RA4M1. This remains an explicit dependency on MCUOS target work.
 
 The inspected facade currently accepts an interrupt-priority argument, while [MCUOS API hardening](../mcuos/req/07_API_Hardening.md) plans target-derived priority and other facade changes. Bind to the actual dependency snapshot, isolate compatibility in the adapter/target composition, and do not assume planned APIs exist. The sibling directory currently has no Git revision available; integration evidence shall record a source-content identity and configuration until a versioned revision is available.
+
+### MCUIP Ethernet integration baseline
+
+The selected TCP/IP dependency is the sibling [MCUIP project](../mcuip/README.md),
+which replaces lwIP. Its current public target boundary defines
+`mcuip::NetworkDevice`, `mcuip::DescriptorProtection`,
+`mcuip::HardwareDescription`, fixed receive/transmit rings and explicit
+completion ownership. The NUCLEO-H753ZI is also MCUIP's first specified physical
+Ethernet target. Keep the protocol-neutral mcuhw MAC/MDIO/PHY/DMA implementation
+separate from the MCUIP adapter, bind against the actual sibling headers, and
+record a source-content identity and configuration because `../mcuip` currently
+has no Git revision available.
 
 ## Product and architecture
 
@@ -301,7 +314,7 @@ The initial description phase shall select and record the STM32H753 device/packa
 
 After the common gate, the driver phase shall select a physical board and implement STM32 backends for the agreed functional driver set. Board bring-up, live cache/MPU operations and runtime driver verification belong to that later phase, not description validation. MCUOS is not a prerequisite for either.
 
-STM32 backend implementation and board-native bring-up shall not wait for the cross-target adapter. The NUCLEO-H753ZI path may use ST-LINK debug/trace and virtual COM, built-in LEDs/buttons, documented solder bridges or point-to-point jumpers, the on-board Ethernet PHY/connector with an ordinary network peer, native connectors, and internal memory/peripheral known-answer tests. Ethernet work in this phase covers source-backed clock/pin setup, MDIO/PHY control, link-state verification and raw MAC-frame exchange; a TCP/IP stack is not implied without a separate scope decision. Every physical board modification shall be recorded with its schematic designator, original state, resulting state, purpose and restoration procedure. Tests needing translated shared buses, calibrated analog stimulus/measurement, supervisor fault injection, independent waveform capture or the fixture CAN peer remain deferred to REQ-0042 hardware.
+STM32 backend implementation and board-native bring-up shall not wait for the cross-target adapter. The NUCLEO-H753ZI path may use ST-LINK debug/trace and virtual COM, built-in LEDs/buttons, documented solder bridges or point-to-point jumpers, the on-board Ethernet PHY/connector with an ordinary network peer, native connectors, and internal memory/peripheral known-answer tests. Ethernet work in this phase covers source-backed clock/pin setup, MDIO/PHY control, link-state verification and raw MAC-frame exchange, followed by the explicit MCUIP integration required by REQ-0043. Every physical board modification shall be recorded with its schematic designator, original state, resulting state, purpose and restoration procedure. Tests needing translated shared buses, calibrated analog stimulus/measurement, supervisor fault injection, independent waveform capture or the fixture CAN peer remain deferred to REQ-0042 hardware.
 
 Acceptance: the same description contract tests used for RA4M1 and ESP32-P4 instantiate real STM32H753 definitions before any driver work. Later, common driver contract tests, cross-builds and bare-metal target examples pass after hardware/board binding changes. Adapter-independent implementation completion is recorded separately from full physical acceptance under REQ-0036/REQ-0042; neither claim substitutes for the other.
 
@@ -392,3 +405,33 @@ An independent, socketed fixture supervisor with USB host control shall generate
 KiCad sources, symbols/footprints, schematics, PCB layouts, fabrication outputs, assembly drawings, calibration data, firmware protocol, BOM and approved alternates shall be versioned. Default parts shall be through-hole modules/connectors or hand-solderable 0805/0603, SOT-23, SOIC, TSSOP, SSOP or similarly accessible packages; BGA, WLCSP and leadless fine-pitch parts are prohibited unless they arrive on a replaceable preassembled module. Active parts shall be in production and orderable from multiple mainstream channels, or have a pin-compatible approved alternate. The design shall prefer common values and avoid single-source connectors when a standard keyed or 2.54-mm alternative is practical.
 
 Acceptance: KiCad ERC and DRC pass with reviewed exceptions; the release includes a reproducible BOM and fabrication package; one common shield passes electrical bring-up on both UNO R4 Minima and the selected STM32H753 board; one ESP32-P4-NANO shield passes equivalent bring-up; safe high-impedance startup, 3.3-V/5-V operation, no-backfeed behavior and current limits are measured; the supervisor self-test, digital loopbacks, bus targets, analog calibration and CAN peer pass; and the coverage matrix gives every peripheral instance and board feature a testable path or an explicit unresolved gap. Closing those gaps and executing all procedures remains part of target acceptance under REQ-0036.
+
+## REQ-0043 MCUIP-compatible Ethernet device boundary
+@depends(REQ-0002, REQ-0003, REQ-0009, REQ-0013, REQ-0015, REQ-0017, REQ-0018, REQ-0033)
+
+Every Ethernet backend delivered by mcuhw shall expose protocol-neutral,
+fixed-storage MAC, MDIO, PHY and DMA facilities plus a thin target adapter that
+can be composed with the sibling `../mcuip` project. The initial
+NUCLEO-H753ZI composition shall satisfy the actual public MCUIP
+`NetworkDevice`, `DescriptorProtection` and `HardwareDescription` contracts and
+shall integrate with MCUIP's fixed receive/transmit rings and completion model.
+The boundary shall preserve descriptor counts, RX buffer arming, TX submission,
+polling, link changes, DMA-region and alignment constraints, cache clean and
+invalidate operations, publish/acquire barriers, ownership transitions and
+terminal completion without dynamic allocation.
+
+MCUIP owns packet storage policy and the Ethernet/ARP/IP transport protocols;
+mcuhw owns the target peripheral implementation and source-backed hardware
+description. Vendor types shall not cross into MCUIP's portable core. MCUIP
+shall be an explicit optional source dependency whose local default is the
+sibling path, not copied into mcuhw. lwIP is not a supported dependency or
+compatibility target. Integration evidence shall identify the exact MCUIP
+source content and build configuration used.
+
+Acceptance: compile-time probes reject incomplete target contracts; one Cortex-
+M7 firmware links the mcuhw Ethernet backend with `mcuip::mcuip` without lwIP,
+heap allocation, exceptions or RTTI; and the physical NUCLEO-H753ZI exchanges
+raw minimum/maximum-MTU frames plus at least one MCUIP-driven protocol path
+(ARP followed by ICMP echo or UDP) with an independent Ethernet peer. Exercise
+link down/up, descriptor exhaustion, completion ordering and cache maintenance
+with data cache enabled, and record both mcuhw and MCUIP source identities.

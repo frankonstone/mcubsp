@@ -19,4 +19,17 @@ inline constexpr core::pin_id arduino_d14_sda{1, 9};
 inline constexpr core::pin_id arduino_a0{0, 3};
 inline constexpr core::pin_id timer1_ch1{0, 8};
 
+// MB1364-H753ZI-E01 LAN8742A RMII wiring. UM2407 Rev.6 requires JP6 and
+// solder bridges SB27/SB29/SB30/SB31/SB36/SB57/SB64/SB72 to be closed.
+inline constexpr core::pin_id ethernet_ref_clk{0, 1};
+inline constexpr core::pin_id ethernet_mdio{0, 2};
+inline constexpr core::pin_id ethernet_mdc{2, 1};
+inline constexpr core::pin_id ethernet_crs_dv{0, 7};
+inline constexpr core::pin_id ethernet_rxd0{2, 4};
+inline constexpr core::pin_id ethernet_rxd1{2, 5};
+inline constexpr core::pin_id ethernet_tx_en{6, 11};
+inline constexpr core::pin_id ethernet_txd0{6, 13};
+inline constexpr core::pin_id ethernet_txd1{1, 13};
+inline constexpr std::uint8_t ethernet_phy_address = 0U;
+
 } // namespace mcuhw::board::nucleo_h753zi

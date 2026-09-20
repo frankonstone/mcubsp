@@ -405,8 +405,8 @@ GPIO/PWM/UART/I2C/SPI/ADC backend exit.
 Exit: the agreed STM32 backends pass native tests, Cortex-M7 builds and every applicable board-native/direct-wired procedure; board modifications and deferred adapter rows are documented. Full STM32 electrical acceptance is completed later under PLN-0022. No MCUOS Cortex-M7 port is required.
 
 ## PLN-0023 Implement Nucleo native USB and Ethernet connectivity
-@status(planned)
-@link(REQ-0003, REQ-0004, REQ-0009, REQ-0013, REQ-0033, REQ-0036, REQ-0037, REQ-0041, REQ-0042)
+@status(in_progress)
+@link(REQ-0003, REQ-0004, REQ-0009, REQ-0013, REQ-0033, REQ-0036, REQ-0037, REQ-0041, REQ-0042, REQ-0043)
 
 Prerequisite: PLN-0018 startup, memory/cache rules and board binding. This work
 is explicitly before and independent of fixture completion. Use the received
@@ -418,8 +418,13 @@ solder-bridge or jumper change before making it.
   metadata. Re-run the three-description gate after shared-model changes.
 - Bring up the on-board Ethernet PHY and connector: source/validate clocks and
   pins, read/write PHY registers over MDIO, observe link state, and exchange
-  raw Ethernet frames with an ordinary peer. Do not introduce an implicit
-  TCP/IP-stack dependency.
+  raw Ethernet frames with an ordinary peer. Keep this backend protocol-neutral,
+  then add the explicit target adapter required by REQ-0043 against the actual
+  sibling `../mcuip` public contracts. Do not add lwIP.
+- Cross-build and link MCUIP with the Nucleo backend, then exchange ARP plus an
+  ICMP echo or UDP datagram with an independent peer. Exercise link cycling,
+  descriptor exhaustion, completion ordering and cache maintenance using fixed
+  storage with the data cache enabled.
 - Select the native USB role and connector path, implement the bounded endpoint
   and transfer subset required by the chosen smoke protocol, and exchange data
   with an ordinary host. Keep USB clock, FIFO and cache/DMA constraints explicit.
@@ -427,9 +432,10 @@ solder-bridge or jumper change before making it.
   repeatable host-side procedures. Route only fixture-supplied fault/electrical
   cases to PLN-0022.
 
-Exit: Ethernet MDIO/PHY/link/raw-frame and the selected native USB smoke path
-pass repeatable board-native procedures with source-backed metadata and bounded
-storage. No network stack, adapter hardware or MCUOS dependency is implied.
+Exit: Ethernet MDIO/PHY/link/raw-frame, the MCUIP protocol smoke path and the
+selected native USB smoke path pass repeatable board-native procedures with
+source-backed metadata and bounded storage. No lwIP, adapter hardware or MCUOS
+dependency is implied.
 
 ## PLN-0019 Implement ESP32-P4 bare-metal backends
 @status(planned)

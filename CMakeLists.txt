@@ -18,6 +18,8 @@ set(MCUHW_MCUJSON_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mcujson"
     CACHE PATH "Path to the sibling mcujson checkout")
 set(MCUHW_MCUCOV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mcucov"
     CACHE PATH "Path to the sibling mcucov checkout")
+set(MCUHW_MCUIP_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../mcuip"
+    CACHE PATH "Path to the sibling mcuip checkout")
 option(MCUHW_BUILD_UNO_R4_MINIMA_TESTS
     "Build the bootloader-preserving UNO R4 Minima mcutest firmware" OFF)
 option(MCUHW_BUILD_NUCLEO_H753ZI_TESTS
@@ -48,6 +50,22 @@ target_compile_definitions(mcuhw_arch_probe PRIVATE
     MCUHW_ARCH_NAME="${MCUHW_ARCH}"
 )
 mcuhw_apply_restricted_runtime(mcuhw_arch_probe)
+
+# Optional by installation, mandatory for the sibling-development contract:
+# this TU proves that the STM32 fixed-ring boundary still satisfies the current
+# mcuip replacement for lwIP on every configured architecture.
+# @req REQ-0043
+if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
+    add_library(mcuhw_mcuip_contract_probe OBJECT
+        tests/compile/stm32h753_mcuip_contract.cpp)
+    target_link_libraries(mcuhw_mcuip_contract_probe PRIVATE mcuhw::mcuhw)
+    target_include_directories(mcuhw_mcuip_contract_probe PRIVATE
+        "${MCUHW_MCUIP_SOURCE_DIR}/include")
+    mcuhw_apply_restricted_runtime(mcuhw_mcuip_contract_probe)
+else()
+    message(WARNING
+        "mcuip checkout not found at ${MCUHW_MCUIP_SOURCE_DIR}; REQ-0043 contract probe disabled")
+endif()
 
 # @req REQ-0009 REQ-0038
 add_library(mcuhw_barrier_probe OBJECT tests/compile/barrier_probe.cpp)
@@ -91,6 +109,68 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
                          "${CMAKE_CURRENT_BINARY_DIR}/_deps/mcujson"
                          EXCLUDE_FROM_ALL)
     endif()
+
+    if(NOT EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
+        message(FATAL_ERROR "mcuip headers not found at ${MCUHW_MCUIP_SOURCE_DIR}")
+    endif()
+    set(MCUIP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_NATIVE_ADAPTER OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_MACOS_ADAPTER OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_MCUNET_ADAPTER OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_FUZZERS OFF CACHE BOOL "" FORCE)
+    if(NOT TARGET mcuip::mcuip)
+        add_subdirectory("${MCUHW_MCUIP_SOURCE_DIR}"
+                         "${CMAKE_CURRENT_BINARY_DIR}/_deps/mcuip"
+                         EXCLUDE_FROM_ALL)
+    endif()
+    target_compile_options(mcuip PRIVATE
+        -mcpu=cortex-m7
+        -mthumb
+        -mfpu=fpv5-d16
+        -mfloat-abi=hard
+        -ffunction-sections
+        -fdata-sections
+        -fno-unwind-tables
+        -fno-asynchronous-unwind-tables
+        -fno-threadsafe-statics
+        -fno-use-cxa-atexit
+    )
+    file(GLOB_RECURSE _mcuhw_mcuip_identity_files CONFIGURE_DEPENDS
+        "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/*.hpp"
+        "${MCUHW_MCUIP_SOURCE_DIR}/src/*.cpp")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        ${_mcuhw_mcuip_identity_files})
+    list(SORT _mcuhw_mcuip_identity_files)
+    set(_mcuhw_mcuip_identity_material "")
+    foreach(_mcuhw_mcuip_file IN LISTS _mcuhw_mcuip_identity_files)
+        file(SHA256 "${_mcuhw_mcuip_file}" _mcuhw_mcuip_file_hash)
+        file(RELATIVE_PATH _mcuhw_mcuip_relative
+            "${MCUHW_MCUIP_SOURCE_DIR}" "${_mcuhw_mcuip_file}")
+        string(APPEND _mcuhw_mcuip_identity_material
+            "${_mcuhw_mcuip_relative}:${_mcuhw_mcuip_file_hash}\n")
+    endforeach()
+    string(SHA256 MCUHW_MCUIP_SOURCE_ID
+        "${_mcuhw_mcuip_identity_material}")
+    file(GLOB_RECURSE _mcuhw_ethernet_identity_files CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/mcuhw/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/nucleo_h753zi/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/nucleo_h753zi/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/nucleo_h753zi/*.S"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/nucleo_h753zi/*.ld")
+    list(APPEND _mcuhw_ethernet_identity_files
+        "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+        ${_mcuhw_ethernet_identity_files})
+    list(SORT _mcuhw_ethernet_identity_files)
+    set(_mcuhw_ethernet_identity_material "")
+    foreach(_mcuhw_file IN LISTS _mcuhw_ethernet_identity_files)
+        file(SHA256 "${_mcuhw_file}" _mcuhw_file_hash)
+        file(RELATIVE_PATH _mcuhw_relative
+            "${CMAKE_CURRENT_SOURCE_DIR}" "${_mcuhw_file}")
+        string(APPEND _mcuhw_ethernet_identity_material
+            "${_mcuhw_relative}:${_mcuhw_file_hash}\n")
+    endforeach()
+    string(SHA256 MCUHW_SOURCE_ID "${_mcuhw_ethernet_identity_material}")
 
     if(NOT mcucov_DIR)
         file(GLOB _mcuhw_mcucov_configs
@@ -143,9 +223,19 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
         $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_platform>
         $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_early_init_coverage>
     )
+    add_executable(mcuhw_nucleo_h753zi_ethernet
+        board/nucleo_h753zi/tests/ethernet_mcuip.cpp
+        $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_platform>
+        $<TARGET_OBJECTS:mcuhw_nucleo_h753zi_early_init_coverage>
+    )
     target_link_libraries(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
         mcujson::mcujson)
+    target_link_libraries(mcuhw_nucleo_h753zi_ethernet PRIVATE
+        mcujson::mcujson mcuip::mcuip)
     target_include_directories(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+        "${MCUHW_MCUTEST_SOURCE_DIR}/include"
+    )
+    target_include_directories(mcuhw_nucleo_h753zi_ethernet PRIVATE
         "${MCUHW_MCUTEST_SOURCE_DIR}/include"
     )
     target_compile_definitions(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
@@ -154,7 +244,19 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
         MCUCOV_BYTE_PER_PROBE=1
         MCUCOV_COMPACT_RUNTIME=1
     )
+    target_compile_definitions(mcuhw_nucleo_h753zi_ethernet PRIVATE
+        MCUTEST_MAX_TESTS=3
+        MCUTEST_SOURCE_LOCATION=1
+        MCUCOV_BYTE_PER_PROBE=1
+        MCUCOV_COMPACT_RUNTIME=1
+        MCUHW_SOURCE_ID="${MCUHW_SOURCE_ID}"
+        MCUHW_MCUIP_SOURCE_ID="${MCUHW_MCUIP_SOURCE_ID}"
+    )
     target_compile_options(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+        -include
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/tests/mcucov_compat.hpp"
+    )
+    target_compile_options(mcuhw_nucleo_h753zi_ethernet PRIVATE
         -include
         "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/tests/mcucov_compat.hpp"
     )
@@ -165,6 +267,14 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
         SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
         OUTPUT_DIR
             "${CMAKE_CURRENT_BINARY_DIR}/mcucov/mcuhw_nucleo_h753zi_native_peripherals"
+    )
+    mcucov_instrument_target(
+        mcuhw_nucleo_h753zi_ethernet
+        PROFILE FULL
+        BUILD_ID 0x4d487502
+        SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
+        OUTPUT_DIR
+            "${CMAKE_CURRENT_BINARY_DIR}/mcucov/mcuhw_nucleo_h753zi_ethernet"
     )
 
     # The instrumented board translation unit can embed more modules than one
@@ -214,9 +324,12 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
         timer MCUHW_COVERAGE_PROBE_TIMER)
     mcuhw_add_stm32h753_coverage_manifest_probe(
         usart MCUHW_COVERAGE_PROBE_USART)
+    mcuhw_add_stm32h753_coverage_manifest_probe(
+        ethernet MCUHW_COVERAGE_PROBE_ETHERNET)
     foreach(nucleo_target IN ITEMS
             mcuhw_nucleo_h753zi_startup_gpio_smoke
-            mcuhw_nucleo_h753zi_native_peripherals)
+            mcuhw_nucleo_h753zi_native_peripherals
+            mcuhw_nucleo_h753zi_ethernet)
         set_target_properties(${nucleo_target} PROPERTIES
             SUFFIX ".elf"
             LINK_DEPENDS "${nucleo_linker_script}"
@@ -226,9 +339,11 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
             mcuhw_nucleo_h753zi_platform
             mcuhw_nucleo_h753zi_early_init_coverage
             mcuhw_nucleo_h753zi_startup_gpio_smoke
-            mcuhw_nucleo_h753zi_native_peripherals)
+            mcuhw_nucleo_h753zi_native_peripherals
+            mcuhw_nucleo_h753zi_ethernet)
         target_link_libraries(${compiled_target} PRIVATE mcuhw::mcuhw)
-        if(compiled_target STREQUAL mcuhw_nucleo_h753zi_native_peripherals)
+        if(compiled_target STREQUAL mcuhw_nucleo_h753zi_native_peripherals
+           OR compiled_target STREQUAL mcuhw_nucleo_h753zi_ethernet)
             # mcujson uses hosted C++23 headers but remains allocation-free;
             # keep the restricted language options without -ffreestanding.
             target_compile_features(${compiled_target} PRIVATE cxx_std_23)
@@ -250,7 +365,8 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
     endforeach()
     foreach(nucleo_target IN ITEMS
             mcuhw_nucleo_h753zi_startup_gpio_smoke
-            mcuhw_nucleo_h753zi_native_peripherals)
+            mcuhw_nucleo_h753zi_native_peripherals
+            mcuhw_nucleo_h753zi_ethernet)
         target_link_options(${nucleo_target} PRIVATE
             -mcpu=cortex-m7
             -mthumb
@@ -284,6 +400,17 @@ if(MCUHW_BUILD_NUCLEO_H753ZI_TESTS)
             "${CMAKE_CURRENT_BINARY_DIR}/mcuhw_nucleo_h753zi_native_peripherals.hex"
         COMMAND "${MCUHW_ARM_SIZE}" -A
             $<TARGET_FILE:mcuhw_nucleo_h753zi_native_peripherals>
+        VERBATIM
+    )
+    add_custom_command(TARGET mcuhw_nucleo_h753zi_ethernet POST_BUILD
+        COMMAND "${CMAKE_OBJCOPY}" -O binary
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_ethernet>
+            "${CMAKE_CURRENT_BINARY_DIR}/mcuhw_nucleo_h753zi_ethernet.bin"
+        COMMAND "${CMAKE_OBJCOPY}" -O ihex
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_ethernet>
+            "${CMAKE_CURRENT_BINARY_DIR}/mcuhw_nucleo_h753zi_ethernet.hex"
+        COMMAND "${MCUHW_ARM_SIZE}" -A
+            $<TARGET_FILE:mcuhw_nucleo_h753zi_ethernet>
         VERBATIM
     )
 endif()

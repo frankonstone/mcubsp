@@ -145,6 +145,7 @@ enum class peripheral_kind : std::uint16_t {
     dma,
     bdma,
     mdma,
+    ethernet,
 };
 
 [[nodiscard]] constexpr core::peripheral_id peripheral(
@@ -169,6 +170,7 @@ enum class clock_id : std::uint16_t {
     timx_ker,
     timy_ker,
     adc_ker,
+    eth_ker,
 };
 
 enum class signal : std::uint16_t {
@@ -192,6 +194,15 @@ enum class signal : std::uint16_t {
     spi1_mosi,
     adc1_inp15,
     adc1_inp16,
+    eth_rmii_ref_clk,
+    eth_mdio,
+    eth_mdc,
+    eth_rmii_crs_dv,
+    eth_rmii_rxd0,
+    eth_rmii_rxd1,
+    eth_rmii_tx_en,
+    eth_rmii_txd0,
+    eth_rmii_txd1,
 };
 
 [[nodiscard]] constexpr core::signal_id signal_id(signal value) noexcept {

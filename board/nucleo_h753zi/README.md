@@ -42,6 +42,34 @@ Run the native peripheral image:
 ./tools/run-nucleo-h753zi-native.sh
 ```
 
+Build and run the Ethernet/MCUIP image after connecting CN14 to an ordinary
+Ethernet peer and assigning that peer an address in `192.168.75.0/24`:
+
+```sh
+cmake --build build/nucleo-h753zi --target mcuhw_nucleo_h753zi_ethernet
+./tools/run-nucleo-h753zi-ethernet.sh
+```
+
+The firmware uses `192.168.75.30/24` and locally administered MAC address
+`02:00:00:75:30:01`. It reads the LAN8742A identity and negotiated link over
+MDIO, uses four fixed RX and four fixed TX descriptors with the M7 data cache
+enabled, and passes received ARP/IPv4 frames to the sibling `../mcuip` stack.
+The runner generates ordinary host pings and requires both received frames and
+MCUIP-produced ARP/ICMP replies. It never configures the host interface or
+requires the external hardware adapter.
+
+The MB1364 Rev E Ethernet route requires JP6 and solder bridges SB27, SB29,
+SB30, SB31, SB36, SB57, SB64 and SB72 closed. The test records this required
+state; inspect and record any change before modifying a received board.
+
+The 2026-09-19 partial physical bring-up read LAN8742A identity
+`0x0007:c131` through the real MDIO path and initialized the four fixed DMA
+rings plus the actual MCUIP host. The captured status was `0x0d`: PHY identity,
+DMA and MCUIP initialization passed, while link was down (`BMSR=0x7809`). No
+host interface was present in `192.168.75.0/24`, so raw minimum/maximum frames,
+ARP/ICMP exchange and the link-cycle procedure remain unexecuted. This partial
+observation is diagnostic evidence, not REQ-0043 acceptance.
+
 The native runner flashes with ST-LINK, runs eight requirement-tagged mcutest
 cases, extracts the mcucov frame from cache-cleaned AXI SRAM, checks the result
 block through SWD, and reads the real USART3 banner through the ST-LINK VCP. It

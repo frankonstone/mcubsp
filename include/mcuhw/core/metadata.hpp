@@ -406,6 +406,7 @@ enum class dma_engine_kind : std::uint8_t {
     stm32_dma,
     stm32_bdma,
     stm32_mdma,
+    stm32_ethernet,
     esp_gdma_ahb,
     esp_gdma_axi,
     esp_vdma,

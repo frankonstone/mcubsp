@@ -18,6 +18,8 @@ template class mcuhw::backend::stm32h753::i2c_controller_backend<
 #include <mcuhw/backend/stm32h753/timer.hpp>
 #elif defined(MCUHW_COVERAGE_PROBE_USART)
 #include <mcuhw/backend/stm32h753/usart.hpp>
+#elif defined(MCUHW_COVERAGE_PROBE_ETHERNET)
+#include <mcuhw/backend/stm32h753/ethernet.hpp>
 #else
 #error "select one STM32H753 coverage manifest probe"
 #endif
