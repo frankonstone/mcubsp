@@ -131,6 +131,7 @@ enum class peripheral_kind : std::uint16_t {
     gdma_axi,
     vdma,
     dma_2d,
+    ethernet,
     i3c,
 };
 

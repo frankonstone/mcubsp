@@ -17,7 +17,7 @@ extern "C" [[noreturn]] void __wrap_esp_startup_start_app(void) {
     const auto chip_revision = efuse_hal_chip_revision();
     esp_rom_printf(
         "MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 "
-        "chip_revision=%u firmware=pln-0019-native-app-v12 "
+        "chip_revision=%u firmware=pln-0019-native-app-v13 "
         "compiler=%s core=hp_cpu0 scheduler=none cpu_mhz=%u apb_hz=%u "
         "gpio=2 observation=mixed_board_native qualification=development\n",
         static_cast<unsigned>(chip_revision), __VERSION__,

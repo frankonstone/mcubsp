@@ -411,6 +411,7 @@ enum class dma_engine_kind : std::uint8_t {
     esp_gdma_axi,
     esp_vdma,
     esp_2d_dma,
+    esp_ethernet,
 };
 
 // @req REQ-0013

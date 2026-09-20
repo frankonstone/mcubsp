@@ -23,6 +23,7 @@ void operator delete(void*, std::size_t) noexcept {}
 extern "C" void mcuhw_esp32p4_gpio_test_link_anchor() noexcept;
 extern "C" void mcuhw_esp32p4_i2c_test_link_anchor() noexcept;
 extern "C" void mcuhw_esp32p4_audio_test_link_anchor() noexcept;
+extern "C" void mcuhw_esp32p4_ethernet_test_link_anchor() noexcept;
 extern "C" void mcuhw_esp32p4_sdmmc_test_link_anchor() noexcept;
 extern "C" void mcuhw_esp32p4_wifi_sdio_test_link_anchor() noexcept;
 extern "C" void mcuhw_esp32p4_spi_test_link_anchor() noexcept;
@@ -74,6 +75,7 @@ run_result MCUCOV_NO_INSTRUMENT run_tests_and_dump_coverage() noexcept {
     mcuhw_esp32p4_gpio_test_link_anchor();
     mcuhw_esp32p4_i2c_test_link_anchor();
     mcuhw_esp32p4_audio_test_link_anchor();
+    mcuhw_esp32p4_ethernet_test_link_anchor();
     mcuhw_esp32p4_sdmmc_test_link_anchor();
     mcuhw_esp32p4_wifi_sdio_test_link_anchor();
     mcuhw_esp32p4_spi_test_link_anchor();

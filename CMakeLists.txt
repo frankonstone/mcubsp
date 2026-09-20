@@ -52,12 +52,13 @@ target_compile_definitions(mcuhw_arch_probe PRIVATE
 mcuhw_apply_restricted_runtime(mcuhw_arch_probe)
 
 # Optional by installation, mandatory for the sibling-development contract:
-# this TU proves that the STM32 fixed-ring boundary still satisfies the current
-# mcuip replacement for lwIP on every configured architecture.
+# these TUs prove that both fixed-ring boundaries satisfy the current mcuip
+# replacement for lwIP on every configured architecture.
 # @req REQ-0043
 if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
     add_library(mcuhw_mcuip_contract_probe OBJECT
-        tests/compile/stm32h753_mcuip_contract.cpp)
+        tests/compile/stm32h753_mcuip_contract.cpp
+        tests/compile/esp32p4_mcuip_contract.cpp)
     target_link_libraries(mcuhw_mcuip_contract_probe PRIVATE mcuhw::mcuhw)
     target_include_directories(mcuhw_mcuip_contract_probe PRIVATE
         "${MCUHW_MCUIP_SOURCE_DIR}/include")

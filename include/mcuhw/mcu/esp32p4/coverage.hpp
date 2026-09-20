@@ -86,7 +86,7 @@ inline constexpr std::array complete_source_inventory{
     reviewed_source_unit("52", "USB 2.0 High-Speed OTG", 3158),
     reviewed_source_unit("53", "USB 2.0 Full-Speed OTG", 3170),
     reviewed_source_unit("54", "USB Serial/JTAG Controller (USB_SERIAL_JTAG)", 3187),
-    reviewed_source_unit("55", "Ethernet Media Access Controller (EMAC)", 3223),
+    reviewed_source_unit("55", "Ethernet Media Access Controller (EMAC)", 3223, planned),
     reviewed_source_unit("56", "Two-Wire Automotive Interface (TWAI)", 3304),
     reviewed_source_unit("57", "SD/MMC Host Controller (SDHOST)", 3352),
     reviewed_source_unit("58", "LED PWM Controller (LEDC)", 3397, planned),

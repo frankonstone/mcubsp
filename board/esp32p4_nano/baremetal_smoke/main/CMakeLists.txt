@@ -48,6 +48,7 @@ add_library(mcuhw_esp32p4_board_tests OBJECT
     "${MCUHW_ESP32P4_TEST_DIR}/gpio.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/i2c.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/audio.cpp"
+    "${MCUHW_ESP32P4_TEST_DIR}/ethernet.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/sdmmc.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/wifi_sdio.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/spi.cpp"
@@ -70,7 +71,7 @@ foreach(target ${COMPONENT_LIB} mcuhw_esp32p4_board_tests)
         -fno-threadsafe-statics
         -fno-use-cxa-atexit)
     target_compile_definitions(${target} PRIVATE
-        MCUTEST_MAX_TESTS=7
+        MCUTEST_MAX_TESTS=8
         MCUCOV_BYTE_PER_PROBE=1
         MCUCOV_COMPACT_RUNTIME=1)
 endforeach()
@@ -80,14 +81,14 @@ target_compile_options(mcuhw_esp32p4_board_tests PRIVATE
 mcucov_instrument_target(
     mcuhw_esp32p4_board_tests
     PROFILE FULL
-    BUILD_ID 0x4d48500c
+    BUILD_ID 0x4d48500d
     SOURCE_ROOT "${MCUHW_ROOT}"
     OUTPUT_DIR "${CMAKE_BINARY_DIR}/mcucov/esp32p4_native_smoke"
 )
 target_sources(${COMPONENT_LIB} PRIVATE
     $<TARGET_OBJECTS:mcuhw_esp32p4_board_tests>)
 target_link_libraries(${COMPONENT_LIB} PRIVATE mcucov::runtime)
-mcucov_configure_target(${COMPONENT_LIB} BUILD_ID 0x4d48500c)
+mcucov_configure_target(${COMPONENT_LIB} BUILD_ID 0x4d48500d)
 
 # Let ESP-IDF perform its ordinary image/cache/libc/constructor startup, then
 # take control at the boundary immediately before it creates the main FreeRTOS

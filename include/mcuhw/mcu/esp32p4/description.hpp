@@ -6,6 +6,7 @@
 
 #include <mcuhw/mcu/esp32p4/peripherals.hpp>
 #include <mcuhw/mcu/esp32p4/coverage.hpp>
+#include <mcuhw/mcu/esp32p4/ethernet.hpp>
 
 namespace mcuhw::mcu::esp32p4 {
 
@@ -116,6 +117,7 @@ inline constexpr std::array instances{
     native_instance(peripheral_kind::gdma_axi, 0, gdma_axi_base, clock_id::sys, no_kernel_clock, hp_soc_clock_ctrl1, 1U << 27U, hp_rst_en1, 1U << 29U, transfer_cap | capability_bit(peripheral_capability::external_descriptors), dma_source),
     native_instance(peripheral_kind::vdma, 0, 0x5008'1000U, clock_id::sys, no_kernel_clock, no_control, 0, no_control, 0, transfer_cap | capability_bit(peripheral_capability::external_descriptors), dma_source),
     native_instance(peripheral_kind::dma_2d, 0, 0x5008'8000U, clock_id::sys, no_kernel_clock, hp_soc_clock_ctrl1, 1U << 25U, hp_rst_en0, 1U << 0U, transfer_cap | capability_bit(peripheral_capability::external_descriptors), dma_source),
+    native_instance(peripheral_kind::ethernet, 0, ethernet_base, clock_id::sys, no_kernel_clock, hp_soc_clock_ctrl1, 1U << 13U, 0x5011'104CU, 1U << 30U, transfer_cap, ethernet_source),
 };
 
 inline constexpr std::array apb_clock{static_cast<std::uint16_t>(clock_id::apb)};
@@ -132,6 +134,7 @@ inline constexpr std::array spi2_events{event_number(event::spi2)};
 inline constexpr std::array adc_events{event_number(event::adc)};
 inline constexpr std::array ledc_events{event_number(event::ledc)};
 inline constexpr std::array mcpwm0_events{event_number(event::mcpwm0)};
+inline constexpr std::array ethernet_events{event_number(event::ethernet)};
 inline constexpr std::array adc_dma{std::uint16_t{8}};
 inline constexpr std::array spi2_dma{std::uint16_t{1}};
 inline constexpr std::array i2s0_dma{std::uint16_t{3}};
@@ -147,6 +150,7 @@ inline constexpr std::array peripheral_instances{
     core::peripheral_metadata{peripheral(peripheral_kind::mcpwm, 0), apb_clock, no_relations, mcpwm0_events, no_relations, mcpwm_source},
     core::peripheral_metadata{peripheral(peripheral_kind::gdma_ahb, 0), sys_clock, no_relations, no_relations, no_relations, dma_source},
     core::peripheral_metadata{peripheral(peripheral_kind::gdma_axi, 0), sys_clock, no_relations, no_relations, no_relations, dma_source},
+    core::peripheral_metadata{peripheral(peripheral_kind::ethernet, 0), sys_clock, no_relations, ethernet_events, no_relations, ethernet_source},
 };
 
 inline constexpr std::array source_gaps{
@@ -176,6 +180,7 @@ inline constexpr std::array review_ledger{
     block_review{"I2C initial registers", coverage_state::verified, 3, 3, "Full source-unit scope reconciled in complete_source_inventory", i2c_source},
     block_review{"I2S standard-mode and AHB-DMA path", coverage_state::verified, 3, 3, "Finite 16-bit stereo Philips transfers implemented; PDM/TDM expansion remains deferred", i2s_source},
     block_review{"ADC units, pins and DMA", coverage_state::verified, adc_registers.size(), adc_registers.size(), "Full source-unit scope reconciled in complete_source_inventory", adc_source},
+    block_review{"EMAC RMII, SMI and channel-0 DMA", coverage_state::verified, ethernet_registers.size(), ethernet_registers.size(), "Native RMII/MDIO backend and fixed enhanced-descriptor rings implemented", ethernet_source},
     block_review{"I3C announced chapter", coverage_state::unavailable_in_source, 1, 0, "GAP-ESP32P4-001; compile-time capability remains absent", technical_reference_manual},
 };
 

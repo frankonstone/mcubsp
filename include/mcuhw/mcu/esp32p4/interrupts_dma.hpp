@@ -42,6 +42,7 @@ enum class event : std::uint16_t {
     axi_gdma_in0 = 62,
     axi_gdma_out0 = 65,
     gpio0 = 74,
+    ethernet = 92,
 };
 
 [[nodiscard]] constexpr std::uint16_t event_number(event value) noexcept {
@@ -74,6 +75,7 @@ inline constexpr std::array interrupt_routes{
     matrix_irq(event::gpio0, 9),
     matrix_irq(event::ahb_gdma_in0, 10),
     matrix_irq(event::axi_gdma_in0, 11),
+    matrix_irq(event::ethernet, 12),
 };
 
 enum class hp_core : std::uint8_t { core0, core1 };

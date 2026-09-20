@@ -57,6 +57,17 @@ inline constexpr core::pin_id wifi_sdio_clock{0, 18};
 inline constexpr core::pin_id wifi_sdio_command{0, 19};
 // ESP32-C5 CHIP_PU is active high; driving it low resets the coprocessor.
 inline constexpr core::pin_id wifi_coprocessor_enable{0, 54};
+inline constexpr std::uint8_t ethernet_phy_address = 1U;
+inline constexpr core::pin_id ethernet_crs_dv{0, 28};
+inline constexpr core::pin_id ethernet_rxd0{0, 29};
+inline constexpr core::pin_id ethernet_rxd1{0, 30};
+inline constexpr core::pin_id ethernet_mdc{0, 31};
+inline constexpr core::pin_id ethernet_txd0{0, 34};
+inline constexpr core::pin_id ethernet_txd1{0, 35};
+inline constexpr core::pin_id ethernet_tx_enable{0, 49};
+inline constexpr core::pin_id ethernet_reference_clock{0, 50};
+inline constexpr core::pin_id ethernet_phy_reset{0, 51};
+inline constexpr core::pin_id ethernet_mdio{0, 52};
 // Free expansion-header GPIOs on the NANO. Unlike the microSD and Wi-Fi
 // links, these pins are not committed to an on-board SDIO peripheral.
 inline constexpr core::pin_id default_spi_miso{0, 20};

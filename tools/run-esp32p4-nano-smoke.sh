@@ -91,7 +91,7 @@ if grep -q 'Starting scheduler' "$normalized_log"; then
     echo "ESP32-P4 smoke application unexpectedly started the scheduler" >&2
     exit 1
 fi
-if [ "$result" != "status=pass suite=esp32p4_native tests=7 failures=0 registry_overflow=0 coverage=captured" ]; then
+if [ "$result" != "status=pass suite=esp32p4_native tests=8 failures=0 registry_overflow=0 coverage=captured" ]; then
     echo "ESP32-P4 smoke test did not pass: ${result:-missing result}" >&2
     exit 1
 fi
@@ -119,6 +119,18 @@ if ! grep -q 'MCUHW_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 d2=16 d
     echo "ESP32-P4 ESP32-C5 SDIO identity transaction was not observed" >&2
     exit 1
 fi
+ethernet_record=$(sed -n 's/^MCUHW_ETHERNET //p' "$normalized_log" | tail -n 1)
+case "$ethernet_record" in
+    backend=esp32p4\ interface=rmii\ phy=IP101GRI\ address=1\ refclk_hz=50000000\ id1=0x*\ id2=0x*\ oui=0x0090c3\ model=0x05\ bmsr=0x*\ link=up\ traffic=not_tested|\
+    backend=esp32p4\ interface=rmii\ phy=IP101GRI\ address=1\ refclk_hz=50000000\ id1=0x*\ id2=0x*\ oui=0x0090c3\ model=0x05\ bmsr=0x*\ link=down\ traffic=not_tested) ;;
+    *)
+        echo "ESP32-P4 IP101GRI identity transaction was not observed: ${ethernet_record:-missing record}" >&2
+        exit 1 ;;
+esac
+ethernet_link=$(printf '%s\n' "$ethernet_record" | sed -n 's/.* link=\([^ ]*\) .*/\1/p')
+ethernet_id1=$(printf '%s\n' "$ethernet_record" | sed -n 's/.* id1=\([^ ]*\) .*/\1/p')
+ethernet_id2=$(printf '%s\n' "$ethernet_record" | sed -n 's/.* id2=\([^ ]*\) .*/\1/p')
+ethernet_bmsr=$(printf '%s\n' "$ethernet_record" | sed -n 's/.* bmsr=\([^ ]*\) .*/\1/p')
 case "$coverage_hex" in
     ''|*[!0-9a-fA-F]*)
         echo "ESP32-P4 smoke test produced an invalid coverage frame" >&2
@@ -136,7 +148,11 @@ printf '%s' "$coverage_hex" | xxd -r -p \
 mv "$artifact_dir/esp32p4_native_smoke.mcuv.tmp" \
     "$artifact_dir/esp32p4_native_smoke.mcuv"
 cp "$normalized_log" "$artifact_dir/esp32p4_native_smoke.uart.txt"
-jq -n --arg project_dir "$project_dir" '
+jq -n --arg project_dir "$project_dir" \
+    --arg ethernet_link "$ethernet_link" \
+    --arg ethernet_id1 "$ethernet_id1" \
+    --arg ethernet_id2 "$ethernet_id2" \
+    --arg ethernet_bmsr "$ethernet_bmsr" '
     {
         format: "mcutest-results",
         version: 1,
@@ -144,20 +160,20 @@ jq -n --arg project_dir "$project_dir" '
             board: "Waveshare ESP32-P4-NANO",
             mcu: "Espressif ESP32-P4NRW32 revision v1.0",
             suite: "esp32p4_native",
-            firmware: "pln-0019-native-app-v12",
-            fixture: "on-board CH343 USB-to-UART bridge, ES8311 codec, analog microphone, speaker, microSD slot and ESP32-C5 wireless coprocessor; unconnected SPI header",
-            interface: "direct USB UART0; I2C0 and I2S0 to onboard ES8311; native SDMMC slot 0; SDIO slot 1 to ESP32-C5; GPSPI2 on GPIO20-GPIO23",
+            firmware: "pln-0019-native-app-v13",
+            fixture: "on-board CH343 USB-to-UART bridge, ES8311 codec, analog microphone, speaker, microSD slot, ESP32-C5 wireless coprocessor and IP101GRI Ethernet PHY; unconnected SPI header and no Ethernet peer required",
+            interface: "direct USB UART0; I2C0 and I2S0 to onboard ES8311; native SDMMC slot 0; SDIO slot 1 to ESP32-C5; native EMAC RMII/SMI to IP101GRI; GPSPI2 on GPIO20-GPIO23",
             toolchain: "riscv32-esp-elf GCC 15.2.0",
             qualification: "development",
             clocks_hz: {cpu: 360000000, apb: 90000000, uart_source: 40000000},
             coverage: {
                 producer: "mcucov",
                 profile: "full",
-                build_id: 1296584716,
+                build_id: 1296584717,
                 transport_encoding: "UART hexadecimal frame"
             }
         },
-        summary: {tests: 7, failures: 0, passed: 7, registry_overflow: 0},
+        summary: {tests: 8, failures: 0, passed: 8, registry_overflow: 0},
         tests: [
             {
                 name: "esp32p4_gpio/gpio2_initializes_toggles_and_releases",
@@ -185,6 +201,17 @@ jq -n --arg project_dir "$project_dir" '
                     "REQ-0009", "REQ-0010", "REQ-0011", "REQ-0013",
                     "REQ-0014", "REQ-0017", "REQ-0019", "REQ-0024",
                     "REQ-0034", "REQ-0036"
+                ]
+            },
+            {
+                name: "esp32p4_ethernet/initializes_emac_and_identifies_onboard_ip101",
+                status: "passed",
+                file: ($project_dir + "/board/esp32p4_nano/tests/ethernet.cpp"),
+                line: 23,
+                requirements: [
+                    "REQ-0003", "REQ-0009", "REQ-0010", "REQ-0011",
+                    "REQ-0013", "REQ-0014", "REQ-0034", "REQ-0036",
+                    "REQ-0043"
                 ]
             },
             {
@@ -262,6 +289,19 @@ jq -n --arg project_dir "$project_dir" '
                 amplifier_enable_gpio: 53,
                 verification: "codec configuration plus completed RX/TX DMA; no independent acoustic oracle"
             },
+            ethernet: {
+                interface: "RMII",
+                phy: "IP101GRI",
+                phy_address: 1,
+                reference_clock_hz: 50000000,
+                id1: $ethernet_id1,
+                id2: $ethernet_id2,
+                oui: "0x0090c3",
+                model: "0x05",
+                bmsr: $ethernet_bmsr,
+                link: $ethernet_link,
+                verification: "physical EMAC clock/pin/reset and MDIO identity; raw-frame traffic not exercised without an Ethernet peer"
+            },
             sdmmc0: {
                 d0_gpio: 39,
                 d1_gpio: 40,
@@ -300,7 +340,7 @@ jq -n --arg project_dir "$project_dir" '
                 target: "none; controller/register execution only"
             },
             board_changes: "none",
-            deferred: "ESP-Hosted packet transport and Wi-Fi association, filesystem mounting, independent acoustic/logic-analyzer audio verification, SPI loopback/device and logic-analyzer capture, logic-analyzer I2C timing capture, UART RX and injected line errors"
+            deferred: "Ethernet link/raw-frame/MCUIP peer traffic, ESP-Hosted packet transport and Wi-Fi association, filesystem mounting, independent acoustic/logic-analyzer audio verification, SPI loopback/device and logic-analyzer capture, logic-analyzer I2C timing capture, UART RX and injected line errors"
         }
     }
 ' > "$artifact_dir/esp32p4_native_smoke.mcutest.json.tmp"

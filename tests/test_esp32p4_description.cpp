@@ -185,7 +185,7 @@ TEST(esp32p4_description, separates_dma_engines_requests_and_reachability,
 
 TEST(esp32p4_description, records_reviewed_slices_and_unavailable_i3c,
      "REQ-0006", "REQ-0034") {
-    ASSERT_EQ(esp::review_ledger.size(), 18U);
+    ASSERT_EQ(esp::review_ledger.size(), 19U);
     for (const auto& review : esp::review_ledger) {
         EXPECT_TRUE(review.described_registers <= review.register_denominator);
         EXPECT_TRUE(!review.provenance.document.empty());

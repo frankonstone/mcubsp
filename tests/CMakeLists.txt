@@ -2,6 +2,7 @@
 add_executable(mcuhw_tests
     test_description_suite.cpp
     test_esp32p4_description.cpp
+    test_esp32p4_ethernet.cpp
     test_esp32p4_gpio.cpp
     test_esp32p4_i2c.cpp
     test_esp32p4_i2s.cpp

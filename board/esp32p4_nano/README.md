@@ -5,8 +5,8 @@ PLN-0019 uses two separately linked images on HP CPU0:
 - a custom ESP-IDF v6.1 second-stage bootloader, containing only hardware/image
   initialization and a fixed policy that loads the factory partition; and
 - a factory application containing the `mcuhw` GPIO, UART, I2C, I2S/audio,
-  SDMMC/SDIO and SPI backends, registered `mcutest` cases, UART result adapter
-  and MCUCOV runtime.
+  SDMMC/SDIO, SPI and Ethernet backends, registered `mcutest` cases, UART
+  result adapter and MCUCOV runtime.
 
 The immutable ESP32-P4 ROM remains the first-stage loader. The custom
 second-stage loader supplies flash/cache setup, reads the partition table and
@@ -131,6 +131,18 @@ completion and cleared `USR` busy bit. Because the NANO's microSD card and
 Wi-Fi coprocessor are connected over SDIO rather than SPI, this is controller
 execution evidence only: no SPI slave response, signal timing or chip-select
 waveform is claimed without an external loopback/device or logic analyzer.
+
+The Ethernet case initializes the ESP32-P4 EMAC, routes the board's RMII and
+SMI signals, supplies the external 50 MHz reference-clock mode, resets the
+IP101GRI through GPIO51 and addresses it as PHY 1. On the connected board the
+physical MDIO reads return ID1 `0x0243`, ID2 `0x0c54`, OUI `0x0090c3`, model
+`0x05` and BMSR `0x7849`, which validates MAC/SMI setup and the on-board PHY
+identity. The reusable backend provides fixed, caller-owned enhanced TX/RX
+descriptor rings and an allocation-free MCUIP adapter contract with explicit
+64-byte alignment and cache ownership. During the recorded run no Ethernet
+cable/peer was connected, so the PHY reported link down. Raw-frame exchange,
+electrical RMII traffic and the physical MCUIP protocol smoke path are not yet
+claimed; connect an ordinary Ethernet peer and rerun to complete those checks.
 
 The board test translation units are instrumented with MCUCOV's `FULL` profile.
 The runner also writes a `mcutest-results` JSON artifact and a target-filtered
