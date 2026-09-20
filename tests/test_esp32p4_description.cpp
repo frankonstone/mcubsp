@@ -82,12 +82,21 @@ TEST(esp32p4_description, preserves_register_widths_offsets_and_side_effects,
                   == mcuhw::core::access_semantics::set_alias);
     static_assert(esp::gpio_out_w1tc::access
                   == mcuhw::core::access_semantics::clear_alias);
+    static_assert(esp::gpio_out1_w1ts::offset == 0x14U);
+    static_assert(esp::gpio_enable1_w1tc::offset == 0x34U);
+    static_assert(esp::gpio_input1::offset == 0x40U);
     static_assert(esp::uart_int_clear::access
                   == mcuhw::core::access_semantics::write_one_to_clear);
+    static_assert(esp::uart_clock_divider::offset == 0x14U);
+    static_assert(esp::uart_status::access
+                  == mcuhw::core::access_semantics::read_only);
+    static_assert(esp::uart_register_update::offset == 0x98U);
     static_assert(esp::i2c_int_clear::offset == 0x24U);
+    static_assert(esp::i2s_tx_configuration::offset == 0x24U);
+    static_assert(esp::i2s_rx_eof_number::offset == 0x64U);
     static_assert(esp::ledc_hpoint::width == 20U);
     static_assert(esp::mcpwm_dead_time0::offset == 0x58U);
-    EXPECT_EQ(esp::gpio_registers.size(), 10U);
+    EXPECT_EQ(esp::gpio_registers.size(), 19U);
     EXPECT_EQ(esp::timer_registers.size(), 14U);
 }
 
@@ -98,6 +107,8 @@ TEST(esp32p4_description, validates_qfn104_io_mux_matrix_and_analog_routes,
         esp::signal_id(esp::signal::uart0_tx), electrical_mode::push_pull>);
     static_assert(esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 23},
         esp::signal_id(esp::signal::i2c0_sda), electrical_mode::open_drain>);
+    static_assert(esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 13},
+        esp::signal_id(esp::signal::i2s0_mclk), electrical_mode::push_pull>);
     static_assert(esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 16},
         esp::signal_id(esp::signal::adc1_ch0), electrical_mode::analog>);
     static_assert(!esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 16},
@@ -120,6 +131,24 @@ TEST(esp32p4_description, models_hp_lp_clocks_resets_and_source_conflict,
     ASSERT_TRUE(apb.has_value());
     EXPECT_EQ(apb->count, 100'000'000U);
     EXPECT_EQ(esp::reset_controls[0].mask, 1U << 28U);
+    EXPECT_EQ(esp::reset_controls[5].mask,
+              (1U << 8U) | (1U << 13U));
+    EXPECT_EQ(esp::uart_clock_controls[0].system_gate_mask, 1U << 18U);
+    EXPECT_EQ(esp::uart_clock_controls[0].apb_gate_mask, 1U << 7U);
+    EXPECT_EQ(esp::uart_clock_controls[0].source_register,
+              esp::hp_clkrst_base + 0x68U);
+    EXPECT_EQ(esp::uart_clock_controls[0].divider_register,
+              esp::hp_clkrst_base + 0x6CU);
+    EXPECT_EQ(esp::spi_clock_controls[0].system_gate_mask, 1U);
+    EXPECT_EQ(esp::spi_clock_controls[0].apb_gate_mask, 1U << 19U);
+    EXPECT_EQ(esp::spi_clock_controls[0].reset_register, esp::hp_rst_en2);
+    EXPECT_EQ(esp::spi_clock_controls[0].reset_mask, 1U << 7U);
+    EXPECT_EQ(esp::instances[22].clock_gate_register,
+              esp::hp_soc_clock_ctrl1);
+    EXPECT_EQ(esp::instances[22].clock_gate_mask, 1U << 3U);
+    EXPECT_EQ(esp::instances[22].reset_register, esp::hp_rst_en1);
+    EXPECT_EQ(esp::instances[22].reset_mask, 1U << 1U);
+    EXPECT_EQ(esp::reset_controls[9].mask, 1U << 1U);
     EXPECT_TRUE(esp::source_gaps[2].state == "source-conflict-recorded");
 }
 
@@ -156,7 +185,7 @@ TEST(esp32p4_description, separates_dma_engines_requests_and_reachability,
 
 TEST(esp32p4_description, records_reviewed_slices_and_unavailable_i3c,
      "REQ-0006", "REQ-0034") {
-    ASSERT_EQ(esp::review_ledger.size(), 17U);
+    ASSERT_EQ(esp::review_ledger.size(), 18U);
     for (const auto& review : esp::review_ledger) {
         EXPECT_TRUE(review.described_registers <= review.register_denominator);
         EXPECT_TRUE(!review.provenance.document.empty());

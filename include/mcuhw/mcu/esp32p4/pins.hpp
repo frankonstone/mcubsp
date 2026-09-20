@@ -95,6 +95,15 @@ inline constexpr std::array pin_routes{
 [[nodiscard]] constexpr bool matrix_signal(core::signal_id requested) noexcept {
     return requested == signal_id(signal::i2c0_scl)
         || requested == signal_id(signal::i2c0_sda)
+        || requested == signal_id(signal::spi2_cs)
+        || requested == signal_id(signal::spi2_sck)
+        || requested == signal_id(signal::spi2_mosi)
+        || requested == signal_id(signal::spi2_miso)
+        || requested == signal_id(signal::i2s0_mclk)
+        || requested == signal_id(signal::i2s0_bclk)
+        || requested == signal_id(signal::i2s0_ws)
+        || requested == signal_id(signal::i2s0_data_out)
+        || requested == signal_id(signal::i2s0_data_in)
         || requested == signal_id(signal::ledc_ch0)
         || requested == signal_id(signal::mcpwm0_out0a)
         || requested == signal_id(signal::mcpwm0_out0b);
@@ -143,7 +152,37 @@ using gpio_out_w1ts = core::register_descriptor<std::uint32_t, 0x08,
 using gpio_out_w1tc = core::register_descriptor<std::uint32_t, 0x0C,
     core::access_semantics::clear_alias, 0xFFFF'FFFFU, false,
     core::reserved_bit_policy::write_zero, 0U, 0U, 0xFFFF'FFFFU, gpio_out>;
+using gpio_out1 = core::register_descriptor<std::uint32_t, 0x10,
+    core::access_semantics::read_write, 0x01FF'FFFFU, false,
+    core::reserved_bit_policy::preserve, 0U, 0U, 0x01FF'FFFFU>;
+using gpio_out1_w1ts = core::register_descriptor<std::uint32_t, 0x14,
+    core::access_semantics::set_alias, 0x01FF'FFFFU, false,
+    core::reserved_bit_policy::write_zero, 0U, 0U, 0x01FF'FFFFU, gpio_out1>;
+using gpio_out1_w1tc = core::register_descriptor<std::uint32_t, 0x18,
+    core::access_semantics::clear_alias, 0x01FF'FFFFU, false,
+    core::reserved_bit_policy::write_zero, 0U, 0U, 0x01FF'FFFFU, gpio_out1>;
+using gpio_enable = core::register_descriptor<std::uint32_t, 0x20,
+    core::access_semantics::read_write, 0xFFFF'FFFFU, false,
+    core::reserved_bit_policy::preserve, 0U, 0U, 0xFFFF'FFFFU>;
+using gpio_enable_w1ts = core::register_descriptor<std::uint32_t, 0x24,
+    core::access_semantics::set_alias, 0xFFFF'FFFFU, false,
+    core::reserved_bit_policy::write_zero, 0U, 0U, 0xFFFF'FFFFU, gpio_enable>;
+using gpio_enable_w1tc = core::register_descriptor<std::uint32_t, 0x28,
+    core::access_semantics::clear_alias, 0xFFFF'FFFFU, false,
+    core::reserved_bit_policy::write_zero, 0U, 0U, 0xFFFF'FFFFU, gpio_enable>;
+using gpio_enable1 = core::register_descriptor<std::uint32_t, 0x2C,
+    core::access_semantics::read_write, 0x01FF'FFFFU, false,
+    core::reserved_bit_policy::preserve, 0U, 0U, 0x01FF'FFFFU>;
+using gpio_enable1_w1ts = core::register_descriptor<std::uint32_t, 0x30,
+    core::access_semantics::set_alias, 0x01FF'FFFFU, false,
+    core::reserved_bit_policy::write_zero, 0U, 0U, 0x01FF'FFFFU, gpio_enable1>;
+using gpio_enable1_w1tc = core::register_descriptor<std::uint32_t, 0x34,
+    core::access_semantics::clear_alias, 0x01FF'FFFFU, false,
+    core::reserved_bit_policy::write_zero, 0U, 0U, 0x01FF'FFFFU, gpio_enable1>;
 using gpio_input = core::register_descriptor<std::uint32_t, 0x3C,
+    core::access_semantics::read_only, 0U, false,
+    core::reserved_bit_policy::write_zero>;
+using gpio_input1 = core::register_descriptor<std::uint32_t, 0x40,
     core::access_semantics::read_only, 0U, false,
     core::reserved_bit_policy::write_zero>;
 using gpio_pin0 = core::register_descriptor<std::uint32_t, 0x74,
@@ -165,8 +204,17 @@ inline constexpr std::array gpio_registers{
     register_record{"GPIO_OUT_REG", gpio_matrix_base + 0x04U, 4, core::access_semantics::read_write, 0xFFFF'FFFFU, 0U, 0xFFFF'FFFFU, core::reserved_bit_policy::preserve, gpio_matrix_source},
     register_record{"GPIO_OUT_W1TS_REG", gpio_matrix_base + 0x08U, 4, core::access_semantics::set_alias, 0xFFFF'FFFFU, 0U, 0xFFFF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
     register_record{"GPIO_OUT_W1TC_REG", gpio_matrix_base + 0x0CU, 4, core::access_semantics::clear_alias, 0xFFFF'FFFFU, 0U, 0xFFFF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
+    register_record{"GPIO_OUT1_REG", gpio_matrix_base + 0x10U, 4, core::access_semantics::read_write, 0x01FF'FFFFU, 0U, 0x01FF'FFFFU, core::reserved_bit_policy::preserve, gpio_matrix_source},
+    register_record{"GPIO_OUT1_W1TS_REG", gpio_matrix_base + 0x14U, 4, core::access_semantics::set_alias, 0x01FF'FFFFU, 0U, 0x01FF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
+    register_record{"GPIO_OUT1_W1TC_REG", gpio_matrix_base + 0x18U, 4, core::access_semantics::clear_alias, 0x01FF'FFFFU, 0U, 0x01FF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
     register_record{"GPIO_ENABLE_REG", gpio_matrix_base + 0x20U, 4, core::access_semantics::read_write, 0xFFFF'FFFFU, 0U, 0xFFFF'FFFFU, core::reserved_bit_policy::preserve, gpio_matrix_source},
+    register_record{"GPIO_ENABLE_W1TS_REG", gpio_matrix_base + 0x24U, 4, core::access_semantics::set_alias, 0xFFFF'FFFFU, 0U, 0xFFFF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
+    register_record{"GPIO_ENABLE_W1TC_REG", gpio_matrix_base + 0x28U, 4, core::access_semantics::clear_alias, 0xFFFF'FFFFU, 0U, 0xFFFF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
+    register_record{"GPIO_ENABLE1_REG", gpio_matrix_base + 0x2CU, 4, core::access_semantics::read_write, 0x01FF'FFFFU, 0U, 0x01FF'FFFFU, core::reserved_bit_policy::preserve, gpio_matrix_source},
+    register_record{"GPIO_ENABLE1_W1TS_REG", gpio_matrix_base + 0x30U, 4, core::access_semantics::set_alias, 0x01FF'FFFFU, 0U, 0x01FF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
+    register_record{"GPIO_ENABLE1_W1TC_REG", gpio_matrix_base + 0x34U, 4, core::access_semantics::clear_alias, 0x01FF'FFFFU, 0U, 0x01FF'FFFFU, core::reserved_bit_policy::write_zero, gpio_matrix_source},
     register_record{"GPIO_IN_REG", gpio_matrix_base + 0x3CU, 4, core::access_semantics::read_only, 0U, 0U, 0U, core::reserved_bit_policy::write_zero, gpio_matrix_source},
+    register_record{"GPIO_IN1_REG", gpio_matrix_base + 0x40U, 4, core::access_semantics::read_only, 0U, 0U, 0U, core::reserved_bit_policy::write_zero, gpio_matrix_source},
     register_record{"GPIO_PIN0_REG", gpio_matrix_base + 0x74U, 4, core::access_semantics::read_write, 0x0000'1FFFU, 0U, 0U, core::reserved_bit_policy::preserve, gpio_matrix_source},
     register_record{"GPIO_FUNC0_IN_SEL_CFG_REG", gpio_matrix_base + 0x15CU, 4, core::access_semantics::read_write, 0x0000'01FFU, 0U, 0U, core::reserved_bit_policy::preserve, gpio_matrix_source},
     register_record{"GPIO_FUNC0_OUT_SEL_CFG_REG", gpio_matrix_base + 0x558U, 4, core::access_semantics::read_write, 0x0000'03FFU, 0U, 0U, core::reserved_bit_policy::preserve, gpio_matrix_source},

@@ -1,0 +1,15 @@
+#!/bin/bash
+set -eu
+
+arguments=()
+for argument in "$@"; do
+    case "$argument" in
+        -fstrict-volatile-bitfields|-fno-tree-switch-conversion|-freorder-blocks|-fno-shrink-wrap)
+            ;;
+        *)
+            arguments+=("$argument")
+            ;;
+    esac
+done
+
+exec "@MCUHW_MCUCOV_INSTRUMENTER@" "${arguments[@]}"

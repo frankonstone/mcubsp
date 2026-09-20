@@ -1,0 +1,66 @@
+PLN-0019 ESP32-P4-NANO GPIO, I2C and UART application evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO
+part: ESP32-P4NRW32
+port: /dev/cu.usbmodem5A7A0368561
+firmware: pln-0019-native-app-v5
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+execution: HP CPU0; ESP-IDF pre-scheduler application startup; no RTOS scheduler
+
+flash layout and images:
+  0x00002000 custom second-stage loader, 21968 bytes,
+    sha256 bcfba850bd8fe28e80556bbaf7376b2fccbb6fcc51e69585a078e88afb45828e
+  0x00008000 partition table, 3072 bytes,
+    sha256 7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820
+  0x00010000 factory application, 189696 bytes (1 MiB partition),
+    sha256 6f7e052c575ff2ec2f29364785689ab3ffbf89708fb199e4e7c143da22f8c609
+boot policy: custom loader validates the partition table and boots only factory
+flash verification: esptool post-write hash verification passed
+
+test framework: three registered mcutest TEST cases, mcutest::Runner UART output
+GPIO observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
+I2C observation: I2C0 100 kHz source/divider/timing, GPIO8 SCL and GPIO7 SDA
+  matrix routes, master mode and idle bus register readback; clean shutdown
+I2C revision binding: connected v1.0 APB gate bit 12 and reset bit 22 are
+  isolated in the development board binding; production v3.x defaults remain
+  APB gate bit 19 and reset bit 9
+I2C physical scope: the on-board ES8311 target was not exercised in v5 and no
+  logic-analyzer capture was attached; target transactions remained deferred
+UART observation: UART0 physical marker received through the on-board CH343
+  bridge only after finite transfer TX_DONE completion
+result: 3 tests, 0 failures, registry overflow 0
+mcutest JSON: 2353 bytes,
+  sha256 7f0ea513708d7dac7c6f46f77e7506e4961c28fd85ac6841c8813b63462c54a9
+
+coverage: MCUCOV FULL profile, build id 0x4d485005, UART hex transport
+instrumented targets: board GPIO/I2C/UART tests and included mcuhw headers;
+  loader, application startup and coverage transport are harness code
+coverage frame: 3748 bytes,
+  sha256 fa716b006a7475bbcf98c97cc04e3361bb6ff77ebd91cc101c5a89fc48af7ab5
+coverage JSON: 516271 bytes,
+  sha256 5cb38a416f049af94f2e7d07253ceec29a4fa41d1ae0b4261ed0dc303153813a
+coverage HTML: 542714 bytes,
+  sha256 caaf7189b6d88509027ab52766463e0e2b62f1775b3ff56d4c34612ee4c15c0e
+coverage summary: functions 79/147, statements 360/889, lines 432/970,
+  branches 144/526, MC/DC conditions 12/382, invalid MC/DC decisions 0
+target-filtered mcutrace coverage JSON: 346263 bytes,
+  sha256 0cbd1d70086230d0152678df327e06178837b7b32a33d02e8f5f15f1ef47f9d0
+target-filtered summary: functions 50/84, statements 278/628, lines 326/658,
+  branches 114/384, MC/DC conditions 9/283, invalid MC/DC decisions 0
+
+MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v5 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
+MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
+esp32p4_i2c/i2c0_initializes_matrix_timing_and_idle_bus:PASS
+esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
+3 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_native tests=3 failures=0 registry_overflow=0 coverage=captured
+
+Original second-stage bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce
+This backup does not include the original partition table or application.

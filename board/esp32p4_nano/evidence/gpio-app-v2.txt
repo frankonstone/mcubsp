@@ -1,0 +1,76 @@
+PLN-0019 ESP32-P4-NANO custom-loader and GPIO application evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO
+part: ESP32-P4NRW32
+serial transport: CH343 USB-to-UART
+port: /dev/cu.usbmodem5A7A0368561
+mac: 30:ed:a0:e1:92:01
+source base commit: 04865955b37110eb6318ce449248d5018f355843
+firmware: pln-0019-gpio-app-v2
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+configuration: revision v1.0 minimum, unicore, DIO, 80 MHz flash, 16 MiB image header
+execution: HP CPU0; ESP-IDF pre-scheduler application startup; no RTOS scheduler
+startup limitation: ESP-IDF initializes heap and system services before the application hook;
+  the test path itself is allocation-free
+
+flash layout and images:
+  0x00002000 custom second-stage loader, 21968 bytes,
+    sha256 bcfba850bd8fe28e80556bbaf7376b2fccbb6fcc51e69585a078e88afb45828e
+  0x00008000 partition table, 3072 bytes,
+    sha256 7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820
+  0x00010000 factory application, 162784 bytes (1 MiB partition),
+    sha256 c4d01634c275d90896c73e4721c3cc71e1b7d7bb5117722c25d68aa7f95fec00
+boot policy: custom loader validates the partition table and boots only factory
+separation check: loader ELF has no test, mcutest or MCUCOV symbols; those symbols
+  and __wrap_esp_startup_start_app are in the application ELF
+flash verification: esptool post-write hash verification passed
+
+test framework: mcutest registered TEST case, mcutest::Runner UART output
+observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
+tolerance: exact register bit equality
+result: 1 test, 0 failures, registry overflow 0
+
+coverage: MCUCOV FULL profile, build id 0x4d485002, UART hex transport
+instrumented target: board/esp32p4_nano/tests/gpio.cpp and included mcuhw headers;
+  loader, application startup and coverage transport are uninstrumented harness code
+coverage frame: 628 bytes,
+  sha256 60e86cf76ce95c9a838d9c3907e63c224bc983b0d4df1ede3479d6d5253270d1
+coverage summary: functions 22/33, statements 107/173, lines 129/204,
+  branches 44/104, MC/DC conditions 6/70, invalid MC/DC decisions 0
+coverage scope note: one on-board happy path; host tests cover rejected and
+  boundary paths
+instrumentation limitations: 76 skipped constructs (57 info, 19 warning,
+  0 error), primarily constexpr code and static-initialization decisions
+
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0x1 (POWERON),boot:0x20f (SPI_FAST_FLASH_BOOT)
+SPI mode:DIO, clock div:1
+I (25) boot: ESP-IDF v6.1 2nd stage bootloader
+I (27) boot: chip revision: v1.0
+I (32) boot.esp32p4: SPI Speed      : 80MHz
+I (36) boot.esp32p4: SPI Mode       : DIO
+I (39) boot.esp32p4: SPI Flash Size : 16MB
+I (48) boot: Partition Table:
+I (57) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (63) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (70) boot:  2 factory          factory app      00 00 00010000 00100000
+MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+I (138) boot: Loaded app from partition at offset 0x10000
+I (149) cpu_start: Unicore app
+I (150) cpu_start: Single core mode
+I (160) cpu_start: cpu freq: 360000000 Hz
+I (200) heap_init: Initializing. RAM available for dynamic allocation:
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-gpio-app-v2 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
+esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
+-----------------------
+1 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_gpio tests=1 failures=0 registry_overflow=0 coverage=captured
+
+Original second-stage bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce
+This backup does not include the original partition table or application.

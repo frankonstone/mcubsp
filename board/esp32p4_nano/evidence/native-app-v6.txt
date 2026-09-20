@@ -1,0 +1,71 @@
+PLN-0019 ESP32-P4-NANO GPIO, physical I2C and UART application evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO
+part: ESP32-P4NRW32
+port: /dev/cu.usbmodem5A7A0368561
+firmware: pln-0019-native-app-v6
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+execution: HP CPU0; ESP-IDF pre-scheduler application startup; no RTOS scheduler
+
+flash layout and images:
+  0x00002000 custom second-stage loader, 21968 bytes,
+    sha256 bcfba850bd8fe28e80556bbaf7376b2fccbb6fcc51e69585a078e88afb45828e
+  0x00008000 partition table, 3072 bytes,
+    sha256 7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820
+  0x00010000 factory application, 203280 bytes (1 MiB partition),
+    sha256 129f2da3281a2e8f4dc30089f16ccb6f133d6befda0e3d9b3768e49ce42231e9
+boot policy: custom loader validates the partition table and boots only factory
+flash verification: esptool post-write hash verification passed
+
+test framework: three registered mcutest TEST cases, mcutest::Runner UART output
+GPIO observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
+I2C observation: I2C0 at 100 kHz on GPIO8 SCL and GPIO7 SDA performed three
+  physical register-select write/repeated-START/read/STOP transactions against
+  the on-board ES8311 audio codec at address 0x18
+ES8311 identity: register 0xFD = 0x83, register 0xFE = 0x11,
+  register 0xFF version = 0x01
+I2C revision binding: connected v1.0 APB gate bit 12 and reset bit 22 are
+  isolated in the development board binding; production v3.x defaults remain
+  APB gate bit 19 and reset bit 9
+I2C physical scope: device ACK, transmitted register selection, repeated START,
+  received byte and explicit STOP are exercised; independent logic-analyzer
+  timing/protocol capture and injected failures remain deferred
+UART observation: UART0 physical marker received through the on-board CH343
+  bridge only after finite transfer TX_DONE completion
+result: 3 tests, 0 failures, registry overflow 0
+mcutest JSON: 2566 bytes,
+  sha256 31c522992ce6e759625be18f1e43718ad857a41bde609d8c6d4349060935e787
+
+coverage: MCUCOV FULL profile, build id 0x4d485006, UART hex transport
+instrumented targets: board GPIO/I2C/UART tests and included mcuhw headers;
+  loader, application startup and coverage transport are harness code
+coverage frame: 3832 bytes,
+  sha256 6d18b5d48f41fa5fbbdebc595a92cb8e1a2230de3f4e692c987468e62581a46a
+coverage JSON: 533088 bytes,
+  sha256 c9aebcad907c6e9932b2fee8dbb723f523db6b7b0de9e1686bdda1afd2524864
+coverage HTML: 551574 bytes,
+  sha256 59dd42caffc2544e23c454343e7098eaac28b00e9c1ca4accd92c901df505752
+coverage summary: functions 88/148, statements 474/918, lines 550/997,
+  branches 194/544, MC/DC conditions 17/394, invalid MC/DC decisions 0
+target-filtered mcutrace coverage JSON: 363131 bytes,
+  sha256 8cbdded1db96f68dae90e008c9ab3ee4e88938a859fecedd3802c5ef86cb4967
+target-filtered summary: functions 56/85, statements 379/657, lines 430/685,
+  branches 162/402, MC/DC conditions 14/295, invalid MC/DC decisions 0
+
+MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v6 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=mixed_board_native qualification=development
+MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
+MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
+esp32p4_i2c/i2c0_reads_onboard_es8311_identity_with_repeated_start:PASS
+esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
+3 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_native tests=3 failures=0 registry_overflow=0 coverage=captured
+
+Original second-stage bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce
+This backup does not include the original partition table or application.

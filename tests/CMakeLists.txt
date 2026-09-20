@@ -2,6 +2,11 @@
 add_executable(mcuhw_tests
     test_description_suite.cpp
     test_esp32p4_description.cpp
+    test_esp32p4_gpio.cpp
+    test_esp32p4_i2c.cpp
+    test_esp32p4_i2s.cpp
+    test_esp32p4_spi.cpp
+    test_esp32p4_uart.cpp
     test_metadata.cpp
     test_ownership.cpp
     test_protected_access.cpp
@@ -30,7 +35,7 @@ if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
         "${MCUHW_MCUIP_SOURCE_DIR}/include")
 endif()
 mcuhw_apply_restricted_runtime(mcuhw_tests)
-mcutest_configure_target(mcuhw_tests MAX_TESTS 128 SOURCE_LOCATION ON)
+mcutest_configure_target(mcuhw_tests MAX_TESTS 160 SOURCE_LOCATION ON)
 
 add_test(
     NAME mcuhw.unit

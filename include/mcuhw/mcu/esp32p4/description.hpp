@@ -61,9 +61,6 @@ struct i3c_capabilities : core::capability_set<peripheral_capability> {
     return 1U << static_cast<unsigned>(value);
 }
 
-inline constexpr std::uintptr_t hp_soc_clock_ctrl1 = hp_clkrst_base + 0x18U;
-inline constexpr std::uintptr_t hp_soc_clock_ctrl2 = hp_clkrst_base + 0x1CU;
-inline constexpr std::uintptr_t hp_soc_clock_ctrl3 = hp_clkrst_base + 0x20U;
 inline constexpr std::uintptr_t no_control = 0U;
 inline constexpr std::uint16_t no_kernel_clock = 0xFFFFU;
 
@@ -103,16 +100,19 @@ inline constexpr std::array instances{
     native_instance(peripheral_kind::mcpwm, 1, mcpwm1_base, clock_id::apb, no_kernel_clock, hp_soc_clock_ctrl2, 1U << 3U, hp_rst_en1, 1U << 6U, mcpwm_cap, mcpwm_source),
     native_instance(peripheral_kind::i2c, 0, i2c0_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::i2c), hp_soc_clock_ctrl2, 1U << 19U, hp_rst_en1, 1U << 9U, capability_bit(peripheral_capability::i2c_multi_master), i2c_source),
     native_instance(peripheral_kind::i2c, 1, i2c1_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::i2c), hp_soc_clock_ctrl2, 1U << 18U, hp_rst_en1, 1U << 10U, capability_bit(peripheral_capability::i2c_multi_master), i2c_source),
-    native_instance(peripheral_kind::uart, 0, uart0_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 24U, hp_rst_en1, (1U << 23U) | (1U << 18U), capability_bit(peripheral_capability::uart_fifo), uart_source),
-    native_instance(peripheral_kind::uart, 1, uart1_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 23U, hp_rst_en1, (1U << 22U) | (1U << 17U), capability_bit(peripheral_capability::uart_fifo), uart_source),
-    native_instance(peripheral_kind::uart, 2, uart2_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 22U, hp_rst_en1, (1U << 21U) | (1U << 16U), capability_bit(peripheral_capability::uart_fifo), uart_source),
-    native_instance(peripheral_kind::uart, 3, uart3_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 21U, hp_rst_en1, (1U << 20U) | (1U << 15U), capability_bit(peripheral_capability::uart_fifo), uart_source),
-    native_instance(peripheral_kind::uart, 4, uart4_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 20U, hp_rst_en1, (1U << 19U) | (1U << 14U), capability_bit(peripheral_capability::uart_fifo), uart_source),
-    native_instance(peripheral_kind::spi, 2, spi2_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::gpspi), hp_soc_clock_ctrl2, 1U << 12U, no_control, 0, capability_bit(peripheral_capability::spi_master) | capability_bit(peripheral_capability::spi_slave), spi_source),
-    native_instance(peripheral_kind::spi, 3, spi3_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::gpspi), hp_soc_clock_ctrl2, 1U << 11U, no_control, 0, capability_bit(peripheral_capability::spi_master) | capability_bit(peripheral_capability::spi_slave), spi_source),
+    native_instance(peripheral_kind::uart, 0, uart0_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 7U, hp_rst_en1, (1U << 8U) | (1U << 13U), capability_bit(peripheral_capability::uart_fifo), uart_source),
+    native_instance(peripheral_kind::uart, 1, uart1_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 8U, hp_rst_en1, (1U << 9U) | (1U << 14U), capability_bit(peripheral_capability::uart_fifo), uart_source),
+    native_instance(peripheral_kind::uart, 2, uart2_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 9U, hp_rst_en1, (1U << 10U) | (1U << 15U), capability_bit(peripheral_capability::uart_fifo), uart_source),
+    native_instance(peripheral_kind::uart, 3, uart3_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 10U, hp_rst_en1, (1U << 11U) | (1U << 16U), capability_bit(peripheral_capability::uart_fifo), uart_source),
+    native_instance(peripheral_kind::uart, 4, uart4_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::uart), hp_soc_clock_ctrl2, 1U << 11U, hp_rst_en1, (1U << 12U) | (1U << 17U), capability_bit(peripheral_capability::uart_fifo), uart_source),
+    native_instance(peripheral_kind::spi, 2, spi2_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::gpspi), hp_soc_clock_ctrl2, 1U << 19U, hp_rst_en2, 1U << 7U, capability_bit(peripheral_capability::spi_master) | capability_bit(peripheral_capability::spi_slave), spi_source),
+    native_instance(peripheral_kind::spi, 3, spi3_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::gpspi), hp_soc_clock_ctrl2, 1U << 20U, hp_rst_en2, 1U << 8U, capability_bit(peripheral_capability::spi_master) | capability_bit(peripheral_capability::spi_slave), spi_source),
+    native_instance(peripheral_kind::i2s, 0, i2s0_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::i2s), hp_soc_clock_ctrl2, 1U << 14U, hp_rst_en2, 1U << 4U, transfer_cap, i2s_source),
+    native_instance(peripheral_kind::i2s, 1, i2s1_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::i2s), hp_soc_clock_ctrl2, 1U << 13U, hp_rst_en2, 1U << 5U, transfer_cap, i2s_source),
+    native_instance(peripheral_kind::i2s, 2, i2s2_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::i2s), hp_soc_clock_ctrl2, 1U << 12U, hp_rst_en2, 1U << 6U, transfer_cap, i2s_source),
     native_instance(peripheral_kind::adc, 1, adc_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::adc), hp_soc_clock_ctrl2, 1U << 26U, no_control, 0, capability_bit(peripheral_capability::adc_dual_unit), adc_source),
     native_instance(peripheral_kind::adc, 2, adc_base, clock_id::apb, static_cast<std::uint16_t>(clock_id::adc), hp_soc_clock_ctrl2, 1U << 26U, no_control, 0, capability_bit(peripheral_capability::adc_dual_unit), adc_source),
-    native_instance(peripheral_kind::gdma_ahb, 0, gdma_ahb_base, clock_id::sys, no_kernel_clock, hp_soc_clock_ctrl1, 1U << 28U, hp_rst_en1, 1U << 30U, transfer_cap, dma_source),
+    native_instance(peripheral_kind::gdma_ahb, 0, gdma_ahb_base, clock_id::sys, no_kernel_clock, hp_soc_clock_ctrl1, 1U << 3U, hp_rst_en1, 1U << 1U, transfer_cap, dma_source),
     native_instance(peripheral_kind::gdma_axi, 0, gdma_axi_base, clock_id::sys, no_kernel_clock, hp_soc_clock_ctrl1, 1U << 27U, hp_rst_en1, 1U << 29U, transfer_cap | capability_bit(peripheral_capability::external_descriptors), dma_source),
     native_instance(peripheral_kind::vdma, 0, 0x5008'1000U, clock_id::sys, no_kernel_clock, no_control, 0, no_control, 0, transfer_cap | capability_bit(peripheral_capability::external_descriptors), dma_source),
     native_instance(peripheral_kind::dma_2d, 0, 0x5008'8000U, clock_id::sys, no_kernel_clock, hp_soc_clock_ctrl1, 1U << 25U, hp_rst_en0, 1U << 0U, transfer_cap | capability_bit(peripheral_capability::external_descriptors), dma_source),
@@ -123,6 +123,7 @@ inline constexpr std::array sys_clock{static_cast<std::uint16_t>(clock_id::sys)}
 inline constexpr std::array uart_clocks{static_cast<std::uint16_t>(clock_id::apb), static_cast<std::uint16_t>(clock_id::uart)};
 inline constexpr std::array i2c_clocks{static_cast<std::uint16_t>(clock_id::apb), static_cast<std::uint16_t>(clock_id::i2c)};
 inline constexpr std::array spi_clocks{static_cast<std::uint16_t>(clock_id::apb), static_cast<std::uint16_t>(clock_id::gpspi)};
+inline constexpr std::array i2s_clocks{static_cast<std::uint16_t>(clock_id::apb), static_cast<std::uint16_t>(clock_id::i2s)};
 inline constexpr std::array adc_clocks{static_cast<std::uint16_t>(clock_id::apb), static_cast<std::uint16_t>(clock_id::adc)};
 inline constexpr std::array<std::uint16_t, 0> no_relations{};
 inline constexpr std::array uart0_events{event_number(event::uart0)};
@@ -133,12 +134,14 @@ inline constexpr std::array ledc_events{event_number(event::ledc)};
 inline constexpr std::array mcpwm0_events{event_number(event::mcpwm0)};
 inline constexpr std::array adc_dma{std::uint16_t{8}};
 inline constexpr std::array spi2_dma{std::uint16_t{1}};
+inline constexpr std::array i2s0_dma{std::uint16_t{3}};
 inline constexpr std::array uart_dma{std::uint16_t{2}};
 
 inline constexpr std::array peripheral_instances{
     core::peripheral_metadata{peripheral(peripheral_kind::uart, 0), uart_clocks, no_relations, uart0_events, uart_dma, uart_source},
     core::peripheral_metadata{peripheral(peripheral_kind::i2c, 0), i2c_clocks, no_relations, i2c0_events, no_relations, i2c_source},
     core::peripheral_metadata{peripheral(peripheral_kind::spi, 2), spi_clocks, no_relations, spi2_events, spi2_dma, spi_source},
+    core::peripheral_metadata{peripheral(peripheral_kind::i2s, 0), i2s_clocks, no_relations, no_relations, i2s0_dma, i2s_source},
     core::peripheral_metadata{peripheral(peripheral_kind::adc, 1), adc_clocks, no_relations, adc_events, adc_dma, adc_source},
     core::peripheral_metadata{peripheral(peripheral_kind::ledc, 0), apb_clock, no_relations, ledc_events, no_relations, ledc_source},
     core::peripheral_metadata{peripheral(peripheral_kind::mcpwm, 0), apb_clock, no_relations, mcpwm0_events, no_relations, mcpwm_source},
@@ -171,6 +174,7 @@ inline constexpr std::array review_ledger{
     block_review{"UART initial registers", coverage_state::verified, 3, 3, "Full source-unit scope reconciled in complete_source_inventory", uart_source},
     block_review{"SPI initial registers", coverage_state::verified, 2, 2, "Full source-unit scope reconciled in complete_source_inventory", spi_source},
     block_review{"I2C initial registers", coverage_state::verified, 3, 3, "Full source-unit scope reconciled in complete_source_inventory", i2c_source},
+    block_review{"I2S standard-mode and AHB-DMA path", coverage_state::verified, 3, 3, "Finite 16-bit stereo Philips transfers implemented; PDM/TDM expansion remains deferred", i2s_source},
     block_review{"ADC units, pins and DMA", coverage_state::verified, adc_registers.size(), adc_registers.size(), "Full source-unit scope reconciled in complete_source_inventory", adc_source},
     block_review{"I3C announced chapter", coverage_state::unavailable_in_source, 1, 0, "GAP-ESP32P4-001; compile-time capability remains absent", technical_reference_manual},
 };

@@ -109,10 +109,12 @@ inline constexpr std::array clock_nodes{
     core::clock_node{static_cast<std::uint16_t>(clock_id::lp_fast), {1U}, {40'000'000U}, clock_source},
     core::clock_node{static_cast<std::uint16_t>(clock_id::lp_slow), {1U}, {150'000U}, clock_source},
     core::clock_node{static_cast<std::uint16_t>(clock_id::lp_peripheral), {1U}, {40'000'000U}, clock_source},
-    core::clock_node{static_cast<std::uint16_t>(clock_id::uart), {1U}, {160'000'000U}, clock_source},
+    core::clock_node{static_cast<std::uint16_t>(clock_id::uart), {1U}, {80'000'000U}, clock_source},
     core::clock_node{static_cast<std::uint16_t>(clock_id::i2c), {1U}, {40'000'000U}, clock_source},
     core::clock_node{static_cast<std::uint16_t>(clock_id::gpspi), {1U}, {240'000'000U}, clock_source},
+    core::clock_node{static_cast<std::uint16_t>(clock_id::i2s), {1U}, {160'000'000U}, clock_source},
     core::clock_node{static_cast<std::uint16_t>(clock_id::adc), {1U}, {80'000'000U}, clock_source},
+    core::clock_node{static_cast<std::uint16_t>(clock_id::pll_f80m), {80'000'000U}, {80'000'000U}, clock_source},
 };
 
 constexpr core::clock_edge clock_edge(clock_id source, clock_id destination,
@@ -137,15 +139,115 @@ inline constexpr std::array clock_edges{
     clock_edge(clock_id::rc_slow, clock_id::lp_slow, 1, false, 0),
     clock_edge(clock_id::xtal32k, clock_id::lp_slow, 1, false, 1),
     clock_edge(clock_id::lp_fast, clock_id::lp_peripheral, 256, true),
-    clock_edge(clock_id::rc_fast, clock_id::uart, 256, true),
+    clock_edge(clock_id::rc_fast, clock_id::uart, 256, true, 1),
     clock_edge(clock_id::xtal, clock_id::i2c, 256, true),
     clock_edge(clock_id::spll, clock_id::gpspi, 256, true),
+    clock_edge(clock_id::xtal, clock_id::i2s, 256, true),
     clock_edge(clock_id::spll, clock_id::adc, 256, true),
+    clock_edge(clock_id::xtal, clock_id::uart, 256, true, 0),
+    clock_edge(clock_id::pll_f80m, clock_id::uart, 256, true, 2),
+    core::clock_edge{static_cast<std::uint16_t>(clock_id::cpll),
+                     static_cast<std::uint16_t>(clock_id::pll_f80m),
+                     5U, 5U, false, core::clock_route_kind::fixed, 0U,
+                     clock_source},
 };
 
 inline constexpr std::uintptr_t hp_clkrst_base = 0x500E'6000U;
+inline constexpr std::uintptr_t hp_soc_clock_ctrl1 = hp_clkrst_base + 0x18U;
+inline constexpr std::uintptr_t hp_soc_clock_ctrl2 = hp_clkrst_base + 0x1CU;
+inline constexpr std::uintptr_t hp_soc_clock_ctrl3 = hp_clkrst_base + 0x20U;
 inline constexpr std::uintptr_t hp_rst_en0 = hp_clkrst_base + 0xC0U;
 inline constexpr std::uintptr_t hp_rst_en1 = hp_clkrst_base + 0xC4U;
+inline constexpr std::uintptr_t hp_rst_en2 = hp_clkrst_base + 0xC8U;
+
+struct uart_clock_control {
+    std::uint8_t instance;
+    std::uintptr_t system_gate_register;
+    std::uint32_t system_gate_mask;
+    std::uintptr_t apb_gate_register;
+    std::uint32_t apb_gate_mask;
+    std::uintptr_t source_register;
+    std::uintptr_t divider_register;
+    std::uintptr_t reset_register;
+    std::uint32_t core_reset_mask;
+    std::uint32_t apb_reset_mask;
+    core::source_ref provenance;
+};
+
+consteval auto make_uart_clock_controls() {
+    std::array<uart_clock_control, 5> result{};
+    for (std::uint8_t instance = 0U; instance < result.size(); ++instance) {
+        result[instance] = {
+            .instance = instance,
+            .system_gate_register = hp_soc_clock_ctrl1,
+            .system_gate_mask = 1U << (18U + instance),
+            .apb_gate_register = hp_soc_clock_ctrl2,
+            .apb_gate_mask = 1U << (7U + instance),
+            .source_register = hp_clkrst_base + 0x68U + instance * 4U,
+            .divider_register = hp_clkrst_base + 0x6CU + instance * 4U,
+            .reset_register = hp_rst_en1,
+            .core_reset_mask = 1U << (8U + instance),
+            .apb_reset_mask = 1U << (13U + instance),
+            .provenance = clock_source,
+        };
+    }
+    return result;
+}
+
+inline constexpr auto uart_clock_controls = make_uart_clock_controls();
+
+struct spi_clock_control {
+    std::uint8_t instance;
+    std::uintptr_t system_gate_register;
+    std::uint32_t system_gate_mask;
+    std::uintptr_t apb_gate_register;
+    std::uint32_t apb_gate_mask;
+    std::uintptr_t source_register;
+    std::uint8_t source_select_shift;
+    std::uint8_t high_speed_enable_shift;
+    std::uint8_t high_speed_divider_shift;
+    std::uint8_t master_divider_shift;
+    std::uint8_t master_enable_shift;
+    std::uintptr_t reset_register;
+    std::uint32_t reset_mask;
+    core::source_ref provenance;
+};
+
+// GPSPI2/3 use their own system/APB gates and reset bits. GPSPI2's source,
+// high-speed pre-divider and master pre-divider share PERI_CLK_CTRL116.
+inline constexpr std::array spi_clock_controls{
+    spi_clock_control{2U, hp_soc_clock_ctrl1, 1U << 0U,
+                      hp_soc_clock_ctrl2, 1U << 19U,
+                      hp_clkrst_base + 0x80U, 0U, 3U, 4U, 12U, 20U,
+                      hp_rst_en2, 1U << 7U, clock_source},
+};
+
+struct i2c_clock_control {
+    std::uint8_t instance;
+    std::uintptr_t apb_gate_register;
+    std::uint32_t apb_gate_mask;
+    std::uintptr_t source_register;
+    std::uintptr_t divider_register;
+    std::uint8_t source_select_shift;
+    std::uint8_t controller_enable_shift;
+    std::uint8_t divider_shift;
+    std::uintptr_t reset_register;
+    std::uint32_t reset_mask;
+    core::source_ref provenance;
+};
+
+// I2C0 keeps its source, controller gate and integer divider in PERI_CLK_CTRL10.
+// I2C1 shares the source/gate register and places its divider in CTRL11.
+inline constexpr std::array i2c_clock_controls{
+    i2c_clock_control{0U, hp_soc_clock_ctrl2, 1U << 19U,
+                      hp_clkrst_base + 0x40U, hp_clkrst_base + 0x40U,
+                      0U, 1U, 2U,
+                      hp_rst_en1, 1U << 9U, clock_source},
+    i2c_clock_control{1U, hp_soc_clock_ctrl2, 1U << 18U,
+                      hp_clkrst_base + 0x40U, hp_clkrst_base + 0x44U,
+                      26U, 27U, 0U,
+                      hp_rst_en1, 1U << 10U, clock_source},
+};
 
 using hp_root_clock_ctrl0 = core::register_descriptor<std::uint32_t, 0x04,
     core::access_semantics::read_write, 0xFFFF'FFFFU, false,
@@ -165,11 +267,11 @@ inline constexpr std::array reset_controls{
     core::reset_control{static_cast<std::uint16_t>(reset_id::systimer), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, 1U << 26U, true, 0U, clock_source},
     core::reset_control{static_cast<std::uint16_t>(reset_id::timer_group0), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, 1U << 25U, true, 0U, clock_source},
     core::reset_control{static_cast<std::uint16_t>(reset_id::timer_group1), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, 1U << 24U, true, 0U, clock_source},
-    core::reset_control{static_cast<std::uint16_t>(reset_id::uart0), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, (1U << 23U) | (1U << 18U), true, 0U, clock_source},
+    core::reset_control{static_cast<std::uint16_t>(reset_id::uart0), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, (1U << 8U) | (1U << 13U), true, 0U, clock_source},
     core::reset_control{static_cast<std::uint16_t>(reset_id::i2c0), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, 1U << 9U, true, 0U, clock_source},
     core::reset_control{static_cast<std::uint16_t>(reset_id::mcpwm0), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, 1U << 7U, true, 0U, clock_source},
     core::reset_control{static_cast<std::uint16_t>(reset_id::ledc), static_cast<std::uint16_t>(clock_id::apb), hp_rst_en1, 1U << 2U, true, 0U, clock_source},
-    core::reset_control{static_cast<std::uint16_t>(reset_id::gdma_ahb), static_cast<std::uint16_t>(clock_id::sys), hp_rst_en1, 1U << 30U, true, 0U, clock_source},
+    core::reset_control{static_cast<std::uint16_t>(reset_id::gdma_ahb), static_cast<std::uint16_t>(clock_id::sys), hp_rst_en1, 1U << 1U, true, 0U, clock_source},
     core::reset_control{static_cast<std::uint16_t>(reset_id::gdma_axi), static_cast<std::uint16_t>(clock_id::sys), hp_rst_en1, 1U << 29U, true, 0U, clock_source},
     core::reset_control{static_cast<std::uint16_t>(reset_id::dma_2d), static_cast<std::uint16_t>(clock_id::sys), hp_rst_en0, 1U << 0U, true, 0U, clock_source},
 };
@@ -179,6 +281,10 @@ inline constexpr std::array system_registers{
     register_record{"HP_SYS_CLKRST_ROOT_CLK_CTRL1_REG", hp_clkrst_base + 0x08U, 4, core::access_semantics::read_write, 0xFFFF'FFFFU, 0U, 0U, core::reserved_bit_policy::preserve, clock_source},
     register_record{"HP_SYS_CLKRST_ROOT_CLK_CTRL2_REG", hp_clkrst_base + 0x0CU, 4, core::access_semantics::read_write, 0xFFFF'FFFFU, 0U, 0U, core::reserved_bit_policy::preserve, clock_source},
     register_record{"HP_SYS_CLKRST_SOC_CLK_CTRL2_REG", hp_clkrst_base + 0x1CU, 4, core::access_semantics::read_write, 0xFFFF'FFFFU, 0U, 0U, core::reserved_bit_policy::preserve, clock_source},
+    register_record{"HP_SYS_CLKRST_PERI_CLK_CTRL10_REG", hp_clkrst_base + 0x40U, 4, core::access_semantics::read_write, 0x0FFF'FFFFU, 0U, 0U, core::reserved_bit_policy::preserve, clock_source},
+    register_record{"HP_SYS_CLKRST_PERI_CLK_CTRL11_REG", hp_clkrst_base + 0x44U, 4, core::access_semantics::read_write, 0x00FF'FFFFU, 0U, 0U, core::reserved_bit_policy::preserve, clock_source},
+    register_record{"HP_SYS_CLKRST_PERI_CLK_CTRL110_REG", hp_clkrst_base + 0x68U, 4, core::access_semantics::read_write, 0x0700'0000U, 0U, 0x0400'0000U, core::reserved_bit_policy::preserve, clock_source},
+    register_record{"HP_SYS_CLKRST_PERI_CLK_CTRL111_REG", hp_clkrst_base + 0x6CU, 4, core::access_semantics::read_write, 0x07FF'FFFFU, 0U, 0x0400'0000U, core::reserved_bit_policy::preserve, clock_source},
     register_record{"HP_SYS_CLKRST_HP_RST_EN0_REG", hp_rst_en0, 4, core::access_semantics::read_write, 0xFFFF'FFFFU, 0U, 0U, core::reserved_bit_policy::preserve, clock_source},
     register_record{"HP_SYS_CLKRST_HP_RST_EN1_REG", hp_rst_en1, 4, core::access_semantics::read_write, 0xF7FF'FFFFU, 0U, 0U, core::reserved_bit_policy::preserve, clock_source},
 };

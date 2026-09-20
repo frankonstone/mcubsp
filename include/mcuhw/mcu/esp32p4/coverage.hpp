@@ -80,7 +80,7 @@ inline constexpr std::array complete_source_inventory{
     reviewed_source_unit("46", "SPI Controller (SPI)", 2819, planned),
     reviewed_source_unit("47", "I2C Controller (I2C)", 2979, planned),
     reviewed_source_unit("48", "Analog I2C Controller", 3062),
-    reviewed_source_unit("49", "I2S Controller (I2S)", 3070),
+    reviewed_source_unit("49", "I2S Controller (I2S)", 3070, planned),
     reviewed_source_unit("50", "LP I2S Controller", 3116),
     reviewed_source_unit("51", "Pulse Count Controller (PCNT)", 3142),
     reviewed_source_unit("52", "USB 2.0 High-Speed OTG", 3158),

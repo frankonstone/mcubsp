@@ -1,0 +1,99 @@
+PLN-0019 ESP32-P4-NANO custom-loader, GPIO and UART application evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO
+part: ESP32-P4NRW32
+serial transport: CH343 USB-to-UART
+port: /dev/cu.usbmodem5A7A0368561
+mac: 30:ed:a0:e1:92:01
+source base commit: 04865955b37110eb6318ce449248d5018f355843
+firmware: pln-0019-native-app-v4
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+configuration: revision v1.0 minimum, unicore, DIO, 80 MHz flash, 16 MiB image header
+execution: HP CPU0; ESP-IDF pre-scheduler application startup; no RTOS scheduler
+startup limitation: ESP-IDF initializes heap and system services before the application hook;
+  the test path itself is allocation-free
+
+flash layout and images:
+  0x00002000 custom second-stage loader, 21968 bytes,
+    sha256 bcfba850bd8fe28e80556bbaf7376b2fccbb6fcc51e69585a078e88afb45828e
+  0x00008000 partition table, 3072 bytes,
+    sha256 7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820
+  0x00010000 factory application, 179152 bytes (1 MiB partition),
+    sha256 353d15e32ccb74b0b37e15dbf7bff79566478668e6b7143340a3b42998ed23d3
+boot policy: custom loader validates the partition table and boots only factory
+separation check: loader ELF has no test, mcutest, MCUCOV, GPIO or UART symbols;
+  the registered tests, run_uart_preflight, run_tests_and_dump_coverage and
+  __wrap_esp_startup_start_app are in the application ELF
+flash verification: esptool post-write hash verification passed
+
+test framework: two registered mcutest TEST cases, mcutest::Runner UART output
+GPIO observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
+UART observation: UART0 clock/source/divider readback plus physical marker received
+  through the on-board CH343 bridge only after mcuhw backend initialization
+UART configuration: 40 MHz XTAL source, requested 115200 baud, achieved 115191 baud
+UART completion: finite transfer remained active until UART TX_DONE
+result: 2 tests, 0 failures, registry overflow 0
+mcutest JSON: 1741 bytes,
+  sha256 a3816a23f29486911b30cb4f06c6ab45c22bf0dc6c06c096d365dae7cedbcf5d
+physical scope: UART TX is observed through direct USB; RX and injected line errors
+  remain host-tested only until a loopback or fixture provides external stimulus
+
+coverage: MCUCOV FULL profile, build id 0x4d485004, UART hex transport
+instrumented targets: board/esp32p4_nano/tests/gpio.cpp,
+  board/esp32p4_nano/tests/uart.cpp and included mcuhw headers;
+  loader, application startup and coverage transport are uninstrumented harness code
+coverage frame: 2065 bytes,
+  sha256 b5a2c9d137da6b4b3f83768fcc1558cb0bf89651dd419a8432c101f3a14b08ac
+coverage JSON: 356924 bytes,
+  sha256 f3fc867a372f7285ab8271e8d95e2c7be2dbc948028f90071ef6c110df2bf090
+coverage HTML: 433221 bytes,
+  sha256 4bb6f11ec807201fe71e60a581acc9e83e60d52d2985fa47dbdcfb2981ecc320
+coverage summary: functions 61/112, statements 257/594, lines 311/664,
+  branches 107/340, MC/DC conditions 12/244, invalid MC/DC decisions 0
+target-filtered mcutrace coverage JSON: 186915 bytes,
+  sha256 f83695c28607adc98e399afeb2ea180128e7f900ae195240e2d95f3b86a9ddcd
+target-filtered summary: functions 32/49, statements 175/333, lines 205/352,
+  branches 77/198, MC/DC conditions 9/145, invalid MC/DC decisions 0
+coverage scope note: two on-board happy paths; host tests cover rejected,
+  boundary, RX and error paths
+instrumentation limitations: 123 skipped constructs (80 info, 43 warning,
+  0 error), primarily constexpr/static-initialization decisions, switch cases
+  and one decision beyond the configured MC/DC condition limit
+manifest transport note: the report runner splits generated translation-unit
+  manifests by source module to remain within the fixed MCUCOV host JSON arena;
+  module and probe identities are unchanged
+
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0x1 (POWERON),boot:0x30f (SPI_FAST_FLASH_BOOT)
+SPI mode:DIO, clock div:1
+I (25) boot: ESP-IDF v6.1 2nd stage bootloader
+I (27) boot: chip revision: v1.0
+I (32) boot.esp32p4: SPI Speed      : 80MHz
+I (36) boot.esp32p4: SPI Mode       : DIO
+I (39) boot.esp32p4: SPI Flash Size : 16MB
+I (48) boot: Partition Table:
+I (57) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (63) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (70) boot:  2 factory          factory app      00 00 00010000 00100000
+MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+I (141) boot: Loaded app from partition at offset 0x10000
+I (152) cpu_start: Unicore app
+I (152) cpu_start: Single core mode
+I (162) cpu_start: cpu freq: 360000000 Hz
+I (203) heap_init: Initializing. RAM available for dynamic allocation:
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v4 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
+MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
+esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
+-----------------------
+2 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_native tests=2 failures=0 registry_overflow=0 coverage=captured
+
+Original second-stage bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce
+This backup does not include the original partition table or application.

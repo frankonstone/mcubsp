@@ -10,6 +10,9 @@ sources = [
   "board/nucleo_h753zi/**/*.cpp",
   "board/nucleo_h753zi/**/*.hpp",
   "board/nucleo_h753zi/*.S",
+  "board/esp32p4_nano/tests/*.cpp",
+  "board/esp32p4_nano/baremetal_smoke/main/app_start.cpp",
+  "board/esp32p4_nano/baremetal_smoke/bootloader_components/main/*.cpp",
 ]
 build_files = [
   "CMakeLists.txt",
@@ -19,6 +22,7 @@ build_files = [
   "tests/CMakeLists.txt",
   "tools/run-uno-r4-minima-tests.sh",
   "tools/run-nucleo-h753zi-*.sh",
+  "tools/run-esp32p4-nano-smoke.sh",
   "tools/read-serial-banner.py",
 ]
 
@@ -52,6 +56,14 @@ importer = "mcutest"
 
 [[artifacts]]
 path = "build/nucleo-h753zi/artifacts/mcuhw_nucleo_h753zi_native_peripherals.mcucov.json"
+importer = "mcucov"
+
+[[artifacts]]
+path = "board/esp32p4_nano/baremetal_smoke/build/artifacts/esp32p4_native_smoke.mcutest.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "board/esp32p4_nano/baremetal_smoke/build/artifacts/esp32p4_native_smoke.trace.mcucov.json"
 importer = "mcucov"
 
 [validation]

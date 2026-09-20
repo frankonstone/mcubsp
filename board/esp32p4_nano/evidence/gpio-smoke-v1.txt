@@ -1,0 +1,52 @@
+PLN-0019 ESP32-P4-NANO GPIO smoke evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO
+part: ESP32-P4NRW32
+serial transport: CH343 USB-to-UART
+port: /dev/cu.usbmodem5A7A0368561
+mac: 30:ed:a0:e1:92:01
+source base commit: 04865955b37110eb6318ce449248d5018f355843
+firmware: pln-0019-gpio-smoke-v1
+bootloader image bytes: 24304
+bootloader image sha256: bb60ccd3885f7b7cea912bbcf8cdbfd8b2554cb303202f6af59827b8bc049b1f
+flash verification: esptool post-write hash verification passed
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+configuration: revision v1.0 minimum, DIO, 80 MHz flash, 2 MiB image header
+execution: HP CPU0, second-stage bootloader, no RTOS scheduler
+test framework: mcutest registered TEST case, mcutest::Runner UART output
+observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
+tolerance: exact register bit equality
+coverage: MCUCOV FULL profile, build id 0x4d485001, UART hex transport
+instrumented target: board/esp32p4_nano/tests/gpio.cpp and included mcuhw headers;
+  bootloader startup and coverage transport are uninstrumented harness code
+coverage frame bytes: 628
+coverage frame sha256: 85e8bdb7e0c7b5578d35256ffd1521b1fcf587121eaaca5036f0e06a7f2d63a6
+coverage summary: functions 22/33, statements 107/173, lines 129/204,
+  branches 44/104, MC/DC conditions 6/70, invalid MC/DC decisions 0
+coverage scope note: one on-board happy path; host tests cover rejected and
+  boundary paths
+instrumentation limitations: 76 skipped constructs (57 info, 19 warning,
+  0 error), primarily constexpr code and static-initialization decisions
+
+ESP-ROM:esp32p4-eco2-20240710
+Build:Jul 10 2024
+rst:0x1 (POWERON),boot:0x30f (SPI_FAST_FLASH_BOOT)
+SPI mode:DIO, clock div:1
+I (25) boot: ESP-IDF v6.1 2nd stage bootloader
+I (27) boot: chip revision: v1.0
+I (28) boot: efuse block revision: v0.3
+I (32) boot.esp32p4: SPI Speed      : 80MHz
+I (36) boot.esp32p4: SPI Mode       : DIO
+I (40) boot.esp32p4: SPI Flash Size : 2MB
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-gpio-smoke-v1 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=90 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
+esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
+-----------------------
+1 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_gpio tests=1 failures=0 registry_overflow=0 coverage=captured
+
+Original bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce

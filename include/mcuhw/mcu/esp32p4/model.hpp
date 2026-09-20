@@ -125,6 +125,7 @@ enum class peripheral_kind : std::uint16_t {
     i2c,
     uart,
     spi,
+    i2s,
     adc,
     gdma_ahb,
     gdma_axi,
@@ -157,7 +158,9 @@ enum class clock_id : std::uint16_t {
     uart,
     i2c,
     gpspi,
+    i2s,
     adc,
+    pll_f80m,
 };
 
 enum class signal : std::uint16_t {
@@ -175,6 +178,11 @@ enum class signal : std::uint16_t {
     spi2_mosi,
     i2c0_scl,
     i2c0_sda,
+    i2s0_mclk,
+    i2s0_bclk,
+    i2s0_ws,
+    i2s0_data_out,
+    i2s0_data_in,
     ledc_ch0,
     mcpwm0_out0a,
     mcpwm0_out0b,

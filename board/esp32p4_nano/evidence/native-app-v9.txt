@@ -1,0 +1,84 @@
+PLN-0019 ESP32-P4-NANO audible audio application evidence
+date: 2026-09-20
+qualification: development-only (connected silicon v1.0 is outside accepted v3.x description)
+board: Waveshare ESP32-P4-NANO
+part: ESP32-P4NRW32
+port: /dev/cu.usbmodem5A7A0368561
+firmware: pln-0019-native-app-v9
+toolchain: riscv32-esp-elf GCC 15.2.0, C++23
+ESP-IDF: v6.1
+execution: HP CPU0; ESP-IDF pre-scheduler application startup; no RTOS scheduler
+
+flash layout and images:
+  0x00002000 custom second-stage loader, 21968 bytes,
+    sha256 bcfba850bd8fe28e80556bbaf7376b2fccbb6fcc51e69585a078e88afb45828e
+  0x00008000 partition table, 3072 bytes,
+    sha256 7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820
+  0x00010000 factory application, 251840 bytes (1 MiB partition),
+    sha256 779771d928d234df28f7589aefa8625b2795572270bdbdc59a27d9d6f9208341
+boot policy: custom loader validates the partition table and boots only factory
+flash verification: esptool post-write hash verification passed
+
+test framework: five registered mcutest TEST cases, mcutest::Runner UART output
+GPIO observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
+I2C observation: I2C0 at 100 kHz on GPIO8 SCL and GPIO7 SDA performed physical
+  register-select write/repeated-START/read/STOP transactions against the
+  on-board ES8311 at address 0x18; identity 0x8311, version 0x01
+audio observation: ES8311 configured for 48 kHz stereo 16-bit Philips I2S;
+  I2S0 and AHB-PDMA captured 4032 bytes from the analog microphone with 2012
+  nonzero samples, minimum -1582 and maximum 337; TX DMA then completed 193536
+  bytes of a 1008 ms, 1 kHz triangle wave with peak sample magnitude 6000 while
+  GPIO53 enabled the amplifier
+audio sequencing: codec DAC gain was set to 0 dB and held muted while the
+  amplifier enabled and settled; playback was unmuted for 48 DMA blocks, then
+  muted before the amplifier was disabled
+audio cache contract: RX storage was 64-byte aligned and occupied whole cache
+  lines; cache was written back/invalidated before DMA and invalidated after DMA
+audio scope: codec configuration, live microphone data and RX/TX DMA completion
+  are observed; a human-audible stimulus is intentionally generated, but no
+  independent microphone/audio analyzer was present, so acoustic speaker level,
+  frequency and distortion are not claimed by the automated result
+SPI observation: GPSPI2 at 1 MHz on GPIO20 MISO, GPIO21 MOSI, GPIO22 SCK and
+  GPIO23 CS completed one four-frame, two-segment CPU-buffer command; no slave,
+  loopback or logic analyzer was connected
+UART observation: UART0 physical marker received through the on-board CH343
+  bridge only after finite transfer TX_DONE completion
+result: 5 tests, 0 failures, registry overflow 0
+mcutest JSON: 4455 bytes,
+  sha256 98679b85cfc571bfd5243abcd9f3913342f8bf5ab42e71dd0e45432892cce5d5
+
+coverage: MCUCOV FULL profile, build id 0x4d485009, UART hex transport
+instrumented targets: board GPIO/I2C/I2S-audio/SPI/UART tests and included
+  mcuhw headers; loader, application startup and transport are harness code
+coverage frame: 8351 bytes,
+  sha256 f5313251aa40920842cadeb66e1eb728c940da96f2e160f001b5205d74fcea9f
+coverage JSON: 751100 bytes,
+  sha256 dc141d02915791c3df8fb766890411d6bcc711f23e5653abd65346ef1db7d5d8
+coverage HTML: 688533 bytes,
+  sha256 1c588ead66ca4e5098bd744c4eebe44a34a218f640e9b9e458ce4ce7c1151cf6
+coverage summary: functions 126/195, statements 765/1324, lines 872/1415,
+  branches 328/770, MC/DC conditions 44/570, invalid MC/DC decisions 0
+target-filtered mcutrace coverage JSON: 581143 bytes,
+  sha256 e01d451649b2c1bf5b28c1a4f575c31f514f9ccee1d0d29db31ec97dcbdb146f
+target-filtered summary: functions 94/132, statements 670/1063, lines 752/1103,
+  branches 296/628, MC/DC conditions 41/471, invalid MC/DC decisions 0
+
+MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v9 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=mixed_board_native qualification=development
+MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
+MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
+esp32p4_i2c/i2c0_reads_onboard_es8311_identity_with_repeated_start:PASS
+MCUHW_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=philips16 capture_bytes=4032 mic_nonzero=2012 mic_min=-1582 mic_max=337 playback_bytes=193536 tone_hz=1000 tone_peak=6000 duration_ms=1008 amp_gpio=53 verification=dma_codec_readback_no_acoustic_oracle
+esp32p4_audio/captures_onboard_microphone_and_plays_audible_tone:PASS
+MCUHW_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none
+esp32p4_spi/gpspi2_executes_one_native_multisegment_command:PASS
+esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
+5 Tests, 0 Failures
+MCUHW_RESULT status=pass suite=esp32p4_native tests=5 failures=0 registry_overflow=0 coverage=captured
+
+Original second-stage bootloader backup (not stored in the repository):
+/private/tmp/esp32p4-nano-original-bootloader-20260920.bin
+bytes: 24576
+sha256: 3f8c8b47a0bfd3a8d83e1018d3a88db53f05b04be4dc7fc6c11661d76f62fdce
+This backup does not include the original partition table or application.
