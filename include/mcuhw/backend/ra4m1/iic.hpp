@@ -179,10 +179,14 @@ public:
             phase_ = phase::read_address;
             address_written_ = false;
             address_phase_ = true;
-            if (!request_condition(1U << 2U)) { // repeated START
+            // Enable TXI before requesting repeated START. The RA IIC can
+            // assert TDRE as the condition is generated; enabling TIE after
+            // the request can lose the event on real hardware.
+            if (!write_interrupt_enable(interrupt_errors | irq_tie)
+                || !request_condition(1U << 2U)) { // repeated START
                 return finish_immediately(driver::i2c_error::mmio);
             }
-            return write_interrupt_enable(interrupt_errors | irq_tie);
+            return true;
         }
         return request_stop();
     }
@@ -192,10 +196,13 @@ public:
             return false;
         }
         if (phase_ == phase::receive_dummy) {
-            address_phase_ = false;
-            if (read_bytes_.size() <= 2U && !set_receive_end_controls()) {
+            if (read_bytes_.size() <= 2U && !set_receive_wait(true)) {
                 return finish_immediately(driver::i2c_error::mmio);
             }
+            if (read_bytes_.size() == 1U && !set_receive_nack()) {
+                return finish_immediately(driver::i2c_error::mmio);
+            }
+            address_phase_ = false;
             const auto dummy = mmio_.template read<std::uint8_t>(
                 base() + 0x13U);
             if (!dummy) {
@@ -208,12 +215,14 @@ public:
             || read_index_ >= read_bytes_.size()) {
             return false;
         }
-        if (read_index_ + 2U == read_bytes_.size()
-            && !set_receive_end_controls()) {
+        const auto remaining = read_bytes_.size() - read_index_;
+        if (remaining == 3U && !set_receive_wait(true)) {
             return finish_immediately(driver::i2c_error::mmio);
         }
-        const bool last = read_index_ + 1U == read_bytes_.size();
-        if (last && !request_stop()) {
+        if (remaining == 2U && !set_receive_nack()) {
+            return finish_immediately(driver::i2c_error::mmio);
+        }
+        if (remaining == 1U && !request_stop()) {
             return finish_immediately(driver::i2c_error::mmio);
         }
         const auto value = mmio_.template read<std::uint8_t>(base() + 0x13U);
@@ -221,6 +230,9 @@ public:
             return finish_immediately(driver::i2c_error::mmio);
         }
         read_bytes_[read_index_++] = *value;
+        if (remaining == 1U && !set_receive_wait(false)) {
+            return finish_immediately(driver::i2c_error::mmio);
+        }
         return true;
     }
 
@@ -403,11 +415,30 @@ private:
             base() + 0x01U, static_cast<std::uint8_t>(*control | bit));
     }
 
-    [[nodiscard]] bool set_receive_end_controls() noexcept {
+    [[nodiscard]] bool set_receive_wait(bool enabled) noexcept {
         const auto mode = mmio_.template read<std::uint8_t>(base() + 0x04U);
         return mode && write<std::uint8_t>(
             base() + 0x04U,
-            static_cast<std::uint8_t>(*mode | (1U << 6U) | (1U << 3U)));
+            enabled ? static_cast<std::uint8_t>(*mode | (1U << 6U))
+                    : static_cast<std::uint8_t>(*mode & ~(1U << 6U)));
+    }
+
+    [[nodiscard]] bool set_receive_nack() noexcept {
+        const auto mode = mmio_.template read<std::uint8_t>(base() + 0x04U);
+        if (!mode) {
+            return false;
+        }
+        // ACKBT is write-protected. ACKWP must already be set before the
+        // write that changes ACKBT; setting both bits in one write is ignored.
+        const auto write_enabled =
+            static_cast<std::uint8_t>(*mode | (1U << 4U));
+        const auto nack =
+            static_cast<std::uint8_t>(write_enabled | (1U << 3U));
+        return write<std::uint8_t>(base() + 0x04U, write_enabled)
+            && write<std::uint8_t>(base() + 0x04U, nack)
+            && write<std::uint8_t>(base() + 0x04U,
+                                   static_cast<std::uint8_t>(nack
+                                                             & ~(1U << 4U)));
     }
 
     [[nodiscard]] bool finish_stop() noexcept {

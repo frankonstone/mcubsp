@@ -5,8 +5,12 @@
 #include <span>
 #include <string_view>
 
+#if defined(MCUHW_BOARD_TEST_NO_COVERAGE)
+#define MCUCOV_NO_INSTRUMENT
+#else
 #include <mcucov/mcucov.hpp>
 #include <mcucov/sinks/buffered.hpp>
+#endif
 #include <mcujson/mcujson.hpp>
 #include <mcutest/mcutest.hpp>
 
@@ -118,6 +122,7 @@ struct evidence_metadata {
     std::string_view firmware;
     std::string_view fixture;
     std::uint32_t coverage_build_id;
+    bool coverage_enabled{true};
 };
 
 inline char evidence_buffer[8192]{};
@@ -172,12 +177,14 @@ bool write_evidence_report(const evidence_metadata& metadata,
                 clocks("pclkb", 24'000'000U);
                 clocks("pclkd", 48'000'000U);
             });
-            run.object("coverage", [&](auto& coverage) {
-                coverage("producer", "mcucov");
-                coverage("profile", "full");
-                coverage("build_id", metadata.coverage_build_id);
-                coverage("transport_encoding", "SLIP frame as RTT hex");
-            });
+            if (metadata.coverage_enabled) {
+                run.object("coverage", [&](auto& coverage) {
+                    coverage("producer", "mcucov");
+                    coverage("profile", "full");
+                    coverage("build_id", metadata.coverage_build_id);
+                    coverage("transport_encoding", "SLIP frame as RTT hex");
+                });
+            }
         });
         root.object("summary", [&](auto& summary) {
             summary("tests", observations.count);
@@ -243,6 +250,9 @@ struct coverage_hex_sink {
     }
 };
 
+#if defined(MCUHW_BOARD_TEST_NO_COVERAGE)
+inline bool dump_coverage() noexcept { return true; }
+#else
 inline bool MCUCOV_NO_INSTRUMENT dump_coverage() noexcept {
     constexpr char prefix[] = "MCUHW_COVERAGE_HEX:";
     testing::rtt::write_blocking(prefix, sizeof(prefix) - 1U);
@@ -253,6 +263,7 @@ inline bool MCUCOV_NO_INSTRUMENT dump_coverage() noexcept {
     testing::rtt::write_blocking(newline, 1U);
     return written;
 }
+#endif
 
 template<std::size_t MetadataSize>
 void start(const char (&metadata)[MetadataSize]) noexcept {
@@ -270,7 +281,7 @@ template<typename DetailWriter>
     const bool passed = runner.summary() == 0;
     const bool report_written = write_evidence_report(
         metadata, observations, static_cast<DetailWriter&&>(write_details));
-    const bool coverage_written = dump_coverage();
+    const bool coverage_written = !metadata.coverage_enabled || dump_coverage();
     const bool complete = passed && report_written && coverage_written;
     constexpr char pass_result[] = "MCUHW_RESULT:PASS\n";
     constexpr char fail_result[] = "MCUHW_RESULT:FAIL\n";

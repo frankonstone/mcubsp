@@ -4,26 +4,17 @@ requirements = ["requirements.md"]
 plans = ["implementation-plan.md"]
 sources = [
   "include/mcuhw/**/*.hpp",
-  "board/uno_r4_minima/**/*.cpp",
-  "board/uno_r4_minima/**/*.hpp",
-  "board/uno_r4_minima/*.S",
-  "board/nucleo_h753zi/**/*.cpp",
-  "board/nucleo_h753zi/**/*.hpp",
-  "board/nucleo_h753zi/*.S",
+  "board/uno_r4_minima/**/*.?pp",
+  "board/nucleo_h753zi/**/*.?pp",
+  "board/*o*/startup.S",
   "board/esp32p4_nano/tests/*.cpp",
-  "board/esp32p4_nano/baremetal_smoke/main/app_start.cpp",
-  "board/esp32p4_nano/baremetal_smoke/bootloader_components/main/*.cpp",
+  "board/esp32p4_nano/baremetal_smoke/**/*_start.cpp",
 ]
 build_files = [
   "CMakeLists.txt",
   "cmake/*.cmake",
-  "board/uno_r4_minima/*.ld",
-  "board/nucleo_h753zi/*.ld",
-  "tests/CMakeLists.txt",
-  "tools/run-uno-r4-minima-tests.sh",
-  "tools/run-nucleo-h753zi-*.sh",
-  "tools/run-esp32p4-nano-smoke.sh",
-  "tools/read-serial-banner.py",
+  "board/**/*.ld",
+  "tools/*",
 ]
 
 [[artifacts]]
@@ -31,19 +22,7 @@ path = "build/host/artifacts/mcutest.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_startup_gpio_tests.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_gpio_loopback_tests.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_pwm_tests.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_uart_tests.json"
+path = "build/uno-r4-minima/artifacts/mcutest-hardware.json"
 importer = "mcutest"
 
 [[artifacts]]

@@ -6,11 +6,13 @@
 #include <expected>
 #include <optional>
 #include <span>
+#include <utility>
 
 #include <mcuhw/arch/barrier.hpp>
 #include <mcuhw/core/metadata.hpp>
 #include <mcuhw/core/transfer.hpp>
 #include <mcuhw/driver/adc.hpp>
+#include <mcuhw/driver/dma.hpp>
 #include <mcuhw/mcu/ra4m1/description.hpp>
 
 namespace mcuhw::backend::ra4m1 {
@@ -54,8 +56,8 @@ template<std::size_t N>
 
 template<std::uint8_t Channel, core::pin_id Pin>
 struct adc_input {
-    static_assert(Channel <= 4U,
-                  "this RA4M1 package description exposes AN000..AN004");
+    static_assert(Channel <= 9U,
+                  "this RA4M1 package description exposes AN000..AN009");
     static_assert(core::route_exists(
         mcu::ra4m1::pin_routes, Pin,
         mcu::ra4m1::signal_id(adc_detail::signal_for(Channel))));
@@ -75,7 +77,7 @@ struct adc14_binding {
 };
 
 template<typename Binding, typename MmioPolicy, typename ExecutionPolicy>
-// @req REQ-0014 REQ-0017 REQ-0019 REQ-0029
+// @req REQ-0014 REQ-0017 REQ-0019 REQ-0029 REQ-0030
 class adc14_backend {
 public:
     using pool_type = core::operation_pool<driver::adc_sequence_result,
@@ -158,8 +160,93 @@ public:
         return started;
     }
 
+    template<typename Dma>
+    [[nodiscard]] start_result
+    sample_dma(driver::adc_channel channel,
+               std::span<std::uint16_t> results, Dma& dma) noexcept {
+        if (!initialized_) {
+            return start_failure(driver::adc_error::not_initialized);
+        }
+        if (operation_id_) {
+            return start_failure(driver::adc_error::busy);
+        }
+        if (!is_bound(channel.value)) {
+            return start_failure(driver::adc_error::invalid_channel);
+        }
+        if (results.empty()) {
+            return start_failure(driver::adc_error::empty_sequence);
+        }
+        if (results.size() > 65'535U) {
+            return start_failure(driver::adc_error::excessive_length);
+        }
+        auto started = operations_.try_start(
+            {.quiesce = &cancel_operation, .context = this});
+        if (!started) {
+            return std::unexpected(started.error());
+        }
+        operation_id_ = started->id();
+        results_ = results;
+        dma_mode_ = true;
+        const auto mask = static_cast<std::uint16_t>(1U << channel.value);
+        if (!write<std::uint16_t>(base() + 0x04U, mask)
+            || !write<std::uint16_t>(base() + 0x00U,
+                                     adc_continuous)) {
+            static_cast<void>(finish_error(driver::adc_error::mmio));
+            return started;
+        }
+        auto dma_started = dma.peripheral({
+            .memory = reinterpret_cast<std::uintptr_t>(results.data()),
+            .peripheral = base() + 0x20U + 2U * channel.value,
+            .count = static_cast<std::uint32_t>(results.size()),
+            .width = driver::dma_width::bits16,
+            .event = mcu::ra4m1::event_number(
+                mcu::ra4m1::event::adc_scan_end),
+            .direction = driver::dma_peripheral_direction::peripheral_to_memory,
+        });
+        if (!dma_started) {
+            static_cast<void>(finish_error(driver::adc_error::dma));
+            return started;
+        }
+        dma_transfer_.emplace(std::move(*dma_started));
+        if (!write<std::uint16_t>(base() + 0x00U,
+                                  adc_continuous | adc_start)) {
+            static_cast<void>(finish_error(driver::adc_error::mmio));
+        }
+        return started;
+    }
+
+    [[nodiscard]] bool handle_dma_completion() noexcept {
+        if (!operation_id_ || !dma_mode_ || !dma_transfer_) {
+            return false;
+        }
+        const auto inspected = dma_transfer_->inspect();
+        if (!inspected) {
+            if (inspected.error().kind
+                == core::transfer_error_kind::pending) {
+                return false;
+            }
+            static_cast<void>(dma_transfer_->take());
+            dma_transfer_.reset();
+            return finish_error(driver::adc_error::dma);
+        }
+        const auto result = dma_transfer_->take();
+        dma_transfer_.reset();
+        if (!result || result->units != results_.size()
+            || result->width != driver::dma_width::bits16) {
+            return finish_error(driver::adc_error::dma);
+        }
+        const auto id = *operation_id_;
+        const auto samples = results_.size();
+        if (!write<std::uint16_t>(base() + 0x00U, 0U)
+            || !write<std::uint16_t>(base() + 0x04U, 0U)) {
+            return finish_error(driver::adc_error::mmio);
+        }
+        reset_conversion();
+        return operations_.complete(id, driver::adc_sequence_result{samples});
+    }
+
     [[nodiscard]] bool handle_scan_end_interrupt() noexcept {
-        if (!operation_id_) {
+        if (!operation_id_ || dma_mode_) {
             return false;
         }
         const auto control = mmio_.template read<std::uint16_t>(base() + 0x00U);
@@ -205,6 +292,7 @@ public:
 
 private:
     static constexpr std::uint16_t adc_start = 1U << 15U;
+    static constexpr std::uint16_t adc_continuous = 1U << 14U;
 
     [[nodiscard]] static constexpr std::uintptr_t base() noexcept {
         return Binding::metadata.base;
@@ -227,9 +315,11 @@ private:
         }
         // Clearing ADST is the manual's software stop operation. State and
         // spans are dropped synchronously, so a late ADI cannot touch them.
-        const bool stopped = self.template write<std::uint16_t>(
-                                 base() + 0x00U, 0U)
+        const bool dma_stopped = self.quiesce_dma_transfer();
+        const bool peripheral_stopped = self.template write<std::uint16_t>(
+                                            base() + 0x00U, 0U)
             && self.template write<std::uint16_t>(base() + 0x04U, 0U);
+        const bool stopped = dma_stopped && peripheral_stopped;
         self.reset_conversion();
         return stopped ? core::quiesce_result::reusable
                        : core::quiesce_result::faulted;
@@ -240,16 +330,38 @@ private:
             return false;
         }
         const auto id = *operation_id_;
+        const bool dma_stopped = quiesce_dma_transfer();
         static_cast<void>(write<std::uint16_t>(base() + 0x00U, 0U));
         static_cast<void>(write<std::uint16_t>(base() + 0x04U, 0U));
         reset_conversion();
-        return operations_.fail(id, error);
+        return operations_.fail(id, dma_stopped ? error
+                                                : driver::adc_error::dma);
+    }
+
+    [[nodiscard]] bool quiesce_dma_transfer() noexcept {
+        if (!dma_transfer_) return true;
+        const auto inspected = dma_transfer_->inspect();
+        if (!inspected
+            && inspected.error().kind == core::transfer_error_kind::pending) {
+            const auto cancelled = dma_transfer_->cancel();
+            if (!cancelled) {
+                static_cast<void>(dma_transfer_->take());
+                dma_transfer_.reset();
+                return false;
+            }
+        }
+        const auto retired = dma_transfer_->take();
+        dma_transfer_.reset();
+        return retired.has_value()
+            || retired.error().kind == core::transfer_error_kind::cancelled;
     }
 
     void reset_conversion() noexcept {
         operation_id_.reset();
         channels_ = {};
         results_ = {};
+        dma_transfer_.reset();
+        dma_mode_ = false;
     }
 
     [[nodiscard]] bool program_converter() noexcept {
@@ -362,6 +474,11 @@ private:
     std::span<const driver::adc_channel> channels_{};
     std::span<std::uint16_t> results_{};
     std::optional<core::operation_id> operation_id_{};
+    using dma_transfer_type = core::transfer<driver::dma_transfer_result,
+                                             driver::dma_error, 1,
+                                             ExecutionPolicy>;
+    std::optional<dma_transfer_type> dma_transfer_{};
+    bool dma_mode_{};
     bool owned_{};
     bool initialized_{};
 };

@@ -105,11 +105,11 @@ The `mcucov Coverage` VS Code extension loads the LCOV report into the native
 Test Coverage view. Run `mcucov: Refresh Coverage` if the view was already open
 when the report was generated.
 
-## Observation limits and deferred rows
+## Observation limits
 
 Register readback proves configuration, not external timing. Floating A0 proves
-the converter operates, not ADC accuracy. These cases remain for PLN-0022 once
-the adapter supplies independent stimulus or observation:
+the converter operates, not ADC accuracy. The following remain explicit
+non-claims unless target-specific stimulus or observation is added:
 
 - independently captured PWM frequency/duty and endpoint behavior;
 - calibrated ADC levels, reference/linearity checks and analog fault cases;

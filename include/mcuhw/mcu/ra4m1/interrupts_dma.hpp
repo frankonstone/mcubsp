@@ -157,8 +157,12 @@ inline constexpr std::array dma_requests{
     core::dma_request{event_number(event::gpt0_compare_a), dmac_constraints, icu_source},
     core::dma_request{event_number(event::sci0_rxi), dmac_constraints, icu_source},
     core::dma_request{event_number(event::sci0_txi), dmac_constraints, icu_source},
+    core::dma_request{event_number(event::sci2_rxi), dmac_constraints, icu_source},
+    core::dma_request{event_number(event::sci2_txi), dmac_constraints, icu_source},
     core::dma_request{event_number(event::spi0_rxi), dmac_constraints, icu_source},
     core::dma_request{event_number(event::spi0_txi), dmac_constraints, icu_source},
+    core::dma_request{event_number(event::spi1_rxi), dmac_constraints, icu_source},
+    core::dma_request{event_number(event::spi1_txi), dmac_constraints, icu_source},
 };
 
 inline constexpr std::array dma_reachability{

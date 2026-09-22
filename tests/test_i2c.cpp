@@ -69,6 +69,27 @@ static_assert(address.has_value());
     return false;
 }
 
+[[nodiscard]] bool write_precedes(
+    std::span<const mcuhw::testing::mmio_operation> ops,
+    std::uintptr_t first_address, std::uint64_t first_value,
+    std::uintptr_t second_address, std::uint64_t second_set) {
+    bool first_seen = false;
+    for (const auto& operation : ops) {
+        if (operation.kind != mcuhw::testing::mmio_operation_kind::write) {
+            continue;
+        }
+        if (!first_seen && operation.address == first_address
+            && operation.value == first_value) {
+            first_seen = true;
+        }
+        if (operation.address == second_address
+            && (operation.value & second_set) == second_set) {
+            return first_seen;
+        }
+    }
+    return false;
+}
+
 TEST(i2c_contract, rejects_reserved_addresses_and_solves_real_bus_timing,
      "REQ-0024") {
     EXPECT_TRUE(mcuhw::driver::make_i2c_address(0x07U).error()
@@ -148,9 +169,14 @@ TEST(ra4m1_i2c, combined_transfer_uses_repeated_start_without_stop,
     auto transfer = std::move(*started);
     EXPECT_TRUE(backend.handle_transmit_empty_interrupt()); // address W
     EXPECT_TRUE(backend.handle_transmit_empty_interrupt()); // register
+    const auto restart_begin = mmio.operations().size();
     EXPECT_TRUE(backend.handle_transmit_end_interrupt());   // repeated START
-    EXPECT_TRUE(has_write_bits(mmio.operations(), 0x4005'3101U,
+    const auto restart_operations = mmio.operations().subspan(restart_begin);
+    EXPECT_TRUE(has_write_bits(restart_operations, 0x4005'3101U,
                                1U << 2U, 1U << 3U));
+    EXPECT_TRUE(write_precedes(restart_operations,
+                               0x4005'3107U, 0x9BU,
+                               0x4005'3101U, 1U << 2U));
     EXPECT_TRUE(backend.handle_transmit_empty_interrupt()); // address R
     ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3113U, 0U).has_value());
     EXPECT_TRUE(backend.handle_receive_interrupt());        // dummy read
@@ -168,6 +194,83 @@ TEST(ra4m1_i2c, combined_transfer_uses_repeated_start_without_stop,
     EXPECT_EQ(response[0], 0x34U);
     EXPECT_EQ(response[1], 0x12U);
     EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3112U, 0xA1U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x40U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x50U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x58U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x48U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x08U));
+    ASSERT_TRUE(backend.shutdown().has_value());
+}
+
+TEST(ra4m1_i2c, one_byte_read_programs_nack_before_dummy_and_releases_wait,
+     "REQ-0024") {
+    mmio_type mmio{0x4001'E000U};
+    execution_type execution;
+    backend_type backend{mmio, execution};
+    ASSERT_TRUE(backend.initialize(*timing_100khz).has_value());
+    std::array<std::uint8_t, 1> response{};
+    auto started = backend.read(*address, response);
+    ASSERT_TRUE(started.has_value());
+    auto transfer = std::move(*started);
+    EXPECT_TRUE(backend.handle_transmit_empty_interrupt()); // address R
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3113U, 0U).has_value());
+    EXPECT_TRUE(backend.handle_receive_interrupt());        // dummy read
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3113U, 0x5AU).has_value());
+    EXPECT_TRUE(backend.handle_receive_interrupt());        // final byte
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3109U, 1U << 3U)
+                    .has_value());
+    EXPECT_TRUE(backend.handle_error_interrupt());
+    const auto result = transfer.take();
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->bytes_written, 0U);
+    EXPECT_EQ(result->bytes_read, 1U);
+    EXPECT_EQ(response[0], 0x5AU);
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x40U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x50U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x58U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x48U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x08U));
+    ASSERT_TRUE(backend.shutdown().has_value());
+}
+
+TEST(ra4m1_i2c, three_byte_read_sets_wait_before_penultimate_nack,
+     "REQ-0024") {
+    mmio_type mmio{0x4001'E000U};
+    execution_type execution;
+    backend_type backend{mmio, execution};
+    ASSERT_TRUE(backend.initialize(*timing_100khz).has_value());
+    const std::array<std::uint8_t, 1> command{0x20U};
+    std::array<std::uint8_t, 3> response{};
+    auto started = backend.write_read(*address, command, response);
+    ASSERT_TRUE(started.has_value());
+    auto transfer = std::move(*started);
+    EXPECT_TRUE(backend.handle_transmit_empty_interrupt()); // address W
+    EXPECT_TRUE(backend.handle_transmit_empty_interrupt()); // register
+    EXPECT_TRUE(backend.handle_transmit_end_interrupt());   // repeated START
+    EXPECT_TRUE(backend.handle_transmit_empty_interrupt()); // address R
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3113U, 0U).has_value());
+    EXPECT_TRUE(backend.handle_receive_interrupt());        // dummy read
+    for (std::uint8_t value : std::array<std::uint8_t, 3>{0x31U, 0x32U,
+                                                          0x33U}) {
+        ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3113U, value)
+                        .has_value());
+        EXPECT_TRUE(backend.handle_receive_interrupt());
+    }
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3109U, 1U << 3U)
+                    .has_value());
+    EXPECT_TRUE(backend.handle_error_interrupt());
+    const auto result = transfer.take();
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->bytes_written, 1U);
+    EXPECT_EQ(result->bytes_read, 3U);
+    EXPECT_EQ(response[0], 0x31U);
+    EXPECT_EQ(response[1], 0x32U);
+    EXPECT_EQ(response[2], 0x33U);
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x40U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x50U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x58U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x48U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3104U, 0x08U));
     ASSERT_TRUE(backend.shutdown().has_value());
 }
 

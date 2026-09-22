@@ -21,6 +21,61 @@ using execution_type = mcuhw::execution::fake_policy;
 using backend_type = mcuhw::backend::ra4m1::sci_uart_backend<
     binding, mmio_type, execution_type>;
 
+class fake_dma_backend {
+public:
+    using pool_type = mcuhw::core::operation_pool<
+        mcuhw::driver::dma_transfer_result, mcuhw::driver::dma_error, 1,
+        execution_type>;
+    using transfer_type = typename pool_type::transfer_type;
+    using start_result = std::expected<transfer_type,
+                                       typename pool_type::error_type>;
+
+    explicit fake_dma_backend(execution_type& execution) : pool_(execution) {}
+
+    [[nodiscard]] start_result peripheral(
+        mcuhw::driver::dma_peripheral_transfer request) noexcept {
+        last_request = request;
+        auto started = pool_.try_start({.quiesce = &quiesce, .context = this});
+        if (started) operation_id_ = started->id();
+        return started;
+    }
+
+    [[nodiscard]] bool complete() noexcept {
+        if (!operation_id_) return false;
+        const auto id = *operation_id_;
+        operation_id_.reset();
+        return pool_.complete(id, {
+            .units = last_request.count,
+            .width = last_request.width,
+        });
+    }
+
+    [[nodiscard]] bool fail() noexcept {
+        if (!operation_id_) return false;
+        const auto id = *operation_id_;
+        operation_id_.reset();
+        return pool_.fail(id, mcuhw::driver::dma_error::transfer_escape);
+    }
+
+    mcuhw::driver::dma_peripheral_transfer last_request{};
+    std::size_t cancellations{};
+
+private:
+    [[nodiscard]] static mcuhw::core::quiesce_result quiesce(
+        void* context, mcuhw::core::operation_id id) noexcept {
+        auto& self = *static_cast<fake_dma_backend*>(context);
+        if (!self.operation_id_ || *self.operation_id_ != id) {
+            return mcuhw::core::quiesce_result::reusable;
+        }
+        self.operation_id_.reset();
+        ++self.cancellations;
+        return mcuhw::core::quiesce_result::reusable;
+    }
+
+    pool_type pool_;
+    std::optional<mcuhw::core::operation_id> operation_id_{};
+};
+
 constexpr auto baud_115200 = mcuhw::driver::solve_uart_baud({
     .clock_hz = 48'000'000U,
     .target_baud = 115'200U,
@@ -130,6 +185,82 @@ TEST(ra4m1_uart, transmit_completes_only_after_final_wire_interrupt,
     EXPECT_TRUE(has_write(mmio.operations(), 0x4007'0043U, 0x11U));
     EXPECT_TRUE(has_write(mmio.operations(), 0x4007'0043U, 0x22U));
     EXPECT_TRUE(has_write(mmio.operations(), 0x4007'0043U, 0x33U));
+    ASSERT_TRUE(backend.shutdown().has_value());
+}
+
+TEST(ra4m1_uart, dma_rx_and_tx_use_sci2_events_and_tx_waits_for_tei,
+     "REQ-0017", "REQ-0018", "REQ-0027", "REQ-0030") {
+    mmio_type mmio{0x4001'E000U};
+    execution_type uart_execution;
+    execution_type rx_execution;
+    execution_type tx_execution;
+    backend_type backend{mmio, uart_execution};
+    fake_dma_backend rx_dma{rx_execution};
+    fake_dma_backend tx_dma{tx_execution};
+    ASSERT_TRUE(backend.initialize(*baud_115200, {}).has_value());
+    const std::array<std::uint8_t, 3> tx_data{0x31U, 0x32U, 0x33U};
+    std::array<std::uint8_t, 3> rx_data{};
+    auto rx_started = backend.receive_dma(rx_data, rx_dma);
+    auto tx_started = backend.transmit_dma(tx_data, tx_dma);
+    ASSERT_TRUE(rx_started.has_value());
+    ASSERT_TRUE(tx_started.has_value());
+    auto receive = std::move(*rx_started);
+    auto transmit = std::move(*tx_started);
+    EXPECT_EQ(rx_dma.last_request.event, 0xA3U);
+    EXPECT_EQ(tx_dma.last_request.event, 0xA4U);
+    EXPECT_EQ(rx_dma.last_request.peripheral, 0x4007'0045U);
+    EXPECT_EQ(tx_dma.last_request.peripheral, 0x4007'0043U);
+    EXPECT_TRUE(rx_dma.last_request.direction
+                == mcuhw::driver::dma_peripheral_direction::peripheral_to_memory);
+    EXPECT_TRUE(tx_dma.last_request.direction
+                == mcuhw::driver::dma_peripheral_direction::memory_to_peripheral);
+
+    ASSERT_TRUE(rx_dma.complete());
+    EXPECT_TRUE(backend.handle_dma_receive_completion());
+    const auto received = receive.take();
+    ASSERT_TRUE(received.has_value());
+    EXPECT_EQ(*received, rx_data.size());
+
+    ASSERT_TRUE(tx_dma.complete());
+    EXPECT_TRUE(backend.handle_dma_transmit_completion());
+    EXPECT_FALSE(transmit.ready());
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4007'0042U, 0x24U));
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4007'0044U, 1U << 2U)
+                    .has_value());
+    EXPECT_TRUE(backend.handle_transmit_end_interrupt());
+    EXPECT_TRUE(transmit.take().has_value());
+    ASSERT_TRUE(backend.shutdown().has_value());
+}
+
+TEST(ra4m1_uart, dma_failure_and_timeout_quiesce_requests,
+     "REQ-0019", "REQ-0027", "REQ-0030") {
+    mmio_type mmio{0x4001'E000U};
+    execution_type uart_execution;
+    execution_type rx_execution;
+    execution_type tx_execution;
+    backend_type backend{mmio, uart_execution};
+    fake_dma_backend rx_dma{rx_execution};
+    fake_dma_backend tx_dma{tx_execution};
+    ASSERT_TRUE(backend.initialize(*baud_115200, {}).has_value());
+    std::array<std::uint8_t, 2> rx_data{};
+    const std::array<std::uint8_t, 2> tx_data{1U, 2U};
+    auto rx_started = backend.receive_dma(rx_data, rx_dma);
+    ASSERT_TRUE(rx_started.has_value());
+    auto receive = std::move(*rx_started);
+    ASSERT_TRUE(rx_dma.fail());
+    EXPECT_TRUE(backend.handle_dma_receive_completion());
+    const auto failed = receive.take();
+    ASSERT_FALSE(failed.has_value());
+    EXPECT_TRUE(failed.error().cause == mcuhw::driver::uart_error::dma);
+
+    auto tx_started = backend.transmit_dma(tx_data, tx_dma);
+    ASSERT_TRUE(tx_started.has_value());
+    auto transmit = std::move(*tx_started);
+    const auto waited = transmit.wait_until(mcuhw::execution::deadline{0U});
+    ASSERT_FALSE(waited.has_value());
+    EXPECT_TRUE(waited.error().kind
+                == mcuhw::core::transfer_error_kind::timeout);
+    EXPECT_EQ(tx_dma.cancellations, 1U);
     ASSERT_TRUE(backend.shutdown().has_value());
 }
 

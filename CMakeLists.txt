@@ -42,6 +42,7 @@ add_library(mcuhw_arch_probe OBJECT
     tests/compile/execution_probe.cpp
     tests/compile/uart_i2c_example.cpp
     tests/compile/spi_adc_example.cpp
+    tests/compile/dmac_example.cpp
     tests/compile/esp32p4_metadata_probe.cpp
     tests/compile/stm32h753_metadata_probe.cpp
 )
@@ -487,6 +488,10 @@ if(MCUHW_BUILD_UNO_R4_MINIMA_TESTS)
     find_program(MCUHW_ARM_SIZE arm-none-eabi-size REQUIRED)
 
     function(mcuhw_add_uno_r4_minima_test target source build_id)
+        set(enable_coverage TRUE)
+        if(ARGC GREATER 3 AND ARGV3 STREQUAL "NO_COVERAGE")
+            set(enable_coverage FALSE)
+        endif()
         set(platform_target "${target}_platform")
         add_library(${platform_target} OBJECT
             board/uno_r4_minima/startup.S
@@ -506,9 +511,17 @@ if(MCUHW_BUILD_UNO_R4_MINIMA_TESTS)
         target_compile_definitions(${target} PRIVATE
             MCUTEST_MAX_TESTS=8
             MCUTEST_SOURCE_LOCATION=1
-            MCUCOV_BYTE_PER_PROBE=1
-            MCUCOV_COMPACT_RUNTIME=1
         )
+        if(enable_coverage)
+            target_compile_definitions(${target} PRIVATE
+                MCUCOV_BYTE_PER_PROBE=1
+                MCUCOV_COMPACT_RUNTIME=1
+            )
+        else()
+            target_compile_definitions(${target} PRIVATE
+                MCUHW_BOARD_TEST_NO_COVERAGE=1
+            )
+        endif()
         mcuhw_apply_restricted_runtime(${platform_target})
         # mcujson's forward writer uses the hosted C++23 charconv header but
         # remains allocation-free. The final image still uses the restricted
@@ -530,10 +543,18 @@ if(MCUHW_BUILD_UNO_R4_MINIMA_TESTS)
                 -fno-asynchronous-unwind-tables
             )
         endforeach()
-        target_compile_options(${target} PRIVATE
-            -include
-            "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/tests/mcucov_compat.hpp"
-        )
+        if(NOT enable_coverage)
+            # Resource/latency evidence must describe optimized release code,
+            # not the Debug preset's default -O0 behavior.
+            target_compile_options(${platform_target} PRIVATE -Os)
+            target_compile_options(${target} PRIVATE -Os)
+        endif()
+        if(enable_coverage)
+            target_compile_options(${target} PRIVATE
+                -include
+                "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/tests/mcucov_compat.hpp"
+            )
+        endif()
         target_link_options(${target} PRIVATE
             -mcpu=cortex-m4
             -mthumb
@@ -546,13 +567,15 @@ if(MCUHW_BUILD_UNO_R4_MINIMA_TESTS)
             -Wl,--print-memory-usage
             "-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${target}.map"
         )
-        mcucov_instrument_target(
-            ${target}
-            PROFILE FULL
-            BUILD_ID ${build_id}
-            SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
-            OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/mcucov/${target}"
-        )
+        if(enable_coverage)
+            mcucov_instrument_target(
+                ${target}
+                PROFILE FULL
+                BUILD_ID ${build_id}
+                SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
+                OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/mcucov/${target}"
+            )
+        endif()
         add_custom_command(TARGET ${target} POST_BUILD
             COMMAND "${CMAKE_OBJCOPY}" -O binary
                 $<TARGET_FILE:${target}>
@@ -593,6 +616,15 @@ if(MCUHW_BUILD_UNO_R4_MINIMA_TESTS)
         mcuhw_uno_r4_minima_adc_tests
         board/uno_r4_minima/tests/adc.cpp
         0x4d485701)
+    mcuhw_add_uno_r4_minima_test(
+        mcuhw_uno_r4_minima_dmac_tests
+        board/uno_r4_minima/tests/dmac.cpp
+        0x4d485701)
+    mcuhw_add_uno_r4_minima_test(
+        mcuhw_uno_r4_minima_release_metrics
+        board/uno_r4_minima/tests/release_metrics.cpp
+        0
+        NO_COVERAGE)
 endif()
 
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)

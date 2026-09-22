@@ -21,6 +21,7 @@ enum class uart_error : std::uint8_t {
     framing,
     parity,
     transport,
+    dma,
     mmio,
 };
 
@@ -164,6 +165,18 @@ public:
 
     [[nodiscard]] auto receive(std::span<std::uint8_t> bytes) noexcept {
         return backend_.receive(bytes);
+    }
+
+    template<typename Dma>
+    [[nodiscard]] auto transmit_dma(std::span<const std::uint8_t> bytes,
+                                    Dma& dma) noexcept {
+        return backend_.transmit_dma(bytes, dma);
+    }
+
+    template<typename Dma>
+    [[nodiscard]] auto receive_dma(std::span<std::uint8_t> bytes,
+                                   Dma& dma) noexcept {
+        return backend_.receive_dma(bytes, dma);
     }
 
     [[nodiscard]] std::expected<void, uart_error> shutdown() noexcept {

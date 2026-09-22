@@ -18,6 +18,7 @@ enum class adc_error : std::uint8_t {
     conversion_overrun,
     not_initialized,
     already_owned,
+    dma,
     mmio,
 };
 
@@ -66,6 +67,13 @@ public:
     [[nodiscard]] auto convert(std::span<const adc_channel> channels,
                                std::span<std::uint16_t> results) noexcept {
         return backend_.convert(channels, results);
+    }
+
+    template<typename Dma>
+    [[nodiscard]] auto sample_dma(adc_channel channel,
+                                  std::span<std::uint16_t> results,
+                                  Dma& dma) noexcept {
+        return backend_.sample_dma(channel, results, dma);
     }
 
     [[nodiscard]] std::expected<void, adc_error> shutdown() noexcept {

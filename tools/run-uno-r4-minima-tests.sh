@@ -3,11 +3,43 @@ set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 selection=${1:-startup-gpio}
-if [ "$selection" = all ]; then
-    for suite in startup-gpio gpio-loopback pwm uart i2c spi adc; do
-        "$0" "$suite"
-    done
+
+aggregate_evidence() {
     evidence_dir="$project_dir/build/uno-r4-minima/artifacts"
+    combined_tests="$evidence_dir/mcutest-hardware.json"
+    jq -s '{
+        format: "mcutest-results",
+        version: 1,
+        run: {
+            board: "Arduino UNO R4 Minima",
+            suite: "all",
+            aggregation: "per-suite J-Link RTT artifacts"
+        },
+        summary: {
+            tests: (map(.summary.tests) | add),
+            failures: (map(.summary.failures) | add),
+            passed: (map(.summary.passed) | add),
+            registry_overflow: (map(.summary.registry_overflow) | add)
+        },
+        tests: (map(.tests) | add),
+        runs: map({
+            run: .run,
+            summary: .summary,
+            hardware_observations: .hardware_observations
+        })
+    }' \
+        "$evidence_dir/mcuhw_uno_r4_minima_startup_gpio_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_gpio_loopback_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_pwm_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_uart_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_i2c_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_spi_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_adc_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_dmac_tests.json" \
+        "$evidence_dir/mcuhw_uno_r4_minima_release_metrics.json" \
+        > "$combined_tests.tmp"
+    mv "$combined_tests.tmp" "$combined_tests"
+    echo "combined mcutest evidence: $combined_tests"
     mcucov_exe=${MCUCOV_EXE:-}
     if [ -z "$mcucov_exe" ]; then
         mcucov_exe=$(find "$project_dir/../mcucov/output/install" \
@@ -29,6 +61,7 @@ if [ "$selection" = all ]; then
         "$evidence_dir/mcuhw_uno_r4_minima_i2c_tests.mcuv" \
         "$evidence_dir/mcuhw_uno_r4_minima_spi_tests.mcuv" \
         "$evidence_dir/mcuhw_uno_r4_minima_adc_tests.mcuv" \
+        "$evidence_dir/mcuhw_uno_r4_minima_dmac_tests.mcuv" \
         --output "$aggregate_capture"
     set -- \
         --manifest "$project_dir"/build/uno-r4-minima/mcucov/mcuhw_uno_r4_minima_startup_gpio_tests/startup_gpio-*.mcucov.json \
@@ -37,7 +70,8 @@ if [ "$selection" = all ]; then
         --manifest "$project_dir"/build/uno-r4-minima/mcucov/mcuhw_uno_r4_minima_uart_tests/uart-*.mcucov.json \
         --manifest "$project_dir"/build/uno-r4-minima/mcucov/mcuhw_uno_r4_minima_i2c_tests/i2c-*.mcucov.json \
         --manifest "$project_dir"/build/uno-r4-minima/mcucov/mcuhw_uno_r4_minima_spi_tests/spi-*.mcucov.json \
-        --manifest "$project_dir"/build/uno-r4-minima/mcucov/mcuhw_uno_r4_minima_adc_tests/adc-*.mcucov.json
+        --manifest "$project_dir"/build/uno-r4-minima/mcucov/mcuhw_uno_r4_minima_adc_tests/adc-*.mcucov.json \
+        --manifest "$project_dir"/build/uno-r4-minima/mcucov/mcuhw_uno_r4_minima_dmac_tests/dmac-*.mcucov.json
     "$mcucov_exe" report --input "$aggregate_capture" "$@" \
         --source-root "$project_dir" --format json --output "$aggregate_json"
     "$mcucov_exe" report --input "$aggregate_capture" "$@" \
@@ -48,6 +82,18 @@ if [ "$selection" = all ]; then
     echo "aggregate mcucov JSON: $aggregate_json"
     echo "aggregate mcucov HTML: $aggregate_html"
     echo "aggregate mcucov LCOV: $aggregate_lcov"
+}
+
+if [ "$selection" = all ]; then
+    for suite in startup-gpio gpio-loopback pwm uart i2c spi adc dmac release-metrics; do
+        "$0" "$suite"
+    done
+    aggregate_evidence
+    exit 0
+fi
+
+if [ "$selection" = aggregate ]; then
+    aggregate_evidence
     exit 0
 fi
 
@@ -73,6 +119,12 @@ case "$selection" in
     adc)
         target=mcuhw_uno_r4_minima_adc_tests
         manifest_stem=adc ;;
+    dmac)
+        target=mcuhw_uno_r4_minima_dmac_tests
+        manifest_stem=dmac ;;
+    release-metrics)
+        target=mcuhw_uno_r4_minima_release_metrics
+        manifest_stem= ;;
     *.elf)
         elf=$selection
         target=$(basename "$elf" .elf)
@@ -84,11 +136,13 @@ case "$selection" in
             mcuhw_uno_r4_minima_i2c_tests) manifest_stem=i2c ;;
             mcuhw_uno_r4_minima_spi_tests) manifest_stem=spi ;;
             mcuhw_uno_r4_minima_adc_tests) manifest_stem=adc ;;
+            mcuhw_uno_r4_minima_dmac_tests) manifest_stem=dmac ;;
+            mcuhw_uno_r4_minima_release_metrics) manifest_stem= ;;
             *) manifest_stem= ;;
         esac ;;
     *)
         echo "unknown suite: $selection" >&2
-        echo "use startup-gpio, gpio-loopback, pwm, uart, i2c, spi, adc, all, or an ELF path" >&2
+        echo "use startup-gpio, gpio-loopback, pwm, uart, i2c, spi, adc, dmac, release-metrics, aggregate, all, or an ELF path" >&2
         exit 2 ;;
 esac
 elf=${elf:-"$project_dir/build/uno-r4-minima/$target.elf"}

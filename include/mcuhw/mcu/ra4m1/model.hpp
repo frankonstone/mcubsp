@@ -145,6 +145,11 @@ enum class signal : std::uint16_t {
     adc_an002,
     adc_an003,
     adc_an004,
+    adc_an005,
+    adc_an006,
+    adc_an007,
+    adc_an008,
+    adc_an009,
 };
 
 [[nodiscard]] constexpr core::signal_id signal_id(signal value) noexcept {

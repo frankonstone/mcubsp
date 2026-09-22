@@ -86,11 +86,17 @@ inline constexpr std::array pin_routes{
     route(1, 2, signal::spi0_rspck, 0x06), route(1, 3, signal::spi0_ssl0, 0x06),
     route(1, 10, signal::spi1_miso, 0x06), route(1, 9, signal::spi1_mosi, 0x06),
     route(1, 11, signal::spi1_rspck, 0x06), route(1, 8, signal::spi1_ssl0, 0x06),
+    route(1, 12, signal::spi1_ssl0, 0x06),
     route(0, 0, signal::adc_an000, 1U << 15U),
     route(0, 1, signal::adc_an001, 1U << 15U),
     route(0, 2, signal::adc_an002, 1U << 15U),
     route(0, 3, signal::adc_an003, 1U << 15U),
     route(0, 4, signal::adc_an004, 1U << 15U),
+    route(0, 10, signal::adc_an005, 1U << 15U),
+    route(0, 11, signal::adc_an006, 1U << 15U),
+    route(0, 12, signal::adc_an007, 1U << 15U),
+    route(0, 13, signal::adc_an008, 1U << 15U),
+    route(0, 14, signal::adc_an009, 1U << 15U),
 };
 
 struct pin_database {

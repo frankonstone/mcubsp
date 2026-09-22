@@ -97,8 +97,8 @@ then mutes before disabling the amplifier. This proves codec configuration,
 live microphone data, DMA completion and the commanded digital playback path.
 It intentionally produces a human-audible tone, but the automated result is
 not an independent acoustic oracle: confirming speaker output level, frequency
-and distortion still requires a microphone or audio analyzer supplied by
-PLN-0022 fixture work.
+and distortion still requires a directly connected microphone or audio
+analyzer if those properties are later claimed.
 
 The microSD case powers the dedicated pads from ESP32-P4 LDO channel 4, pulses
 the NANO's active-low GPIO45 card-power control, and initializes native SDMMC

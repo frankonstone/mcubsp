@@ -21,6 +21,7 @@ add_executable(mcuhw_tests
     test_i2c.cpp
     test_spi.cpp
     test_adc.cpp
+    test_dmac.cpp
     test_pwm.cpp
     test_stm32h753_clock.cpp
     test_stm32h753_description.cpp
@@ -39,7 +40,7 @@ if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
         "${MCUHW_MCUIP_SOURCE_DIR}/include")
 endif()
 mcuhw_apply_restricted_runtime(mcuhw_tests)
-mcutest_configure_target(mcuhw_tests MAX_TESTS 160 SOURCE_LOCATION ON)
+mcutest_configure_target(mcuhw_tests MAX_TESTS 176 SOURCE_LOCATION ON)
 
 add_test(
     NAME mcuhw.unit

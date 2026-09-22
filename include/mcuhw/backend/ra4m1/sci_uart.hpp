@@ -5,10 +5,12 @@
 #include <expected>
 #include <optional>
 #include <span>
+#include <utility>
 
 #include <mcuhw/arch/barrier.hpp>
 #include <mcuhw/core/metadata.hpp>
 #include <mcuhw/core/transfer.hpp>
+#include <mcuhw/driver/dma.hpp>
 #include <mcuhw/driver/uart.hpp>
 #include <mcuhw/mcu/ra4m1/description.hpp>
 
@@ -78,7 +80,7 @@ struct sci_uart_binding {
 // Non-FIFO SCI UART backend. TX publishes completion only from TEI after
 // TEND, while RX publishes after the requested finite buffer is full.
 template<typename Binding, typename MmioPolicy, typename ExecutionPolicy>
-// @req REQ-0014 REQ-0017 REQ-0019 REQ-0027
+// @req REQ-0014 REQ-0017 REQ-0019 REQ-0027 REQ-0030
 class sci_uart_backend {
 public:
     using tx_pool_type = core::operation_pool<void, driver::uart_error, 1,
@@ -200,6 +202,7 @@ public:
         tx_bytes_ = bytes;
         tx_index_ = 0U;
         tx_id_ = started->id();
+        tx_dma_mode_ = false;
         if (!update_scr(scr_te | scr_tie, scr_teie)) {
             const auto id = *tx_id_;
             tx_id_.reset();
@@ -228,6 +231,7 @@ public:
         rx_bytes_ = bytes;
         rx_index_ = 0U;
         rx_id_ = started->id();
+        rx_dma_mode_ = false;
         if (!update_scr(scr_re | scr_rie, 0U)) {
             const auto id = *rx_id_;
             rx_id_.reset();
@@ -237,8 +241,153 @@ public:
         return started;
     }
 
+    template<typename Dma>
+    [[nodiscard]] tx_start_result
+    transmit_dma(std::span<const std::uint8_t> bytes, Dma& dma) noexcept {
+        if (!initialized_) {
+            return tx_failure(driver::uart_error::not_initialized);
+        }
+        if (bytes.empty()) {
+            return tx_failure(driver::uart_error::empty_transfer);
+        }
+        if (bytes.size() > 65'535U) {
+            return tx_failure(driver::uart_error::dma);
+        }
+        if (tx_id_) {
+            return tx_failure(driver::uart_error::busy);
+        }
+        auto started = tx_operations_.try_start(
+            {.quiesce = &cancel_tx, .context = this});
+        if (!started) {
+            return std::unexpected(started.error());
+        }
+        tx_bytes_ = bytes;
+        tx_index_ = 0U;
+        tx_id_ = started->id();
+        tx_dma_mode_ = true;
+        auto dma_started = dma.peripheral({
+            .memory = reinterpret_cast<std::uintptr_t>(bytes.data()),
+            .peripheral = base() + 0x03U,
+            .count = static_cast<std::uint32_t>(bytes.size()),
+            .width = driver::dma_width::bits8,
+            .event = transmit_dma_event(),
+            .direction = driver::dma_peripheral_direction::memory_to_peripheral,
+        });
+        if (!dma_started) {
+            static_cast<void>(fail_tx(driver::uart_error::dma));
+            return started;
+        }
+        tx_dma_transfer_.emplace(std::move(*dma_started));
+        if (!update_scr(scr_te | scr_tie, scr_teie)) {
+            static_cast<void>(fail_tx(driver::uart_error::mmio));
+        }
+        return started;
+    }
+
+    template<typename Dma>
+    [[nodiscard]] rx_start_result
+    receive_dma(std::span<std::uint8_t> bytes, Dma& dma) noexcept {
+        if (!initialized_) {
+            return rx_failure(driver::uart_error::not_initialized);
+        }
+        if (bytes.empty()) {
+            return rx_failure(driver::uart_error::empty_transfer);
+        }
+        if (bytes.size() > 65'535U) {
+            return rx_failure(driver::uart_error::dma);
+        }
+        if (rx_id_) {
+            return rx_failure(driver::uart_error::busy);
+        }
+        auto started = rx_operations_.try_start(
+            {.quiesce = &cancel_rx, .context = this});
+        if (!started) {
+            return std::unexpected(started.error());
+        }
+        rx_bytes_ = bytes;
+        rx_index_ = 0U;
+        rx_id_ = started->id();
+        rx_dma_mode_ = true;
+        auto dma_started = dma.peripheral({
+            .memory = reinterpret_cast<std::uintptr_t>(bytes.data()),
+            .peripheral = base() + 0x05U,
+            .count = static_cast<std::uint32_t>(bytes.size()),
+            .width = driver::dma_width::bits8,
+            .event = receive_dma_event(),
+            .direction = driver::dma_peripheral_direction::peripheral_to_memory,
+        });
+        if (!dma_started) {
+            static_cast<void>(fail_rx(driver::uart_error::dma));
+            return started;
+        }
+        rx_dma_transfer_.emplace(std::move(*dma_started));
+        if (!update_scr(scr_re | scr_rie, 0U)) {
+            static_cast<void>(fail_rx(driver::uart_error::mmio));
+        }
+        return started;
+    }
+
+    [[nodiscard]] bool handle_dma_transmit_completion() noexcept {
+        if (!tx_id_ || !tx_dma_mode_ || !tx_dma_transfer_) {
+            return false;
+        }
+        const auto inspected = tx_dma_transfer_->inspect();
+        if (!inspected) {
+            if (inspected.error().kind
+                == core::transfer_error_kind::pending) {
+                return false;
+            }
+            static_cast<void>(tx_dma_transfer_->take());
+            tx_dma_transfer_.reset();
+            return fail_tx(driver::uart_error::dma);
+        }
+        const auto result = tx_dma_transfer_->take();
+        tx_dma_transfer_.reset();
+        if (!result || result->units != tx_bytes_.size()
+            || result->width != driver::dma_width::bits8) {
+            return fail_tx(driver::uart_error::dma);
+        }
+        tx_index_ = tx_bytes_.size();
+        if (!update_scr(scr_te | scr_teie, scr_tie)) {
+            return fail_tx(driver::uart_error::mmio);
+        }
+        return true;
+    }
+
+    [[nodiscard]] bool handle_dma_receive_completion() noexcept {
+        if (!rx_id_ || !rx_dma_mode_ || !rx_dma_transfer_) {
+            return false;
+        }
+        const auto inspected = rx_dma_transfer_->inspect();
+        if (!inspected) {
+            if (inspected.error().kind
+                == core::transfer_error_kind::pending) {
+                return false;
+            }
+            static_cast<void>(rx_dma_transfer_->take());
+            rx_dma_transfer_.reset();
+            return fail_rx(driver::uart_error::dma);
+        }
+        const auto result = rx_dma_transfer_->take();
+        rx_dma_transfer_.reset();
+        if (!result || result->units != rx_bytes_.size()
+            || result->width != driver::dma_width::bits8) {
+            return fail_rx(driver::uart_error::dma);
+        }
+        if (!update_scr(0U, scr_rie | scr_re)) {
+            return fail_rx(driver::uart_error::mmio);
+        }
+        const auto id = *rx_id_;
+        const auto count = rx_bytes_.size();
+        rx_id_.reset();
+        rx_bytes_ = {};
+        rx_index_ = count;
+        rx_dma_mode_ = false;
+        return rx_operations_.complete(id, count);
+    }
+
     [[nodiscard]] bool handle_transmit_data_empty_interrupt() noexcept {
-        if (!tx_id_) {
+        if (!tx_id_ || tx_dma_mode_) {
             return false;
         }
         if (tx_index_ < tx_bytes_.size()
@@ -269,11 +418,12 @@ public:
         const auto id = *tx_id_;
         tx_id_.reset();
         tx_bytes_ = {};
+        tx_dma_mode_ = false;
         return tx_operations_.complete(id);
     }
 
     [[nodiscard]] bool handle_receive_interrupt() noexcept {
-        if (!rx_id_) {
+        if (!rx_id_ || rx_dma_mode_) {
             return false;
         }
         const auto status = mmio_.template read<std::uint8_t>(base() + 0x04U);
@@ -338,15 +488,61 @@ private:
         return Binding::metadata.base;
     }
 
+    [[nodiscard]] static constexpr std::uint16_t
+    receive_dma_event() noexcept {
+        using event = mcu::ra4m1::event;
+        switch (Binding::instance) {
+        case 0U: return mcu::ra4m1::event_number(event::sci0_rxi);
+        case 1U: return mcu::ra4m1::event_number(event::sci1_rxi);
+        case 2U: return mcu::ra4m1::event_number(event::sci2_rxi);
+        default: return mcu::ra4m1::event_number(event::sci9_rxi);
+        }
+    }
+
+    [[nodiscard]] static constexpr std::uint16_t
+    transmit_dma_event() noexcept {
+        using event = mcu::ra4m1::event;
+        switch (Binding::instance) {
+        case 0U: return mcu::ra4m1::event_number(event::sci0_txi);
+        case 1U: return mcu::ra4m1::event_number(event::sci1_txi);
+        case 2U: return mcu::ra4m1::event_number(event::sci2_txi);
+        default: return mcu::ra4m1::event_number(event::sci9_txi);
+        }
+    }
+
+    template<typename DmaTransfer>
+    [[nodiscard]] static bool quiesce_dma_transfer(
+        std::optional<DmaTransfer>& transfer) noexcept {
+        if (!transfer) return true;
+        const auto inspected = transfer->inspect();
+        if (!inspected
+            && inspected.error().kind == core::transfer_error_kind::pending) {
+            const auto cancelled = transfer->cancel();
+            if (!cancelled) {
+                static_cast<void>(transfer->take());
+                transfer.reset();
+                return false;
+            }
+        }
+        const auto retired = transfer->take();
+        transfer.reset();
+        return retired.has_value()
+            || retired.error().kind == core::transfer_error_kind::cancelled;
+    }
+
     [[nodiscard]] static core::quiesce_result cancel_tx(
         void* context, core::operation_id id) noexcept {
         auto& self = *static_cast<sci_uart_backend*>(context);
         if (!self.tx_id_ || *self.tx_id_ != id) {
             return core::quiesce_result::reusable;
         }
-        const bool stopped = self.update_scr(0U, scr_tie | scr_teie | scr_te);
+        const bool dma_stopped = quiesce_dma_transfer(self.tx_dma_transfer_);
+        const bool peripheral_stopped =
+            self.update_scr(0U, scr_tie | scr_teie | scr_te);
+        const bool stopped = dma_stopped && peripheral_stopped;
         self.tx_id_.reset();
         self.tx_bytes_ = {};
+        self.tx_dma_mode_ = false;
         return stopped ? core::quiesce_result::reusable
                        : core::quiesce_result::faulted;
     }
@@ -357,9 +553,12 @@ private:
         if (!self.rx_id_ || *self.rx_id_ != id) {
             return core::quiesce_result::reusable;
         }
-        const bool stopped = self.update_scr(0U, scr_rie | scr_re);
+        const bool dma_stopped = quiesce_dma_transfer(self.rx_dma_transfer_);
+        const bool peripheral_stopped = self.update_scr(0U, scr_rie | scr_re);
+        const bool stopped = dma_stopped && peripheral_stopped;
         self.rx_id_.reset();
         self.rx_bytes_ = {};
+        self.rx_dma_mode_ = false;
         return stopped ? core::quiesce_result::reusable
                        : core::quiesce_result::faulted;
     }
@@ -384,22 +583,28 @@ private:
         if (!tx_id_) {
             return false;
         }
+        const bool dma_stopped = quiesce_dma_transfer(tx_dma_transfer_);
         static_cast<void>(update_scr(0U, scr_tie | scr_teie | scr_te));
         const auto id = *tx_id_;
         tx_id_.reset();
         tx_bytes_ = {};
-        return tx_operations_.fail(id, error);
+        tx_dma_mode_ = false;
+        return tx_operations_.fail(id, dma_stopped ? error
+                                                   : driver::uart_error::dma);
     }
 
     [[nodiscard]] bool fail_rx(driver::uart_error error) noexcept {
         if (!rx_id_) {
             return false;
         }
+        const bool dma_stopped = quiesce_dma_transfer(rx_dma_transfer_);
         static_cast<void>(update_scr(0U, scr_rie | scr_re));
         const auto id = *rx_id_;
         rx_id_.reset();
         rx_bytes_ = {};
-        return rx_operations_.fail(id, error);
+        rx_dma_mode_ = false;
+        return rx_operations_.fail(id, dma_stopped ? error
+                                                   : driver::uart_error::dma);
     }
 
     [[nodiscard]] bool update_scr(std::uint8_t set,
@@ -523,6 +728,13 @@ private:
     std::span<std::uint8_t> rx_bytes_{};
     std::size_t tx_index_{};
     std::size_t rx_index_{};
+    using dma_transfer_type = core::transfer<driver::dma_transfer_result,
+                                             driver::dma_error, 1,
+                                             ExecutionPolicy>;
+    std::optional<dma_transfer_type> tx_dma_transfer_{};
+    std::optional<dma_transfer_type> rx_dma_transfer_{};
+    bool tx_dma_mode_{};
+    bool rx_dma_mode_{};
     bool owned_{};
     bool initialized_{};
 };

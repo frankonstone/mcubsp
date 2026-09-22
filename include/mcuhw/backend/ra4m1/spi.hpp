@@ -5,10 +5,12 @@
 #include <expected>
 #include <optional>
 #include <span>
+#include <utility>
 
 #include <mcuhw/arch/barrier.hpp>
 #include <mcuhw/core/metadata.hpp>
 #include <mcuhw/core/transfer.hpp>
+#include <mcuhw/driver/dma.hpp>
 #include <mcuhw/driver/spi.hpp>
 #include <mcuhw/mcu/ra4m1/description.hpp>
 
@@ -90,7 +92,7 @@ struct spi_binding {
 // caller-declared segments. SPII is the only completion point, so the final
 // frame has left the wire before CS is released.
 template<typename Binding, typename MmioPolicy, typename ExecutionPolicy>
-// @req REQ-0014 REQ-0017 REQ-0019 REQ-0028
+// @req REQ-0014 REQ-0017 REQ-0019 REQ-0028 REQ-0030
 class spi_master_backend {
 public:
     using pool_type = core::operation_pool<driver::spi_transfer_result,
@@ -158,8 +160,93 @@ public:
         return started;
     }
 
+    template<typename ReceiveDma, typename TransmitDma>
+    [[nodiscard]] start_result
+    transaction_dma(driver::spi_dma_buffers buffers,
+                    ReceiveDma& receive_dma,
+                    TransmitDma& transmit_dma) noexcept {
+        if (!initialized_) {
+            return start_failure(driver::spi_error::not_initialized);
+        }
+        if (operation_id_) {
+            return start_failure(driver::spi_error::busy);
+        }
+        if (configuration_.frame_width != driver::spi_frame_width::bits8) {
+            return start_failure(driver::spi_error::invalid_frame);
+        }
+        if (buffers.transmit.empty() || buffers.receive.empty()) {
+            return start_failure(driver::spi_error::empty_transfer);
+        }
+        if (buffers.transmit.size() != buffers.receive.size()) {
+            return start_failure(driver::spi_error::mismatched_segment);
+        }
+        if (buffers.transmit.size() > 65'535U) {
+            return start_failure(driver::spi_error::excessive_length);
+        }
+
+        auto started = operations_.try_start(
+            {.quiesce = &cancel_operation, .context = this});
+        if (!started) {
+            return std::unexpected(started.error());
+        }
+        operation_id_ = started->id();
+        total_frames_ = buffers.transmit.size();
+        dma_mode_ = true;
+        if (!clear_errors() || !set_chip_select(true)) {
+            static_cast<void>(finish_error(driver::spi_error::mmio));
+            return started;
+        }
+
+        auto receive_started = receive_dma.peripheral({
+            .memory = reinterpret_cast<std::uintptr_t>(buffers.receive.data()),
+            .peripheral = base() + 0x04U,
+            .count = static_cast<std::uint32_t>(buffers.receive.size()),
+            .width = driver::dma_width::bits8,
+            .event = receive_dma_event(),
+            .direction = driver::dma_peripheral_direction::peripheral_to_memory,
+        });
+        if (!receive_started) {
+            static_cast<void>(finish_error(driver::spi_error::dma));
+            return started;
+        }
+        receive_dma_transfer_.emplace(std::move(*receive_started));
+
+        auto transmit_started = transmit_dma.peripheral({
+            .memory = reinterpret_cast<std::uintptr_t>(buffers.transmit.data()),
+            .peripheral = base() + 0x04U,
+            .count = static_cast<std::uint32_t>(buffers.transmit.size()),
+            .width = driver::dma_width::bits8,
+            .event = transmit_dma_event(),
+            .direction = driver::dma_peripheral_direction::memory_to_peripheral,
+        });
+        if (!transmit_started) {
+            static_cast<void>(finish_error(driver::spi_error::dma));
+            return started;
+        }
+        transmit_dma_transfer_.emplace(std::move(*transmit_started));
+
+        if (!write<std::uint8_t>(base() + 0x0FU, spcr2_auto_stop)
+            || !write<std::uint8_t>(base() + 0x00U, spcr_active)) {
+            static_cast<void>(finish_error(driver::spi_error::mmio));
+        }
+        return started;
+    }
+
+    [[nodiscard]] bool handle_dma_receive_completion() noexcept {
+        return handle_dma_completion(receive_dma_transfer_,
+                                     receive_dma_complete_,
+                                     received_frames_);
+    }
+
+    [[nodiscard]] bool handle_dma_transmit_completion() noexcept {
+        return handle_dma_completion(transmit_dma_transfer_,
+                                     transmit_dma_complete_,
+                                     transmitted_frames_);
+    }
+
     [[nodiscard]] bool handle_transmit_empty_interrupt() noexcept {
-        if (!operation_id_ || transmitted_frames_ >= total_frames_) {
+        if (!operation_id_ || dma_mode_
+            || transmitted_frames_ >= total_frames_) {
             return false;
         }
         const auto value = transmit_frame(transmitted_frames_);
@@ -179,7 +266,8 @@ public:
     }
 
     [[nodiscard]] bool handle_receive_interrupt() noexcept {
-        if (!operation_id_ || received_frames_ >= transmitted_frames_) {
+        if (!operation_id_ || dma_mode_
+            || received_frames_ >= transmitted_frames_) {
             return false;
         }
         std::uint16_t value{};
@@ -208,7 +296,8 @@ public:
     }
 
     [[nodiscard]] bool handle_idle_interrupt() noexcept {
-        if (!operation_id_ || received_frames_ != total_frames_) {
+        if (!operation_id_ || received_frames_ != total_frames_
+            || transmitted_frames_ != total_frames_) {
             return false;
         }
         const auto status = mmio_.template read<std::uint8_t>(base() + 0x03U);
@@ -273,11 +362,90 @@ private:
     static constexpr std::uint8_t spcr_stopped = 0x09U;
     static constexpr std::uint8_t spcr_active = 0xF9U;
     static constexpr std::uint8_t spcr_receive_only = 0xD9U;
+    static constexpr std::uint8_t spcr_wait_idle = 0x59U;
     static constexpr std::uint8_t spcr2_idle_irq = 1U << 2U;
     static constexpr std::uint8_t spcr2_auto_stop = 1U << 4U;
 
     [[nodiscard]] static constexpr std::uintptr_t base() noexcept {
         return Binding::metadata.base;
+    }
+
+    [[nodiscard]] static constexpr std::uint16_t
+    receive_dma_event() noexcept {
+        return mcu::ra4m1::event_number(
+            Binding::instance == 0U ? mcu::ra4m1::event::spi0_rxi
+                                    : mcu::ra4m1::event::spi1_rxi);
+    }
+
+    [[nodiscard]] static constexpr std::uint16_t
+    transmit_dma_event() noexcept {
+        return mcu::ra4m1::event_number(
+            Binding::instance == 0U ? mcu::ra4m1::event::spi0_txi
+                                    : mcu::ra4m1::event::spi1_txi);
+    }
+
+    template<typename DmaTransfer>
+    [[nodiscard]] bool handle_dma_completion(
+        std::optional<DmaTransfer>& transfer, bool& completed,
+        std::size_t& frames) noexcept {
+        if (!operation_id_ || !dma_mode_ || !transfer || completed) {
+            return false;
+        }
+        const auto inspected = transfer->inspect();
+        if (!inspected) {
+            if (inspected.error().kind
+                == core::transfer_error_kind::pending) {
+                return false;
+            }
+            static_cast<void>(transfer->take());
+            transfer.reset();
+            return finish_error(driver::spi_error::dma);
+        }
+        const auto result = transfer->take();
+        transfer.reset();
+        if (!result || result->units != total_frames_
+            || result->width != driver::dma_width::bits8) {
+            return finish_error(driver::spi_error::dma);
+        }
+        completed = true;
+        frames = total_frames_;
+        if (!receive_dma_complete_ || !transmit_dma_complete_) {
+            return true;
+        }
+        if (!write<std::uint8_t>(base() + 0x00U, spcr_wait_idle)
+            || !write<std::uint8_t>(base() + 0x0FU,
+                                    spcr2_auto_stop | spcr2_idle_irq)) {
+            return finish_error(driver::spi_error::mmio);
+        }
+        return true;
+    }
+
+    template<typename DmaTransfer>
+    [[nodiscard]] static bool quiesce_dma_transfer(
+        std::optional<DmaTransfer>& transfer) noexcept {
+        if (!transfer) {
+            return true;
+        }
+        const auto inspected = transfer->inspect();
+        if (!inspected
+            && inspected.error().kind == core::transfer_error_kind::pending) {
+            const auto cancelled = transfer->cancel();
+            if (!cancelled) {
+                static_cast<void>(transfer->take());
+                transfer.reset();
+                return false;
+            }
+        }
+        const auto retired = transfer->take();
+        transfer.reset();
+        return retired.has_value()
+            || retired.error().kind == core::transfer_error_kind::cancelled;
+    }
+
+    [[nodiscard]] bool quiesce_dma_transfers() noexcept {
+        const bool receive = quiesce_dma_transfer(receive_dma_transfer_);
+        const bool transmit = quiesce_dma_transfer(transmit_dma_transfer_);
+        return receive && transmit;
     }
 
     [[nodiscard]] static constexpr bool
@@ -359,11 +527,13 @@ private:
         if (!self.operation_id_ || *self.operation_id_ != id) {
             return core::quiesce_result::reusable;
         }
-        const bool stopped = self.template write<std::uint8_t>(
-                                 base() + 0x00U, spcr_stopped)
+        const bool dma_stopped = self.quiesce_dma_transfers();
+        const bool peripheral_stopped = self.template write<std::uint8_t>(
+                                            base() + 0x00U, spcr_stopped)
             && self.template write<std::uint8_t>(base() + 0x0FU,
                                                  spcr2_auto_stop)
             && self.set_chip_select(false);
+        const bool stopped = dma_stopped && peripheral_stopped;
         self.reset_transaction();
         return stopped ? core::quiesce_result::reusable
                        : core::quiesce_result::faulted;
@@ -374,12 +544,14 @@ private:
             return false;
         }
         const auto id = *operation_id_;
+        const bool dma_stopped = quiesce_dma_transfers();
         static_cast<void>(write<std::uint8_t>(base() + 0x00U, spcr_stopped));
         static_cast<void>(write<std::uint8_t>(base() + 0x0FU,
                                               spcr2_auto_stop));
         static_cast<void>(set_chip_select(false));
         reset_transaction();
-        return operations_.fail(id, error);
+        return operations_.fail(id, dma_stopped ? error
+                                                : driver::spi_error::dma);
     }
 
     void reset_transaction() noexcept {
@@ -388,6 +560,11 @@ private:
         total_frames_ = 0U;
         transmitted_frames_ = 0U;
         received_frames_ = 0U;
+        receive_dma_transfer_.reset();
+        transmit_dma_transfer_.reset();
+        receive_dma_complete_ = false;
+        transmit_dma_complete_ = false;
+        dma_mode_ = false;
     }
 
     [[nodiscard]] bool clear_errors() noexcept {
@@ -561,6 +738,14 @@ private:
     std::size_t total_frames_{};
     std::size_t transmitted_frames_{};
     std::size_t received_frames_{};
+    using dma_transfer_type = core::transfer<driver::dma_transfer_result,
+                                             driver::dma_error, 1,
+                                             ExecutionPolicy>;
+    std::optional<dma_transfer_type> receive_dma_transfer_{};
+    std::optional<dma_transfer_type> transmit_dma_transfer_{};
+    bool receive_dma_complete_{};
+    bool transmit_dma_complete_{};
+    bool dma_mode_{};
     bool owned_{};
     bool initialized_{};
 };

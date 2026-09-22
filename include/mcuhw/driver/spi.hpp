@@ -22,6 +22,7 @@ enum class spi_error : std::uint8_t {
     transport,
     not_initialized,
     already_owned,
+    dma,
     mmio,
 };
 
@@ -115,6 +116,13 @@ struct spi_segment {
     std::uint16_t dummy{0xFFFFU};
 };
 
+// Explicit full-duplex DMA mode. Both spans must have the same non-zero
+// length, and the controller must be configured for 8-bit frames.
+struct spi_dma_buffers {
+    std::span<const std::uint8_t> transmit{};
+    std::span<std::uint8_t> receive{};
+};
+
 struct spi_transfer_result {
     std::size_t frames;
 
@@ -134,6 +142,13 @@ public:
 
     [[nodiscard]] auto transaction(std::span<const spi_segment> segments) noexcept {
         return backend_.transaction(segments);
+    }
+
+    template<typename ReceiveDma, typename TransmitDma>
+    [[nodiscard]] auto transaction_dma(spi_dma_buffers buffers,
+                                       ReceiveDma& receive_dma,
+                                       TransmitDma& transmit_dma) noexcept {
+        return backend_.transaction_dma(buffers, receive_dma, transmit_dma);
     }
 
     [[nodiscard]] std::expected<void, spi_error> shutdown() noexcept {
