@@ -49,8 +49,8 @@ Templates and constant-evaluated definitions live in headers; other behavior may
 Prerequisite: none. D01–D08 are recorded, including the revised ordering.
 
 - Inventory RA4M1, STM32H753 and ESP32-P4 documented blocks, part/package variants and source revisions. Create separate description and driver-support columns and explicit source-gap states. Prioritize the same resource and initial-peripheral categories across all three.
-- Review the now-local STM32H753 RM0433 Rev.8, DS12117 Rev.10 and ES0392 Rev.15. Their identity/readability checks and all six supplied PDF checksums are recorded in [the source manifest](doc/source-manifest.json). Pin applicable RA4M1 corrections and the ESP32-P4 source/silicon baseline; resolve published updates and preliminary gaps before claiming definitions.
-- Use the generated [Markdown manual index](doc/markdown/README.md) for section lookup and text search; follow its exact PDF-page links to verify register tables, diagrams and ambiguous extraction. The conversion records source/output hashes and preserves all 9,192 page locations; it does not replace the detailed source audit.
+- Review the now-local STM32H753 RM0433 Rev.8, DS12117 Rev.10 and ES0392 Rev.15. Their identity/readability checks and all six supplied PDF checksums are recorded in [the source manifest](doc/reference/source-manifest.json). Pin applicable RA4M1 corrections and the ESP32-P4 source/silicon baseline; resolve published updates and preliminary gaps before claiming definitions.
+- Use the generated [Markdown manual index](doc/_generated/manuals/README.md) for section lookup and text search; follow its exact PDF-page links to verify register tables, diagrams and ambiguous extraction. The conversion records source/output hashes and preserves all 9,192 page locations; it does not replace the detailed source audit.
 - Record checksums, section/table provenance, supported package scope and known exclusions. Ask for important scope decisions if a source is unavailable or the selected variants materially change the work; never invent register data.
 - Keep MCU family data separate from board choices. UNO is the initial physical driver target, but later STM32/ESP boards are not required to inspect or compile descriptions.
 
@@ -434,7 +434,7 @@ range from 48 to 152 bytes. The largest full instrumented driver image uses
 115,472 bytes of flash and 14,928 bytes of static RAM. Exact ELF and source-tree
 identities, reproduction commands, API/storage/context rules, flash/debug steps,
 coverage identity and adopted numeric budgets are published in
-`docs/ra4m1-release-acceptance.md`.
+`doc/acceptance/ra4m1-release.md`.
 
 Completed 22 September 2026 after the user retired the cross-target fixture
 requirement and selected the available directly connected hardware as the
@@ -448,7 +448,7 @@ than hidden evidence or blockers. All D04 drivers are accepted on RA4M1 bare
 metal; later STM32H753 and ESP32-P4 releases retain their own scoped evidence.
 
 ## PLN-0024 Enable W5100 Ethernet on Arduino UNO R4 Minima
-@status(planned)
+@status(done)
 @link(REQ-0002, REQ-0003, REQ-0009, REQ-0015, REQ-0017, REQ-0018, REQ-0019, REQ-0028, REQ-0030, REQ-0031, REQ-0035, REQ-0036, REQ-0037, REQ-0038, REQ-0041, REQ-0044)
 
 Prerequisite: PLN-0011 and its accepted UNO SPI/DMAC foundation. Use the
@@ -483,6 +483,27 @@ peer. This follow-on milestone does not reopen the first RA4M1 driver release.
    ICMP echo or a UDP datagram through MCUIP with an independent peer. Exercise
    peer loss or cable unplug/reconnect, ring pressure and recovery, and publish
    reproducible peer commands without claiming unmeasured electrical behavior.
+
+Implementation checkpoint 22 September 2026: the fixed-storage driver, actual
+sibling-MCUIP contract adapter, native fake-device suite, public-header checks,
+Cortex-M4 linked composition, dedicated RTT/MCUCOV runner, and physical
+ARP/ICMP path are implemented. The connected shield passed reset identity,
+MACRAW, 60-byte and 1,514-byte raw frames, one ARP resolution, small and
+full-MTU ICMP echo, then clean socket recovery followed by another successful
+echo. The accepted instrumented image uses 142,248 bytes of flash and 22,760
+bytes of static RAM. The completed performance follow-up compares 64 full-MTU
+ICMP packets with a four-packet window that fits within the W5100's 8 KiB RX
+allocation. All variants completed 64/64 replies without timeout or SPI error.
+The 6 MHz interrupt-driven path reached 100,285 bit/s with 448.294 ms average
+RTT; a W5100-specific bounded-polling path, retaining one `/SS` frame per
+32-bit W5100 command, reached 159,763 bit/s and 281.000 ms at 6 MHz. At the
+datasheet-compliant 12 MHz RA4M1 divider it reached 175,569 bit/s and 256.995 ms.
+The three `-Os` images use 37,220/35,840/35,844 bytes of flash respectively and
+21,112 bytes of RAM. A controlled manual cable unplug/replug produced 20 missed
+peer replies, triggered a bounded W5100 socket reopen, and then returned to
+successful ICMP traffic with zero SPI transport errors. The complete procedure,
+source identities and benchmark comparison are published in
+`doc/boards/arduino-uno-r4-minima/ethernet-w5100.md`. PLN-0024 is complete.
 
 Exit: the W5100 driver and MCUIP adapter pass native behavior tests, Cortex-M4
 build/link checks and the physical local-network procedure on the UNO R4
@@ -537,7 +558,7 @@ floating A0/PA3 within the 14-bit range. The test also enabled the Cortex-M7
 D-cache, cleaned a 64-byte aligned AXI-SRAM DMA1 source, and independently read
 back `0xCACE0000..3` through SWD. No board jumper or solder bridge was changed.
 
-`board/nucleo_h753zi/README.md` records the board/source identity, received
+`doc/boards/nucleo-h753zi/README.md` records the board/source identity, received
 configuration, commands, resource model, observation limits and non-claims.
 PWM waveform measurement, controlled/calibrated ADC levels, real I2C/SPI
 targets, peripheral-DMA traffic and supervised fault/electrical cases were not

@@ -1,4 +1,5 @@
 build
-doc
+doc/_vendor/
+doc/_generated/
 outputs
 tmp

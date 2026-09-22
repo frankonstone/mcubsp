@@ -122,6 +122,21 @@ case "$selection" in
     dmac)
         target=mcuhw_uno_r4_minima_dmac_tests
         manifest_stem=dmac ;;
+    ethernet)
+        target=mcuhw_uno_r4_minima_ethernet_mcuip_tests
+        manifest_stem=ethernet_mcuip ;;
+    ethernet-metrics)
+        target=mcuhw_uno_r4_minima_ethernet_metrics
+        manifest_stem= ;;
+    ethernet-metrics-fast6)
+        target=mcuhw_uno_r4_minima_ethernet_metrics_fast6
+        manifest_stem= ;;
+    ethernet-metrics-fast12)
+        target=mcuhw_uno_r4_minima_ethernet_metrics_fast12
+        manifest_stem= ;;
+    ethernet-recovery)
+        target=mcuhw_uno_r4_minima_ethernet_link_recovery
+        manifest_stem= ;;
     release-metrics)
         target=mcuhw_uno_r4_minima_release_metrics
         manifest_stem= ;;
@@ -137,16 +152,29 @@ case "$selection" in
             mcuhw_uno_r4_minima_spi_tests) manifest_stem=spi ;;
             mcuhw_uno_r4_minima_adc_tests) manifest_stem=adc ;;
             mcuhw_uno_r4_minima_dmac_tests) manifest_stem=dmac ;;
+            mcuhw_uno_r4_minima_ethernet_mcuip_tests) manifest_stem=ethernet_mcuip ;;
+            mcuhw_uno_r4_minima_ethernet_metrics) manifest_stem= ;;
+            mcuhw_uno_r4_minima_ethernet_metrics_fast6) manifest_stem= ;;
+            mcuhw_uno_r4_minima_ethernet_metrics_fast12) manifest_stem= ;;
+            mcuhw_uno_r4_minima_ethernet_link_recovery) manifest_stem= ;;
             mcuhw_uno_r4_minima_release_metrics) manifest_stem= ;;
             *) manifest_stem= ;;
         esac ;;
     *)
         echo "unknown suite: $selection" >&2
-        echo "use startup-gpio, gpio-loopback, pwm, uart, i2c, spi, adc, dmac, release-metrics, aggregate, all, or an ELF path" >&2
+        echo "use startup-gpio, gpio-loopback, pwm, uart, i2c, spi, adc, dmac, ethernet, ethernet-metrics, ethernet-metrics-fast6, ethernet-metrics-fast12, ethernet-recovery, release-metrics, aggregate, all, or an ELF path" >&2
         exit 2 ;;
 esac
 elf=${elf:-"$project_dir/build/uno-r4-minima/$target.elf"}
 timeout_seconds=${MCUHW_BOARD_TEST_TIMEOUT:-20}
+if [ "$selection" = ethernet-metrics ] \
+    || [ "$selection" = ethernet-metrics-fast6 ] \
+    || [ "$selection" = ethernet-metrics-fast12 ]; then
+    timeout_seconds=${MCUHW_BOARD_TEST_TIMEOUT:-40}
+fi
+if [ "$selection" = ethernet-recovery ]; then
+    timeout_seconds=${MCUHW_BOARD_TEST_TIMEOUT:-45}
+fi
 jlink=${JLINK_EXE:-JLinkExe}
 rtt_logger=${JLINK_RTT_LOGGER:-JLinkRTTLogger}
 nm=${ARM_NM:-arm-none-eabi-nm}
@@ -182,8 +210,13 @@ if [ -n "$manifest_stem" ]; then
         | sort | sed -n '1p')
 fi
 logger_pid=
+peer_pid=
 
 cleanup() {
+    if [ -n "$peer_pid" ]; then
+        kill "$peer_pid" 2>/dev/null || true
+        wait "$peer_pid" 2>/dev/null || true
+    fi
     if [ -n "$logger_pid" ]; then
         kill "$logger_pid" 2>/dev/null || true
         wait "$logger_pid" 2>/dev/null || true
@@ -227,6 +260,18 @@ start_logger() {
 sleep 1
 
 start_logger
+
+if [ "$selection" = ethernet ] || [ "$selection" = ethernet-metrics ] \
+    || [ "$selection" = ethernet-metrics-fast6 ] \
+    || [ "$selection" = ethernet-metrics-fast12 ] \
+    || [ "$selection" = ethernet-recovery ]; then
+    (
+        sleep 1
+        ping -c 2 -s 0 -W 1000 192.168.188.240 || true
+        ping -c 2 -s 1472 -W 1000 192.168.188.240 || true
+    ) > "$run_dir/ethernet-peer.log" 2>&1 &
+    peer_pid=$!
+fi
 
 elapsed=0
 while [ "$elapsed" -lt "$timeout_seconds" ]; do

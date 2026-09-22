@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-09-12",
+  "path_base": "project_root",
+  "note": "Identifies the locally supplied document baseline; does not certify latest vendor revisions, completeness, or implementation correctness.",
+  "documents": [
+    {
+      "path": "doc/_vendor/manuals/r01uh0887ej0110-ra4m1.pdf",
+      "document_id": "R01UH0887EJ0110",
+      "title": "Renesas RA4M1 hardware manual",
+      "revision": "1.10",
+      "publication_date": "2023-09-29",
+      "pages": 1454,
+      "bytes": 19602211,
+      "sha256": "06281c67da6e7b79d5c2cfb5756d0fab578ba576115528043744efe2b8fcda77",
+      "provided_by": "user",
+      "publisher_url": null,
+      "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles all 48 chapters in the complete source-unit inventory; typed driver-facing metadata covers the initial resource/peripheral slice. No separate device errata was available, so the accepted gate is Rev.1.10-scoped and makes no silicon-wide claim."
+    },
+    {
+      "path": "doc/_vendor/manuals/esp32-p4_technical_reference_manual_en.pdf",
+      "document_id": "ESP32-P4 TRM",
+      "title": "ESP32-P4 technical reference manual",
+      "revision": "pre-release v0.7",
+      "publication_date": null,
+      "pages": 3701,
+      "bytes": 23537234,
+      "sha256": "622fe9625d19cf00bd7aa49e65f0b5dd6ef2197f83cb7a88b4405078d6a957d4",
+      "provided_by": "user",
+      "publisher_url": "https://www.espressif.com/documentation/esp32-p4_technical_reference_manual_en.pdf",
+      "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles all 66 published chapters in the complete source-unit inventory. PLN-0015 supplies typed initial resource/peripheral metadata. I3C register content is unavailable and is explicitly excluded by D09 rather than represented by a placeholder."
+    },
+    {
+      "path": "doc/_vendor/manuals/pm0253-stm32f7-series-and-stm32h7-series-cortexm7-processor-programming-manual-stmicroelectronics.pdf",
+      "document_id": "PM0253",
+      "title": "STM32F7/H7 Cortex-M7 processor programming manual",
+      "revision": "6",
+      "publication_date": "2026-05",
+      "pages": 254,
+      "bytes": 2757322,
+      "sha256": "9dd51a3a0a9f8a4ed282e41c74fba8d2d84baa55374a3048849f716e00b6be62",
+      "provided_by": "user",
+      "publisher_url": null,
+      "check_scope": "PDF opens; page count and first/last-page text checked. Cortex-M7 cache, FPU and MPU properties remain a core-only supplement; PLN-0013 accounts the complete processor-source relationship without using PM0253 for peripheral definitions."
+    },
+    {
+      "path": "doc/_vendor/manuals/rm0433-stm32h742-stm32h743753-and-stm32h750-value-line-advanced-armbased-32bit-mcus-stmicroelectronics.pdf",
+      "document_id": "RM0433",
+      "title": "STM32H742/743/753/750 reference manual",
+      "revision": "8",
+      "publication_date": "2023-01",
+      "pages": 3353,
+      "bytes": 40711860,
+      "sha256": "9ba54135736a47a302cdc28fdc7ca8f23c6eed5a646fa0a639af6ed2ad71336e",
+      "provided_by": "user",
+      "publisher_url": "https://www.st.com/resource/en/reference_manual/rm0433-stm32h742-stm32h743753-and-stm32h750-value-line-advanced-armbased-32bit-mcus-stmicroelectronics.pdf",
+      "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles RM0433 chapters 2-61 in the complete source-unit inventory; PLN-0014 supplies typed initial resource/peripheral metadata. The correction overlay and per-engine narrative replace defective Table 3 routes."
+    },
+    {
+      "path": "doc/_vendor/manuals/stm32h753xi.pdf",
+      "document_id": "DS12117",
+      "title": "STM32H753xI datasheet",
+      "revision": "10",
+      "publication_date": "2026-01",
+      "pages": 357,
+      "bytes": 7020854,
+      "sha256": "607b9eadaef1c54f93e02d7cea58c862a1552bda47c848d96f2de5c0ee84c032",
+      "provided_by": "user",
+      "publisher_url": "https://www.st.com/resource/en/datasheet/stm32h753xi.pdf",
+      "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles the complete xI identity/package source unit; typed package membership and initial alternate-function routes remain the driver-facing slice."
+    },
+    {
+      "path": "doc/_vendor/manuals/es0392-stm32h742xig-stm32h743xig-stm32h750xb-stm32h753xi-device-errata-stmicroelectronics.pdf",
+      "document_id": "ES0392",
+      "title": "STM32H742/743/750/753 device errata",
+      "revision": "15",
+      "publication_date": "2025-09",
+      "pages": 73,
+      "bytes": 3278533,
+      "sha256": "effe23b2b79ec4ee33a8ab42b1b934cdd34100775cd6ca6b8dc8f3f2f01a1f9e",
+      "provided_by": "user",
+      "publisher_url": "https://www.st.com/resource/en/errata_sheet/es0392-stm32h742xig-stm32h743xig-stm32h750xb-stm32h753xi-device-errata-stmicroelectronics.pdf",
+      "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 completes errata-to-inventory reconciliation after PLN-0014 applied revision-scoped core/cache, AXI SRAM, FPU, DMA/DMAMUX, ADC and timer constraints."
+    }
+  ],
+  "baseline_review": {
+    "reviewed_on": "2026-09-12",
+    "policy": "Local PDFs remain immutable inputs. Official catalog pages and remote documents are revision checks and scope sources; a remote document is not treated as locally pinned and therefore has no local checksum.",
+    "targets": [
+      {
+        "target": "ra4m1",
+        "vendor": "Renesas",
+        "device_scope": ["R7FA4M1AB3CFM#AA0"],
+        "package_scope": ["PLQP0064KB-C (64-pin LQFP, 10 x 10 mm, 0.5 mm pitch)"],
+        "silicon_scope": "Revisions supported by R01UH0887EJ0110/R01DS0355EJ0110 Rev.1.10; re-check MCUVER and technical updates for every implemented slice.",
+        "primary_documents": ["R01UH0887EJ0110 Rev.1.10", "R01DS0355EJ0110 Rev.1.10"],
+        "official_product_url": "https://www.renesas.com/en/products/ra4m1/part-details/r7fa4m1ab3cfm-aa0",
+        "official_datasheet_url": "https://www.renesas.com/en/document/dst/ra4m1-group-datasheet"
+      },
+      {
+        "target": "stm32h753",
+        "vendor": "STMicroelectronics",
+        "device_scope": ["STM32H753VI", "STM32H753ZI", "STM32H753II", "STM32H753BI", "STM32H753XI", "STM32H753AI"],
+        "package_scope": ["LQFP100", "TFBGA100", "LQFP144", "UFBGA169", "LQFP176", "UFBGA176+25", "LQFP208", "TFBGA240+25"],
+        "silicon_scope": "Revision codes Y/W (REV_ID 0x1003), X (0x2001), and V (0x2003), with ES0392 Rev.15 applied per revision.",
+        "primary_documents": ["RM0433 Rev.8", "DS12117 Rev.10", "ES0392 Rev.15"],
+        "supplementary_documents": ["PM0253 Rev.6"],
+        "official_documentation_url": "https://www.st.com/en/microcontrollers-microprocessors/stm32h743-753/documentation.html"
+      },
+      {
+        "target": "esp32p4",
+        "vendor": "Espressif",
+        "device_scope": ["ESP32-P4NRW16X", "ESP32-P4NRW32X"],
+        "package_scope": ["QFN104 (10 x 10 mm)"],
+        "silicon_scope": "Current-production v3.x family, including v3.0/v3.1/v3.2 distinctions from the series errata; v1.3 is excluded because Espressif marks it EOL for new designs.",
+        "primary_documents": ["ESP32-P4 TRM pre-release v0.7 (2026-08-20)", "ESP32-P4 Series Datasheet pre-release v0.7 (2026-07-14)", "ESP32-P4 Series SoC Errata v1.3 (2026-07-10)", "ESP32-P4 Chip Revision v3.x User Guide"],
+        "official_documentation_url": "https://www.espressif.com/en/support/download/documents/chips",
+        "official_datasheet_url": "https://documentation.espressif.com/esp32-p4_datasheet_en.pdf",
+        "official_errata_url": "https://documentation.espressif.com/esp-chip-errata/en/latest/esp32p4/index.html",
+        "official_revision_guide_url": "https://documentation.espressif.com/esp32-p4-chip-revision-v3.x_user_guide_en.pdf"
+      }
+    ]
+  }
+}

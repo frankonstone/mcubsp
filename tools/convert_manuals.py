@@ -14,7 +14,8 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / 'doc' / 'markdown'
+OUTPUT = ROOT / 'doc' / '_generated' / 'manuals'
+SOURCE_MANIFEST = ROOT / 'doc' / 'reference' / 'source-manifest.json'
 PAGE_RANGE = 50
 SLUGS = {
     'R01UH0887EJ0110': 'ra4m1',
@@ -49,7 +50,7 @@ def convert(document, extracted):
     assert [p['number'] for p in pages] == list(range(1, total + 1))
     bookmarks = extracted['bookmarks']
     folder = OUTPUT / SLUGS[document['document_id']]
-    pdf_link = '../../' + Path(document['path']).name
+    pdf_link = '../../../_vendor/manuals/' + Path(document['path']).name
     title = document['title']
     empty = [p['number'] for p in pages if not p['text'].strip()]
     expected = {'README.md'}
@@ -75,7 +76,7 @@ def convert(document, extracted):
         write(folder / name, '\n'.join(body))
     index = [f'# {title}', '',
              f"Document: **{document['document_id']}**, revision **{document['revision']}**, {total:,} PDF pages.", '',
-             f'[All manuals](../README.md) · [Original PDF]({pdf_link}) · [Pinned sources](../../source-manifest.json)', '',
+             f'[All manuals](../README.md) · [Original PDF]({pdf_link}) · [Pinned sources](../../../reference/source-manifest.json)', '',
              f"Source SHA-256: `{document['sha256']}`", '',
              'This is a searchable extraction of the embedded text, not a semantic reconstruction of the PDF. Page numbers below are physical PDF pages (1-based), which can differ from printed page labels. Original text is fenced to preserve register notation and avoid interpreting it as Markdown. Headers, footers and hyphenation are retained. OCR was not used. Figures are accessed through the original-page links.', '',
              '## Page ranges', '']
@@ -108,7 +109,7 @@ def convert(document, extracted):
             'bookmark_count': len(bookmarks), 'outputs': outputs}
 
 def main():
-    manifest = json.loads((ROOT/'doc/source-manifest.json').read_text())
+    manifest = json.loads(SOURCE_MANIFEST.read_text())
     documents = manifest['documents']
     # Fail before writing anything if a source changed without an explicit re-pin.
     for document in documents:
@@ -137,19 +138,19 @@ def main():
              'Generated Markdown reference copies of the six pinned PDFs. Start here to find sections, then follow an original-page link to check authoritative register tables, diagrams or ambiguous text.', '',
              '| Manual | Revision | Pages | Markdown |', '| --- | --- | ---: | --- |']
     for d,e in zip(documents,entries):
-        link = str(Path(e['index']).relative_to('doc/markdown'))
+        link = str(Path(e['index']).relative_to('doc/_generated/manuals'))
         index.append(f"| {d['document_id']} | {d['revision']} | {d['pages']:,} | [{d['title']}]({link}) |")
     index += ['', '## Search and regenerate', '',
               'From the project root:', '', '```sh',
-              "rg -n -i 'module.stop|GTIOCA|GPIO matrix|DMA request' doc/markdown --glob 'pages-*.md'",
+              "rg -n -i 'module.stop|GTIOCA|GPIO matrix|DMA request' doc/_generated/manuals --glob 'pages-*.md'",
               'python3 tools/convert_manuals.py', '```', '',
               'The converter requires macOS PDFKit, Swift and Python 3. It uses no network or third-party packages. It checks the pinned PDF checksums before conversion. Each range contains at most 50 physical PDF pages, each with a stable page heading and original-PDF link. PDF bookmarks provide section navigation.', '',
               '## Fidelity and verification', '',
               'Embedded text is extracted with PDFKit and retained inside text fences; this prevents accidental Markdown formatting of register names or tables. This is not a reconstruction of semantic tables or equations, and graphic content is not rendered into the Markdown. Reading order and column alignment can be imperfect. Do not derive bit positions, field values, reset values or pin mappings from extracted text alone: verify the source PDF.', '',
-              'Every source page is represented, including pages with no extracted text, which are flagged and linked. No OCR or content summarization is performed. Generated hashes and counts are recorded in [conversion-manifest.json](conversion-manifest.json); authoritative PDF identities remain in [source-manifest.json](../source-manifest.json).', '']
+              'Every source page is represented, including pages with no extracted text, which are flagged and linked. No OCR or content summarization is performed. Generated hashes and counts are recorded in [conversion-manifest.json](conversion-manifest.json); authoritative PDF identities remain in [source-manifest.json](../../reference/source-manifest.json).', '']
     write(OUTPUT/'README.md','\n'.join(index))
     conversion = {'schema_version':1,'path_base':'project_root','extractor':'macOS PDFKit page.string and PDF outline',
-                  'page_range_size':PAGE_RANGE,'source_manifest_sha256':digest((ROOT/'doc/source-manifest.json').read_bytes()),
+                  'page_range_size':PAGE_RANGE,'source_manifest_sha256':digest(SOURCE_MANIFEST.read_bytes()),
                   'scripts':{str(p.relative_to(ROOT)):digest(p.read_bytes()) for p in [Path(__file__).resolve(),ROOT/'tools/extract_pdf.swift']},
                   'index_sha256':digest((OUTPUT/'README.md').read_bytes()),'documents':entries}
     write(OUTPUT/'conversion-manifest.json',json.dumps(conversion,indent=2)+'\n')

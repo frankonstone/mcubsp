@@ -27,6 +27,7 @@ add_executable(mcuhw_tests
     test_stm32h753_description.cpp
     test_stm32h753_gpio.cpp
     test_stm32h753_ethernet.cpp
+    test_w5100.cpp
     test_stm32h753_drivers.cpp
     test_three_description_gate.cpp
     test_register.cpp
@@ -40,7 +41,7 @@ if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
         "${MCUHW_MCUIP_SOURCE_DIR}/include")
 endif()
 mcuhw_apply_restricted_runtime(mcuhw_tests)
-mcutest_configure_target(mcuhw_tests MAX_TESTS 176 SOURCE_LOCATION ON)
+mcutest_configure_target(mcuhw_tests MAX_TESTS 192 SOURCE_LOCATION ON)
 
 add_test(
     NAME mcuhw.unit

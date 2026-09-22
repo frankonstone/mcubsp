@@ -30,6 +30,26 @@ path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_all_tests.mcucov.json"
 importer = "mcucov"
 
 [[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_mcuip_tests.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_metrics.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_metrics_fast6.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_metrics_fast12.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_link_recovery.json"
+importer = "mcutest"
+
+[[artifacts]]
 path = "build/nucleo-h753zi/artifacts/mcuhw_nucleo_h753zi_native_peripherals.json"
 importer = "mcutest"
 

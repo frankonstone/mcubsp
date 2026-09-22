@@ -55,18 +55,19 @@ mcuhw_apply_restricted_runtime(mcuhw_arch_probe)
 # Optional by installation, mandatory for the sibling-development contract:
 # these TUs prove that both fixed-ring boundaries satisfy the current mcuip
 # replacement for lwIP on every configured architecture.
-# @req REQ-0043
+# @req REQ-0043 REQ-0044
 if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
     add_library(mcuhw_mcuip_contract_probe OBJECT
         tests/compile/stm32h753_mcuip_contract.cpp
-        tests/compile/esp32p4_mcuip_contract.cpp)
+        tests/compile/esp32p4_mcuip_contract.cpp
+        tests/compile/uno_r4_minima_w5100_mcuip_contract.cpp)
     target_link_libraries(mcuhw_mcuip_contract_probe PRIVATE mcuhw::mcuhw)
     target_include_directories(mcuhw_mcuip_contract_probe PRIVATE
         "${MCUHW_MCUIP_SOURCE_DIR}/include")
     mcuhw_apply_restricted_runtime(mcuhw_mcuip_contract_probe)
 else()
     message(WARNING
-        "mcuip checkout not found at ${MCUHW_MCUIP_SOURCE_DIR}; REQ-0043 contract probe disabled")
+        "mcuip checkout not found at ${MCUHW_MCUIP_SOURCE_DIR}; REQ-0043/REQ-0044 contract probes disabled")
 endif()
 
 # @req REQ-0009 REQ-0038
@@ -469,6 +470,66 @@ if(MCUHW_BUILD_UNO_R4_MINIMA_TESTS)
                      "${CMAKE_CURRENT_BINARY_DIR}/_deps/mcujson"
                      EXCLUDE_FROM_ALL)
 
+    if(NOT EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
+        message(FATAL_ERROR "mcuip headers not found at ${MCUHW_MCUIP_SOURCE_DIR}")
+    endif()
+    set(MCUIP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_NATIVE_ADAPTER OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_MACOS_ADAPTER OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_MCUNET_ADAPTER OFF CACHE BOOL "" FORCE)
+    set(MCUIP_BUILD_FUZZERS OFF CACHE BOOL "" FORCE)
+    if(NOT TARGET mcuip::mcuip)
+        add_subdirectory("${MCUHW_MCUIP_SOURCE_DIR}"
+                         "${CMAKE_CURRENT_BINARY_DIR}/_deps/mcuip"
+                         EXCLUDE_FROM_ALL)
+    endif()
+    target_compile_options(mcuip PRIVATE
+        ${MCUHW_RESTRICTED_COMPILE_OPTIONS}
+        -Os
+        -mcpu=cortex-m4
+        -mthumb
+        -mfpu=fpv4-sp-d16
+        -mfloat-abi=hard
+        -ffunction-sections
+        -fdata-sections
+        -fno-unwind-tables
+        -fno-asynchronous-unwind-tables
+    )
+
+    file(GLOB_RECURSE _mcuhw_uno_mcuip_identity_files CONFIGURE_DEPENDS
+        "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/*.hpp"
+        "${MCUHW_MCUIP_SOURCE_DIR}/src/*.cpp")
+    list(SORT _mcuhw_uno_mcuip_identity_files)
+    set(_mcuhw_uno_mcuip_identity_material "")
+    foreach(_mcuhw_mcuip_file IN LISTS _mcuhw_uno_mcuip_identity_files)
+        file(SHA256 "${_mcuhw_mcuip_file}" _mcuhw_mcuip_file_hash)
+        file(RELATIVE_PATH _mcuhw_mcuip_relative
+            "${MCUHW_MCUIP_SOURCE_DIR}" "${_mcuhw_mcuip_file}")
+        string(APPEND _mcuhw_uno_mcuip_identity_material
+            "${_mcuhw_mcuip_relative}:${_mcuhw_mcuip_file_hash}\n")
+    endforeach()
+    string(SHA256 MCUHW_UNO_MCUIP_SOURCE_ID
+        "${_mcuhw_uno_mcuip_identity_material}")
+    file(GLOB_RECURSE _mcuhw_uno_ethernet_identity_files CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/mcuhw/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/*.S"
+        "${CMAKE_CURRENT_SOURCE_DIR}/board/uno_r4_minima/*.ld")
+    list(APPEND _mcuhw_uno_ethernet_identity_files
+        "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt")
+    list(SORT _mcuhw_uno_ethernet_identity_files)
+    set(_mcuhw_uno_ethernet_identity_material "")
+    foreach(_mcuhw_file IN LISTS _mcuhw_uno_ethernet_identity_files)
+        file(SHA256 "${_mcuhw_file}" _mcuhw_file_hash)
+        file(RELATIVE_PATH _mcuhw_relative
+            "${CMAKE_CURRENT_SOURCE_DIR}" "${_mcuhw_file}")
+        string(APPEND _mcuhw_uno_ethernet_identity_material
+            "${_mcuhw_relative}:${_mcuhw_file_hash}\n")
+    endforeach()
+    string(SHA256 MCUHW_UNO_SOURCE_ID
+        "${_mcuhw_uno_ethernet_identity_material}")
+
     if(NOT mcucov_DIR)
         file(GLOB _mcuhw_mcucov_configs
             "${MCUHW_MCUCOV_SOURCE_DIR}/output/install/*/lib/cmake/mcucov/mcucov-config.cmake")
@@ -620,6 +681,76 @@ if(MCUHW_BUILD_UNO_R4_MINIMA_TESTS)
         mcuhw_uno_r4_minima_dmac_tests
         board/uno_r4_minima/tests/dmac.cpp
         0x4d485701)
+    mcuhw_add_uno_r4_minima_test(
+        mcuhw_uno_r4_minima_ethernet_mcuip_tests
+        board/uno_r4_minima/tests/ethernet_mcuip.cpp
+        0x4d485702)
+    target_link_libraries(mcuhw_uno_r4_minima_ethernet_mcuip_tests PRIVATE
+        mcuip::mcuip)
+    target_compile_definitions(
+        mcuhw_uno_r4_minima_ethernet_mcuip_tests PRIVATE
+        MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
+        MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
+    )
+    mcuhw_add_uno_r4_minima_test(
+        mcuhw_uno_r4_minima_ethernet_metrics
+        board/uno_r4_minima/tests/ethernet_mcuip.cpp
+        0
+        NO_COVERAGE)
+    target_link_libraries(mcuhw_uno_r4_minima_ethernet_metrics PRIVATE
+        mcuip::mcuip)
+    target_compile_definitions(
+        mcuhw_uno_r4_minima_ethernet_metrics PRIVATE
+        MCUHW_ETHERNET_METRICS=1
+        MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
+        MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
+    )
+    mcuhw_add_uno_r4_minima_test(
+        mcuhw_uno_r4_minima_ethernet_metrics_fast6
+        board/uno_r4_minima/tests/ethernet_mcuip.cpp
+        0
+        NO_COVERAGE)
+    target_link_libraries(
+        mcuhw_uno_r4_minima_ethernet_metrics_fast6 PRIVATE
+        mcuip::mcuip)
+    target_compile_definitions(
+        mcuhw_uno_r4_minima_ethernet_metrics_fast6 PRIVATE
+        MCUHW_ETHERNET_METRICS=1
+        MCUHW_ETHERNET_FAST_SPI=1
+        MCUHW_ETHERNET_SPI_HZ=6000000
+        MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
+        MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
+    )
+    mcuhw_add_uno_r4_minima_test(
+        mcuhw_uno_r4_minima_ethernet_metrics_fast12
+        board/uno_r4_minima/tests/ethernet_mcuip.cpp
+        0
+        NO_COVERAGE)
+    target_link_libraries(
+        mcuhw_uno_r4_minima_ethernet_metrics_fast12 PRIVATE
+        mcuip::mcuip)
+    target_compile_definitions(
+        mcuhw_uno_r4_minima_ethernet_metrics_fast12 PRIVATE
+        MCUHW_ETHERNET_METRICS=1
+        MCUHW_ETHERNET_FAST_SPI=1
+        MCUHW_ETHERNET_SPI_HZ=12000000
+        MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
+        MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
+    )
+    mcuhw_add_uno_r4_minima_test(
+        mcuhw_uno_r4_minima_ethernet_link_recovery
+        board/uno_r4_minima/tests/ethernet_mcuip.cpp
+        0
+        NO_COVERAGE)
+    target_link_libraries(
+        mcuhw_uno_r4_minima_ethernet_link_recovery PRIVATE
+        mcuip::mcuip)
+    target_compile_definitions(
+        mcuhw_uno_r4_minima_ethernet_link_recovery PRIVATE
+        MCUHW_ETHERNET_LINK_RECOVERY=1
+        MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
+        MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
+    )
     mcuhw_add_uno_r4_minima_test(
         mcuhw_uno_r4_minima_release_metrics
         board/uno_r4_minima/tests/release_metrics.cpp

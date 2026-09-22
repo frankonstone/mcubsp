@@ -134,7 +134,7 @@ public:
         if (!initialized_) {
             return start_failure(driver::spi_error::not_initialized);
         }
-        if (operation_id_) {
+        if (operation_id_ || immediate_active_) {
             return start_failure(driver::spi_error::busy);
         }
         const auto validation = validate_segments(segments);
@@ -160,6 +160,74 @@ public:
         return started;
     }
 
+    // A bounded polling path for devices such as the original W5100 that use
+    // thousands of independently chip-selected four-byte commands. It keeps
+    // the same controller ownership and CS-idle guarantees as transaction(),
+    // but avoids allocating and publishing an asynchronous operation per
+    // command. The caller supplies an explicit poll bound for each hardware
+    // status transition.
+    // @req REQ-0019 REQ-0028 REQ-0044
+    [[nodiscard]] std::expected<std::size_t, driver::spi_error>
+    transaction_immediate(std::span<const std::uint8_t> transmit,
+                          std::span<std::uint8_t> receive,
+                          std::uint32_t poll_limit) noexcept {
+        if (!initialized_) {
+            return std::unexpected(driver::spi_error::not_initialized);
+        }
+        if (operation_id_ || immediate_active_) {
+            return std::unexpected(driver::spi_error::busy);
+        }
+        if (configuration_.frame_width != driver::spi_frame_width::bits8) {
+            return std::unexpected(driver::spi_error::invalid_frame);
+        }
+        if (transmit.empty()) {
+            return std::unexpected(driver::spi_error::empty_transfer);
+        }
+        if (!receive.empty() && receive.size() != transmit.size()) {
+            return std::unexpected(driver::spi_error::mismatched_segment);
+        }
+        if (transmit.size() > 65'535U) {
+            return std::unexpected(driver::spi_error::excessive_length);
+        }
+        if (poll_limit == 0U) {
+            return std::unexpected(driver::spi_error::timeout);
+        }
+
+        immediate_active_ = true;
+        if (!clear_errors() || !set_chip_select(true)
+            || !write<std::uint8_t>(base() + 0x0FU, spcr2_auto_stop)
+            || !write<std::uint8_t>(base() + 0x00U, spcr_polling)) {
+            return finish_immediate_error(driver::spi_error::mmio);
+        }
+        for (std::size_t index = 0U; index < transmit.size(); ++index) {
+            const auto transmit_ready = wait_for_status(
+                status_transmit_empty, true, poll_limit);
+            if (!transmit_ready) {
+                return finish_immediate_error(transmit_ready.error());
+            }
+            if (!write<std::uint8_t>(base() + 0x04U, transmit[index])) {
+                return finish_immediate_error(driver::spi_error::mmio);
+            }
+            const auto receive_ready = wait_for_status(
+                status_receive_full, true, poll_limit);
+            if (!receive_ready) {
+                return finish_immediate_error(receive_ready.error());
+            }
+            const auto value = mmio_.template read<std::uint8_t>(
+                base() + 0x04U);
+            if (!value) {
+                return finish_immediate_error(driver::spi_error::mmio);
+            }
+            if (!receive.empty()) receive[index] = *value;
+        }
+        const auto idle = wait_for_status(status_not_idle, false, poll_limit);
+        if (!idle) return finish_immediate_error(idle.error());
+        const bool stopped = stop_immediate();
+        return stopped
+            ? std::expected<std::size_t, driver::spi_error>{transmit.size()}
+            : std::unexpected(driver::spi_error::mmio);
+    }
+
     template<typename ReceiveDma, typename TransmitDma>
     [[nodiscard]] start_result
     transaction_dma(driver::spi_dma_buffers buffers,
@@ -168,7 +236,7 @@ public:
         if (!initialized_) {
             return start_failure(driver::spi_error::not_initialized);
         }
-        if (operation_id_) {
+        if (operation_id_ || immediate_active_) {
             return start_failure(driver::spi_error::busy);
         }
         if (configuration_.frame_width != driver::spi_frame_width::bits8) {
@@ -342,7 +410,7 @@ public:
         if (!initialized_) {
             return std::unexpected(driver::spi_error::not_initialized);
         }
-        if (operation_id_) {
+        if (operation_id_ || immediate_active_) {
             return std::unexpected(driver::spi_error::busy);
         }
         if (!write<std::uint8_t>(base() + 0x00U, 0U)
@@ -359,10 +427,13 @@ private:
     static constexpr std::uint8_t status_not_idle = 1U << 1U;
     static constexpr std::uint8_t status_mode_fault = 1U << 2U;
     static constexpr std::uint8_t status_parity = 1U << 3U;
+    static constexpr std::uint8_t status_transmit_empty = 1U << 5U;
+    static constexpr std::uint8_t status_receive_full = 1U << 7U;
     static constexpr std::uint8_t spcr_stopped = 0x09U;
     static constexpr std::uint8_t spcr_active = 0xF9U;
     static constexpr std::uint8_t spcr_receive_only = 0xD9U;
     static constexpr std::uint8_t spcr_wait_idle = 0x59U;
+    static constexpr std::uint8_t spcr_polling = 0x49U;
     static constexpr std::uint8_t spcr2_idle_irq = 1U << 2U;
     static constexpr std::uint8_t spcr2_auto_stop = 1U << 4U;
 
@@ -574,6 +645,44 @@ private:
             static_cast<std::uint8_t>((*status & ~0x1DU) | 0xA0U));
     }
 
+    [[nodiscard]] std::expected<void, driver::spi_error>
+    wait_for_status(std::uint8_t mask, bool set,
+                    std::uint32_t poll_limit) noexcept {
+        for (std::uint32_t poll = 0U; poll < poll_limit; ++poll) {
+            const auto status = mmio_.template read<std::uint8_t>(
+                base() + 0x03U);
+            if (!status) return std::unexpected(driver::spi_error::mmio);
+            if ((*status & status_overrun) != 0U) {
+                return std::unexpected(driver::spi_error::overrun);
+            }
+            if ((*status & status_mode_fault) != 0U) {
+                return std::unexpected(driver::spi_error::mode_fault);
+            }
+            if ((*status & status_parity) != 0U) {
+                return std::unexpected(driver::spi_error::parity);
+            }
+            if (((*status & mask) != 0U) == set) return {};
+        }
+        return std::unexpected(driver::spi_error::timeout);
+    }
+
+    [[nodiscard]] bool stop_immediate() noexcept {
+        const bool controller_stopped =
+            write<std::uint8_t>(base() + 0x00U, spcr_stopped);
+        const bool interrupts_stopped =
+            write<std::uint8_t>(base() + 0x0FU, spcr2_auto_stop);
+        const bool deselected = set_chip_select(false);
+        immediate_active_ = false;
+        return controller_stopped && interrupts_stopped && deselected;
+    }
+
+    [[nodiscard]] std::expected<std::size_t, driver::spi_error>
+    finish_immediate_error(driver::spi_error error) noexcept {
+        return stop_immediate()
+            ? std::unexpected(error)
+            : std::unexpected(driver::spi_error::mmio);
+    }
+
     [[nodiscard]] bool program_controller() noexcept {
         const auto phase = configuration_.mode == driver::spi_mode::mode1
                 || configuration_.mode == driver::spi_mode::mode3
@@ -746,6 +855,7 @@ private:
     bool receive_dma_complete_{};
     bool transmit_dma_complete_{};
     bool dma_mode_{};
+    bool immediate_active_{};
     bool owned_{};
     bool initialized_{};
 };

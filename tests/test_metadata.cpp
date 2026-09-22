@@ -49,7 +49,7 @@ TEST(peripheral_metadata, retains_multiple_relationships_and_protection,
 TEST(pin_metadata, distinguishes_package_availability_route_and_composition,
      "REQ-0010") {
     constexpr core::source_ref source{
-        "contract trial", "source-backed shapes", "see doc/core-contract-trials.md"};
+        "contract trial", "source-backed shapes", "see doc/concepts/register-model.md"};
     constexpr core::pin_id p0{0, 0};
     constexpr core::pin_id p1{0, 1};
     constexpr auto digital_modes = static_cast<std::uint16_t>(

@@ -175,6 +175,32 @@ TEST(ra4m1_spi, holds_cs_across_segments_and_finishes_only_when_idle,
     ASSERT_TRUE(backend.shutdown().has_value());
 }
 
+TEST(ra4m1_spi, immediate_transaction_is_bounded_and_restores_chip_select,
+     "REQ-0019", "REQ-0028", "REQ-0044") {
+    mmio_type mmio{0x4001'E000U};
+    execution_type execution;
+    backend_type backend{mmio, execution};
+    ASSERT_TRUE(backend.initialize(*one_mhz).has_value());
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4007'2103U, 0xA0U).has_value());
+    const std::array<std::uint8_t, 4U> command{0x0FU, 0x12U, 0x34U, 0U};
+    std::array<std::uint8_t, 4U> response{};
+    const auto transferred = backend.transaction_immediate(
+        command, response, 4U);
+    ASSERT_TRUE(transferred.has_value());
+    EXPECT_EQ(*transferred, command.size());
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4007'2100U, 0x49U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4004'0028U, 0x1000'0000U));
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4004'0028U, 0x0000'1000U));
+
+    ASSERT_TRUE(mmio.write<std::uint8_t>(0x4007'2103U, 0xA2U).has_value());
+    const auto timed_out = backend.transaction_immediate(
+        command, response, 2U);
+    ASSERT_FALSE(timed_out.has_value());
+    EXPECT_TRUE(timed_out.error() == mcuhw::driver::spi_error::timeout);
+    EXPECT_TRUE(has_write(mmio.operations(), 0x4007'2100U, 0x09U));
+    ASSERT_TRUE(backend.shutdown().has_value());
+}
+
 TEST(ra4m1_spi, dma_full_duplex_waits_for_both_channels_and_wire_idle,
      "REQ-0017", "REQ-0018", "REQ-0028", "REQ-0030") {
     mmio_type mmio{0x4001'E000U};

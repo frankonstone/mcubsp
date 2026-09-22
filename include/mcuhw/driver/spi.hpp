@@ -24,6 +24,7 @@ enum class spi_error : std::uint8_t {
     already_owned,
     dma,
     mmio,
+    timeout,
 };
 
 enum class spi_mode : std::uint8_t { mode0, mode1, mode2, mode3 };
