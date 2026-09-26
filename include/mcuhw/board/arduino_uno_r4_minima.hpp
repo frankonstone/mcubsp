@@ -21,6 +21,8 @@ inline constexpr core::pin_id d0_rx{3, 1};
 inline constexpr core::pin_id d1_tx{3, 2};
 inline constexpr core::pin_id d2{1, 5};
 inline constexpr core::pin_id d3{1, 4};
+// Ethernet Shield R3 SD select; same P103 binding as board Ethernet tests.
+inline constexpr core::pin_id d4{1, 3};
 inline constexpr core::pin_id d10_ssl{1, 12};
 inline constexpr core::pin_id d11_mosi{1, 9};
 inline constexpr core::pin_id d12_miso{1, 10};

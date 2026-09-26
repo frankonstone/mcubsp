@@ -28,6 +28,10 @@ The library separates hardware facts from behavior and board wiring:
 ```text
 Application
     |
+Device driver (optional) TMP102 temperature, W5100 Ethernet, ...
+    |
+mcuhw::io (optional)    board objects, named pins, selected storage and leases
+    |
 Functional driver       GPIO, PWM, UART, I2C, SPI, ADC, DMA, ...
     |
 MCU backend             register sequencing for one peripheral family
@@ -52,6 +56,8 @@ The main source layers are:
 | `include/mcuhw/mcu/` | Declarative, source-backed MCU descriptions |
 | `include/mcuhw/backend/` | MCU-specific peripheral sequencing |
 | `include/mcuhw/driver/` | Target-independent functional drivers and external-device drivers |
+| `include/mcuhw/io/` | Modern C++ application interface and explicit board profiles |
+| `include/mcuhw/device/` | Attached-chip protocols using I2C/SPI device handles or supplied transports |
 | `include/mcuhw/board/` | Board identities, package selection, and connector/pin aliases |
 | `include/mcuhw/execution/` | Bare-metal and test execution policies |
 | `include/mcuhw/integration/` | Optional integration boundaries such as MCUIP network devices |
@@ -117,6 +123,21 @@ for description/driver-only builds but required for the Ethernet contract and
 hardware tests.
 
 ## Quick start
+
+For application code, start with the [modern C++ I/O guide](doc/getting-started/io.md)
+and the [UNO blink example](examples/io/blink.cpp). The optional `mcuhw::io`
+CMake target provides `hw.output()`, `hw.serial`, `hw.i2c`, `hw.spi`,
+`hw.analog`, `hw.pwm`, and explicit DMA leases. Storage is selected at compile
+time; execution and MMIO can be supplied by the application. This new layer
+has host and cross-build verification; its on-device acceptance is separate
+from the existing driver evidence below.
+
+The [components guide](doc/getting-started/components.md) shows how attached
+chips share buses through `hw.i2c.device(address)` and
+`hw.spi.device(configuration)`. TMP102 and W5100 drivers live under
+`mcuhw::device`; the W5100 exposes raw Ethernet through the generic MCUIP
+integration. Link `mcuhw::device` for device headers and `mcuhw::io` for the
+board facade.
 
 From the repository root, with `mcutest` in its default sibling location:
 

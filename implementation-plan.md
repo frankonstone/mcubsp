@@ -1,6 +1,6 @@
 # mcuhw implementation plan
 
-Revised baseline, 22 September 2026. Implements [requirements.md](requirements.md). The current sequence is: **preserve the completed three-MCU description and RA4M1 driver foundation; accept each bare-metal target from its scoped native, build and directly connected physical evidence; integrate MCUOS last**. Status annotations below track execution; a completed plan is not itself requirement evidence. Existing evidence is retained. Read in the phase order below, not numeric ID order.
+Revised baseline, 26 September 2026. Implements [requirements.md](requirements.md). The current sequence is: **preserve the completed three-MCU description and RA4M1 driver foundation; accept each bare-metal target from its scoped native, build and directly connected physical evidence; follow PLN-0026 with repository adoption and scalable build workflows; integrate MCUOS last**. Status annotations below track execution; a completed plan is not itself requirement evidence. Existing evidence is retained. Read in the phase order below, not numeric ID order.
 
 ## Delivery phases
 
@@ -10,9 +10,14 @@ Revised baseline, 22 September 2026. Implements [requirements.md](requirements.m
 | B: three complete descriptions | Reviewed block-sized increments across all three, followed by remaining documented blocks | All three declared baselines pass the common description and coverage gate, before any backend/driver implementation |
 | C: completed bare-metal foundation | Preserve completed RA4M1 startup, GPIO, execution, transfer, timer and basic-PWM work | Stable driver-facing baseline; existing evidence remains valid |
 | D: bare-metal target completion | Finish driver implementations and accept each target from scoped native, cross-build and directly connected physical procedures | Evidence identifies what was observed and does not imply unmeasured electrical or complete-board claims |
+| D2: repository adoption and scale | Immediately after PLN-0026, deliver independent packaging, a local component catalog, selected-board builds, reproducible setup, discovery and scalable verification | Clean external applications build through one workflow; adding unrelated boards/devices does not expand their build work |
 | E: MCUOS | Optional adapter using `../mcuos`, tested natively and then on an executable MCUOS hardware target | RTOS portability demonstrated independently of earlier bare-metal releases |
 
-Motor PWM and other extensions remain later milestones. MCUOS source, API readiness and hardware ports are not prerequisites for phases A–D. Target work may be verified with host models, cross-builds, debug access, built-in board features, documented bridges/direct wiring, connected devices, native connectors and ordinary peers, or internal known-answer tests. Claims stay limited to the behavior those paths independently observe.
+Motor PWM and other extensions remain later milestones. MCUOS source, API readiness and hardware ports are not prerequisites for phases A–D or D2. Target work may be verified with host models, cross-builds, debug access, built-in board features, documented bridges/direct wiring, connected devices, native connectors with ordinary peers, or internal known-answer tests. Claims stay limited to the behavior those paths independently observe.
+
+Phase D2 uses the existing board integrations and follows PLN-0026 without
+waiting for unfinished peripheral acceptance in PLN-0019 or PLN-0023. It does
+not reopen completed releases or imply new physical verification.
 
 ## Intended structure
 
@@ -25,13 +30,16 @@ include/mcuhw/
   mcu/ra4m1/            declarative device, memory, clock, pin, IRQ, DMA and register data
   mcu/stm32h753/
   mcu/esp32p4/
-  backends/             added after description gate: peripheral register sequences
-  drivers/              added after description gate: functional interfaces and logic
-  devices/              later MCU-independent external-device drivers
+  backend/              peripheral register sequences shared by compatible MCU variants
+  driver/               functional interfaces and logic
+  device/               MCU-independent attached-chip protocols
+  board/                package selection, board identity and connector/pin aliases
   execution/            later portable execution contract and bare-metal policy
-boards/               package/pin aliases separate from MCU data; startup added later
+  io/                   application facade, board profiles, storage and ownership
+board/<vendor>/<board>/  local board manifests, startup/build bindings, tests and docs
+device/<vendor>/<part>/  local device manifests, focused tests, examples and docs
 src/                    non-template behavior where useful
-adapters/mcuos/          phase F only
+adapters/mcuos/          phase E only
 examples/               metadata examples first; bare-metal firmware after the gate
 tests/                 description contracts, then driver models and hardware procedures
 doc/                   manuals, provenance and coverage manifests, design decisions
@@ -39,6 +47,13 @@ cmake/                 native and architecture/toolchain configurations
 ```
 
 Templates and constant-evaluated definitions live in headers; other behavior may use compiled translation units. Description headers must be usable together on a host without board startup, OS includes or a global target-selection macro. Do not create empty target trees as evidence of support.
+
+Phase D2 retains the public `include/mcuhw/` entry points and establishes local
+`board/<vendor>/<board>/` and `device/<vendor>/<device>/` component areas for
+manifests, build integration where needed, focused tests and documentation.
+Shared MCU/platform support remains reusable. Catalog indexes and support tables
+are derived from those entries; ordinary consumers do not generate the catalog.
+Final manifest format and migration details are delivered by PLN-0028.
 
 ## Phase A: sources, contracts and description test infrastructure
 
@@ -614,6 +629,204 @@ Choose the board, toolchain/boot path and initial core ownership. Implement the 
 
 Exit: all three declared bare-metal targets have real backends supporting the shared interfaces, with host/cross-build evidence and their selected board-native/directly connected target procedures. Description compatibility and runtime portability are separately demonstrated; observation limits remain explicit.
 
+## PLN-0025 Deliver the modern C++ application interface foundation
+@status(done)
+@link(REQ-0002, REQ-0014, REQ-0015, REQ-0018, REQ-0035, REQ-0037, REQ-0038, REQ-0045)
+
+Implemented the optional `mcuhw::io` target and board-oriented API on the
+existing checked drivers. Compile-time configuration selects peripheral and
+DMA storage. A shared runtime tracks pin aliases and retained handles;
+move-only leases and asynchronous operations expose explicit lifetime and error
+contracts. Execution/MMIO injection provides the extension boundary while this
+increment remains single-core foreground polling.
+
+The UNO, NUCLEO and ESP32-P4-NANO profiles retain their existing fixed clock and
+silicon assumptions. Native tests cover ownership, rollback, completion,
+timeouts, cancellation and ISR rejection, with JSON evidence in
+`build/host/artifacts/mcutest-io.json`. Positive/negative compile cases and all
+public headers build for the three architectures. UNO blink, serial echo and
+SPI DMA examples link with the existing standalone startup. The
+[application guide](doc/getting-started/io.md) documents API use and limitations.
+`tools/report-io-cost.py` produces paired linked probes, source hashes and
+flash/static-RAM/individual-stack-frame reports in `build/io-cost/`.
+
+Exit scope: implemented and checked at the host/build level. No physical
+acceptance of the new facade, peak-stack/latency measurement, camera API,
+MCUOS adapter or MCUIP service is claimed by this milestone.
+
+## PLN-0026 Add shared bus endpoints and attached-device drivers
+@status(done)
+@link(REQ-0014, REQ-0018, REQ-0019, REQ-0024, REQ-0028, REQ-0035, REQ-0037, REQ-0038, REQ-0044, REQ-0046)
+
+Implemented I2C address leases and SPI device leases over one stable controller
+per enabled bus. SPI controller backends support external CS handling and idle
+reconfiguration on RA4M1, STM32H753 and ESP32-P4; existing raw backend behavior
+remains available. Retained result handles prevent device release and bus
+shutdown. Failed SPI shutdown blocks reuse until a successful retry.
+
+Attached drivers now live under `device/`: TMP102 owns an I2C endpoint and
+returns signed fixed-point samples; W5100 owns a SPI endpoint and retains a
+separate register protocol plus direct controller transports. ES8311 codec
+configuration lives under `device/audio/`. Generic MCUIP integration replaces
+board-specific naming; the former driver headers and compatibility aliases
+have been removed, and their callers use device headers directly.
+W5100 validates SPI settings, shares absolute operation deadlines, copies at
+most a configured payload budget per poll, resumes partial work and requires
+recovery after ambiguous commits or cancellation of an issued SEND.
+
+The host suite, all three architecture/header builds, generic MCUIP contract
+probes and five linked UNO examples provide build/simulation evidence. New
+examples cover a temperature threshold and raw Ethernet reception. Fresh
+paired cost probes quantify the additional shared-SPI state and code; the
+[components guide](doc/getting-started/components.md) documents the API and
+its single-foreground-context contract. Physical verification and renewed
+throughput measurements of the refactored W5100 remain separate work.
+
+## Phase D2: repository adoption and scale
+
+## PLN-0027 Separate consumer builds and export the library package
+@status(planned)
+@link(REQ-0002, REQ-0003, REQ-0038, REQ-0047)
+
+Prerequisite: PLN-0026. This begins the D18 adoption work immediately after the
+attached-device foundation.
+
+- Make embedded CMake use define only the public library interfaces by default.
+  Gate tests, probes, header checks, coverage and hardware images with explicit
+  mcuhw options; preserve parent testing and compiler settings.
+- Add versioned install/export support for `mcuhw::mcuhw`, `mcuhw::io` and
+  `mcuhw::device`, preserving source-checkout and direct-header consumption.
+- Resolve optional dependencies only when selected. Retain explicit local source
+  overrides without requiring the sibling development workspace for applications.
+- Add clean external-consumer checks for source inclusion, installed and relocated
+  packages, a parent with its own tests enabled, and board-independent headers.
+  Keep maintainer verification available through explicit configurations.
+
+Exit: source and installed consumers build without sibling projects, source-tree
+path leakage or unrelated validation targets; parent test behavior is unchanged.
+
+## PLN-0028 Establish local component manifests and hardware discovery
+@status(planned)
+@link(REQ-0003, REQ-0005, REQ-0010, REQ-0038, REQ-0046, REQ-0048)
+
+Prerequisite: PLN-0027; use the existing MCU, board and attached-device contracts.
+
+- Define the manifest schema/version, vendor-qualified identities, revision and
+  variant rules, dependency/capability references, file layout and ownership.
+  Keep authoritative register/pin facts in reviewed C++ and check catalog
+  summaries against their source. Avoid runtime registration and required code
+  generation for consumption.
+- Register the three existing boards and TMP102, W5100 and ES8311, including their
+  exact support/evidence limits. Represent shared MCU/IP implementations and
+  board wiring separately; migrate paths without silently breaking public headers.
+- Implement deterministic discovery/index generation and validation for schema
+  versions, duplicate IDs, missing references, cycles and incompatible selections.
+  Resolve a selected component without scanning every implementation directory.
+- Prove component-local addition with test fixtures reusing an existing platform
+  and bus contract; fixtures must not appear as supported hardware.
+
+Exit: the current catalog validates, invalid entries fail clearly, and another
+board/device needs no handwritten registration in central build or support lists.
+
+## PLN-0029 Unify selected-board firmware builds across the existing targets
+@status(planned)
+@link(REQ-0031, REQ-0038, REQ-0045, REQ-0046, REQ-0047, REQ-0048, REQ-0049)
+
+Prerequisite: PLN-0028. Reuse the existing UNO, NUCLEO and ESP32-P4 integrations;
+completion of the remaining PLN-0019/PLN-0023 peripheral work is not required.
+
+- Replace central board-specific build branches with selected local board rules
+  and shared firmware/linker/artifact helpers. Select toolchains before compiler
+  configuration and isolate each board/toolchain build directory.
+- Offer explicit supplied-startup and external-BSP/RTOS-startup modes with one
+  owner for reset, clocks, vectors and memory layout. Adapt the ESP SDK/boot path
+  to the common workflow while preserving its revision and acceptance limits.
+- Factor reusable flash/debug runners from board-specific probe/port/flash-region
+  settings. Keep flashing separate from compilation and document recovery.
+- Create complete external Blink and TMP102 projects, with board profiles and
+  wiring configuration, and cross-build/link them for all three current boards.
+  Check unknown identities, unsupported revisions, incompatible toolchains and an
+  externally supplied startup composition.
+
+Exit: one board-selection workflow builds the three target integrations without
+unrelated targets or duplicate startup ownership. Build results carry no new
+physical acceptance claim.
+
+## PLN-0030 Deliver reproducible setup and the first-application workflow
+@status(planned)
+@link(REQ-0002, REQ-0036, REQ-0038, REQ-0047, REQ-0049, REQ-0050)
+
+Prerequisite: PLN-0029.
+
+- Publish the tested Linux/macOS/Windows host matrix and compiler, C++23 library,
+  CMake/Ninja, required SDK and debugger versions. Pin dependency/toolchain inputs
+  and integrity checks while allowing explicit installed-tool/source overrides.
+- Provide explicit setup with reusable caches and offline rebuilds. Diagnose
+  missing/incompatible tools and cache entries for the requested operation with
+  concrete remediation; missing flash/debug tools must not block build-only use. Avoid
+  accidental dependence on sibling checkout presence or unpinned downloads.
+- Add a thin frontend for board discovery, project creation, prerequisite checks,
+  build and explicit flash, reusing CMake/runner definitions. Document equivalent
+  direct commands and keep the frontend optional for library consumption.
+- Exercise clean setup and external application builds on all three host OSes,
+  cached offline builds, paths requiring proper quoting and diagnostic failures.
+  Test runner argument selection separately from actual hardware execution.
+
+Exit: documented commands take a clean supported host to a reproducible linked
+application. Tool/source identities and overrides are recorded; only physically
+exercised runner combinations receive hardware evidence.
+
+## PLN-0031 Publish the searchable catalog and contribution workflows
+@status(planned)
+@link(REQ-0036, REQ-0038, REQ-0039, REQ-0048, REQ-0049, REQ-0050, REQ-0051)
+
+Prerequisite: PLN-0030; catalog generation may develop alongside the build work.
+
+- Generate board/device listings and support tables from manifests and evidence
+  references. Filter by category, bus/capabilities, revision, runner and support
+  state; keep compatibility, host/build results and physical verification distinct.
+- Put wiring, limitations and troubleshooting beside each component. Connect each
+  catalog entry to complete examples, tested commands and exact evidence scope.
+- Provide application quick starts and contributor templates/guides for boards on
+  existing MCUs, external chips and new MCU/backends. Document local focused tests,
+  maintainer ownership, public version/compatibility policy and migration rules.
+- Validate generated references and compile published examples. Follow the board
+  and chip templates in integration fixtures, proving there are no repeated
+  handwritten central registration steps or synthetic hardware support claims.
+
+Exit: users can discover an appropriate component and reach its working example;
+contributors can add a local board/device using documented, focused checks.
+
+## PLN-0032 Scale verification and qualify the repository adoption workflow
+@status(planned)
+@link(REQ-0035, REQ-0036, REQ-0037, REQ-0038, REQ-0039, REQ-0047, REQ-0048, REQ-0049, REQ-0050, REQ-0051, REQ-0052)
+
+Prerequisite: PLN-0027 through PLN-0031; suite decomposition may begin after
+PLN-0028 establishes component identities and dependencies.
+
+- Split core, MCU/backend, board and device checks into selectable suites with
+  separate artifacts. Select affected components/dependents for changes, with a
+  broader fallback for shared, deleted or uncertain inputs. Keep exhaustive
+  scheduled/release shards and representative mixed-MCU/header validation.
+- Replace whole-header-tree firmware hashes with actual selected transitive
+  source/configuration/dependency/toolchain identities; record repository revision
+  separately. Verify related changes invalidate identity and unrelated ones do not.
+- Exercise synthetic catalogs of at least 300 boards and 3,000 devices. Report
+  discovery/configuration/build timing, selected target/source counts and identity
+  inputs on a named environment. Check that unrelated growth adds no selected
+  compilation/hash inputs or validation targets, and eliminate full implementation
+  scans from ordinary application configuration.
+- Run the external-consumer, three-board Blink/TMP102, host-OS setup/offline and
+  contributor-template checks together. Preserve the existing driver/description
+  regression gates and review generated support/evidence scopes after migration.
+- Update mcutrace source/build/artifact locations for real delivered outputs and
+  validate links without changing evidence policy or promoting build/synthetic
+  checks to hardware claims. Publish measured results and outstanding limitations.
+
+Exit: clean applications, local contributions and full-maintainer validation have
+separate reproducible workflows at the tested catalog scale. Existing evidence
+remains attributable; the milestone is marked done only after these checks run.
+
 ## Phase E: deferred MCUOS integration
 
 ## PLN-0020 Integrate MCUOS after bare-metal driver acceptance
@@ -653,6 +866,6 @@ Exit: each selected extension preserves storage, ownership and portability contr
 
 ## Critical path and evidence boundaries
 
-The path is all-three sources → shared metadata foundation → three incremental complete descriptions → common description gate → completed RA4M1 foundation → scoped target releases using host, cross-build, board-native, native-connector and directly connected evidence → MCUOS. Each target report defines what its physical procedures observed and preserves explicit non-claims; it does not require a shared cross-target fixture. MCUOS ports matter only in the later RTOS phase.
+The path is all-three sources → shared metadata foundation → three incremental complete descriptions → common description gate → completed RA4M1 foundation → scoped target releases and the application/device foundation → repository adoption and scale (PLN-0027 through PLN-0032, immediately after PLN-0026) → MCUOS. Remaining target-specific acceptance proceeds independently of the repository work. Each target report defines what its physical procedures observed and preserves explicit non-claims; it does not require a shared cross-target fixture. MCUOS ports matter only in the later RTOS phase.
 
 Compile-time tests establish representability and reject invalid configurations; they do not verify hardware register behavior, electrical timing or driver portability by themselves. Those claims require subsequent native behavioral tests and independent physical observations. Keep the coverage denominator, verification state and explicit exclusions visible throughout.

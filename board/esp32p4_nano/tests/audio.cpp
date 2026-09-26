@@ -20,7 +20,7 @@
 #include <mcuhw/backend/esp32p4/i2s.hpp>
 #include <mcuhw/board/esp32p4_nano.hpp>
 #include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/es8311.hpp>
+#include <mcuhw/device/audio/es8311.hpp>
 #include <mcuhw/driver/gpio.hpp>
 #include <mcuhw/execution/fake_policy.hpp>
 
@@ -123,7 +123,7 @@ constexpr std::size_t tone_duration_ms =
 static_assert(tone_duration_ms == 1'008U);
 
 [[nodiscard]] bool write_codec(i2c_backend_type& i2c,
-                               driver::es8311::register_write value) noexcept {
+                               device::es8311::register_write value) noexcept {
     const std::array<std::uint8_t, 2> bytes{value.address, value.value};
     auto started = i2c.write(*codec_address, bytes);
     if (!started) return false;
@@ -207,16 +207,16 @@ TEST(esp32p4_audio, captures_onboard_microphone_and_plays_audible_tone,
     ASSERT_TRUE(i2c.initialize(*i2c_timing).has_value());
 
     bool codec_configured = true;
-    for (const auto value : driver::es8311::startup_sequence_48khz_16bit()) {
+    for (const auto value : device::es8311::startup_sequence_48khz_16bit()) {
         codec_configured = codec_configured && write_codec(i2c, value);
     }
     codec_configured = codec_configured
-        && write_codec(i2c, driver::es8311::unity_output_volume)
-        && write_codec(i2c, driver::es8311::mute_dac);
+        && write_codec(i2c, device::es8311::unity_output_volume)
+        && write_codec(i2c, device::es8311::mute_dac);
     ASSERT_TRUE(codec_configured);
     const auto cleanup = [&]() noexcept {
         static_cast<void>(amplifier.clear());
-        static_cast<void>(write_codec(i2c, driver::es8311::mute_dac));
+        static_cast<void>(write_codec(i2c, device::es8311::mute_dac));
         static_cast<void>(i2c.shutdown());
         static_cast<void>(i2s.shutdown());
         static_cast<void>(amplifier.release());
@@ -267,7 +267,7 @@ TEST(esp32p4_audio, captures_onboard_microphone_and_plays_audible_tone,
     }
     esp_rom_delay_us(amplifier_settle_us);
     const bool codec_unmuted =
-        write_codec(i2c, driver::es8311::unmute_dac);
+        write_codec(i2c, device::es8311::unmute_dac);
     ASSERT_TRUE(codec_unmuted);
     if (!codec_unmuted) {
         cleanup();
@@ -298,7 +298,7 @@ TEST(esp32p4_audio, captures_onboard_microphone_and_plays_audible_tone,
         playback_bytes += transmitted->bytes;
     }
 
-    const bool codec_muted = write_codec(i2c, driver::es8311::mute_dac);
+    const bool codec_muted = write_codec(i2c, device::es8311::mute_dac);
     esp_rom_delay_us(codec_settle_us);
     const bool amplifier_muted = amplifier.clear().has_value();
     ASSERT_TRUE(playback_complete);

@@ -9,6 +9,8 @@ native build.
 - [Installation and dependencies](getting-started/installation.md)
 - [Build and verification](getting-started/build-and-test.md)
 - [Using mcuhw in firmware](getting-started/using-mcuhw.md)
+- [The `mcuhw::io` application interface](getting-started/io.md)
+- [Attached I2C/SPI devices and reusable components](getting-started/components.md)
 
 ## Concepts
 

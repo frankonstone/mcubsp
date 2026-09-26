@@ -1,0 +1,25 @@
+#include <array>
+#include <chrono>
+#include <mcuhw/io.hpp>
+#include <mcuhw/io/boards/uno_r4_minima.hpp>
+
+namespace io = mcuhw::io;
+using namespace std::chrono_literals;
+static io::board<io::boards::uno_r4_minima> hw;
+extern "C" std::uint32_t mcuhw_uno_clock_status;
+
+// UART on D0/D1, 115200 8N1. Use a voltage-compatible UART peer and common GND.
+// This is not a USB-CDC Serial implementation.
+int main() {
+    if (mcuhw_uno_clock_status != 0U) __builtin_trap();
+    io::require(hw.begin());
+    io::require(hw.serial.begin(115200));
+    io::require(hw.serial.println("mcuhw::io ready"));
+    std::array<std::uint8_t, 1> byte{};
+    for (;;) {
+        auto read = hw.serial.read(byte, 100ms);
+        if (!read && read.error().code == io::errc::timeout) continue;
+        static_cast<void>(io::require(std::move(read)));
+        io::require(hw.serial.write(byte, 100ms));
+    }
+}

@@ -19,8 +19,8 @@
 #include <mcuhw/backend/ra4m1/spi.hpp>
 #include <mcuhw/board/arduino_uno_r4_minima.hpp>
 #include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/driver/w5100.hpp>
-#include <mcuhw/integration/mcuip/uno_r4_minima_w5100.hpp>
+#include <mcuhw/device/ethernet/w5100_spi.hpp>
+#include <mcuhw/integration/mcuip/w5100.hpp>
 
 #include "support.hpp"
 
@@ -53,14 +53,14 @@ struct deadline_source {
     }
 };
 
-using transport_type = mcuhw::driver::w5100_spi_transport<
+using transport_type = mcuhw::device::w5100_spi_transport<
     spi_type, deadline_source>;
 #else
 using transport_type =
-    mcuhw::driver::w5100_spi_immediate_transport<spi_type>;
+    mcuhw::device::w5100_spi_immediate_transport<spi_type>;
 #endif
 using device_type = mcuhw::integration::mcuip::
-    uno_r4_minima_w5100_network_device<transport_type>;
+    w5100_macraw_network_device<transport_type>;
 using host_type = ::mcuip::EthernetIpv4Host<4U>;
 
 static_assert(::mcuip::NetworkDevice<device_type>);
@@ -92,7 +92,7 @@ inline constexpr ::mcuip::Ipv4InterfaceConfig ipv4_configuration{
     .address = ::mcuip::Ipv4Address::from_octets(192U, 168U, 188U, 240U),
     .netmask = ::mcuip::Ipv4Address::from_octets(255U, 255U, 255U, 0U),
 };
-inline constexpr mcuhw::driver::w5100_configuration device_configuration{
+inline constexpr mcuhw::device::w5100_configuration device_configuration{
     .mac = {{0x02U, 0x00U, 0x00U, 0x04U, 0x51U, 0x00U}},
     .command_poll_limit = 256U,
     .stable_read_limit = 4U,

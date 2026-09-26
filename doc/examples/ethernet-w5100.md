@@ -1,5 +1,10 @@
 # W5100 Ethernet
 
+For the application API, use the [attached-device guide](../getting-started/components.md)
+and [linked IO example](../../examples/io/w5100.cpp). They create
+`device::w5100` from an `hw.spi.device(...)` handle. The lower-level composition
+below uses the device register protocol and a direct controller transport.
+
 The Arduino Ethernet Shield R3 contains an original WIZnet W5100. `mcuhw`
 drives it through the UNO R4 Minima SPI backend, opens socket 0 in MACRAW mode,
 and presents fixed receive/transmit slots suitable for an `mcuip`
@@ -32,8 +37,8 @@ network. A duplicate IPv4 or MAC address will produce misleading packet loss.
 #include <mcuhw/board/arduino_uno_r4_minima.hpp>
 #include <mcuhw/core/direct_mmio.hpp>
 #include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/driver/w5100.hpp>
-#include <mcuhw/integration/mcuip/uno_r4_minima_w5100.hpp>
+#include <mcuhw/device/ethernet/w5100_spi.hpp>
+#include <mcuhw/integration/mcuip/w5100.hpp>
 
 namespace board = mcuhw::board::arduino_uno_r4_minima;
 
@@ -55,9 +60,9 @@ class ethernet_port {
     using spi_type = mcuhw::backend::ra4m1::spi_master_backend<
         spi_binding, mcuhw::core::direct_mmio, ExecutionPolicy>;
     using transport_type =
-        mcuhw::driver::w5100_spi_immediate_transport<spi_type>;
+        mcuhw::device::w5100_spi_immediate_transport<spi_type>;
     using device_type = mcuhw::integration::mcuip::
-        uno_r4_minima_w5100_network_device<transport_type>;
+        w5100_macraw_network_device<transport_type>;
 
 public:
     explicit ethernet_port(ExecutionPolicy& execution)

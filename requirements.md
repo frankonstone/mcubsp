@@ -1,6 +1,6 @@
 # mcuhw requirements
 
-Requirements baseline, 22 September 2026. Derived from [proposal.md](proposal.md), the supplied manuals, the local MCUOS and MCUIP projects, and the user's decisions below. All fifteen scope decisions are recorded. The first RA4M1 release is accepted using the connected UNO R4 Minima with direct-wired GPIO/PWM/UART, Grove I2C, Ethernet-shield SPI/DMAC and potentiometer ADC evidence; the latest decision adds operational UNO Ethernet through that shield as a separate follow-on milestone. NUCLEO-H753ZI remains the STM32 carrier and MCUIP is the selected TCP/IP stack. This document specifies intended behavior; it does not claim implementation or verification. Detailed integration choices and measured resource budgets remain implementation milestones. The proposal's code snippets are illustrative API sketches, not verified register definitions or compilable specifications.
+Requirements baseline, 26 September 2026. Derived from [proposal.md](proposal.md), the supplied manuals, the local MCUOS and MCUIP projects, and the user's decisions below. All eighteen scope decisions are recorded. The first RA4M1 release is accepted using the connected UNO R4 Minima with direct-wired GPIO/PWM/UART, Grove I2C, Ethernet-shield SPI/DMAC and potentiometer ADC evidence. Subsequent decisions add UNO Ethernet through that shield, a modern C++ application interface, reusable attached devices, and repository/build workflows for broad adoption at hundreds of boards and thousands of devices. NUCLEO-H753ZI remains the STM32 carrier and MCUIP is the selected TCP/IP stack. This document specifies intended behavior; it does not claim implementation or verification. Detailed integration choices and measured resource budgets remain implementation milestones. The proposal's code snippets are illustrative API sketches, not verified register definitions or compilable specifications.
 
 ## Decisions and scope
 
@@ -21,6 +21,9 @@ Requirements baseline, 22 September 2026. Derived from [proposal.md](proposal.md
 | D13 | Use the sibling `../mcuip` project as the TCP/IP stack for mcuhw Ethernet targets and keep the MAC/MDIO/PHY/DMA boundary compatible with its public target contracts. MCUIP replaces lwIP; no lwIP dependency or compatibility layer is required. | Accepted by user |
 | D14 | Retire the cross-target fixture requirement. For the first RA4M1 release, accept representative physical evidence from the connected UNO R4 Minima: direct GPIO/PWM/UART wiring, the Grove I2C device, W5100 Ethernet-shield SPI/DMAC traffic and a potentiometer ADC input. Do not claim unmeasured electrical properties, fault injection or complete-board coverage. Other targets use their own board-native/directly connected acceptance evidence when their releases are claimed. | Accepted by user, 22 September 2026 |
 | D15 | Add Ethernet connectivity on Arduino UNO R4 Minima through the connected Arduino Ethernet Shield R3 and its WIZnet W5100. Use the existing RA4M1 SPI/DMAC foundation, expose a fixed-storage raw-frame device to MCUIP, and prove real traffic on the local network. Treat this as a follow-on milestone; it does not reopen PLN-0011. | Accepted by user, 22 September 2026 |
+| D16 | Add `mcuhw::io` in this repository as a modern C++ application interface with familiar board/pin/peripheral operations, explicit DMA access, replaceable execution, shared ownership and compile-time storage selection. Implement the bare-metal foundation now. Camera, RTOS and network integration are future extensions, and Arduino sketch compatibility is outside this increment. Measure actual RAM/flash cost against the existing driver layer. | Accepted by user, 26 September 2026 |
+| D17 | Introduce reusable attached-device drivers with shared I2C address and SPI chip-select handles supplied by `io`. Keep chip protocols independent of board composition, preserve checked fast transfers, and supply TMP102 and W5100 components plus generic MCUIP integration. Use explicit storage, ownership, deadlines and bounded polling; RTOS concurrency remains a later stage. | Accepted by user, 26 September 2026 |
+| D18 | Make ease of use, building and contribution a first-class adoption requirement for hundreds of boards and thousands of devices. Keep one modular repository, independently consumable CMake/header interfaces, locally defined hardware components, selected-board builds, reproducible setup, searchable support information and dependency-scoped verification. Schedule the repository adoption work immediately after PLN-0026, before deferred MCUOS integration; preserve existing hardware and evidence boundaries. | Accepted for requirements and planning by user, 26 September 2026 |
 
 Existing proposal decisions are retained: C++23; compile-time configuration and validation; metadata separate from drivers; functional abstraction with capabilities; RA4M1 as the first physical driver target after all three descriptions; `transfer<T>` as the async primitive; optional coroutine adapters.
 
@@ -459,3 +462,239 @@ to successful traffic without leaking ownership. Record board/shield revision,
 MAC/IP configuration, firmware/toolchain, W5100 and MCUIP source identities,
 SPI/DMAC mode, image sizes, bounded storage, throughput/latency and reproducible
 peer commands.
+
+## REQ-0045 Modern C++ application interface
+@depends(REQ-0002, REQ-0014, REQ-0015, REQ-0018, REQ-0037, REQ-0038)
+
+Provide an optional `mcuhw::io` target and namespace in this repository (D16).
+Expose board objects, named pins, serial, I2C, SPI, analog input, PWM and explicit
+DMA selection using the existing drivers and backends. Construction shall be
+passive. Initialization and failures shall be explicit; convenience failure
+handling shall use a statically selected policy. Disabled features shall omit
+their backend storage, and unsupported selections shall fail at compile time.
+
+One active runtime per physical target shall coordinate pin ownership across
+features and aliases. Move-only resource leases and operation handles shall
+retain stable runtime storage. Operations borrow caller-owned buffers, retain
+the existing bounded completion/cancellation contracts and expose typed errors.
+No heap, background queue, scheduler or implicit DMA fallback is permitted.
+Expert backend access shall be identified as bypassing facade bookkeeping.
+
+Execution and MMIO shall be replaceable independently of the application API.
+This increment uses one foreground context on one core, progressing work through
+polling and blocking waits. It does not implement an RTOS adapter, camera,
+network service, multicore arbitration or Arduino sketch compatibility.
+Profiles shall document fixed clock, pin and silicon assumptions. Existing
+startup ownership remains explicit.
+
+Acceptance: deterministic host tests verify storage selection, shared ownership,
+alias conflicts, rollback, moved handles, deadline validation, polling,
+cancellation, ISR rejection and retained-buffer/runtime lifetimes. Public
+headers and representative applications compile for Cortex-M4, Cortex-M7 and
+ESP32-P4 RISC-V; standalone UNO examples link with existing startup. Publish
+reproducible paired flash/static-RAM and compiler stack-frame measurements
+against equivalent checked-driver compositions, with source/compiler identities.
+These build/host checks establish this foundation only; physical facade
+acceptance, peak stack usage and timing measurements require separate evidence.
+
+## REQ-0046 Attached devices and shared bus endpoints
+@depends(REQ-0014, REQ-0018, REQ-0019, REQ-0024, REQ-0028, REQ-0044, REQ-0045)
+
+Expose move-only I2C address and SPI chip-select device handles from `io`.
+A bus shall have one stable controller backend shared by its endpoints. I2C
+address claims shall reject duplicates and raw accesses that bypass a claim.
+SPI endpoints shall reserve CS pins through shared GPIO ownership and carry
+validated clock/mode/order/width/polarity settings applied before a transaction.
+Combined I2C repeated-START transfers and multi-segment SPI transactions shall
+retain their bus ownership until terminal completion. Pending and retained
+result handles shall prevent endpoint release and controller shutdown. No
+hidden heap or unbounded transaction queue is permitted.
+
+Place attached-chip protocols under `mcuhw/device/` with a narrow supplied
+transport contract. Add a TMP102 sensor returning explicit signed temperature
+units without a board dependency; preserve its latest-sample semantics and
+existing hardware settings. Compose the W5100 with a checked SPI device handle,
+retain a board-independent register protocol, and expose its MCUIP contract
+through a generic integration header. Place ES8311 codec configuration under
+`device/audio/`. Remove the former driver and board-specific W5100 compatibility
+entry points; keep shield wiring in the application.
+
+Component operations comprising multiple bus transactions shall share one
+absolute deadline. W5100 payload copying shall have an explicit per-poll
+budget and resume across calls. Ambiguous hardware commits and cancellation
+of an issued SEND shall require recovery before reuse. Validate W5100 bus
+format and stable-read configuration before hardware access. Retain the
+optimized RA4M1 immediate path with deadline checks and caller-owned buffers.
+
+Acceptance: host simulations verify shared ownership, configuration switches,
+CS completion/cleanup, failure recovery, repeated START, buffer/handle lifetime,
+signed TMP102 samples, W5100 framing, partial-copy deadlines and cancellation.
+Device compositions and generic MCUIP contracts compile on all three board
+profiles/architectures; standalone UNO examples link. Publish fresh cost probes.
+These checks do not establish new on-device acceptance or RTOS/multicore safety;
+previous hardware measurements remain scoped to the recorded implementations.
+
+## Repository adoption and scale
+
+## REQ-0047 Independent library consumption and packaging
+@depends(REQ-0002, REQ-0003, REQ-0038)
+
+Provide distinct application, component-contributor and full-maintainer build
+workflows (D18). Applications shall consume the existing `mcuhw::mcuhw`,
+`mcuhw::io` and `mcuhw::device` interfaces from a source checkout or a versioned,
+relocatable CMake package. Direct header consumption shall remain supported;
+ordinary consumption shall require neither catalog generation nor a board
+selection for board-independent code.
+
+Embedded CMake use shall default to library interfaces only. Tests, architecture
+probes, all-header checks, coverage and hardware-test images shall be explicit
+mcuhw options and shall not change the parent project's testing settings or
+global compiler policy. Resolve test, coverage, network and RTOS dependencies
+only for requested features. Ordinary applications shall not require sibling
+checkouts, and unrelated checkout presence shall not change selected features.
+
+Acceptance: clean external consumers build through `add_subdirectory` and
+`find_package(mcuhw CONFIG REQUIRED)`, including after relocating the installed
+package and removing access to the original source/build trees. A parent with
+its own tests enabled retains them without creating mcuhw test/probe targets.
+Plain header inclusion works independently. Installed interfaces contain no
+developer-specific paths, and an explicit maintainer configuration still enables
+the existing verification workflows.
+
+## REQ-0048 Local hardware catalog and reusable component identities
+@depends(REQ-0003, REQ-0005, REQ-0010, REQ-0038, REQ-0046)
+
+Organize boards and devices as locally owned components in one repository,
+retaining stable public C++ entry points. A versioned, schema-validated catalog
+shall distinguish peripheral IP implementations, MCU family/part/package/silicon
+variants, board revisions and external chips. Use stable vendor-qualified IDs
+and explicit references to shared implementations rather than copying a backend
+or chip driver per board or variant.
+
+Local manifests shall identify component kind, revision scope, source/header and
+build entry points, dependencies and required capabilities, examples, maintained
+documentation, ownership and evidence references. C++ remains authoritative for
+register definitions, typed pin mappings and compile-time constraints; catalog
+summaries shall be checked against their source rather than becoming a second
+independently authored hardware description. Board composition owns wiring;
+external-device protocols retain narrow transport contracts. The catalog shall
+not introduce runtime registration or mandatory code generation.
+
+Acceptance: all three existing boards and TMP102, W5100 and ES8311 have entries
+with their actual support scope. Validation rejects unsupported schema versions,
+duplicate IDs, missing references, dependency cycles and invalid revision or
+capability selections. Adding a component that reuses existing infrastructure
+requires only its local files and public implementation, without handwritten
+central board/device lists; any global index is reproducibly derived. Shared
+implementation and board-specific configuration are demonstrably separate.
+
+## REQ-0049 Selected-board application builds and explicit startup
+@depends(REQ-0031, REQ-0045, REQ-0047, REQ-0048)
+
+Provide one board-selection interface using an exact board/revision identity.
+Resolve its required toolchain before compiler configuration and load only its
+build rules and transitive dependencies. Board-local rules shall use common
+firmware, linker, artifact and runner helpers; adding a board on an existing
+platform shall not require a root CMake branch, a new global option or a
+handwritten preset. Different board/toolchain configurations shall use isolated
+build directories.
+
+Applications shall explicitly choose supplied board startup or their existing
+BSP/RTOS startup. Supplied integration shall bind clocks, memory layout, vectors
+and boot policy without transferring their ownership to generic drivers. Keep
+the ESP32-P4 SDK/boot path explicit under the common selection interface and
+preserve its silicon limitations. Flashing shall be a separate requested action,
+with board/probe/port selection and documented flash regions and recovery.
+
+Acceptance: complete external Blink and TMP102 applications cross-build and link
+for UNO R4 Minima, NUCLEO-H753ZI and ESP32-P4-NANO using the common workflow and
+documented wiring/profile choices. A composition using externally supplied
+startup links without duplicate vectors or reset/clock services. Unknown board
+IDs, unsupported revisions and incompatible toolchains fail with actionable
+diagnostics. Build configuration creates no unrelated board/device targets;
+build success does not establish physical device acceptance.
+
+## REQ-0050 Reproducible setup and portable first-build workflow
+@depends(REQ-0002, REQ-0047, REQ-0049)
+
+Provide a documented first-build path on Linux, macOS and Windows: discover a
+board, create a complete external application, diagnose prerequisites, build,
+and explicitly flash through the selected runner. A thin convenience frontend
+shall use the same CMake and runner definitions as direct tool invocation;
+ordinary CMake and header consumers shall not depend on that frontend.
+
+Publish tested compiler, C++23 standard-library, build-tool and required SDK
+versions. Pin dependency/toolchain identities and download integrity, with
+explicit setup, reusable caches and configurable local installations/source
+overrides. Local sibling checkouts remain a development option. After setup,
+selected builds shall work offline without silently resolving newer versions.
+Diagnostics shall identify missing or incompatible prerequisites for the requested
+operation and concrete remediation before starting it; absent flash/debug tools
+shall not block a build-only workflow. Board-specific flashing differences belong in
+runner configuration or reusable adapters, not copied host-specific scripts.
+
+Acceptance: clean environments on the three host operating systems complete the
+documented setup and external application build using pinned inputs. A cached
+offline rebuild succeeds; missing cache entries, incompatible C++ libraries and
+missing SDK/debug tools required by the requested operation produce focused errors.
+Reports identify exact tools, dependencies, overrides and board configuration.
+Flash-command selection is
+tested independently, and physical runner claims name the host, hardware and
+observation actually exercised under REQ-0036.
+
+## REQ-0051 Searchable support catalog and component contribution workflow
+@depends(REQ-0036, REQ-0039, REQ-0048, REQ-0049, REQ-0050)
+
+Generate searchable board/device listings and support tables from component
+manifests and referenced evidence. Expose identity/revision, category, buses and
+required capabilities, toolchain/runner availability, examples, wiring and
+limitations. Keep described capabilities, implemented functionality, host-test,
+cross-build and physical verification states distinct; compatibility shall not
+imply that every board/device combination has been tested. Missing, failed and
+stale evidence shall retain their own states.
+
+Provide separate application quick starts and contributor guides/templates for
+an existing-MCU board, an external chip and a new MCU/backend. Each component
+shall own its focused tests and narrative documentation; generated indexes
+shall remove repeated manual registration across docs, builds and CI. Version
+and compatibility guidance shall identify public API/catalog changes and any
+required migration. Examples shall be complete, compilable applications with
+explicit prerequisites and wiring rather than unbuildable fragments alone.
+
+Acceptance: users can find I2C temperature devices, boards exposing Ethernet,
+available flash methods and physically verified features for an exact revision.
+Each result leads to matching build commands and scoped evidence. Following
+the board/device templates adds a working local component without central
+handwritten lists. Documentation generation is reproducible, validates its
+references and examples, and excludes synthetic scalability fixtures from
+published support claims.
+
+## REQ-0052 Dependency-scoped verification, provenance and scale
+@depends(REQ-0035, REQ-0036, REQ-0037, REQ-0039, REQ-0047, REQ-0048, REQ-0049)
+
+Separate core, MCU/backend, board-integration and attached-device test suites
+with independently selectable runs and evidence artifacts. Changes shall select
+affected components and transitive dependents; changes to shared infrastructure,
+deleted inputs or uncertain impact shall trigger a conservative broader check.
+Retain explicit exhaustive, shardable catalog validation for scheduled/release
+runs and representative mixed-MCU/header checks. Device protocol tests and bus
+backend tests shall be reusable; a board-by-device Cartesian product shall not
+be the default test strategy or a substitute for scoped physical acceptance.
+
+Application configuration and compilation shall operate on the selected
+dependency closure without scanning/hashing every device implementation or
+creating unrelated validation targets. Firmware identity shall cover actual
+transitive selected sources, generated configuration, dependencies, toolchain
+and flags. Record whole-repository revision separately; unrelated component
+changes shall not alter the selected firmware identity. Preserve source and
+evidence traceability when moving or splitting existing build/test rules.
+
+Acceptance: synthetic fixtures representing at least 300 boards and 3,000
+devices exercise discovery, validation and selection without claiming real
+hardware support. Record configuration, discovery and selected-build timings,
+target/source counts and identity inputs on a named host/toolchain. Growing the
+unselected catalog leaves the selected target/source/hash set unchanged. A
+device change selects its tests and dependents; a shared or deleted dependency
+selects broader checks. Scheduled/release validation covers the full declared
+catalog. Selected-source/configuration changes alter firmware identity, while
+unrelated additions do not; all evidence claims retain their observation scope.

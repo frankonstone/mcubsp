@@ -10,13 +10,13 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/driver/w5100.hpp>
-#include <mcuhw/integration/mcuip/uno_r4_minima_w5100.hpp>
+#include <mcuhw/device/ethernet/w5100_spi.hpp>
+#include <mcuhw/integration/mcuip/w5100.hpp>
 
 namespace {
 
-namespace reg = mcuhw::driver::w5100_register;
-using error = mcuhw::driver::w5100_error;
+namespace reg = mcuhw::device::w5100_register;
+using error = mcuhw::device::w5100_error;
 
 class fake_w5100_bus {
 public:
@@ -25,6 +25,7 @@ public:
     [[nodiscard]] std::expected<std::uint8_t, error>
     read(std::uint16_t address) noexcept {
         ++reads;
+        if (address >= reg::socket0_rx_base) ++payload_reads;
         if (fail_address && *fail_address == address) {
             return std::unexpected(error::transport);
         }
@@ -34,7 +35,11 @@ public:
     [[nodiscard]] std::expected<void, error>
     write(std::uint16_t address, std::uint8_t value) noexcept {
         ++writes;
-        if (fail_address && *fail_address == address) {
+        if (address >= reg::socket0_tx_base && address < reg::socket0_rx_base) {
+            ++payload_writes;
+        }
+        if ((fail_address && *fail_address == address)
+            || (fail_write_address && *fail_write_address == address)) {
             return std::unexpected(error::transport);
         }
         if (address == reg::mode && (value & 0x80U) != 0U) {
@@ -119,9 +124,12 @@ public:
 
     std::array<std::uint8_t, 0x8000U> memory{};
     std::optional<std::uint16_t> fail_address{};
+    std::optional<std::uint16_t> fail_write_address{};
     std::size_t reads{};
     std::size_t writes{};
     std::size_t commands{};
+    std::size_t payload_reads{};
+    std::size_t payload_writes{};
     bool hold_reset{};
     bool stall_commands{};
     bool defer_send_completion{};
@@ -166,12 +174,12 @@ public:
     bool fail{};
 };
 
-using device = mcuhw::driver::w5100_macraw_device<fake_w5100_bus>;
+using device = mcuhw::device::w5100_macraw_device<fake_w5100_bus>;
 static_assert(::mcuip::NetworkDevice<device>);
-static_assert(mcuhw::integration::mcuip::
-    uno_r4_minima_w5100_valid_contract<fake_w5100_bus>);
+static_assert(::mcuip::NetworkDevice<mcuhw::integration::mcuip::
+    w5100_macraw_network_device<fake_w5100_bus>>);
 
-constexpr mcuhw::driver::w5100_configuration configuration{
+constexpr mcuhw::device::w5100_configuration configuration{
     .mac = {{0x02U, 0x00U, 0x00U, 0x04U, 0x51U, 0x00U}},
     .command_poll_limit = 4U,
     .stable_read_limit = 3U,
@@ -207,7 +215,7 @@ TEST(w5100, reset_identity_macraw_and_fixed_memory_configuration,
 TEST(w5100, immediate_spi_transport_preserves_one_command_per_chip_select,
      "REQ-0028", "REQ-0044") {
     fake_immediate_spi spi;
-    mcuhw::driver::w5100_spi_immediate_transport transport{spi, 77U};
+    mcuhw::device::w5100_spi_immediate_transport transport{spi, 77U};
     const auto value = transport.read(0x1234U);
     ASSERT_TRUE(value.has_value());
     EXPECT_EQ(*value, 0x5AU);
@@ -355,6 +363,131 @@ TEST(w5100, typed_timeouts_transport_errors_cancellation_and_reuse,
     ASSERT_TRUE(timed_out.has_value());
     EXPECT_TRUE(timed_out->error);
     EXPECT_TRUE(ethernet.metrics().timeouts >= 1U);
+}
+
+TEST(w5100, stable_reads_require_two_samples_and_nonzero_poll_budget,
+     "REQ-0044", "REQ-0046") {
+    fake_w5100_bus bus;
+    device ethernet{bus};
+    auto invalid = configuration;
+    invalid.stable_read_limit = 1U;
+    const auto result = ethernet.initialize(invalid);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_TRUE(result.error() == error::invalid_argument);
+    EXPECT_EQ(bus.writes, 0U);
+    invalid = configuration;
+    invalid.payload_bytes_per_poll = 0U;
+    EXPECT_FALSE(ethernet.initialize(invalid).has_value());
+    EXPECT_EQ(bus.writes, 0U);
+}
+
+TEST(w5100, shared_poll_budget_resumes_both_directions_without_starvation,
+     "REQ-0044", "REQ-0046") {
+    fake_w5100_bus bus;
+    device ethernet{bus};
+    auto bounded = configuration;
+    bounded.payload_bytes_per_poll = 16U;
+    ASSERT_TRUE(ethernet.initialize(bounded).has_value());
+    const auto frame = small_frame();
+    std::array<std::byte, device::buffer_size> rx{};
+    bus.load_receive(0x1FFAU, frame);
+    bus.set_u16(reg::socket0_tx_write_pointer, 0x1FFEU);
+    ASSERT_TRUE(ethernet.arm_receive(0U, rx));
+    ASSERT_TRUE(ethernet.start_transmit(0U, frame));
+    std::optional<mcuhw::device::w5100_receive_completion> received;
+    std::optional<mcuhw::device::w5100_transmit_completion> sent;
+    for (unsigned poll = 0U; poll < 10U; ++poll) {
+        const auto before = bus.payload_reads + bus.payload_writes;
+        ethernet.poll();
+        // The ring's two-byte RX header is control work, read only once.
+        EXPECT_TRUE(bus.payload_reads + bus.payload_writes - before <= 18U);
+        if (!received) received = ethernet.take_receive(0U);
+        if (!sent) sent = ethernet.take_transmit_result(0U);
+        if (poll == 1U) {
+            EXPECT_TRUE(bus.payload_reads > 2U);
+            EXPECT_TRUE(bus.payload_writes > 0U);
+            EXPECT_FALSE(received.has_value());
+            EXPECT_FALSE(sent.has_value());
+        }
+    }
+    ASSERT_TRUE(received.has_value());
+    ASSERT_TRUE(sent.has_value());
+    EXPECT_FALSE(received->error);
+    EXPECT_FALSE(sent->error);
+    EXPECT_EQ(received->size, frame.size());
+    EXPECT_TRUE(std::equal(frame.begin(), frame.end(), rx.begin()));
+    EXPECT_EQ(bus.payload_reads, frame.size() + 2U);
+    EXPECT_EQ(bus.payload_writes, frame.size());
+    EXPECT_EQ(bus.tx(0x2000U), std::to_integer<std::uint8_t>(frame[2]));
+}
+
+TEST(w5100, ambiguous_pointer_commit_requires_recovery_without_repeating_send,
+     "REQ-0044", "REQ-0046") {
+    fake_w5100_bus bus;
+    device ethernet{bus};
+    ASSERT_TRUE(ethernet.initialize(configuration).has_value());
+    const auto frame = small_frame();
+    bus.set_u16(reg::socket0_tx_write_pointer, 0x00FFU);
+    ASSERT_TRUE(ethernet.start_transmit(0U, frame));
+    bus.fail_write_address = reg::socket0_tx_write_pointer + 1U;
+    EXPECT_FALSE(ethernet.poll_once().has_value());
+    const auto transactions = bus.reads + bus.writes;
+    bus.fail_write_address.reset();
+    EXPECT_FALSE(ethernet.poll_once().has_value());
+    EXPECT_EQ(bus.reads + bus.writes, transactions);
+    ASSERT_TRUE(ethernet.recover().has_value());
+    const auto result = ethernet.take_transmit_result(0U);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_TRUE(result->error);
+    EXPECT_TRUE(ethernet.start_transmit(0U, frame));
+}
+
+TEST(w5100, cancellation_discards_partial_copy_state_for_buffer_reuse,
+     "REQ-0044", "REQ-0046") {
+    fake_w5100_bus bus;
+    device ethernet{bus};
+    auto bounded = configuration;
+    bounded.payload_bytes_per_poll = 8U;
+    ASSERT_TRUE(ethernet.initialize(bounded).has_value());
+    const auto frame = small_frame();
+    std::array<std::byte, device::buffer_size> rx{};
+    bus.load_receive(0x1FFAU, frame);
+    ASSERT_TRUE(ethernet.arm_receive(0U, rx));
+    ethernet.poll();
+    EXPECT_FALSE(ethernet.take_receive(0U).has_value());
+    ethernet.cancel_all();
+    rx.fill(std::byte{});
+    ASSERT_TRUE(ethernet.arm_receive(0U, rx));
+    for (unsigned poll = 0U; poll < 8U; ++poll) ethernet.poll();
+    const auto result = ethernet.take_receive(0U);
+    ASSERT_TRUE(result.has_value());
+    EXPECT_FALSE(result->error);
+    EXPECT_TRUE(std::equal(frame.begin(), frame.end(), rx.begin()));
+}
+
+TEST(w5100, cancellation_of_issued_send_requires_recovery_before_reuse,
+     "REQ-0044", "REQ-0046") {
+    fake_w5100_bus bus;
+    device ethernet{bus};
+    ASSERT_TRUE(ethernet.initialize(configuration).has_value());
+    const auto frame = small_frame();
+    bus.defer_send_completion = true;
+    ASSERT_TRUE(ethernet.start_transmit(0U, frame));
+    ethernet.poll();
+    ethernet.cancel_all();
+    bus.complete_send();
+    EXPECT_FALSE(ethernet.start_transmit(0U, frame));
+    const auto before = bus.reads + bus.writes;
+    EXPECT_FALSE(ethernet.poll_once().has_value());
+    EXPECT_EQ(bus.reads + bus.writes, before);
+    ASSERT_TRUE(ethernet.recover().has_value());
+    EXPECT_EQ(bus.memory[reg::socket0_interrupt] & 0x10U, 0U);
+    ASSERT_TRUE(ethernet.start_transmit(0U, frame));
+    ethernet.poll();
+    EXPECT_FALSE(ethernet.take_transmit_result(0U).has_value());
+    bus.complete_send();
+    ethernet.poll();
+    EXPECT_TRUE(ethernet.take_transmit(0U));
 }
 
 } // namespace

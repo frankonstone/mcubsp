@@ -1,215 +1,16 @@
 #pragma once
 
-// @req-file REQ-0002 REQ-0009 REQ-0015 REQ-0017 REQ-0019 REQ-0035 REQ-0044
-
+// @req-file REQ-0002 REQ-0009 REQ-0015 REQ-0017 REQ-0019 REQ-0035 REQ-0044 REQ-0046
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <expected>
 #include <optional>
 #include <span>
-#include <utility>
 
-#include <mcuhw/core/transfer.hpp>
-#include <mcuhw/driver/spi.hpp>
+#include <mcuhw/device/ethernet/w5100_types.hpp>
 
-namespace mcuhw::driver {
-
-// Register addresses and command values are from WIZnet W5100 Datasheet
-// version 1.2.8 (23 May 2019). The original W5100 uses one separately framed
-// 32-bit SPI stream for every byte; it does not have the burst framing used by
-// later WIZnet parts.
-namespace w5100_register {
-inline constexpr std::uint16_t mode = 0x0000U;
-inline constexpr std::uint16_t source_hardware_address = 0x0009U;
-inline constexpr std::uint16_t rx_memory_size = 0x001AU;
-inline constexpr std::uint16_t tx_memory_size = 0x001BU;
-inline constexpr std::uint16_t socket0_mode = 0x0400U;
-inline constexpr std::uint16_t socket0_command = 0x0401U;
-inline constexpr std::uint16_t socket0_interrupt = 0x0402U;
-inline constexpr std::uint16_t socket0_status = 0x0403U;
-inline constexpr std::uint16_t socket0_tx_free_size = 0x0420U;
-inline constexpr std::uint16_t socket0_tx_write_pointer = 0x0424U;
-inline constexpr std::uint16_t socket0_rx_received_size = 0x0426U;
-inline constexpr std::uint16_t socket0_rx_read_pointer = 0x0428U;
-inline constexpr std::uint16_t socket0_tx_base = 0x4000U;
-inline constexpr std::uint16_t socket0_rx_base = 0x6000U;
-} // namespace w5100_register
-
-enum class w5100_error : std::uint8_t {
-    invalid_argument,
-    transport,
-    timeout,
-    reset_failed,
-    identity_mismatch,
-    command_timeout,
-    socket_state,
-    unstable_register,
-    malformed_frame,
-    frame_too_large,
-    cancelled,
-};
-
-struct w5100_mac_address {
-    std::array<std::uint8_t, 6U> octets{};
-
-    friend constexpr bool operator==(w5100_mac_address,
-                                     w5100_mac_address) = default;
-};
-
-struct w5100_configuration {
-    w5100_mac_address mac{};
-    std::uint16_t command_poll_limit{256U};
-    std::uint8_t stable_read_limit{4U};
-};
-
-struct w5100_receive_completion {
-    std::size_t size{};
-    bool error{};
-};
-
-struct w5100_transmit_completion {
-    bool error{};
-};
-
-struct w5100_metrics {
-    std::uint32_t received_frames{};
-    std::uint32_t transmitted_frames{};
-    std::uint32_t receive_backpressure{};
-    std::uint32_t malformed_frames{};
-    std::uint32_t oversize_frames{};
-    std::uint32_t transport_errors{};
-    std::uint32_t timeouts{};
-    std::uint32_t cancellations{};
-    std::uint32_t recoveries{};
-};
-
-// Adapts the existing asynchronous SPI transaction boundary to the W5100's
-// byte-register protocol. DeadlineSource must return a fresh absolute deadline
-// from deadline(). The transfer is always consumed before this function
-// returns, so the SPI backend has deasserted chip select and released its one
-// operation slot on success, failure, and timeout.
-template<typename Spi, typename DeadlineSource>
-class w5100_spi_transport {
-public:
-    w5100_spi_transport(Spi& spi, DeadlineSource& deadlines) noexcept
-        : spi_(spi), deadlines_(deadlines) {}
-
-    [[nodiscard]] std::expected<std::uint8_t, w5100_error>
-    read(std::uint16_t address) noexcept {
-        const std::array<std::uint16_t, 3U> header{
-            read_opcode,
-            static_cast<std::uint8_t>(address >> 8U),
-            static_cast<std::uint8_t>(address),
-        };
-        std::array<std::uint16_t, 1U> response{};
-        const std::array segments{
-            spi_segment{.transmit = header},
-            spi_segment{.receive = response, .dummy = 0U},
-        };
-        const auto transferred = transact(segments, 4U);
-        if (!transferred) return std::unexpected(transferred.error());
-        return static_cast<std::uint8_t>(response[0]);
-    }
-
-    [[nodiscard]] std::expected<void, w5100_error>
-    write(std::uint16_t address, std::uint8_t value) noexcept {
-        const std::array<std::uint16_t, 4U> command{
-            write_opcode,
-            static_cast<std::uint8_t>(address >> 8U),
-            static_cast<std::uint8_t>(address),
-            value,
-        };
-        const std::array segments{spi_segment{.transmit = command}};
-        return transact(segments, command.size());
-    }
-
-private:
-    [[nodiscard]] std::expected<void, w5100_error>
-    transact(std::span<const spi_segment> segments,
-             std::size_t expected_frames) noexcept {
-        auto started = spi_.transaction(segments);
-        if (!started) return std::unexpected(w5100_error::transport);
-        auto transfer = std::move(*started);
-        const auto waited = transfer.wait_until(deadlines_.deadline());
-        if (!waited) {
-            const auto kind = waited.error().kind;
-            static_cast<void>(transfer.take());
-            return std::unexpected(kind == core::transfer_error_kind::timeout
-                ? w5100_error::timeout
-                : w5100_error::transport);
-        }
-        const auto completed = transfer.take();
-        if (!completed || completed->frames != expected_frames) {
-            return std::unexpected(w5100_error::transport);
-        }
-        return {};
-    }
-
-    static constexpr std::uint16_t read_opcode = 0x0FU;
-    static constexpr std::uint16_t write_opcode = 0xF0U;
-
-    Spi& spi_;
-    DeadlineSource& deadlines_;
-};
-
-// Original-W5100 optimized transport. Every call still produces exactly one
-// separately chip-selected 32-bit command as required by the W5100 protocol;
-// the optimization is confined to using a bounded synchronous controller path
-// instead of creating and waiting on an asynchronous operation for each byte.
-template<typename Spi>
-class w5100_spi_immediate_transport {
-public:
-    explicit w5100_spi_immediate_transport(
-        Spi& spi, std::uint32_t poll_limit = 100'000U) noexcept
-        : spi_(spi), poll_limit_(poll_limit) {}
-
-    [[nodiscard]] std::expected<std::uint8_t, w5100_error>
-    read(std::uint16_t address) noexcept {
-        const std::array<std::uint8_t, 4U> command{
-            read_opcode,
-            static_cast<std::uint8_t>(address >> 8U),
-            static_cast<std::uint8_t>(address),
-            0U,
-        };
-        std::array<std::uint8_t, 4U> response{};
-        const auto transferred = spi_.transaction_immediate(
-            command, response, poll_limit_);
-        if (!transferred || *transferred != command.size()) {
-            return std::unexpected(map_error(transferred));
-        }
-        return response[3];
-    }
-
-    [[nodiscard]] std::expected<void, w5100_error>
-    write(std::uint16_t address, std::uint8_t value) noexcept {
-        const std::array<std::uint8_t, 4U> command{
-            write_opcode,
-            static_cast<std::uint8_t>(address >> 8U),
-            static_cast<std::uint8_t>(address),
-            value,
-        };
-        const auto transferred = spi_.transaction_immediate(
-            command, {}, poll_limit_);
-        if (!transferred || *transferred != command.size()) {
-            return std::unexpected(map_error(transferred));
-        }
-        return {};
-    }
-
-private:
-    [[nodiscard]] static w5100_error map_error(
-        const std::expected<std::size_t, spi_error>& result) noexcept {
-        return !result && result.error() == spi_error::timeout
-            ? w5100_error::timeout : w5100_error::transport;
-    }
-
-    static constexpr std::uint8_t read_opcode = 0x0FU;
-    static constexpr std::uint8_t write_opcode = 0xF0U;
-
-    Spi& spi_;
-    std::uint32_t poll_limit_;
-};
+namespace mcuhw::device {
 
 // Fixed-slot raw Ethernet device over W5100 socket 0 MACRAW mode. Bus provides
 // expected<uint8_t, w5100_error> read(uint16_t) and
@@ -291,6 +92,7 @@ public:
         const auto opened = open_macraw();
         if (!opened) return fail(opened.error());
         initialized_ = true;
+        needs_recovery_ = false;
         last_error_.reset();
         return {};
     }
@@ -309,7 +111,7 @@ public:
 
     [[nodiscard]] bool start_transmit(
         std::size_t index, std::span<const std::byte> frame) noexcept {
-        if (!initialized_ || index >= TxDescriptors || tx_active_[index]
+        if (!initialized_ || needs_recovery_ || index >= TxDescriptors || tx_active_[index]
             || frame.size() < ethernet_header_size
             || frame.size() > buffer_size) {
             return false;
@@ -321,10 +123,24 @@ public:
     }
 
     void poll() noexcept {
-        if (!initialized_) return;
-        if (!poll_transmit_completion()) return;
-        if (!poll_receive()) return;
-        static_cast<void>(start_queued_transmit());
+        if (initialized_) static_cast<void>(poll_once());
+    }
+
+    [[nodiscard]] std::expected<void, w5100_error> poll_once() noexcept {
+        if (!initialized_) return std::unexpected(w5100_error::socket_state);
+        if (needs_recovery_) return std::unexpected(*last_error_);
+        auto budget = static_cast<std::size_t>(configuration_.payload_bytes_per_poll);
+        if (!poll_transmit_completion()) return std::unexpected(*last_error_);
+        // Alternate direction priority so continuous reception cannot starve TX.
+        transmit_first_ = !transmit_first_;
+        if (transmit_first_) {
+            if (!start_queued_transmit(budget) || !poll_receive(budget)) {
+                return std::unexpected(*last_error_);
+            }
+        } else if (!poll_receive(budget) || !start_queued_transmit(budget)) {
+            return std::unexpected(*last_error_);
+        }
+        return {};
     }
 
     [[nodiscard]] std::optional<w5100_receive_completion>
@@ -349,6 +165,14 @@ public:
     }
 
     void cancel_all() noexcept {
+        // SEND continues inside the chip after host buffers are released.
+        // Reopen the socket before another SEND so a late SEND_OK cannot be
+        // attributed to a new descriptor. Partial, uncommitted copies are safe
+        // to discard without closing the socket.
+        if (tx_in_flight_) {
+            needs_recovery_ = true;
+            last_error_ = w5100_error::cancelled;
+        }
         bool cancelled{};
         for (std::size_t index = 0U; index < RxDescriptors; ++index) {
             cancelled = cancelled || rx_active_[index];
@@ -363,15 +187,33 @@ public:
             tx_completions_[index].reset();
         }
         tx_in_flight_.reset();
+        rx_copy_.reset();
+        tx_copy_.reset();
         if (cancelled) ++metrics_.cancellations;
     }
 
     [[nodiscard]] std::expected<void, w5100_error> recover() noexcept {
         if (!initialized_) return std::unexpected(w5100_error::socket_state);
+        needs_recovery_ = true;
         complete_active_transmit_with_error();
+        if (rx_copy_) {
+            const auto slot = rx_copy_->slot;
+            rx_completions_[slot] = w5100_receive_completion{0U, true};
+            rx_active_[slot] = false;
+            rx_buffers_[slot] = {};
+            rx_copy_.reset();
+        }
+        if (tx_copy_) {
+            const auto slot = tx_copy_->slot;
+            tx_completions_[slot] = w5100_transmit_completion{true};
+            tx_active_[slot] = false;
+            tx_frames_[slot] = {};
+            tx_copy_.reset();
+        }
         const auto opened = open_macraw();
         if (!opened) return fail(opened.error());
         ++metrics_.recoveries;
+        needs_recovery_ = false;
         last_error_.reset();
         return {};
     }
@@ -394,7 +236,10 @@ private:
             all_ff = all_ff && octet == 0xFFU;
         }
         return configuration.command_poll_limit != 0U
-            && configuration.stable_read_limit != 0U && any && !all_ff
+            && configuration.stable_read_limit >= 2U
+            && configuration.payload_bytes_per_poll != 0U
+            && configuration.payload_bytes_per_poll <= buffer_size
+            && any && !all_ff
             && (configuration.mac.octets[0] & 1U) == 0U;
     }
 
@@ -460,8 +305,9 @@ private:
         const auto interrupts = read(w5100_register::socket0_interrupt);
         if (!interrupts) return record_poll_error(interrupts.error());
         if ((*interrupts & timeout_interrupt) != 0U) {
-            static_cast<void>(write(w5100_register::socket0_interrupt,
-                                    timeout_interrupt));
+            const auto cleared = write(w5100_register::socket0_interrupt,
+                                       timeout_interrupt);
+            if (!cleared) return record_commit_error(cleared.error());
             const auto slot = *tx_in_flight_;
             tx_completions_[slot] = w5100_transmit_completion{.error = true};
             tx_active_[slot] = false;
@@ -474,7 +320,7 @@ private:
         if ((*interrupts & send_ok_interrupt) != 0U) {
             const auto cleared = write(w5100_register::socket0_interrupt,
                                        send_ok_interrupt);
-            if (!cleared) return record_poll_error(cleared.error());
+            if (!cleared) return record_commit_error(cleared.error());
             const auto slot = *tx_in_flight_;
             tx_completions_[slot] = w5100_transmit_completion{};
             tx_active_[slot] = false;
@@ -485,76 +331,102 @@ private:
         return true;
     }
 
-    [[nodiscard]] bool poll_receive() noexcept {
-        const auto available = read_stable_u16(
-            w5100_register::socket0_rx_received_size);
-        if (!available) return record_poll_error(available.error());
-        if (*available == 0U) return true;
+    [[nodiscard]] bool poll_receive(std::size_t& budget) noexcept {
+        if (budget == 0U) return true;
+        if (!rx_copy_) {
+            const auto available = read_stable_u16(
+                w5100_register::socket0_rx_received_size);
+            if (!available) return record_poll_error(available.error());
+            if (*available == 0U) return true;
 
-        const auto slot = first_armed_receive();
-        if (!slot) {
-            ++metrics_.receive_backpressure;
-            return true;
+            const auto slot = first_armed_receive();
+            if (!slot) {
+                ++metrics_.receive_backpressure;
+                return true;
+            }
+            const auto pointer = read_stable_u16(
+                w5100_register::socket0_rx_read_pointer);
+            if (!pointer) return record_poll_error(pointer.error());
+            const auto header = read_ring_header(*pointer);
+            if (!header) return record_poll_error(header.error());
+            const auto stored_size = *header;
+            if (stored_size < 2U || stored_size > *available
+                || stored_size > socket_memory_size) {
+                complete_receive_error(*slot, w5100_error::malformed_frame);
+                return recover_after_malformed();
+            }
+            const auto frame_size = static_cast<std::size_t>(stored_size - 2U);
+            if (frame_size < ethernet_header_size
+                || frame_size > buffer_size
+                || frame_size > rx_buffers_[*slot].size()) {
+                const auto error = frame_size > buffer_size
+                    ? w5100_error::frame_too_large
+                    : w5100_error::malformed_frame;
+                complete_receive_error(*slot, error);
+                const auto consumed = consume_receive(*pointer, stored_size);
+                if (!consumed) return record_commit_error(consumed.error());
+                return true;
+            }
+            rx_copy_ = packet_copy{*slot, *pointer, frame_size, 0U};
         }
-        const auto pointer = read_stable_u16(
-            w5100_register::socket0_rx_read_pointer);
-        if (!pointer) return record_poll_error(pointer.error());
-        const auto header = read_ring_header(*pointer);
-        if (!header) return record_poll_error(header.error());
-        const auto stored_size = *header;
-        if (stored_size < 2U || stored_size > *available
-            || stored_size > socket_memory_size) {
-            complete_receive_error(*slot, w5100_error::malformed_frame);
-            return recover_after_malformed();
+        auto& copy = *rx_copy_;
+        while (budget != 0U && copy.offset != copy.size) {
+            const auto copied = read_ring(
+                static_cast<std::uint16_t>(copy.pointer + 2U + copy.offset),
+                rx_buffers_[copy.slot].subspan(copy.offset, 1U));
+            if (!copied) return record_poll_error(copied.error());
+            ++copy.offset;
+            --budget;
         }
-        const auto frame_size = static_cast<std::size_t>(stored_size - 2U);
-        if (frame_size < ethernet_header_size
-            || frame_size > buffer_size
-            || frame_size > rx_buffers_[*slot].size()) {
-            const auto error = frame_size > buffer_size
-                ? w5100_error::frame_too_large
-                : w5100_error::malformed_frame;
-            complete_receive_error(*slot, error);
-            const auto consumed = consume_receive(*pointer, stored_size);
-            return consumed ? true : record_poll_error(consumed.error());
-        }
+        if (copy.offset != copy.size) return true;
 
-        const auto copied = read_ring(
-            static_cast<std::uint16_t>(*pointer + 2U),
-            rx_buffers_[*slot].first(frame_size));
-        if (!copied) return record_poll_error(copied.error());
-        const auto consumed = consume_receive(*pointer, stored_size);
-        if (!consumed) return record_poll_error(consumed.error());
-        rx_completions_[*slot] = w5100_receive_completion{frame_size, false};
-        rx_active_[*slot] = false;
-        rx_buffers_[*slot] = {};
+        const auto consumed = consume_receive(copy.pointer,
+            static_cast<std::uint16_t>(copy.size + 2U));
+        if (!consumed) return record_commit_error(consumed.error());
+        rx_completions_[copy.slot] = w5100_receive_completion{copy.size, false};
+        rx_active_[copy.slot] = false;
+        rx_buffers_[copy.slot] = {};
+        rx_copy_.reset();
         ++metrics_.received_frames;
         return true;
     }
 
-    [[nodiscard]] bool start_queued_transmit() noexcept {
-        if (tx_in_flight_) return true;
-        const auto slot = first_queued_transmit();
-        if (!slot) return true;
-        const auto free = read_stable_u16(
-            w5100_register::socket0_tx_free_size);
-        if (!free) return record_poll_error(free.error());
-        if (*free < tx_frames_[*slot].size()) return true;
-        const auto pointer = read_stable_u16(
-            w5100_register::socket0_tx_write_pointer);
-        if (!pointer) return record_poll_error(pointer.error());
-        const auto cleared = write(w5100_register::socket0_interrupt,
-                                   send_ok_interrupt | timeout_interrupt);
-        if (!cleared) return record_poll_error(cleared.error());
-        const auto copied = write_ring(*pointer, tx_frames_[*slot]);
-        if (!copied) return record_poll_error(copied.error());
+    [[nodiscard]] bool start_queued_transmit(std::size_t& budget) noexcept {
+        if (tx_in_flight_ || budget == 0U) return true;
+        if (!tx_copy_) {
+            const auto slot = first_queued_transmit();
+            if (!slot) return true;
+            const auto free = read_stable_u16(
+                w5100_register::socket0_tx_free_size);
+            if (!free) return record_poll_error(free.error());
+            if (*free < tx_frames_[*slot].size()) return true;
+            const auto pointer = read_stable_u16(
+                w5100_register::socket0_tx_write_pointer);
+            if (!pointer) return record_poll_error(pointer.error());
+            const auto cleared = write(w5100_register::socket0_interrupt,
+                                       send_ok_interrupt | timeout_interrupt);
+            if (!cleared) return record_poll_error(cleared.error());
+            tx_copy_ = packet_copy{*slot, *pointer, tx_frames_[*slot].size(), 0U};
+        }
+        auto& copy = *tx_copy_;
+        while (budget != 0U && copy.offset != copy.size) {
+            const auto copied = write_ring(
+                static_cast<std::uint16_t>(copy.pointer + copy.offset),
+                tx_frames_[copy.slot].subspan(copy.offset, 1U));
+            if (!copied) return record_poll_error(copied.error());
+            ++copy.offset;
+            --budget;
+        }
+        if (copy.offset != copy.size) return true;
+
         const auto advanced = write_u16(
             w5100_register::socket0_tx_write_pointer,
-            static_cast<std::uint16_t>(*pointer + tx_frames_[*slot].size()));
-        if (!advanced) return record_poll_error(advanced.error());
+            static_cast<std::uint16_t>(copy.pointer + copy.size));
+        if (!advanced) return record_commit_error(advanced.error());
         const auto sent = command(send_command);
-        if (!sent) return record_poll_error(sent.error());
-        tx_in_flight_ = *slot;
+        if (!sent) return record_commit_error(sent.error());
+        tx_in_flight_ = copy.slot;
+        tx_copy_.reset();
         return true;
     }
 
@@ -650,6 +522,14 @@ private:
         tx_in_flight_.reset();
     }
 
+    // A failure while committing a hardware pointer or command may have
+    // reached the chip. Do not repeat that side effect on the next poll.
+    // recover() closes and reopens the socket before traffic can resume.
+    [[nodiscard]] bool record_commit_error(w5100_error error) noexcept {
+        needs_recovery_ = true;
+        return record_poll_error(error);
+    }
+
     [[nodiscard]] bool record_poll_error(w5100_error error) noexcept {
         static_cast<void>(fail(error));
         return false;
@@ -692,6 +572,13 @@ private:
     static constexpr std::size_t socket_memory_size = 8192U;
     static constexpr std::size_t socket_memory_mask = socket_memory_size - 1U;
 
+    struct packet_copy {
+        std::size_t slot;
+        std::uint16_t pointer;
+        std::size_t size;
+        std::size_t offset;
+    };
+
     Bus& bus_;
     w5100_configuration configuration_{};
     std::array<std::span<std::byte>, RxDescriptors> rx_buffers_{};
@@ -703,9 +590,13 @@ private:
         tx_completions_{};
     std::array<bool, TxDescriptors> tx_active_{};
     std::optional<std::size_t> tx_in_flight_{};
+    std::optional<packet_copy> rx_copy_{};
+    std::optional<packet_copy> tx_copy_{};
     std::optional<w5100_error> last_error_{};
     w5100_metrics metrics_{};
     bool initialized_{};
+    bool transmit_first_{};
+    bool needs_recovery_{};
 };
 
-} // namespace mcuhw::driver
+} // namespace mcuhw::device

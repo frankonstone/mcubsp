@@ -34,12 +34,28 @@ target_include_directories(mcuhw INTERFACE
 )
 target_compile_features(mcuhw INTERFACE cxx_std_23)
 
+# Optional application facade; the core target has no runtime dependency.
+# @req REQ-0045
+add_library(mcuhw_io INTERFACE)
+add_library(mcuhw::io ALIAS mcuhw_io)
+target_link_libraries(mcuhw_io INTERFACE mcuhw::mcuhw)
+
+# Attached-chip protocols can be consumed independently of a board facade.
+# @req REQ-0046
+add_library(mcuhw_device INTERFACE)
+add_library(mcuhw::device ALIAS mcuhw_device)
+target_link_libraries(mcuhw_device INTERFACE mcuhw::mcuhw)
+include(cmake/McuhwIoCost.cmake)
+include(cmake/McuhwIoExamples.cmake)
+
 # @req REQ-0002 REQ-0015 REQ-0016 REQ-0017 REQ-0018 REQ-0019 REQ-0035 REQ-0038 REQ-0040 REQ-0041
 add_library(mcuhw_arch_probe OBJECT
     tests/compile/all_descriptions_probe.cpp
     tests/compile/arch_probe.cpp
     tests/compile/cxx23_features.cpp
     tests/compile/execution_probe.cpp
+    tests/compile/io_example.cpp
+    tests/compile/io_devices_example.cpp
     tests/compile/uart_i2c_example.cpp
     tests/compile/spi_adc_example.cpp
     tests/compile/dmac_example.cpp

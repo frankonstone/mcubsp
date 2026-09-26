@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <span>
 
-namespace mcuhw::driver::es8311 {
+namespace mcuhw::device::es8311 {
 
 inline constexpr std::uint8_t default_i2c_address = 0x18U;
 
@@ -62,4 +62,4 @@ startup_sequence_48khz_16bit() noexcept {
     return startup_48khz_16bit;
 }
 
-} // namespace mcuhw::driver::es8311
+} // namespace mcuhw::device::es8311

@@ -23,6 +23,15 @@ struct owner {
     static inline bool claimed{};
 };
 
+template<bool Enabled>
+struct select_handler {};
+
+template<>
+struct select_handler<true> {
+    bool (*set)(void*, bool) noexcept{};
+    void* context{};
+};
+
 [[nodiscard]] constexpr mcu::ra4m1::signal miso_signal(
     std::uint8_t instance) noexcept {
     return instance == 0U ? mcu::ra4m1::signal::spi0_miso
@@ -91,7 +100,8 @@ struct spi_binding {
 // transaction the ownership boundary and keeps CS asserted across arbitrary
 // caller-declared segments. SPII is the only completion point, so the final
 // frame has left the wire before CS is released.
-template<typename Binding, typename MmioPolicy, typename ExecutionPolicy>
+template<typename Binding, typename MmioPolicy, typename ExecutionPolicy,
+         bool ExternalSelect = false>
 // @req REQ-0014 REQ-0017 REQ-0019 REQ-0028 REQ-0030
 class spi_master_backend {
 public:
@@ -115,6 +125,9 @@ public:
         if (!timing_is_valid(timing)) {
             return std::unexpected(driver::spi_error::invalid_rate);
         }
+        if (!configuration_is_valid(configuration)) {
+            return std::unexpected(driver::spi_error::invalid_frame);
+        }
         spi_detail::owner<Binding::instance>::claimed = true;
         owned_ = true;
         timing_ = timing;
@@ -126,6 +139,35 @@ public:
             return mmio_failure();
         }
         initialized_ = true;
+        configuration_valid_ = true;
+        return {};
+    }
+
+    [[nodiscard]] bool busy() const noexcept {
+        return operation_id_.has_value() || immediate_active_;
+    }
+
+    // The callback belongs to a stable bus object and receives logical CS
+    // activity; that object supplies each device's pin and polarity.
+    [[nodiscard]] std::expected<void, driver::spi_error>
+    set_select_handler(bool (*set)(void*, bool) noexcept,
+                       void* context) noexcept requires(ExternalSelect) {
+        if (busy()) return std::unexpected(driver::spi_error::busy);
+        select_handler_ = {set, context};
+        return {};
+    }
+
+    [[nodiscard]] std::expected<void, driver::spi_error> reconfigure(
+        driver::spi_timing timing,
+        driver::spi_configuration configuration = {}) noexcept {
+        if (!initialized_) return std::unexpected(driver::spi_error::not_initialized);
+        if (busy()) return std::unexpected(driver::spi_error::busy);
+        if (!timing_is_valid(timing)) return std::unexpected(driver::spi_error::invalid_rate);
+        if (!configuration_is_valid(configuration)) return std::unexpected(driver::spi_error::invalid_frame);
+        timing_ = timing;
+        configuration_ = configuration;
+        configuration_valid_ = program_controller();
+        if (!configuration_valid_) return mmio_failure();
         return {};
     }
 
@@ -134,6 +176,7 @@ public:
         if (!initialized_) {
             return start_failure(driver::spi_error::not_initialized);
         }
+        if (!configuration_valid_) return start_failure(driver::spi_error::mmio);
         if (operation_id_ || immediate_active_) {
             return start_failure(driver::spi_error::busy);
         }
@@ -171,9 +214,22 @@ public:
     transaction_immediate(std::span<const std::uint8_t> transmit,
                           std::span<std::uint8_t> receive,
                           std::uint32_t poll_limit) noexcept {
+        return transaction_immediate(transmit, receive, poll_limit,
+                                     []() noexcept { return false; });
+    }
+
+    // An outer device operation can share one absolute deadline across all
+    // of its independently selected commands without adding backend storage.
+    template<typename Expired>
+    [[nodiscard]] std::expected<std::size_t, driver::spi_error>
+    transaction_immediate(std::span<const std::uint8_t> transmit,
+                          std::span<std::uint8_t> receive,
+                          std::uint32_t poll_limit,
+                          Expired&& expired) noexcept {
         if (!initialized_) {
             return std::unexpected(driver::spi_error::not_initialized);
         }
+        if (!configuration_valid_) return std::unexpected(driver::spi_error::mmio);
         if (operation_id_ || immediate_active_) {
             return std::unexpected(driver::spi_error::busy);
         }
@@ -189,7 +245,7 @@ public:
         if (transmit.size() > 65'535U) {
             return std::unexpected(driver::spi_error::excessive_length);
         }
-        if (poll_limit == 0U) {
+        if (poll_limit == 0U || expired()) {
             return std::unexpected(driver::spi_error::timeout);
         }
 
@@ -201,7 +257,7 @@ public:
         }
         for (std::size_t index = 0U; index < transmit.size(); ++index) {
             const auto transmit_ready = wait_for_status(
-                status_transmit_empty, true, poll_limit);
+                status_transmit_empty, true, poll_limit, expired);
             if (!transmit_ready) {
                 return finish_immediate_error(transmit_ready.error());
             }
@@ -209,7 +265,7 @@ public:
                 return finish_immediate_error(driver::spi_error::mmio);
             }
             const auto receive_ready = wait_for_status(
-                status_receive_full, true, poll_limit);
+                status_receive_full, true, poll_limit, expired);
             if (!receive_ready) {
                 return finish_immediate_error(receive_ready.error());
             }
@@ -220,7 +276,7 @@ public:
             }
             if (!receive.empty()) receive[index] = *value;
         }
-        const auto idle = wait_for_status(status_not_idle, false, poll_limit);
+        const auto idle = wait_for_status(status_not_idle, false, poll_limit, expired);
         if (!idle) return finish_immediate_error(idle.error());
         const bool stopped = stop_immediate();
         return stopped
@@ -236,6 +292,7 @@ public:
         if (!initialized_) {
             return start_failure(driver::spi_error::not_initialized);
         }
+        if (!configuration_valid_) return start_failure(driver::spi_error::mmio);
         if (operation_id_ || immediate_active_) {
             return start_failure(driver::spi_error::busy);
         }
@@ -377,9 +434,10 @@ public:
         }
         const auto id = *operation_id_;
         const auto frames = total_frames_;
-        const bool stopped = write<std::uint8_t>(base() + 0x00U, spcr_stopped)
-            && write<std::uint8_t>(base() + 0x0FU, spcr2_auto_stop)
-            && set_chip_select(false);
+        const bool controller_stopped = write<std::uint8_t>(base() + 0x00U, spcr_stopped);
+        const bool interrupts_stopped = write<std::uint8_t>(base() + 0x0FU, spcr2_auto_stop);
+        const bool deselected = set_chip_select(false);
+        const bool stopped = controller_stopped && interrupts_stopped && deselected;
         reset_transaction();
         if (!stopped) {
             return operations_.fail(id, driver::spi_error::mmio);
@@ -527,8 +585,18 @@ private:
         }
         const auto divider = 2U * (static_cast<std::uint32_t>(timing.spbr) + 1U)
             * static_cast<std::uint32_t>(1U << timing.brdv);
-        return timing.achieved_hz == timing.clock_hz / divider
+        return timing.achieved_hz != 0U
+            && timing.achieved_hz == timing.clock_hz / divider
             && timing.achieved_hz <= timing.target_hz;
+    }
+
+    [[nodiscard]] static constexpr bool configuration_is_valid(
+        driver::spi_configuration configuration) noexcept {
+        return static_cast<std::uint8_t>(configuration.mode) <= 3U
+            && static_cast<std::uint8_t>(configuration.bit_order) <= 1U
+            && (configuration.frame_width == driver::spi_frame_width::bits8
+                || configuration.frame_width == driver::spi_frame_width::bits16)
+            && static_cast<std::uint8_t>(configuration.chip_select) <= 1U;
     }
 
     [[nodiscard]] std::expected<std::size_t, driver::spi_error>
@@ -599,12 +667,13 @@ private:
             return core::quiesce_result::reusable;
         }
         const bool dma_stopped = self.quiesce_dma_transfers();
-        const bool peripheral_stopped = self.template write<std::uint8_t>(
-                                            base() + 0x00U, spcr_stopped)
-            && self.template write<std::uint8_t>(base() + 0x0FU,
-                                                 spcr2_auto_stop)
-            && self.set_chip_select(false);
-        const bool stopped = dma_stopped && peripheral_stopped;
+        const bool controller_stopped = self.template write<std::uint8_t>(
+            base() + 0x00U, spcr_stopped);
+        const bool interrupts_stopped = self.template write<std::uint8_t>(
+            base() + 0x0FU, spcr2_auto_stop);
+        const bool deselected = self.set_chip_select(false);
+        const bool stopped = dma_stopped && controller_stopped
+            && interrupts_stopped && deselected;
         self.reset_transaction();
         return stopped ? core::quiesce_result::reusable
                        : core::quiesce_result::faulted;
@@ -645,10 +714,12 @@ private:
             static_cast<std::uint8_t>((*status & ~0x1DU) | 0xA0U));
     }
 
+    template<typename Expired>
     [[nodiscard]] std::expected<void, driver::spi_error>
     wait_for_status(std::uint8_t mask, bool set,
-                    std::uint32_t poll_limit) noexcept {
+                    std::uint32_t poll_limit, Expired& expired) noexcept {
         for (std::uint32_t poll = 0U; poll < poll_limit; ++poll) {
+            if (expired()) return std::unexpected(driver::spi_error::timeout);
             const auto status = mmio_.template read<std::uint8_t>(
                 base() + 0x03U);
             if (!status) return std::unexpected(driver::spi_error::mmio);
@@ -740,7 +811,12 @@ private:
 
     [[nodiscard]] bool restore_pins() noexcept {
         return restore_pin(Binding::miso_pin) && restore_pin(Binding::mosi_pin)
-            && restore_pin(Binding::clock_pin) && restore_pin(Binding::select_pin);
+            && restore_pin(Binding::clock_pin) && restore_select_pin();
+    }
+
+    [[nodiscard]] bool restore_select_pin() noexcept {
+        if constexpr (ExternalSelect) return true;
+        else return restore_pin(Binding::select_pin);
     }
 
     [[nodiscard]] std::uint32_t psel_for(core::pin_id pin,
@@ -763,6 +839,7 @@ private:
     }
 
     [[nodiscard]] bool configure_select_pin() noexcept {
+        if constexpr (ExternalSelect) return true;
         if (!set_chip_select(false)) {
             return false;
         }
@@ -801,6 +878,10 @@ private:
     }
 
     [[nodiscard]] bool set_chip_select(bool active) noexcept {
+        if constexpr (ExternalSelect) {
+            return select_handler_.set
+                && select_handler_.set(select_handler_.context, active);
+        }
         const auto mask = static_cast<std::uint32_t>(
             1U << Binding::select_pin.index);
         const bool high = active
@@ -839,6 +920,7 @@ private:
     }
 
     MmioPolicy& mmio_;
+    [[no_unique_address]] spi_detail::select_handler<ExternalSelect> select_handler_{};
     pool_type operations_;
     driver::spi_timing timing_{};
     driver::spi_configuration configuration_{};
@@ -858,6 +940,7 @@ private:
     bool immediate_active_{};
     bool owned_{};
     bool initialized_{};
+    bool configuration_valid_{};
 };
 
 } // namespace mcuhw::backend::ra4m1

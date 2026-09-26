@@ -1,5 +1,11 @@
 # Arduino UNO R4 Minima W5100 Ethernet
 
+The attached-device refactor in REQ-0046 adds a checked `io` composition and
+changes polling to a configurable payload budget (64 bytes by default). The
+physical results below describe the earlier recorded runs; their throughput
+figures have not been remeasured for the refactored code. See the
+[components guide](../../getting-started/components.md) for the current API.
+
 PLN-0024 uses the stacked Arduino Ethernet Shield R3 as an external raw-frame
 device. It does not model the RA4M1 as having a native Ethernet MAC, and it does
 not use the W5100 hardware TCP/UDP sockets, the Arduino Ethernet library, lwIP,

@@ -15,6 +15,15 @@ namespace mcuhw::backend::stm32h753 {
 namespace detail {
 template<std::uint8_t Instance>
 struct spi_owner { static inline bool claimed{}; };
+
+template<bool Enabled>
+struct spi_select_handler {};
+
+template<>
+struct spi_select_handler<true> {
+    bool (*set)(void*, bool) noexcept{};
+    void* context{};
+};
 } // namespace detail
 
 // STM32 SPI MBR offers power-of-two divisors from 2 through 256.
@@ -76,7 +85,8 @@ struct spi_binding {
 
 // Software-controlled CS stays asserted over every caller segment. EOT is the
 // sole success publication point, after the final frame has left the wire.
-template<typename Binding, typename MmioPolicy, typename ExecutionPolicy>
+template<typename Binding, typename MmioPolicy, typename ExecutionPolicy,
+         bool ExternalSelect = false>
 // @req REQ-0003 REQ-0009 REQ-0014 REQ-0017 REQ-0019 REQ-0028 REQ-0033
 class spi_master_backend {
 public:
@@ -96,9 +106,11 @@ public:
         if (initialized_ || detail::spi_owner<Binding::instance>::claimed) {
             return std::unexpected(driver::spi_error::already_owned);
         }
-        if (timing.backend_encoding > 7U || timing.achieved_hz == 0U
-            || timing.achieved_hz > timing.target_hz) {
+        if (!timing_is_valid(timing)) {
             return std::unexpected(driver::spi_error::invalid_rate);
+        }
+        if (!configuration_is_valid(configuration)) {
+            return std::unexpected(driver::spi_error::invalid_frame);
         }
         detail::spi_owner<Binding::instance>::claimed = true; owned_ = true;
         timing_ = timing; configuration_ = configuration;
@@ -113,16 +125,41 @@ public:
             || !pins.alternate(Binding::clock_pin, Binding::af)
             || !pins.alternate(Binding::miso_pin, miso_af)
             || !pins.alternate(Binding::mosi_pin, mosi_af)
-            || !pins.output(Binding::select_pin, inactive)
+            || !configure_select_pin(pins, inactive)
             || !program()) {
             release_owner(); return mmio_failure();
         }
-        initialized_ = true; return {};
+        initialized_ = true; configuration_valid_ = true; return {};
+    }
+
+    [[nodiscard]] bool busy() const noexcept { return id_.has_value(); }
+
+    [[nodiscard]] std::expected<void, driver::spi_error>
+    set_select_handler(bool (*set)(void*, bool) noexcept,
+                       void* context) noexcept requires(ExternalSelect) {
+        if (busy()) return std::unexpected(driver::spi_error::busy);
+        select_handler_ = {set, context};
+        return {};
+    }
+
+    [[nodiscard]] std::expected<void, driver::spi_error> reconfigure(
+        driver::spi_timing timing,
+        driver::spi_configuration configuration = {}) noexcept {
+        if (!initialized_) return std::unexpected(driver::spi_error::not_initialized);
+        if (busy()) return std::unexpected(driver::spi_error::busy);
+        if (!timing_is_valid(timing)) return std::unexpected(driver::spi_error::invalid_rate);
+        if (!configuration_is_valid(configuration)) return std::unexpected(driver::spi_error::invalid_frame);
+        timing_ = timing;
+        configuration_ = configuration;
+        configuration_valid_ = program();
+        if (!configuration_valid_) return mmio_failure();
+        return {};
     }
 
     [[nodiscard]] start_result transaction(
         std::span<const driver::spi_segment> segments) noexcept {
         if (!initialized_) return failure(driver::spi_error::not_initialized);
+        if (!configuration_valid_) return failure(driver::spi_error::mmio);
         if (id_) return failure(driver::spi_error::busy);
         const auto count = validate(segments);
         if (!count) return failure(count.error());
@@ -159,8 +196,12 @@ public:
         }
         if ((*status & (1U << 3U)) != 0U && received_ == total_) {
             const auto current = *id_; const auto frames = total_;
-            const bool stopped = write(0x10U, 0U) && write(0x18U, 1U << 3U)
-                && write(0x00U, 1U << 12U) && set_select(false);
+            const bool interrupts_stopped = write(0x10U, 0U);
+            const bool cleared = write(0x18U, 1U << 3U);
+            const bool controller_stopped = write(0x00U, 1U << 12U);
+            const bool deselected = set_select(false);
+            const bool stopped = interrupts_stopped && cleared
+                && controller_stopped && deselected;
             reset();
             return stopped
                 ? operations_.complete(current, driver::spi_transfer_result{frames})
@@ -179,7 +220,7 @@ public:
         detail::pinmux<MmioPolicy> pins{mmio_};
         if (!write(0x00U, 0U) || !pins.restore(Binding::clock_pin)
             || !pins.restore(Binding::miso_pin) || !pins.restore(Binding::mosi_pin)
-            || !pins.output(Binding::select_pin,
+            || !configure_select_pin(pins,
                 configuration_.chip_select == driver::spi_chip_select_polarity::active_low)) {
             return mmio_failure();
         }
@@ -187,6 +228,30 @@ public:
     }
 
 private:
+    [[nodiscard]] static constexpr bool timing_is_valid(
+        driver::spi_timing timing) noexcept {
+        return timing.backend_encoding <= 7U && timing.clock_hz != 0U
+            && timing.achieved_hz != 0U
+            && timing.achieved_hz <= timing.target_hz
+            && timing.achieved_hz
+                == timing.clock_hz / (2U << timing.backend_encoding);
+    }
+
+    [[nodiscard]] static constexpr bool configuration_is_valid(
+        driver::spi_configuration configuration) noexcept {
+        return static_cast<std::uint8_t>(configuration.mode) <= 3U
+            && static_cast<std::uint8_t>(configuration.bit_order) <= 1U
+            && (configuration.frame_width == driver::spi_frame_width::bits8
+                || configuration.frame_width == driver::spi_frame_width::bits16)
+            && static_cast<std::uint8_t>(configuration.chip_select) <= 1U;
+    }
+
+    [[nodiscard]] bool configure_select_pin(detail::pinmux<MmioPolicy>& pins,
+                                            bool inactive) noexcept {
+        if constexpr (ExternalSelect) return true;
+        else return pins.output(Binding::select_pin, inactive);
+    }
+
     static constexpr std::uint32_t interrupt_mask =
         (1U << 0U) | (1U << 1U) | (1U << 3U) | (1U << 6U) | (1U << 9U);
 
@@ -255,6 +320,10 @@ private:
         }
     }
     [[nodiscard]] bool set_select(bool asserted) noexcept {
+        if constexpr (ExternalSelect) {
+            return select_handler_.set
+                && select_handler_.set(select_handler_.context, asserted);
+        }
         const bool active_high = configuration_.chip_select
             == driver::spi_chip_select_polarity::active_high;
         detail::pinmux<MmioPolicy> pins{mmio_};
@@ -264,8 +333,10 @@ private:
         void* context, core::operation_id id) noexcept {
         auto& self = *static_cast<spi_master_backend*>(context);
         if (!self.id_ || *self.id_ != id) return core::quiesce_result::reusable;
-        const bool stopped = self.write(0x10U, 0U) && self.write(0x00U, 0U)
-            && self.set_select(false);
+        const bool interrupts_stopped = self.write(0x10U, 0U);
+        const bool controller_stopped = self.write(0x00U, 0U);
+        const bool deselected = self.set_select(false);
+        const bool stopped = interrupts_stopped && controller_stopped && deselected;
         self.reset();
         return stopped ? core::quiesce_result::reusable : core::quiesce_result::faulted;
     }
@@ -316,6 +387,7 @@ private:
     mmio_failure() noexcept { return std::unexpected(driver::spi_error::mmio); }
 
     MmioPolicy& mmio_;
+    [[no_unique_address]] detail::spi_select_handler<ExternalSelect> select_handler_{};
     pool_type operations_;
     std::optional<core::operation_id> id_{};
     std::span<const driver::spi_segment> segments_{};
@@ -325,6 +397,7 @@ private:
     std::size_t transmitted_{};
     std::size_t received_{};
     bool initialized_{};
+    bool configuration_valid_{};
     bool owned_{};
 };
 

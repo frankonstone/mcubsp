@@ -4,6 +4,7 @@ requirements = ["requirements.md"]
 plans = ["implementation-plan.md"]
 sources = [
   "include/mcuhw/**/*.hpp",
+  "examples/io/*.cpp",
   "board/uno_r4_minima/**/*.?pp",
   "board/nucleo_h753zi/**/*.?pp",
   "board/*o*/startup.S",
@@ -19,6 +20,10 @@ build_files = [
 
 [[artifacts]]
 path = "build/host/artifacts/mcutest.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "build/host/artifacts/mcutest-io.json"
 importer = "mcutest"
 
 [[artifacts]]

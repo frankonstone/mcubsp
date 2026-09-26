@@ -28,6 +28,7 @@ add_executable(mcuhw_tests
     test_stm32h753_gpio.cpp
     test_stm32h753_ethernet.cpp
     test_w5100.cpp
+    test_w5100_io.cpp
     test_stm32h753_drivers.cpp
     test_three_description_gate.cpp
     test_register.cpp
@@ -41,7 +42,7 @@ if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
         "${MCUHW_MCUIP_SOURCE_DIR}/include")
 endif()
 mcuhw_apply_restricted_runtime(mcuhw_tests)
-mcutest_configure_target(mcuhw_tests MAX_TESTS 192 SOURCE_LOCATION ON)
+mcutest_configure_target(mcuhw_tests MAX_TESTS 256 SOURCE_LOCATION ON)
 
 add_test(
     NAME mcuhw.unit
@@ -58,6 +59,22 @@ mcutest_configure_target(mcuhw_fixture_failure MAX_TESTS 4 SOURCE_LOCATION ON)
 add_test(NAME mcuhw.fixture_failure COMMAND mcuhw_fixture_failure)
 set_tests_properties(mcuhw.fixture_failure PROPERTIES WILL_FAIL TRUE)
 
+# @req REQ-0045
+add_executable(mcuhw_io_tests
+    test_io.cpp test_io_boards.cpp test_io_peripherals.cpp
+    test_io_spi_devices.cpp test_spi_device_backends.cpp
+    test_io_i2c_devices.cpp test_tmp102.cpp)
+target_link_libraries(mcuhw_io_tests PRIVATE mcuhw::io mcutest::mcutest)
+mcuhw_apply_restricted_runtime(mcuhw_io_tests)
+mcutest_configure_target(mcuhw_io_tests MAX_TESTS 64 SOURCE_LOCATION ON)
+add_test(
+    NAME mcuhw.io
+    COMMAND "${CMAKE_COMMAND}"
+        -DTEST_PROGRAM=$<TARGET_FILE:mcuhw_io_tests>
+        -DOUTPUT_FILE=${CMAKE_BINARY_DIR}/artifacts/mcutest-io.json
+        -P "${CMAKE_SOURCE_DIR}/cmake/CaptureMcutest.cmake"
+)
+
 function(mcuhw_add_compile_case name source expect_success)
     add_test(
         NAME "compile.${name}"
@@ -72,6 +89,11 @@ function(mcuhw_add_compile_case name source expect_success)
 endfunction()
 
 mcuhw_add_compile_case(cxx23 cxx23_features.cpp TRUE)
+mcuhw_add_compile_case(io_example io_example.cpp TRUE)
+mcuhw_add_compile_case(io_devices_example io_devices_example.cpp TRUE)
+mcuhw_add_compile_case(io_disabled_peripheral io_disabled_peripheral_forbidden.cpp FALSE)
+mcuhw_add_compile_case(io_unsupported_dma io_unsupported_dma_forbidden.cpp FALSE)
+mcuhw_add_compile_case(io_move_runtime io_move_runtime_forbidden.cpp FALSE)
 mcuhw_add_compile_case(exceptions_rejected exceptions_forbidden.cpp FALSE)
 mcuhw_add_compile_case(rtti_rejected rtti_forbidden.cpp FALSE)
 mcuhw_add_compile_case(command_read_rejected command_read_forbidden.cpp FALSE)
