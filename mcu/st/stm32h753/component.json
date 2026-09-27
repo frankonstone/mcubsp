@@ -33,7 +33,7 @@
   ],
   "sources": [],
   "tests": [
-    "tests/test_stm32h753_description.cpp"
+    "tests/mcu/stm32h753/test_description.cpp"
   ],
   "docs": [
     "doc/reference/mcu-reviews/stm32h753.md"

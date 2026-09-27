@@ -36,8 +36,8 @@
   ],
   "sources": [],
   "tests": [
-    "tests/test_w5100.cpp",
-    "tests/test_w5100_io.cpp"
+    "tests/device/test_w5100.cpp",
+    "tests/device/test_w5100_io.cpp"
   ],
   "docs": [
     "device/wiznet/w5100/README.md",

@@ -1,5 +1,6 @@
 include_guard(GLOBAL)
 include(ExternalProject)
+include("${CMAKE_CURRENT_LIST_DIR}/McuhwCache.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/McuhwEspIdfEnvironment.cmake")
 
 # ESP-IDF owns its platform image, cache/libc initialization and bootloader build.
@@ -28,11 +29,15 @@ function(mcuhw_add_idf_firmware target profile_directory)
     file(CONFIGURE OUTPUT "${sdk_source}/main/CMakeLists.txt" CONTENT
         "idf_component_register(SRCS ${sources}\n    [==[${MCUHW_BOARD_IDF_START}]==]\n    INCLUDE_DIRS [==[${MCUHW_ROOT}/include]==] [==[${profile_directory}]==]\n    REQUIRES esp_hw_support esp_mm esp_rom esp_system)\ntarget_compile_features(\${COMPONENT_LIB} PRIVATE cxx_std_23)\ntarget_compile_options(\${COMPONENT_LIB} PRIVATE -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit)\ntarget_compile_definitions(\${COMPONENT_LIB} PRIVATE main=mcuhw_application_main)\ntarget_link_options(\${COMPONENT_LIB} INTERFACE -Wl,--wrap=esp_startup_start_app)\n" @ONLY)
     find_program(MCUHW_IDF_NINJA ninja REQUIRED)
+    mcuhw_prepare_sdk_flags(forward "${sdk_source}/parent-flags.cmake")
+    list(APPEND forward CMAKE_BUILD_TYPE CMAKE_EXPORT_COMPILE_COMMANDS)
+    set(seed "${sdk_source}/compile-cache.cmake")
+    mcuhw_write_initial_cache("${seed}" ${forward})
     ExternalProject_Add(${target}
         SOURCE_DIR "${sdk_source}" BINARY_DIR "${sdk_binary}"
         DOWNLOAD_COMMAND "" UPDATE_COMMAND "" PATCH_COMMAND ""
         CONFIGURE_COMMAND ${sdk_environment}
-            "${CMAKE_COMMAND}" -S "${sdk_source}" -B "${sdk_binary}" -G Ninja
+            "${CMAKE_COMMAND}" -S "${sdk_source}" -B "${sdk_binary}" -G Ninja -C "${seed}"
             "-DIDF_TARGET=${MCUHW_IDF_TARGET}" "-DPYTHON=${PYTHON}"
             "-DCMAKE_MAKE_PROGRAM=${MCUHW_IDF_NINJA}"
         BUILD_COMMAND ${sdk_environment}
@@ -42,6 +47,7 @@ function(mcuhw_add_idf_firmware target profile_directory)
         INSTALL_COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${sdk_binary}/${target}.elf" "${sdk_binary}/${target}.bin" "${CMAKE_CURRENT_BINARY_DIR}"
         USES_TERMINAL_CONFIGURE TRUE USES_TERMINAL_BUILD TRUE)
+    ExternalProject_Add_StepDependencies(${target} configure "${seed}" "${sdk_source}/CMakeLists.txt" "${CMAKE_PROJECT_INCLUDE}")
     set_target_properties(${target} PROPERTIES FOLDER "Application")
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
     mcuhw_firmware_artifact_command(artifact_command

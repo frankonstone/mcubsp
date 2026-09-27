@@ -176,7 +176,7 @@ device=$(hardware runner-field --board arduino/uno_r4_minima --field device)
 
 if [ ! -f "$elf" ]; then
     echo "missing firmware: $elf" >&2
-    echo "build it with: cmake --preset uno-r4-minima && cmake --build --preset uno-r4-minima" >&2
+    echo "build it with: cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima && cmake --build build/uno-r4-minima --target board-tests" >&2
     exit 2
 fi
 

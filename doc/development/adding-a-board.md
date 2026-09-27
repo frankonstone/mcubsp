@@ -51,6 +51,11 @@ or `build.test_project` for a standalone ESP-IDF test project. The `.tests` grou
 configures that build only when requested. A list of test source files alone does
 not create an executable test group.
 
-Add the new board's ID to `MCUHW_ACTIVE_BOARDS`, reconfigure the matching
-architecture preset and build `<vendor>.<name>.examples`. No central registration
-is needed. See [active-board workspaces](verification.md#active-board-workspaces).
+Set `MCUHW_BOARD` to the new board's ID, reconfigure the matching
+architecture preset and build `firmware`, `tests` or `examples`. No central registration
+is needed. See [board selection](verification.md#board-selection).
+
+A board binding can set `MCUHW_BOARD_IO_EXAMPLES` in `board.cmake` to the
+compatible standalone source names from `examples/io/` (without `.cpp`). These
+appear automatically as `example.io.<name>` alongside `example.app.<name>`.
+Only declare examples compatible with the board's profile and startup.

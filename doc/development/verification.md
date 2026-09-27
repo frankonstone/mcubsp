@@ -8,34 +8,22 @@ not evidence that those hosted jobs have run: the initial implementation was
 exercised locally on macOS, while hosted Linux and Windows qualification remains
 pending until their own recorded jobs succeed.
 
+The [test-group guide](../../tests/README.md) describes source directories,
+CMake folders and CTest category labels.
+
 ## Targets and presets
 
-The shared `base` preset explicitly disables optional checks and clears the
-application/board-test selectors. Reconfiguring a reused build directory through
-a contributor preset therefore does not retain old maintainer options. Choose
-a separate workspace build directory for every architecture/toolchain. Board and
-revision artifacts are isolated underneath that workspace.
+Presets select the toolchain/architecture and global compiler settings only.
+The four choices are `native`, `arm-cortex-m4`, `arm-cortex-m7` and
+`esp32p4-riscv`. Build presets leave target selection to the caller or IDE.
+Use a separate build directory for each architecture/toolchain.
 
-| Workflow | Configure preset | Build preset selects |
-| --- | --- | --- |
-| Selected device/MCU/core development | `component` | `native-tests`, containing only selected suites |
-| All native behavior | `native` | `native-tests` |
-| Full local maintainer verification | `host` | `native-tests`, `check-headers`, `check-compile` |
-| Active-board workspace | `arm-cortex-m4`, `arm-cortex-m7`, `esp32p4-riscv` | `examples`, containing only active boards |
-| Cross-architecture verification | Architecture preset with `-checks` suffix | `check-headers`, `check-compile` |
-| Board test firmware | Existing UNO/NUCLEO test preset | `board-tests` |
-| One complete example | Board's `*-app` preset | `firmware` |
+### Board selection
 
-`native-tests` and `board-tests` build their executables. Execute host tests with
-the test preset or Test Explorer; board firmware still requires an explicitly
-requested hardware procedure. Build, test and workflow presets never flash.
-
-### Active-board workspaces
-
-Configure the architecture, then choose task groups for the boards you are working
-on. `MCUHW_ACTIVE_BOARDS` is a STRING cache setting accepting a semicolon-separated
-list of exact `vendor/board` or `vendor/board@revision` IDs. It starts empty;
-omitting a revision selects the manifest's default. For the current boards:
+Set `MCUHW_BOARD` using `-D` or edit its visible STRING entry in the CMake cache.
+`MCUHW_BOARD_REVISION` optionally overrides the manifest's default revision.
+Reapplying an architecture preset preserves both settings; reconfigure after
+editing them. The configure output prints the selected board and architecture.
 
 | Configure preset | Compatible board ID |
 | --- | --- |
@@ -44,149 +32,82 @@ omitting a revision selects the manifest's default. For the current boards:
 | `esp32p4-riscv` | `waveshare/esp32p4_nano` |
 
 ```sh
-cmake --preset arm-cortex-m4 -DMCUHW_ACTIVE_BOARDS=arduino/uno_r4_minima
-cmake --build --preset arm-cortex-m4 --target arduino.uno_r4_minima.examples
+cmake --preset arm-cortex-m4 -DMCUHW_BOARD=arduino/uno_r4_minima
+cmake --build --preset arm-cortex-m4 --target firmware
+cmake --build --preset arm-cortex-m4 --target examples
+cmake --build --preset arm-cortex-m4 --target test.board
+cmake --build --preset arm-cortex-m4 --target test.backend test.device
 ```
 
-The resulting project targets are:
+| Target | Behavior |
+| --- | --- |
+| `firmware` | Selected application, Blink by default; override `MCUHW_EXAMPLE` |
+| `examples` | All supported application and I/O examples, as separate images |
+| `example.app.blink`, `example.app.tmp102` | Individual example builds |
+| `example.io.blink`, `example.io.serial_echo`, `example.io.spi_dma`, `example.io.tmp102`, `example.io.w5100` | Standalone I/O firmware for the UNO board binding |
+| `test.board` | Configure and build the board's instrumented physical-test images |
+| `test.backend`, `test.device` | Build and run backend or device host suites |
+| `test.core`, `test.driver`, `test.io`, `test.mcu`, `test.compile` | Build and run focused host suites and compile contracts |
+| `tests` | All host groups plus physical-test image builds |
 
-```text
-examples                                  all active boards' examples
-arduino.uno_r4_minima.examples             this board's examples
-arduino.uno_r4_minima.examples.blink       individual firmware
-arduino.uno_r4_minima.examples.tmp102      individual firmware
-arduino.uno_r4_minima.tests                instrumented board-test build
-```
+An empty `MCUHW_BOARD` provides no board targets. Invalid boards, revisions,
+architectures and undeclared firmware applications fail during configuration.
+Unselected manifests are not scanned. Test dependencies are resolved only when
+`test.board` is built, so application builds need no mcutest, MCUIP or coverage setup.
+Firmware and additional examples live in `application/` and `examples/` beneath
+the architecture build directory. The child test build lives in
+`boards/<vendor>/<board>/<revision>/tests/` and inherits global compiler settings.
+Physical-test images are built without running or flashing them; use the
+documented hardware runners. Native groups run CTest after building.
+For UNO runners, point `MCUHW_BUILD_DIR` at the child test build. Nucleo runners
+accept an explicit ELF path from that directory.
 
-An aggregate builds separate images, not a combined executable. Vendor-qualified
-names remain stable when other boards are selected; `/` becomes `.` in target
-names. Individual examples remain independently buildable. ARM executable targets
-are available to CMake debugging; ESP firmware uses its SDK/debugger's ELF
-configuration. CMake folders group entries in supporting IDEs, but do not hide
-those targets.
+ESP boards require the installed SDK and Python environment described in
+[the build guide](../getting-started/building.md). Each application has its own
+SDK project and build directory. `test.board` builds the existing instrumented SDK
+project.
 
-Edit the cache setting through CMake Tools or replace the list on the command
-line, quoting multiple entries: `-DMCUHW_ACTIVE_BOARDS="vendor/board_a;vendor/board_b"`.
-Both boards must match the architecture and each board may appear only once.
-Unknown IDs, revisions and incompatible architectures fail during configuration.
-Reconfigure after a selection change. Ordinary `cmake --preset arm-cortex-m4`
-preserves the saved list; `-DMCUHW_ACTIVE_BOARDS=` removes all board targets.
-Unselected manifests are never enumerated by this focused workflow.
+Host groups use `MCUHW_NATIVE_CXX_COMPILER` and `MCUHW_NATIVE_CXX_FLAGS` in
+separate builds under `native-tests/<group>/`; cross-architecture flags stay in
+the board firmware builds. Set `MCUHW_MCUTEST_SOURCE_DIR` for a non-default
+mcutest checkout. Each group resolves dependencies only when selected.
 
-For a reproducible personal workspace, save the setting in the ignored
-`CMakeUserPresets.json`:
+Explicit multi-board maintainer configurations remain available through
+`MCUHW_WORKSPACE=ON` and `MCUHW_ACTIVE_BOARDS`; they are not preset defaults.
+They expose vendor-qualified groups and retain their isolated board outputs.
 
-```json
-{
-  "version": 6,
-  "configurePresets": [{
-    "name": "my-m4",
-    "inherits": "arm-cortex-m4",
-    "binaryDir": "${sourceDir}/build/${presetName}",
-    "cacheVariables": {
-      "MCUHW_ACTIVE_BOARDS": "arduino/uno_r4_minima@r4"
-    }
-  }],
-  "buildPresets": [{
-    "name": "my-m4", "inherits": "arm-cortex-m4", "configurePreset": "my-m4"
-  }]
-}
-```
+### Native and compile verification
 
-Select `my-m4` in the IDE, or run `cmake --preset my-m4` followed by
-`cmake --build --preset my-m4`. Values explicitly written in a user preset are
-reapplied on each configuration. Other cache edits persist until changed or the
-cache is cleared. An explicit `MCUHW_ACTIVE_BOARDS=all` is available for exhaustive
-maintainer builds; only this selection scans the catalog for compatible boards.
-
-Example outputs live under
-`build/<preset>/boards/<vendor>/<board>/<revision>/examples/<example>/`.
-The `.tests` target configures a separate build under the same board/revision's
-`tests/` directory only when requested. Coverage, mcutest, MCUIP and SDK test
-support targets stay in that child build; example builds need none of those test
-dependencies. Existing board-test presets and physical runners continue to use
-their documented original directories. Use those presets for their existing
-hardware procedures and individual test-image debugging.
-
-ESP workspaces require the same installed SDK and Python environment as external
-applications; pass `MCUHW_IDF_PATH`, `PYTHON` and the SDK tools path as described in
-[the build guide](../getting-started/building.md). Each example receives its own
-SDK project and build directory. Building `.tests` compiles the existing
-instrumented SDK test project without flashing or running it.
-
-The architecture presets now select board workspaces. Existing scripts that
-used them for probes should use `arm-cortex-m4-checks`, `arm-cortex-m7-checks`
-or `esp32p4-riscv-checks`. Single-example `*-app` shortcuts remain available.
-
-### Native selection and workflows
-
-The default `component` selection is `core`; select a device, MCU or IP suite:
+Enable native suites independently of the preset:
 
 ```sh
-cmake --preset component -DMCUHW_TEST_SUITES=device:ti/tmp102
-cmake --build --preset component
-ctest --preset component
+cmake --preset native -DMCUHW_BUILD_TESTS=ON -DMCUHW_TEST_SUITES=device:ti/tmp102
+cmake --build --preset native --target native-tests
+ctest --test-dir build/native --output-on-failure
 ```
 
-This creates the TMP102 suite executable and its `native-tests` aggregate, with
-no unrelated MCU/device suites, header checks or probes. Each test selection
-retains its own artifact. Tests can be selected individually in Test Explorer;
-the build menu contains executable suites, not every test case.
-
-For repeatable configure/build/test sequences use:
+For all suites select `MCUHW_TEST_SUITES=all`. Enable tooling tests with
+`MCUHW_BUILD_TOOLING_TESTS=ON`, probes with `MCUHW_BUILD_PROBES=ON`, header
+checks with `MCUHW_CHECK_HEADERS=ON`, and optional MCUIP contracts with
+`MCUHW_BUILD_MCUIP_CONTRACTS=ON` together with probes. Presets do not reset these
+options. Use separate build directories for different verification scopes.
 
 ```sh
-cmake --workflow --preset verify-native
-cmake --workflow --preset verify-host
+cmake --preset arm-cortex-m4 -B build/arm-checks -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --build build/arm-checks --target check-headers check-compile
 ```
 
-`verify-component` runs the preset's default core selection. Workflows reapply
-their configure preset; a prior command-line override is not a persistent
-workflow setting. Use an ignored `CMakeUserPresets.json` for a named selection:
+`check-headers` compiles one generated translation unit per header inside one
+object library, with unity builds and precompiled headers disabled. Each native
+suite remains selectable in Test Explorer and has its own result artifact.
+Target folders group board tasks and verification suites in supporting IDEs.
+Use `tools/verify.py --build build/host --existing` to refresh the merged native
+artifact after explicitly configuring that directory for native verification.
 
-```json
-{
-  "version": 6,
-  "configurePresets": [{
-    "name": "tmp102",
-    "inherits": "component",
-    "binaryDir": "${sourceDir}/build/${presetName}",
-    "cacheVariables": {"MCUHW_TEST_SUITES": "device:ti/tmp102"}
-  }],
-  "buildPresets": [{
-    "name": "tmp102", "inherits": "component", "configurePreset": "tmp102"
-  }],
-  "testPresets": [{
-    "name": "tmp102", "inherits": "component", "configurePreset": "tmp102"
-  }]
-}
-```
+### Historical target counts
 
-No central list changes are needed for another catalog component. Its own
-manifest continues to own its focused sources and tests.
-
-`check-headers` compiles one generated translation unit per header within one
-object library. Adding headers increases compiler jobs without adding menu
-entries. Unity compilation and precompiled headers are explicitly disabled,
-so another header cannot supply a missing include accidentally. The old
-`mcuhw_headers_<header>` target names are replaced by `check-headers`; normal
-build presets select it where required.
-
-Target folders group verification suites and internal board-support objects in
-VS Code's target dropdown. They do not hide targets. Application configurations
-omit verification targets entirely. The repository enables
-`cmake.useFolderPropertyInBuildTargetDropdown` and preserves individual native
-executables and board images for focused debugging.
-
-Build presets now select explicit targets. For an additional opt-in target,
-name it using `--target`; for example, enabling `MCUHW_BUILD_IO_EXAMPLES` does
-not add legacy examples to the cross-verification preset's target selection.
-Use `tools/verify.py --build build/host --existing` when refreshing the merged
-mcutrace native artifact; ordinary CTest/workflow runs write per-suite results.
-
-### Measured target counts
-
-The local macOS arm64 run with CMake 4.4.0 reports these project targets through
+Before presets were limited to architecture selection, the local macOS arm64
+run with CMake 4.4.0 recorded these project targets through
 the CMake File API. Generator built-ins such as `all` and `clean` are additional.
 The measurement is recorded in `build/targets-selected-counts.json`.
 

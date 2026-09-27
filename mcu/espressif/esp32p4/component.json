@@ -33,7 +33,7 @@
   ],
   "sources": [],
   "tests": [
-    "tests/test_esp32p4_description.cpp"
+    "tests/mcu/esp32p4/test_description.cpp"
   ],
   "docs": [
     "doc/reference/mcu-reviews/esp32p4.md"

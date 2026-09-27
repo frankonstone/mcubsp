@@ -1,7 +1,7 @@
 # Register and metadata model
 
 PLN-0003 defines reusable metadata shapes and safe access primitives. The
-examples in `tests/source_backed_examples.hpp` are deliberately narrow pressure
+examples in `tests/support/source_backed_examples.hpp` are deliberately narrow pressure
 tests, not complete MCU descriptions and not support claims for any peripheral.
 Complete source-backed descriptions remain in PLN-0004, PLN-0014 and PLN-0015.
 

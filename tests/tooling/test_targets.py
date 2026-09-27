@@ -33,9 +33,12 @@ def targets(build):
             for item in model["configurations"][0]["targets"]}
 
 
-def preset_targets(name):
-    data = json.loads((ROOT / "CMakePresets.json").read_text())
-    return next(p["targets"] for p in data["buildPresets"] if p["name"] == name)
+def board_targets(board):
+    result = {"firmware", "examples", "tests", "example.app.blink", "example.app.tmp102"}
+    result.update(f"test.{group}" for group in ("board", "core", "driver", "io", "backend", "device", "mcu", "compile"))
+    if board == "arduino/uno_r4_minima":
+        result.update(f"example.io.{name}" for name in ("blink", "serial_echo", "spi_dma", "tmp102", "w5100"))
+    return result
 
 
 class HeaderTargets(unittest.TestCase):
@@ -81,7 +84,7 @@ target_precompile_headers(check-headers PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc
 class FocusedTargets(unittest.TestCase):
     requirements = ("REQ-0038", "REQ-0047", "REQ-0052")
 
-    def test_component_preset_clears_old_maintainer_options_and_builds_only_selection(self):
+    def test_native_preset_preserves_explicit_suite_and_verification_settings(self):
         candidates = [Path(os.environ.get("MCUHW_MCUTEST_SOURCE_DIR", ROOT.parent / "mcutest")), ROOT / "_ci/mcutest"]
         mcutest = next((p for p in candidates if (p / "CMakeLists.txt").is_file()), None)
         if mcutest is None:
@@ -91,44 +94,104 @@ class FocusedTargets(unittest.TestCase):
             query(build)
             run("cmake", "-S", ROOT, "-B", build, "-G", "Ninja",
                 "-DMCUHW_BUILD_PROBES=ON", "-DMCUHW_CHECK_HEADERS=ON")
-            run("cmake", "--preset", "component", "-B", build,
+            run("cmake", "--preset", "native", "-B", build,
+                "-DMCUHW_BUILD_TESTS=ON", "-DMCUHW_BUILD_PROBES=OFF", "-DMCUHW_CHECK_HEADERS=OFF",
                 "-DMCUHW_TEST_SUITES=device:ti/tmp102", f"-DMCUHW_MCUTEST_SOURCE_DIR={mcutest}")
             model = targets(build)
             self.assertEqual(set(model), {"native-tests", "mcuhw_test_device_ti_tmp102"})
-            run("cmake", "--build", build, "--target", *preset_targets("component"))
+            run("cmake", "--build", build, "--target", "native-tests")
             run("ctest", "--test-dir", build, "--output-on-failure")
             report = json.loads((build / "artifacts/native/device_ti_tmp102.json").read_text())
             self.assertGreater(report["summary"]["tests"], 0)
             self.assertEqual(report["summary"]["failures"], 0)
 
-    def test_shipped_presets_have_explicit_build_actions(self):
-        listing = run("cmake", "--list-presets=all")
-        self.assertIn("verify-host", listing)
+    def test_shipped_presets_select_only_architecture_and_global_compile_settings(self):
+        run("cmake", "--list-presets=all")
         presets = json.loads((ROOT / "CMakePresets.json").read_text())
+        self.assertEqual({p["name"] for p in presets["configurePresets"] if not p.get("hidden")},
+                         {"native", "arm-cortex-m4", "arm-cortex-m7", "esp32p4-riscv"})
+        for preset in presets["configurePresets"]:
+            for variable in preset.get("cacheVariables", {}):
+                self.assertTrue(variable.startswith("CMAKE_") or variable == "MCUHW_ARCH", variable)
         for preset in presets["buildPresets"]:
-            self.assertTrue(preset["targets"], preset["name"])
-        self.assertEqual(preset_targets("host"), ["native-tests", "check-headers", "check-compile"])
+            self.assertNotIn("targets", preset)
 
     @unittest.skipUnless(shutil.which("arm-none-eabi-g++"), "Arm GNU compiler unavailable")
-    def test_application_presets_expose_only_selected_firmware_and_provenance(self):
-        for preset, example in (("uno-r4-minima-app", "blink"), ("nucleo-h753zi-app", "tmp102")):
-            with self.subTest(preset=preset), tempfile.TemporaryDirectory(prefix="mcuhw preset app ") as directory:
+    def test_board_define_exposes_tasks_and_firmware_provenance(self):
+        for preset, board, example in (("arm-cortex-m4", "arduino/uno_r4_minima", "blink"),
+                                       ("arm-cortex-m7", "st/nucleo_h753zi", "tmp102")):
+            with self.subTest(board=board), tempfile.TemporaryDirectory(prefix="mcuhw board tasks ") as directory:
                 build = Path(directory)
                 query(build)
-                run("cmake", "--preset", preset, "-B", build, f"-DMCUHW_EXAMPLE={example}",
+                output = run("cmake", "--preset", preset, "-B", build, f"-DMCUHW_BOARD={board}",
+                    f"-DMCUHW_EXAMPLE={example}", "-DCMAKE_CXX_FLAGS=-DMCUHW_GLOBAL_FLAG=1",
                     "-DMCUHW_MCUTEST_SOURCE_DIR=/missing", "-DMCUHW_MCUIP_SOURCE_DIR=/missing")
-                self.assertEqual(set(targets(build)), {"firmware"})
-                run("cmake", "--build", build, "--target", *preset_targets(preset))
+                self.assertIn(f"Selected board: {board}@", output)
+                self.assertEqual(set(targets(build)), board_targets(board))
+                cache = (build / "CMakeCache.txt").read_text()
+                self.assertIn(f"MCUHW_BOARD:STRING={board}", cache)
+                run("cmake", "--build", build, "--target", "firmware", "examples")
                 self.assertTrue((build / "application/firmware.elf").is_file())
                 identity = json.loads((build / "application/firmware.identity.json").read_text())
                 self.assertEqual(identity["target"], "application/firmware.elf")
                 paths = {p["path"] for p in identity["files"]}
                 self.assertIn(f"source:examples/apps/{example}/main.cpp", paths)
                 self.assertFalse(any("mcutest" in p or "header-checks" in p for p in paths))
+                commands = json.loads((build / "compile_commands.json").read_text())
+                self.assertTrue(all("-DMCUHW_GLOBAL_FLAG=1" in c["command"] for c in commands if c["file"].endswith(".cpp")))
+                # Reapplying the architecture preset retains the board and app.
+                run("cmake", "--preset", preset, "-B", build)
+                self.assertEqual(set(targets(build)), board_targets(board))
+                failure = run("cmake", "--build", build, "--target", "test.board", success=False)
+                self.assertIn("mcutest headers not found", failure)
+                seed = next((build / "boards").rglob("tests-cache.cmake")).read_text()
+                self.assertIn("-DMCUHW_GLOBAL_FLAG=1", seed)
+                # Clearing the selection removes all board tasks.
+                run("cmake", "--preset", preset, "-B", build, "-DMCUHW_BOARD=")
+                self.assertEqual(set(targets(build)), set())
 
     @unittest.skipUnless(shutil.which("arm-none-eabi-g++"), "Arm GNU compiler unavailable")
-    def test_application_rejects_mixed_maintainer_scope(self):
-        with tempfile.TemporaryDirectory(prefix="mcuhw mixed scope ") as directory:
-            output = run("cmake", "--preset", "uno-r4-minima-app", "-B", directory,
-                         "-DMCUHW_CHECK_HEADERS=ON", success=False)
-            self.assertIn("Application presets build one firmware", output)
+    def test_board_define_rejects_wrong_architecture_and_undeclared_firmware(self):
+        for board, example, message in (
+            ("st/nucleo_h753zi", "", "requires architecture 'cortex-m7'"),
+            ("missing/board", "", "Unknown mcuhw board"),
+            ("arduino/uno_r4_minima", "missing", "not a declared application"),
+        ):
+            with self.subTest(board=board, example=example), tempfile.TemporaryDirectory() as directory:
+                output = run("cmake", "--preset", "arm-cortex-m4", "-B", directory,
+                             f"-DMCUHW_BOARD={board}", f"-DMCUHW_EXAMPLE={example}", success=False)
+                self.assertIn(message, output)
+
+    @unittest.skipUnless(shutil.which("arm-none-eabi-g++"), "Arm GNU compiler unavailable")
+    def test_board_menu_native_categories_run_with_a_host_compiler(self):
+        mcutest = Path(os.environ.get("MCUHW_MCUTEST_SOURCE_DIR", ROOT.parent / "mcutest"))
+        if not (mcutest / "CMakeLists.txt").is_file():
+            self.skipTest("mcutest checkout required")
+        with tempfile.TemporaryDirectory(prefix="mcuhw board native groups ") as directory:
+            build = Path(directory)
+            query(build)
+            run("cmake", "--preset", "arm-cortex-m4", "-B", build,
+                "-DMCUHW_BOARD=arduino/uno_r4_minima", f"-DMCUHW_MCUTEST_SOURCE_DIR={mcutest}")
+            self.assertEqual(set(targets(build)), board_targets("arduino/uno_r4_minima"))
+            self.assertFalse(any((build / f"native-tests/{group}/CMakeCache.txt").exists()
+                                 for group in ("backend", "device", "core")))
+            device_build = build / "native-tests/device"
+            query(device_build)
+            run("cmake", "--build", build, "--target", "test.device")
+            model = targets(device_build)
+            self.assertTrue(any("device_ti_tmp102" in name for name in model))
+            self.assertFalse(any("ip_" in name or "mcu_" in name for name in model))
+            reports = list((device_build / "artifacts/native").glob("*.json"))
+            self.assertTrue(reports)
+            for report in reports:
+                self.assertEqual(json.loads(report.read_text())["summary"]["failures"], 0)
+            self.assertFalse((build / "native-tests/backend/CMakeCache.txt").exists())
+            backend_build = build / "native-tests/backend"
+            query(backend_build)
+            run("cmake", "--build", build, "--target", "test.backend")
+            self.assertEqual(set(targets(backend_build)), {"native-tests",
+                "mcuhw_test_ip_renesas_ra4m1_native", "mcuhw_test_ip_st_stm32h753_native",
+                "mcuhw_test_ip_espressif_esp32p4_native"})
+            commands = json.loads((backend_build / "compile_commands.json").read_text())
+            self.assertTrue(all("arm-none-eabi" not in c["command"] for c in commands))
+            self.assertFalse(next((build / "boards").rglob("tests-cache.cmake")).parent.joinpath("tests/CMakeCache.txt").exists())

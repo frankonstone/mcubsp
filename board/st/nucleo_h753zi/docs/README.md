@@ -26,7 +26,7 @@ a complete audit of every factory assembly option.
 Build both images:
 
 ```sh
-cmake --preset nucleo-h753zi
+cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi
 cmake --build build/nucleo-h753zi -j4
 ```
 

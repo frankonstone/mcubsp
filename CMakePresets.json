@@ -12,379 +12,56 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "MCUHW_BUILD_PROBES": "OFF",
-        "MCUHW_CHECK_HEADERS": "OFF",
-        "MCUHW_WRITE_TOOLCHAIN_REPORT": "ON",
-        "MCUHW_BUILD_MCUIP_CONTRACTS": "OFF",
-        "MCUHW_BUILD_TESTS": "OFF",
-        "MCUHW_BUILD_TOOLING_TESTS": "OFF",
-        "MCUHW_BUILD_IO_EXAMPLES": "OFF",
-        "MCUHW_BUILD_IO_COST_REPORT": "OFF",
-        "MCUHW_INSTALL": "OFF",
-        "MCUHW_BOARD_TESTS": "",
-        "MCUHW_EXAMPLE": "",
-        "MCUHW_TEST_SUITES": "all",
-        "MCUHW_WORKSPACE": "OFF"
-      }
-    },
-    {
-      "name": "application-base",
-      "hidden": true,
-      "inherits": "base",
-      "toolchainFile": "${sourceDir}/cmake/McuhwToolchain.cmake",
-      "cacheVariables": {
-        "MCUHW_EXAMPLE": "blink",
-        "MCUHW_STARTUP": "supplied"
-      }
-    },
-    {
-      "name": "compile-base",
-      "hidden": true,
-      "inherits": "base",
-      "cacheVariables": {
-        "MCUHW_BUILD_PROBES": "ON",
-        "MCUHW_CHECK_HEADERS": "ON",
-        "MCUHW_BUILD_MCUIP_CONTRACTS": "ON"
-      }
-    },
-    {
-      "name": "component",
-      "displayName": "Contributor: selected native suite (default core)",
-      "description": "Override MCUHW_TEST_SUITES to select core, io, or kind:vendor/name. No unrelated component targets.",
-      "inherits": "base",
-      "binaryDir": "${sourceDir}/build/component",
-      "cacheVariables": {
-        "MCUHW_ARCH": "native",
-        "MCUHW_BUILD_TESTS": "ON",
-        "MCUHW_TEST_SUITES": "core"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     },
     {
       "name": "native",
-      "displayName": "Contributor: all native suites",
+      "displayName": "Native",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/native",
       "cacheVariables": {
-        "MCUHW_ARCH": "native",
-        "MCUHW_BUILD_TESTS": "ON"
-      }
-    },
-    {
-      "name": "host",
-      "displayName": "Maintainer: exhaustive host verification",
-      "inherits": "compile-base",
-      "binaryDir": "${sourceDir}/build/host",
-      "cacheVariables": {
-        "MCUHW_ARCH": "native",
-        "MCUHW_BUILD_TESTS": "ON",
-        "MCUHW_BUILD_TOOLING_TESTS": "ON"
-      }
-    },
-    {
-      "name": "uno-r4-minima-app",
-      "displayName": "Application: Arduino UNO R4 Minima",
-      "inherits": "application-base",
-      "binaryDir": "${sourceDir}/build/uno-r4-minima-app",
-      "cacheVariables": {
-        "MCUHW_BOARD": "arduino/uno_r4_minima"
-      }
-    },
-    {
-      "name": "nucleo-h753zi-app",
-      "displayName": "Application: NUCLEO-H753ZI",
-      "inherits": "application-base",
-      "binaryDir": "${sourceDir}/build/nucleo-h753zi-app",
-      "cacheVariables": {
-        "MCUHW_BOARD": "st/nucleo_h753zi"
-      }
-    },
-    {
-      "name": "esp32p4-nano-app",
-      "displayName": "Application: ESP32-P4-NANO",
-      "inherits": "application-base",
-      "binaryDir": "${sourceDir}/build/esp32p4-nano-app",
-      "cacheVariables": {
-        "MCUHW_BOARD": "waveshare/esp32p4_nano"
+        "MCUHW_ARCH": "native"
       }
     },
     {
       "name": "arm-cortex-m4",
-      "displayName": "Workspace: Cortex-M4",
+      "displayName": "ARM Cortex-M4",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/arm-cortex-m4",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m4.cmake",
-      "description": "Set MCUHW_ACTIVE_BOARDS to a semicolon-separated list of vendor/board IDs. The saved cache selection survives reconfiguration.",
-      "cacheVariables": {
-        "MCUHW_WORKSPACE": "ON"
-      }
-    },
-    {
-      "name": "arm-cortex-m7",
-      "displayName": "Workspace: Cortex-M7",
-      "inherits": "base",
-      "binaryDir": "${sourceDir}/build/arm-cortex-m7",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake",
-      "description": "Set MCUHW_ACTIVE_BOARDS to a semicolon-separated list of vendor/board IDs. The saved cache selection survives reconfiguration.",
-      "cacheVariables": {
-        "MCUHW_WORKSPACE": "ON"
-      }
-    },
-    {
-      "name": "esp32p4-riscv",
-      "displayName": "Workspace: ESP32-P4 RISC-V",
-      "inherits": "base",
-      "binaryDir": "${sourceDir}/build/esp32p4-riscv",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-esp32p4.cmake",
-      "description": "Set MCUHW_ACTIVE_BOARDS to a semicolon-separated list of vendor/board IDs. The saved cache selection survives reconfiguration.",
-      "cacheVariables": {
-        "MCUHW_WORKSPACE": "ON"
-      }
-    },
-    {
-      "name": "uno-r4-minima",
-      "displayName": "Board tests: UNO R4 Minima",
-      "inherits": "base",
-      "binaryDir": "${sourceDir}/build/uno-r4-minima",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m4.cmake",
-      "cacheVariables": {
-        "MCUHW_BOARD_TESTS": "arduino/uno_r4_minima"
-      }
-    },
-    {
-      "name": "nucleo-h753zi",
-      "displayName": "Board tests: NUCLEO-H753ZI",
-      "inherits": "base",
-      "binaryDir": "${sourceDir}/build/nucleo-h753zi",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake",
-      "cacheVariables": {
-        "MCUHW_BOARD_TESTS": "st/nucleo_h753zi"
-      }
-    },
-    {
-      "name": "arm-cortex-m4-checks",
-      "displayName": "Maintainer: Cortex-M4 compile checks",
-      "inherits": "compile-base",
-      "binaryDir": "${sourceDir}/build/arm-cortex-m4-checks",
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m4.cmake"
     },
     {
-      "name": "arm-cortex-m7-checks",
-      "displayName": "Maintainer: Cortex-M7 compile checks",
-      "inherits": "compile-base",
-      "binaryDir": "${sourceDir}/build/arm-cortex-m7-checks",
+      "name": "arm-cortex-m7",
+      "displayName": "ARM Cortex-M7",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/arm-cortex-m7",
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake"
     },
     {
-      "name": "esp32p4-riscv-checks",
-      "displayName": "Maintainer: ESP32-P4 RISC-V compile checks",
-      "inherits": "compile-base",
-      "binaryDir": "${sourceDir}/build/esp32p4-riscv-checks",
+      "name": "esp32p4-riscv",
+      "displayName": "ESP32-P4 RISC-V",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/esp32p4-riscv",
       "toolchainFile": "${sourceDir}/cmake/toolchain-esp32p4.cmake"
     }
   ],
   "buildPresets": [
     {
-      "name": "component",
-      "configurePreset": "component",
-      "displayName": "Build selected native tests",
-      "targets": [
-        "native-tests"
-      ]
-    },
-    {
       "name": "native",
-      "configurePreset": "native",
-      "displayName": "Build all native tests",
-      "targets": [
-        "native-tests"
-      ]
-    },
-    {
-      "name": "host",
-      "configurePreset": "host",
-      "displayName": "Build complete host verification",
-      "targets": [
-        "native-tests",
-        "check-headers",
-        "check-compile"
-      ]
-    },
-    {
-      "name": "uno-r4-minima-app",
-      "displayName": "Build firmware: Arduino UNO R4 Minima",
-      "configurePreset": "uno-r4-minima-app",
-      "targets": [
-        "firmware"
-      ]
-    },
-    {
-      "name": "nucleo-h753zi-app",
-      "displayName": "Build firmware: NUCLEO-H753ZI",
-      "configurePreset": "nucleo-h753zi-app",
-      "targets": [
-        "firmware"
-      ]
-    },
-    {
-      "name": "esp32p4-nano-app",
-      "displayName": "Build firmware: ESP32-P4-NANO",
-      "configurePreset": "esp32p4-nano-app",
-      "targets": [
-        "firmware"
-      ]
+      "configurePreset": "native"
     },
     {
       "name": "arm-cortex-m4",
-      "configurePreset": "arm-cortex-m4",
-      "targets": [
-        "examples"
-      ],
-      "displayName": "Build examples for active boards"
+      "configurePreset": "arm-cortex-m4"
     },
     {
       "name": "arm-cortex-m7",
-      "configurePreset": "arm-cortex-m7",
-      "targets": [
-        "examples"
-      ],
-      "displayName": "Build examples for active boards"
+      "configurePreset": "arm-cortex-m7"
     },
     {
       "name": "esp32p4-riscv",
-      "configurePreset": "esp32p4-riscv",
-      "targets": [
-        "examples"
-      ],
-      "displayName": "Build examples for active boards"
-    },
-    {
-      "name": "uno-r4-minima",
-      "configurePreset": "uno-r4-minima",
-      "displayName": "Build board test images: UNO R4 Minima",
-      "targets": [
-        "board-tests"
-      ]
-    },
-    {
-      "name": "nucleo-h753zi",
-      "configurePreset": "nucleo-h753zi",
-      "displayName": "Build board test images: NUCLEO-H753ZI",
-      "targets": [
-        "board-tests"
-      ]
-    },
-    {
-      "name": "arm-cortex-m4-checks",
-      "configurePreset": "arm-cortex-m4-checks",
-      "targets": [
-        "check-headers",
-        "check-compile"
-      ]
-    },
-    {
-      "name": "arm-cortex-m7-checks",
-      "configurePreset": "arm-cortex-m7-checks",
-      "targets": [
-        "check-headers",
-        "check-compile"
-      ]
-    },
-    {
-      "name": "esp32p4-riscv-checks",
-      "configurePreset": "esp32p4-riscv-checks",
-      "targets": [
-        "check-headers",
-        "check-compile"
-      ]
-    }
-  ],
-  "testPresets": [
-    {
-      "name": "component",
-      "configurePreset": "component",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error"
-      }
-    },
-    {
-      "name": "native",
-      "configurePreset": "native",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error"
-      }
-    },
-    {
-      "name": "host",
-      "configurePreset": "host",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error"
-      }
-    }
-  ],
-  "workflowPresets": [
-    {
-      "name": "verify-component",
-      "displayName": "Configure, build and test: component",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "component"
-        },
-        {
-          "type": "build",
-          "name": "component"
-        },
-        {
-          "type": "test",
-          "name": "component"
-        }
-      ]
-    },
-    {
-      "name": "verify-native",
-      "displayName": "Configure, build and test: native",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "native"
-        },
-        {
-          "type": "build",
-          "name": "native"
-        },
-        {
-          "type": "test",
-          "name": "native"
-        }
-      ]
-    },
-    {
-      "name": "verify-host",
-      "displayName": "Configure, build and test: host",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "host"
-        },
-        {
-          "type": "build",
-          "name": "host"
-        },
-        {
-          "type": "test",
-          "name": "host"
-        }
-      ]
+      "configurePreset": "esp32p4-riscv"
     }
   ]
 }

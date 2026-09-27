@@ -94,7 +94,7 @@ TEST(tmp102, decodes_signed_normal_and_extended_samples_using_sample_mode, "REQ-
         {0x1900U, 400}, {0xE700U, -400}, {0xFFF0U, -1}, {0x7FF0U, 2047},
         {0x4B01U, 2400}, {0xE481U, -880}, {0xFFF9U, -1},
     }};
-    for (const auto [raw, counts] : samples) {
+    for (const auto& [raw, counts] : samples) {
         state.temperature = raw;
         const auto read = temperature.read(20ms);
         ASSERT_TRUE(read);

@@ -253,54 +253,44 @@ ELF argument makes captures and coverage lookup follow that image's build
 directory. For the UNO named suites, `MCUHW_BUILD_DIR` selects an architecture
 workspace's test build instead of the legacy preset directory.
 
-## Active-board workspace
+## Board targets in the repository
 
-Choose an architecture and save the boards you are currently working on:
+Select the architecture with a preset, then set the visible `MCUHW_BOARD` cache
+variable for the board you are working on:
 
 ```sh
-cmake --preset arm-cortex-m4 -DMCUHW_ACTIVE_BOARDS=arduino/uno_r4_minima
-cmake --build --preset arm-cortex-m4 --target arduino.uno_r4_minima.examples
+cmake --preset arm-cortex-m4 -DMCUHW_BOARD=arduino/uno_r4_minima
+cmake --build --preset arm-cortex-m4 --target firmware
+cmake --build --preset arm-cortex-m4 --target examples
+cmake --build --preset arm-cortex-m4 --target test.board
+cmake --build --preset arm-cortex-m4 --target test.backend test.device
 ```
 
-`MCUHW_ACTIVE_BOARDS` can be edited in CMake Tools, supplied as a quoted
-semicolon-separated list, or stored in a local `CMakeUserPresets.json`. The cache
-selection survives subsequent configure calls. Only active boards matching the
-architecture contribute targets; reconfigure to apply edits. A fresh workspace
-starts with no boards selected.
+Presets select only architecture/toolchain and global compiler settings. Edit
+`MCUHW_BOARD` in CMake Tools or pass a new `-D` value, then reconfigure. The
+selection persists when reapplying the preset and is printed in configure
+output. Use `arm-cortex-m7` with `st/nucleo_h753zi` or `esp32p4-riscv` with
+`waveshare/esp32p4_nano`. Supply the ESP SDK paths described below.
 
-The examples aggregate produces independent Blink and TMP102 firmware images.
-Select `arduino.uno_r4_minima.examples.blink` to build only Blink, or
-`arduino.uno_r4_minima.tests` to build the instrumented board-test images.
-Output is isolated under `build/<preset>/boards/<vendor>/<board>/<revision>/`.
-The test build is configured only when requested, so example configuration does
-not require test or coverage dependencies. See
-[active-board workspaces](../development/verification.md#active-board-workspaces)
-for target structure, persistent user presets, other architectures and SDK setup.
+`firmware` builds Blink by default; set `-DMCUHW_EXAMPLE=tmp102` to select TMP102.
+`examples` builds every supported application and I/O example separately; `example.app.blink` and
+`example.app.tmp102` allow individual builds. Firmware appears in
+`build/<preset>/application/`; other examples appear under `examples/`.
+`test.board` configures a separate instrumented build under
+`boards/<vendor>/<board>/<revision>/tests/` only when requested. For UNO named
+runners, set `MCUHW_BUILD_DIR` to this child build. Nucleo runners accept its
+ELF path explicitly. The native groups `test.backend`, `test.device`, `test.core`, `test.driver`,
+`test.io`, `test.mcu` and `test.compile` build and run host checks. `tests`
+selects all groups, including physical images. No target flashes or executes
+physical-board tests.
+See [board selection](../development/verification.md#board-selection) for details.
 
 ## Direct CMake and existing startup
 
-For an example built directly from the repository, the application presets
-expose one `firmware` target:
-
-```sh
-cmake --preset uno-r4-minima-app
-cmake --build --preset uno-r4-minima-app
-```
-
-The default is Blink; configure with `-DMCUHW_EXAMPLE=tmp102` to select TMP102.
-Use `nucleo-h753zi-app` or `esp32p4-nano-app` for the other boards. Supply the
-ESP SDK paths described below when configuring its preset. The output is
-`build/<preset>/application/firmware.elf`, accompanied by its binary and identity
-reports. These presets do not enable tests, header checks, coverage or probes.
-Their tools must already be installed; the frontend's explicit setup workflow
-remains available for creating and building an external application.
-
-The existing `uno-r4-minima` and `nucleo-h753zi` presets build instrumented
-board-test images for the documented physical procedures. Select the `*-app`
-presets for application work. New board manifests can use a local configure
-preset inheriting `application-base`, setting `MCUHW_BOARD` and a unique
-`binaryDir`; its build preset references that configuration and targets
-`firmware`. Adding a board does not require editing the shared preset list.
+The frontend's explicit setup workflow remains available for external
+applications. It records installed tools and creates a project-local
+configuration for the chosen application. Adding a board does not require
+editing the repository's shared presets.
 
 The generated application is a normal CMake project. The equivalent ARM build
 is, with paths and board selected for your host:

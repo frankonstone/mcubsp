@@ -34,8 +34,8 @@ Build the four ELF, BIN, HEX, and map sets plus the shared barrier and GPIO
 code-generation reports:
 
 ```sh
-cmake --preset uno-r4-minima
-cmake --build --preset uno-r4-minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build build/uno-r4-minima --target board-tests
 ```
 
 Connect a J-Link Compact Plus to the Minima SWD header using VTref (3.3 V),

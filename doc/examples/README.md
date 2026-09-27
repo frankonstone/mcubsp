@@ -118,8 +118,8 @@ policy's monotonic clock, not a duration.
 Build and flash one physical suite at a time:
 
 ```sh
-cmake --preset uno-r4-minima
-cmake --build --preset uno-r4-minima -j4
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build build/uno-r4-minima --target board-tests -j4
 ./tools/run-uno-r4-minima-tests.sh <suite>
 ```
 

@@ -70,10 +70,10 @@
   ],
   "sources": [],
   "tests": [
-    "tests/test_stm32h753_clock.cpp",
-    "tests/test_stm32h753_drivers.cpp",
-    "tests/test_stm32h753_ethernet.cpp",
-    "tests/test_stm32h753_gpio.cpp"
+    "tests/backend/stm32h753/test_clock.cpp",
+    "tests/backend/stm32h753/test_drivers.cpp",
+    "tests/backend/stm32h753/test_ethernet.cpp",
+    "tests/backend/stm32h753/test_gpio.cpp"
   ],
   "docs": [
     "doc/reference/mcu-reviews/stm32h753.md"

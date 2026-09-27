@@ -1,41 +1,40 @@
 # Build and verification
 
-For application builds, use the [first-build guide](building.md). Maintainer
-verification has selectable native suites and three architecture probe presets.
-The probes compile only; they do not link startup code, an RTOS, or a board SDK.
-The full presets explicitly enable independent header checks and MCUIP contracts,
-so install the [development dependencies](installation.md) first. For a focused
-native run requiring only mcutest:
+For application builds, use the [first-build guide](building.md). Presets select
+only architecture/toolchain and global compiler settings. Enable verification
+with explicit CMake cache options, then choose the targets to build. Probes
+compile only; they do not link startup code, an RTOS, or a board SDK.
+Install the [development dependencies](installation.md) before enabling optional
+MCUIP contracts. A focused native run needs only mcutest:
 
 ```sh
 python3 tools/verify.py --build build/verification --suites all
 python3 tools/verify.py --build build/tmp102-tests --suites device:ti/tmp102
 ```
 
-The `component` and `native` configure/build/test presets also provide focused
-IDE workflows; `host` remains the explicit full maintainer configuration.
-Build presets select `native-tests`, `check-headers`, `check-compile` or
-`board-tests` as appropriate. Header checks remain independent compiler jobs
-inside one target. See [targets and presets](../development/verification.md#targets-and-presets)
-for menu organization and persistent user presets.
+Select a board with `MCUHW_BOARD` to expose `firmware`, `tests` and `examples`.
+Without a board, enable `MCUHW_BUILD_TESTS`, `MCUHW_BUILD_PROBES` or
+`MCUHW_CHECK_HEADERS` to expose their corresponding verification targets.
+See [targets and presets](../development/verification.md#targets-and-presets)
+for cache settings and target organization.
 
 For the exhaustive local maintainer workflow:
 
 ```sh
-cmake --preset host
+cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
 python3 tools/verify.py --build build/host --existing
 
-cmake --preset arm-cortex-m4-checks
-cmake --build --preset arm-cortex-m4-checks
+cmake --preset arm-cortex-m4 -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --build --preset arm-cortex-m4
 
-cmake --preset arm-cortex-m7-checks
-cmake --build --preset arm-cortex-m7-checks
+cmake --preset arm-cortex-m7 -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --build --preset arm-cortex-m7
 
-cmake --preset esp32p4-riscv-checks
-cmake --build --preset esp32p4-riscv-checks
+cmake --preset esp32p4-riscv -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --build --preset esp32p4-riscv
 ```
 
-Each configured build writes `toolchain-report.txt` with the compiler,
+With `MCUHW_WRITE_TOOLCHAIN_REPORT=ON`, the build writes `toolchain-report.txt` with the compiler,
 standard-library identity, CMake generator, selected architecture and exact
 restricted-runtime flags. Native suites write separate results under
 `build/host/artifacts/native/`. `tools/verify.py` merges only the current CTest
@@ -63,17 +62,17 @@ the real RA4M1, STM32H753 and ESP32-P4 description headers exist. Until then,
 the configure log reports that gate as deferred. This keeps the infrastructure
 ready without introducing placeholder target types.
 
-PLN-0005 adds an independent, linked board preset without changing the three
-description-only probes:
+For the legacy physical runners and their original output directory, configure
+the instrumented board images explicitly:
 
 ```sh
-cmake --preset uno-r4-minima
-cmake --build --preset uno-r4-minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build build/uno-r4-minima --target board-tests
 ./tools/run-uno-r4-minima-tests.sh startup-gpio
 ./tools/run-uno-r4-minima-tests.sh ethernet
 ```
 
-The preset builds separate startup/GPIO, D2-to-D3 GPIO loopback, PWM, and UART
+This configuration builds separate startup/GPIO, D2-to-D3 GPIO loopback, PWM, and UART
 executables. The board procedure, bootloader boundary, fixture wiring, RTT
 protocol, suite-selection commands, and current measurements are documented in
 [Arduino UNO R4 Minima guide](../boards/arduino-uno-r4-minima/README.md).

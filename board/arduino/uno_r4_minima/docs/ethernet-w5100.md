@@ -40,12 +40,12 @@ completion, the `RMSR/TMSR = 0x55` reset values, and SHAR write/read-back.
 ## Build and native verification
 
 ```sh
-cmake --preset host
-cmake --build --preset host
-ctest --preset host
+cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
+cmake --build build/host
+ctest --test-dir build/host --output-on-failure
 
-cmake --preset uno-r4-minima
-cmake --build --preset uno-r4-minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build build/uno-r4-minima --target board-tests
 ```
 
 The native W5100 model covers reset and identity, register commands, RX/TX

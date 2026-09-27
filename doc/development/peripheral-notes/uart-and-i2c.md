@@ -113,8 +113,8 @@ the original bytes, and verifies the restoration. It repeats the scenario at
 100 kHz and 400 kHz. Run it with:
 
 ```sh
-cmake --preset uno-r4-minima
-cmake --build --preset uno-r4-minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build build/uno-r4-minima --target board-tests
 tools/run-uno-r4-minima-tests.sh i2c
 ```
 

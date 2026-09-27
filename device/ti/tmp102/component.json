@@ -33,7 +33,7 @@
   ],
   "sources": [],
   "tests": [
-    "tests/test_tmp102.cpp"
+    "tests/device/test_tmp102.cpp"
   ],
   "docs": [
     "device/ti/tmp102/README.md"

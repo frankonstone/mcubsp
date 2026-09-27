@@ -174,11 +174,11 @@ python3 tools/verify.py --build build/verification --suites all
 python3 tools/verify.py --build build/tmp102-tests --suites device:ti/tmp102
 ```
 
-The full maintainer preset also enables architecture probes, independent header
-checks and optional MCUIP contracts, using the configured development checkouts:
+Enable architecture probes, independent header checks and optional MCUIP
+contracts explicitly, using the configured development checkouts:
 
 ```sh
-cmake --preset host
+cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
 python3 tools/verify.py --build build/host --existing
 ```
 
@@ -292,63 +292,60 @@ implicit cancellation.
 
 ## Build presets
 
-Choose a configuration for the work you are doing. Its build preset selects
-the useful targets, so the normal Build action needs no target-menu selection:
+Presets select only the toolchain/architecture and global compiler settings.
+They do not select boards, applications, tests or build targets.
 
-| Configure/build preset | Default build targets | Purpose |
-| --- | --- | --- |
-| `arm-cortex-m4`, `arm-cortex-m7`, `esp32p4-riscv` | `examples` | Examples for the configurable active-board set |
-| `component` | `native-tests` | Selected native suite, core by default |
-| `native` | `native-tests` | All native suites without maintainer probes or MCUIP contracts |
-| `host` | `native-tests`, `check-headers`, `check-compile` | Exhaustive host verification, including tooling and optional integration contracts |
-| `arm-cortex-m4-checks`, `arm-cortex-m7-checks`, `esp32p4-riscv-checks` | `check-headers`, `check-compile` | Architecture and public-header verification |
-| `uno-r4-minima`, `nucleo-h753zi` | `board-tests` | Existing instrumented board-test images and runners |
-| Existing `*-app` shortcuts | `firmware` | A single example for one board |
+| Preset | Architecture |
+| --- | --- |
+| `native` | Host compiler |
+| `arm-cortex-m4` | ARM Cortex-M4 |
+| `arm-cortex-m7` | ARM Cortex-M7 |
+| `esp32p4-riscv` | ESP32-P4 RISC-V |
 
-```sh
-cmake --preset arm-cortex-m4 -DMCUHW_ACTIVE_BOARDS=arduino/uno_r4_minima
-cmake --build --preset arm-cortex-m4 --target arduino.uno_r4_minima.examples
-
-cmake --preset component -DMCUHW_TEST_SUITES=device:ti/tmp102
-cmake --build --preset component
-ctest --preset component
-```
-
-`MCUHW_ACTIVE_BOARDS` is a persistent CMake cache setting: edit it in CMake Tools,
-pass a quoted semicolon-separated list with `-D`, or save it in an ignored
-`CMakeUserPresets.json`. Reconfigure after editing it. Only active boards matching
-the architecture contribute targets. Each board exposes `.examples` and, when
-available, `.tests`; an example such as `.examples.blink` is also independently
-buildable. Vendor-qualified target names avoid board-name collisions.
-
-Examples produce separate firmware images below
-`build/<preset>/boards/<vendor>/<board>/<revision>/examples/<example>/`.
-Board-test dependencies are configured only when its `.tests` target is built.
-The original board-test presets retain their existing runner/output locations.
-New boards declare their architecture and examples locally without a new preset.
-
-Header self-containment now has one `check-headers` target; each header still
-compiles in its own translation unit, without unity builds or precompiled
-headers. Native suite executables remain individually selectable for debugging.
-See [focused targets and presets](doc/development/verification.md#targets-and-presets)
-for persistent component selection and the configure/build/test workflows.
-
-Run the architecture probes with:
+Select a board with the visible `MCUHW_BOARD` STRING cache setting:
 
 ```sh
-cmake --preset arm-cortex-m4-checks
-cmake --build --preset arm-cortex-m4-checks -j4
-
-cmake --preset arm-cortex-m7-checks
-cmake --build --preset arm-cortex-m7-checks -j4
-
-cmake --preset esp32p4-riscv-checks
-cmake --build --preset esp32p4-riscv-checks -j4
+cmake --preset arm-cortex-m4 -DMCUHW_BOARD=arduino/uno_r4_minima
+cmake --build --preset arm-cortex-m4 --target firmware
+cmake --build --preset arm-cortex-m4 --target examples
+cmake --build --preset arm-cortex-m4 --target test.board
+cmake --build --preset arm-cortex-m4 --target test.backend test.device
 ```
 
-Each cross-build uses freestanding, exception-free, RTTI-free flags and writes
-a toolchain report. Cortex-M builds also disassemble the barrier probe and
-verify the required instructions.
+`firmware` builds Blink by default; set `-DMCUHW_EXAMPLE=tmp102` to change the
+application. `examples` builds all application and I/O examples supported by the selected board,
+with `example.app.blink` and `example.app.tmp102` available individually. UNO
+also exposes `example.io.blink`, `example.io.serial_echo`, `example.io.spi_dma`,
+`example.io.tmp102` and `example.io.w5100`. `test.board` builds the board's physical-test firmware in a separate child build.
+`test.backend`, `test.device`, `test.core`, `test.driver`, `test.io`, `test.mcu`
+and `test.compile` build and run focused host suites; `tests` selects all groups. Running or
+flashing these images remains an explicit hardware procedure.
+
+`MCUHW_BOARD`, `MCUHW_BOARD_REVISION` and `MCUHW_EXAMPLE` are visible in the CMake
+cache and editable through CMake Tools. Reconfigure after editing them. The
+configure log displays the resolved board, revision and architecture. Reapplying
+a preset preserves these settings. An empty board selection exposes no board
+targets. Unselected board manifests are not scanned.
+
+Firmware is written under `build/<preset>/application/`, additional examples
+under `build/<preset>/examples/`, and tests under
+`build/<preset>/boards/<vendor>/<board>/<revision>/tests/`. Test dependencies
+are resolved only when their test group is built. Global compiler flags are forwarded
+to the child test configuration. See [focused targets and presets](doc/development/verification.md#targets-and-presets).
+
+Enable verification independently of the architecture preset:
+
+```sh
+cmake --preset native -DMCUHW_BUILD_TESTS=ON -DMCUHW_TEST_SUITES=device:ti/tmp102
+cmake --build --preset native --target native-tests
+ctest --test-dir build/native --output-on-failure
+
+cmake --preset arm-cortex-m4 -B build/arm-checks -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --build build/arm-checks --target check-headers check-compile -j4
+```
+
+The same explicit verification options work with `arm-cortex-m7` and
+`esp32p4-riscv`. `check-headers` compiles each public header independently.
 
 ## Running on supported boards
 
@@ -358,8 +355,8 @@ matching runner and follow its wiring, debugger, and recovery notes.
 ### Arduino UNO R4 Minima
 
 ```sh
-cmake --preset uno-r4-minima
-cmake --build --preset uno-r4-minima -j4
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build build/uno-r4-minima --target board-tests -j4
 ./tools/run-uno-r4-minima-tests.sh startup-gpio
 ```
 
@@ -372,8 +369,8 @@ DMAC, W5100 Ethernet, metrics, and link recovery. See the
 ### NUCLEO-H753ZI
 
 ```sh
-cmake --preset nucleo-h753zi
-cmake --build --preset nucleo-h753zi -j4
+cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi
+cmake --build build/nucleo-h753zi --target board-tests -j4
 ./tools/run-nucleo-h753zi-smoke.sh
 ./tools/run-nucleo-h753zi-native.sh
 ```
@@ -383,7 +380,7 @@ ST-LINK, VCP, Ethernet jumper, and physical-evidence details.
 
 ### ESP32-P4-NANO
 
-The generic compile probe uses `esp32p4-riscv-checks`. The physical board image is a
+The generic compile probe uses `esp32p4-riscv` with `MCUHW_BUILD_PROBES=ON`. The physical board image is a
 separate ESP-IDF build:
 
 ```sh

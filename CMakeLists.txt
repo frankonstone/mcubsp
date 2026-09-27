@@ -14,6 +14,8 @@ option(MCUHW_BUILD_TOOLING_TESTS "Test packaging, catalog and build tooling" OFF
 option(MCUHW_INSTALL "Install library and reusable board support" ${PROJECT_IS_TOP_LEVEL})
 option(MCUHW_WORKSPACE "Expose task groups for the active boards of this architecture" OFF)
 set(MCUHW_ACTIVE_BOARDS "" CACHE STRING "Active vendor/board[@revision] IDs, separated by semicolons; empty for none, all for maintainer builds")
+set(MCUHW_BOARD "" CACHE STRING "Selected board vendor/name; exposes firmware, tests and examples")
+set(MCUHW_BOARD_REVISION "" CACHE STRING "Board revision; empty selects the board default")
 set(MCUHW_BOARD_TESTS "" CACHE STRING "Board ID whose physical-test images to build")
 # An existing BSP may select its own cross-toolchain without mcuhw variables.
 # Its architecture is resolved from the selected board only when unspecified.
@@ -24,7 +26,7 @@ if(NOT DEFINED MCUHW_ARCH)
         set(MCUHW_ARCH "native" CACHE STRING "Architecture probed by this build")
     endif()
 endif()
-set(MCUHW_EXAMPLE "" CACHE STRING "One complete application from examples/apps, e.g. blink or tmp102")
+set(MCUHW_EXAMPLE "" CACHE STRING "Firmware application from examples/apps; empty selects blink")
 set(MCUHW_TEST_SUITES "all" CACHE STRING "Native suite selection for contributor/maintainer builds")
 if(PROJECT_IS_TOP_LEVEL)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -52,27 +54,20 @@ include(cmake/McuhwBoard.cmake)
 include(cmake/McuhwIoCost.cmake)
 include(cmake/McuhwIoExamples.cmake)
 
+# An explicit board takes precedence over a previously cached workspace mode.
 # @req REQ-0049 REQ-0052
-if(MCUHW_WORKSPACE)
-    if(MCUHW_EXAMPLE OR MCUHW_BOARD_TESTS)
-        message(FATAL_ERROR "Use MCUHW_ACTIVE_BOARDS for an architecture workspace; MCUHW_EXAMPLE and MCUHW_BOARD_TESTS belong to separate single-board configurations.")
+if(MCUHW_WORKSPACE AND NOT MCUHW_BOARD AND NOT MCUHW_BOARD_TESTS)
+    if(MCUHW_EXAMPLE)
+        message(FATAL_ERROR "Set MCUHW_BOARD for one firmware application, or clear MCUHW_EXAMPLE when using MCUHW_ACTIVE_BOARDS.")
     endif()
     include(cmake/McuhwWorkspace.cmake)
     mcuhw_add_active_boards()
 endif()
 
 # @req REQ-0038 REQ-0047 REQ-0049 REQ-0052
-if(MCUHW_EXAMPLE)
-    if(NOT MCUHW_EXAMPLE MATCHES "^[a-z0-9][a-z0-9_-]*$" OR
-            NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/apps/${MCUHW_EXAMPLE}/CMakeLists.txt")
-        message(FATAL_ERROR "Unknown MCUHW_EXAMPLE '${MCUHW_EXAMPLE}'; select a directory in examples/apps.")
-    endif()
-    if(MCUHW_BUILD_TESTS OR MCUHW_BUILD_TOOLING_TESTS OR MCUHW_BUILD_PROBES OR
-            MCUHW_CHECK_HEADERS OR MCUHW_BUILD_MCUIP_CONTRACTS OR MCUHW_BOARD_TESTS OR
-            MCUHW_BUILD_IO_EXAMPLES OR MCUHW_BUILD_IO_COST_REPORT)
-        message(FATAL_ERROR "Application presets build one firmware. Use a separate native, component, host or board-test configuration for verification.")
-    endif()
-    add_subdirectory("examples/apps/${MCUHW_EXAMPLE}" application)
+if(PROJECT_IS_TOP_LEVEL AND MCUHW_BOARD AND NOT MCUHW_BOARD_TESTS)
+    include(cmake/McuhwWorkspace.cmake)
+    mcuhw_add_selected_board()
 endif()
 
 # Explicit maintainer workflows alone may resolve the development dependencies.
@@ -145,14 +140,9 @@ if(MCUHW_BUILD_TESTS)
         set(MCUTEST_INSTALL OFF)
         add_subdirectory("${MCUHW_MCUTEST_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/_deps/mcutest")
     endif()
-    add_subdirectory(tests)
 endif()
-if(MCUHW_BUILD_TOOLING_TESTS)
-    find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
-    add_test(NAME mcuhw.tooling
-        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/tooling/run_tests.py"
-            --output "${CMAKE_CURRENT_BINARY_DIR}/artifacts/mcutest-tooling.json")
-    set_tests_properties(mcuhw.tooling PROPERTIES LABELS "tooling;packaging;catalog")
+if(MCUHW_BUILD_TESTS OR MCUHW_BUILD_TOOLING_TESTS)
+    add_subdirectory(tests)
 endif()
 
 if(MCUHW_INSTALL)

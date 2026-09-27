@@ -10,7 +10,7 @@ Public implementation: `include/mcuhw/device/audio/es8311.hpp`. Required transpo
 
 Focused test sources:
 
-- `tests/test_esp32p4_i2s.cpp`
+- `tests/backend/esp32p4/test_i2s.cpp`
 
 See [catalog contribution and validation](../../../doc/development/catalog.md) for checks.
 

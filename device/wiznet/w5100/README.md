@@ -10,8 +10,8 @@ Public implementation: `include/mcuhw/device/ethernet/w5100.hpp`. Required trans
 
 Focused test sources:
 
-- `tests/test_w5100.cpp`
-- `tests/test_w5100_io.cpp`
+- `tests/device/test_w5100.cpp`
+- `tests/device/test_w5100_io.cpp`
 
 See [catalog contribution and validation](../../../doc/development/catalog.md) for checks.
 

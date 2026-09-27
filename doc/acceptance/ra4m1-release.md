@@ -68,19 +68,19 @@ does not include architectural exception entry and return.
 Configure and run the native suite:
 
 ```sh
-cmake --preset host
-cmake --build --preset host -j4
-ctest --preset host
+cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
+cmake --build build/host -j4
+ctest --test-dir build/host --output-on-failure
 ```
 
 Cross-build all public headers, examples and architecture probes, then link the
 UNO images:
 
 ```sh
-cmake --preset arm-cortex-m4-checks
-cmake --build --preset arm-cortex-m4-checks -j4
-cmake --preset uno-r4-minima
-cmake --build --preset uno-r4-minima -j4
+cmake --preset arm-cortex-m4 -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --build --preset arm-cortex-m4 -j4
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build build/uno-r4-minima --target board-tests -j4
 ```
 
 The UNO linker preserves the Arduino bootloader by placing vectors and code at

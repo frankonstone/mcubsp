@@ -32,7 +32,7 @@
   ],
   "sources": [],
   "tests": [
-    "tests/test_ra4m1_description.cpp"
+    "tests/mcu/ra4m1/test_description.cpp"
   ],
   "docs": [
     "doc/reference/mcu-reviews/ra4m1.md"

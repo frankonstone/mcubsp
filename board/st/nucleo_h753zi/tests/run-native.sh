@@ -9,7 +9,7 @@ nm=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_N
 
 if [ ! -f "$elf" ]; then
     echo "missing firmware: $elf" >&2
-    echo "build it with: cmake --preset nucleo-h753zi && cmake --build build/nucleo-h753zi" >&2
+    echo "build it with: cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi && cmake --build build/nucleo-h753zi" >&2
     exit 2
 fi
 
