@@ -150,8 +150,10 @@ constexpr mcuhw::device::w5100_configuration config{
 using immediate_device = mcuhw::device::w5100<fake_spi_device<true>>;
 static_assert(!std::is_move_constructible_v<immediate_device>);
 static_assert(!std::is_copy_constructible_v<immediate_device>);
+#if defined(MCUHW_TEST_MCUIP_CONTRACTS)
 static_assert(mcuhw::integration::mcuip::w5100_valid_contract<fake_spi_device<true>>);
 static_assert(mcuhw::integration::mcuip::w5100_valid_contract<fake_spi_device<false>>);
+#endif
 
 TEST(w5100_io, owned_endpoint_initializes_and_uses_original_chip_framing,
      "REQ-0044", "REQ-0046") {

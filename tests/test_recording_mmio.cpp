@@ -73,8 +73,3 @@ TEST(recording_mmio, reports_fixed_trace_capacity, "REQ-0002", "REQ-0008") {
 }
 
 } // namespace
-
-int main() {
-    mcutest::Runner<mcutest::JsonOutput> runner;
-    return mcutest::run_json_output(runner);
-}

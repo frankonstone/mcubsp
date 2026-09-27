@@ -4,26 +4,28 @@ requirements = ["requirements.md"]
 plans = ["implementation-plan.md"]
 sources = [
   "include/mcuhw/**/*.hpp",
-  "examples/io/*.cpp",
-  "board/uno_r4_minima/**/*.?pp",
-  "board/nucleo_h753zi/**/*.?pp",
-  "board/*o*/startup.S",
-  "board/esp32p4_nano/tests/*.cpp",
-  "board/esp32p4_nano/baremetal_smoke/**/*_start.cpp",
+  "examples/**/*.cpp",
+  "board/*/*/bsp/**/*.?pp",
+  "board/*/*/tests/**/*.?pp",
+  "board/*/*/bsp/*.S",
 ]
 build_files = [
   "CMakeLists.txt",
-  "cmake/*.cmake",
+  "cmake/**/*.cmake",
+  "board/*/*/*.cmake",
+  "board/**/CMakeLists.txt",
+  "board/*/*/tests/*.sh",
   "board/**/*.ld",
   "tools/*",
+  "tools/mcuhwlib/**/*.py",
 ]
 
 [[artifacts]]
-path = "build/host/artifacts/mcutest.json"
+path = "build/host/artifacts/mcutest-native.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/host/artifacts/mcutest-io.json"
+path = "build/host/artifacts/mcutest-tooling.json"
 importer = "mcutest"
 
 [[artifacts]]
@@ -63,11 +65,11 @@ path = "build/nucleo-h753zi/artifacts/mcuhw_nucleo_h753zi_native_peripherals.mcu
 importer = "mcucov"
 
 [[artifacts]]
-path = "board/esp32p4_nano/baremetal_smoke/build/artifacts/esp32p4_native_smoke.mcutest.json"
+path = "board/waveshare/esp32p4_nano/tests/firmware/build/artifacts/esp32p4_native_smoke.mcutest.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "board/esp32p4_nano/baremetal_smoke/build/artifacts/esp32p4_native_smoke.trace.mcucov.json"
+path = "board/waveshare/esp32p4_nano/tests/firmware/build/artifacts/esp32p4_native_smoke.trace.mcucov.json"
 importer = "mcucov"
 
 [validation]

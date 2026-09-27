@@ -12,6 +12,19 @@
 
 namespace mcuhw::backend::stm32h753 {
 
+struct uart_baud_timing {
+    std::uint32_t clock_hz;
+    std::uint32_t target_baud;
+    std::uint32_t achieved_baud;
+    std::uint32_t error_ppm;
+
+    std::uint32_t brr;
+    [[nodiscard]] constexpr operator driver::uart_baud_timing() const noexcept {
+        return {clock_hz, target_baud, achieved_baud, error_ppm};
+    }
+    friend constexpr bool operator==(uart_baud_timing, uart_baud_timing) = default;
+};
+
 namespace detail {
 
 template<std::uint8_t Instance>
@@ -32,7 +45,7 @@ struct usart_owner { static inline bool claimed{}; };
 
 // OVER8=0: USARTDIV is encoded directly in BRR and baud = kernel/BRR.
 // @req REQ-0011 REQ-0027 REQ-0033
-[[nodiscard]] constexpr std::expected<driver::uart_baud_timing,
+[[nodiscard]] constexpr std::expected<uart_baud_timing,
                                       driver::uart_error>
 solve_usart_baud(driver::uart_baud_request request) noexcept {
     if (request.clock_hz == 0U) {
@@ -51,19 +64,13 @@ solve_usart_baud(driver::uart_baud_request request) noexcept {
     if (error > request.maximum_error_ppm) {
         return std::unexpected(driver::uart_error::unattainable_tolerance);
     }
-    return driver::uart_baud_timing{
+    return uart_baud_timing{
         .clock_hz = request.clock_hz,
         .target_baud = request.target_baud,
         .achieved_baud = static_cast<std::uint32_t>(
             driver::uart_detail::rounded_divide(request.clock_hz, brr)),
         .error_ppm = error,
-        .divisor = static_cast<std::uint16_t>(brr),
-        .clock_select = 0U,
-        .brr = 0U,
-        .double_speed = false,
-        .asynchronous_base_clock_select = false,
-        .extended_base_clock_select = false,
-        .backend_encoding = static_cast<std::uint32_t>(brr),
+        .brr = static_cast<std::uint32_t>(brr),
     };
 }
 
@@ -113,7 +120,7 @@ public:
         : mmio_(mmio), tx_operations_(execution), rx_operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::uart_error> initialize(
-        driver::uart_baud_timing timing, driver::uart_format format) noexcept {
+        uart_baud_timing timing, driver::uart_format format) noexcept {
         if (initialized_ || detail::usart_owner<Binding::instance>::claimed) {
             return std::unexpected(driver::uart_error::already_owned);
         }
@@ -121,8 +128,8 @@ public:
              && format.data_bits != driver::uart_data_bits::eight)
             || (format.stop_bits != driver::uart_stop_bits::one
                 && format.stop_bits != driver::uart_stop_bits::two)
-            || timing.backend_encoding < 16U
-            || timing.backend_encoding > 65'535U) {
+            || timing.brr < 16U
+            || timing.brr > 65'535U) {
             return std::unexpected(driver::uart_error::invalid_format);
         }
         detail::usart_owner<Binding::instance>::claimed = true;
@@ -152,7 +159,7 @@ public:
         const auto stop = format.stop_bits == driver::uart_stop_bits::two
             ? 2U << 12U : 0U;
         if (!write(0x04U, stop) || !write(0x08U, 0U)
-            || !write(0x0CU, timing.backend_encoding)
+            || !write(0x0CU, timing.brr)
             || !write(0x20U, 0x0000'0C5FU)
             || !write(0x00U, cr1 | cr_re | cr_te | cr_ue)) {
             release_owner();

@@ -7,7 +7,8 @@ native build.
 ## Getting started
 
 - [Installation and dependencies](getting-started/installation.md)
-- [Build and verification](getting-started/build-and-test.md)
+- [First board application: setup, build and flash](getting-started/building.md)
+- [Maintainer build and verification](getting-started/build-and-test.md)
 - [Using mcuhw in firmware](getting-started/using-mcuhw.md)
 - [The `mcuhw::io` application interface](getting-started/io.md)
 - [Attached I2C/SPI devices and reusable components](getting-started/components.md)
@@ -27,25 +28,31 @@ lifecycle, and bring-up guidance directly in the documentation.
 
 ## Boards
 
-- [Arduino UNO R4 Minima](boards/arduino-uno-r4-minima/README.md)
-  - [W5100 Ethernet](boards/arduino-uno-r4-minima/ethernet-w5100.md)
-- [NUCLEO-H753ZI](boards/nucleo-h753zi/README.md)
-- [ESP32-P4-NANO](boards/esp32p4-nano/README.md)
+- [Arduino UNO R4 Minima](../board/arduino/uno_r4_minima/docs/README.md)
+  - [W5100 Ethernet](../board/arduino/uno_r4_minima/docs/ethernet-w5100.md)
+- [NUCLEO-H753ZI](../board/st/nucleo_h753zi/docs/README.md)
+- [ESP32-P4-NANO](../board/waveshare/esp32p4_nano/docs/README.md)
 
 ## Development
 
+- [Repository ownership and source migration](development/structure.md)
 - [Adding a board](development/adding-a-board.md)
+- [Adding an external device](development/adding-a-device.md)
 - [Adding a microcontroller](development/adding-an-mcu.md)
+- [Catalog schema, contribution and compatibility](development/catalog.md)
+- [Focused tests, CI and scaling checks](development/verification.md)
 - [Description coverage](development/coverage.md)
 - [Peripheral implementation notes](development/peripheral-notes/)
 
 ## Reference and acceptance
 
+- [Generated searchable hardware catalog](reference/catalog.md)
 - [MCU source baseline](reference/source-baseline.md)
 - [Pinned source manifest](reference/source-manifest.json)
 - [MCU description reviews](reference/mcu-reviews/)
 - [Three-MCU description gate](acceptance/description-gate.md)
 - [RA4M1 release acceptance](acceptance/ra4m1-release.md)
+- [Repository adoption and scale qualification](acceptance/repository-adoption.md)
 
 ## Local source material
 

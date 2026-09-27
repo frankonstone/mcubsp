@@ -13,6 +13,23 @@
 
 namespace mcuhw::backend::esp32p4 {
 
+struct i2c_timing {
+    std::uint32_t clock_hz;
+    std::uint32_t target_hz;
+    std::uint32_t achieved_hz;
+    std::uint32_t error_ppm;
+    std::uint32_t rise_time_ns;
+    std::uint32_t fall_time_ns;
+
+    std::uint8_t low_count;
+    std::uint8_t high_count;
+    std::uint32_t source_divider;
+    [[nodiscard]] constexpr operator driver::i2c_timing() const noexcept {
+        return {clock_hz, target_hz, achieved_hz, error_ppm, rise_time_ns, fall_time_ns};
+    }
+    friend constexpr bool operator==(i2c_timing, i2c_timing) = default;
+};
+
 enum class i2c_recovery_policy : std::uint8_t {
     none,
     exclusive_peripheral_reset,
@@ -32,11 +49,11 @@ struct i2c_owner { static inline bool claimed{}; };
 } // namespace detail
 
 // The HP I2C controller takes the 40 MHz XTAL through an integer pre-divider.
-// brl is the complete low interval and brh the complete high interval; the
-// backend splits brh into the controller's active-high and wait-high fields.
+// low_count is the complete low interval and high_count the complete high interval; the
+// backend splits high_count into the controller's active-high and wait-high fields.
 // Edge times are included in the wire-period and Standard/Fast-mode minima.
 // @req REQ-0011 REQ-0024 REQ-0034
-[[nodiscard]] constexpr std::expected<driver::i2c_timing, driver::i2c_error>
+[[nodiscard]] constexpr std::expected<i2c_timing, driver::i2c_error>
 solve_i2c_timing(driver::i2c_timing_request request) noexcept {
     if (request.clock_hz != 40'000'000U) {
         return std::unexpected(driver::i2c_error::invalid_clock);
@@ -61,7 +78,7 @@ solve_i2c_timing(driver::i2c_timing_request request) noexcept {
     }
 
     bool found{};
-    driver::i2c_timing best{};
+    i2c_timing best{};
     for (std::uint32_t divider = 1U; divider <= 256U; ++divider) {
         const auto source_hz = request.clock_hz / divider;
         if (source_hz == 0U) break;
@@ -100,21 +117,20 @@ solve_i2c_timing(driver::i2c_timing_request request) noexcept {
                     driver::i2c_detail::divide_rounded(
                         static_cast<std::uint64_t>(delta) * 1'000'000ULL,
                         request.target_hz));
-                const driver::i2c_timing candidate{
+                const i2c_timing candidate{
                     .clock_hz = request.clock_hz,
                     .target_hz = request.target_hz,
                     .achieved_hz = achieved,
                     .error_ppm = error,
                     .rise_time_ns = request.rise_time_ns,
                     .fall_time_ns = request.fall_time_ns,
-                    .clock_select = 0U,
-                    .brl = static_cast<std::uint8_t>(low),
-                    .brh = static_cast<std::uint8_t>(high),
-                    .backend_encoding = divider,
+                    .low_count = static_cast<std::uint8_t>(low),
+                    .high_count = static_cast<std::uint8_t>(high),
+                    .source_divider = divider,
                 };
                 if (!found || error < best.error_ppm
                     || (error == best.error_ppm
-                        && divider < best.backend_encoding)) {
+                        && divider < best.source_divider)) {
                     best = candidate;
                     found = true;
                 }
@@ -173,27 +189,27 @@ public:
         : mmio_(mmio), operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::i2c_error> initialize(
-        driver::i2c_timing timing) noexcept {
+        i2c_timing timing) noexcept {
         if (initialized_ || detail::i2c_owner<Binding::instance>::claimed) {
             return std::unexpected(driver::i2c_error::already_owned);
         }
-        if (timing.clock_hz != 40'000'000U || timing.clock_select != 0U
-            || timing.backend_encoding == 0U
-            || timing.backend_encoding > 256U
-            || timing.brl < 4U || timing.brh < 6U) {
+        if (timing.clock_hz != 40'000'000U
+            || timing.source_divider == 0U
+            || timing.source_divider > 256U
+            || timing.low_count < 4U || timing.high_count < 6U) {
             return std::unexpected(driver::i2c_error::invalid_rate);
         }
 
         detail::i2c_owner<Binding::instance>::claimed = true;
         owned_ = true;
-        const auto divider = timing.backend_encoding - 1U;
-        const auto wait_high = static_cast<std::uint32_t>(timing.brh) / 2U - 2U;
-        const auto active_high = static_cast<std::uint32_t>(timing.brh)
+        const auto divider = timing.source_divider - 1U;
+        const auto wait_high = static_cast<std::uint32_t>(timing.high_count) / 2U - 2U;
+        const auto active_high = static_cast<std::uint32_t>(timing.high_count)
             - wait_high;
-        const auto setup_hold = timing.brl < timing.brh
-            ? timing.brl : timing.brh;
+        const auto setup_hold = timing.low_count < timing.high_count
+            ? timing.low_count : timing.high_count;
         const auto timeout = timeout_exponent(
-            static_cast<std::uint32_t>(timing.brl) + timing.brh);
+            static_cast<std::uint32_t>(timing.low_count) + timing.high_count);
 
         if (!modify(Binding::clocks.apb_gate_register,
                     Binding::clocks.apb_gate_mask, 0U)) {
@@ -220,16 +236,16 @@ public:
         if (!write(reg_interrupt_clear, all_interrupts)) {
             return initialization_failed();
         }
-        if (!write(reg_scl_low, timing.brl - 1U)) {
+        if (!write(reg_scl_low, timing.low_count - 1U)) {
             return initialization_failed();
         }
         if (!write(reg_scl_high, active_high | (wait_high << 9U))) {
             return initialization_failed();
         }
-        if (!write(reg_sda_hold, timing.brl / 4U - 1U)) {
+        if (!write(reg_sda_hold, timing.low_count / 4U - 1U)) {
             return initialization_failed();
         }
-        if (!write(reg_sda_sample, timing.brh / 2U - 1U)) {
+        if (!write(reg_sda_sample, timing.high_count / 2U - 1U)) {
             return initialization_failed();
         }
         if (!write(reg_start_hold, setup_hold - 1U)) {

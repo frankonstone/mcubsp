@@ -35,7 +35,7 @@ void consume_sensor_value(std::uint8_t first, std::uint8_t second);
 using binding = mcuhw::backend::ra4m1::iic_binding<
     1, board::a5_scl, board::a4_sda>;
 
-constexpr auto timing = mcuhw::driver::solve_i2c_timing({
+constexpr auto timing = mcuhw::backend::ra4m1::solve_i2c_timing({
     .clock_hz = 24'000'000U,
     .target_hz = 400'000U,
     .maximum_error_ppm = 30'000U,

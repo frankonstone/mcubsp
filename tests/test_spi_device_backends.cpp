@@ -82,7 +82,7 @@ using stm_backend = mcuhw::backend::stm32h753::spi_master_backend<
 using esp_backend = mcuhw::backend::esp32p4::spi_master_backend<
     esp_binding, device_spi_mmio, policy, true>;
 
-constexpr auto ra_timing = *mcuhw::driver::solve_spi_timing({48'000'000U, 1'000'000U, 0U});
+constexpr auto ra_timing = *mcuhw::backend::ra4m1::solve_spi_timing({48'000'000U, 1'000'000U, 0U});
 constexpr auto stm_timing = *mcuhw::backend::stm32h753::solve_stm32_spi_timing(
     {64'000'000U, 1'000'000U, 0U});
 constexpr auto esp_timing = *mcuhw::backend::esp32p4::solve_spi_timing(

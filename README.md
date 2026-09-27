@@ -61,7 +61,9 @@ The main source layers are:
 | `include/mcuhw/board/` | Board identities, package selection, and connector/pin aliases |
 | `include/mcuhw/execution/` | Bare-metal and test execution policies |
 | `include/mcuhw/integration/` | Optional integration boundaries such as MCUIP network devices |
-| `board/` | Startup, linker scripts, physical tests, and board runners |
+| `board/<vendor>/<name>/` | Local board manifest, build rules and runner configuration |
+| `mcu/`, `ip/`, `device/` | Local component manifests referring to shared public implementations |
+| `catalog/` | Versioned schema and contribution templates; indexes are generated |
 | `tests/` | Native behavioral tests, compile checks, and compile-fail cases |
 | `doc/` | Design notes, source manifests, board procedures, and acceptance records |
 
@@ -82,7 +84,15 @@ boundaries.
 
 ## Prerequisites
 
-For a native build:
+For an ordinary application, a C++23 compiler and the public headers suffice.
+CMake consumers additionally need CMake 3.25 or newer. Library consumption
+requires no sibling projects, catalog generation or board selection. Complete
+board applications use CMake, Ninja and the selected cross compiler; flashing
+tools are required only when flashing. See the
+[first-build guide](doc/getting-started/building.md) for pinned setup, SDK and
+host qualification details.
+
+For maintainer verification:
 
 - CMake 3.25 or newer;
 - Ninja;
@@ -96,8 +106,8 @@ Cross-builds additionally require:
 - the board-specific debugger and command-line tools described in the board
   documentation.
 
-The development build expects related projects as sibling directories by
-default:
+Explicit maintainer workflows use these configurable sibling locations by
+default; ordinary applications do not resolve them:
 
 ```text
 workspace/
@@ -124,8 +134,26 @@ hardware tests.
 
 ## Quick start
 
-For application code, start with the [modern C++ I/O guide](doc/getting-started/io.md)
-and the [UNO blink example](examples/io/blink.cpp). The optional `mcuhw::io`
+Discover a board and create a complete external application:
+
+```sh
+python3 tools/mcuhw.py list boards
+python3 tools/mcuhw.py new ../my-blink --board arduino/uno_r4_minima --example blink
+python3 tools/mcuhw.py setup --project ../my-blink
+python3 tools/mcuhw.py build --project ../my-blink
+```
+
+Setup imports the pinned installed tools (or an explicitly configured archive
+cache). It reports missing prerequisites before building. The
+[first-build guide](doc/getting-started/building.md) includes installation,
+offline use, direct CMake commands and separately requested flashing. Complete
+[Blink](examples/apps/blink/README.md) and
+[TMP102](examples/apps/tmp102/README.md) projects support all three boards.
+Search the [generated catalog](doc/reference/catalog.md) or use
+`python3 tools/mcuhw.py search --category temperature` for attached devices.
+
+For application code, start with the [modern C++ I/O guide](doc/getting-started/io.md).
+The optional `mcuhw::io`
 CMake target provides `hw.output()`, `hw.serial`, `hw.i2c`, `hw.spi`,
 `hw.analog`, `hw.pwm`, and explicit DMA leases. Storage is selected at compile
 time; execution and MMIO can be supplied by the application. This new layer
@@ -139,21 +167,19 @@ chips share buses through `hw.i2c.device(address)` and
 integration. Link `mcuhw::device` for device headers and `mcuhw::io` for the
 board facade.
 
-From the repository root, with `mcutest` in its default sibling location:
+For focused native verification, with `mcutest` in its default sibling location:
+
+```sh
+python3 tools/verify.py --build build/verification --suites all
+python3 tools/verify.py --build build/tmp102-tests --suites device:ti/tmp102
+```
+
+The full maintainer preset also enables architecture probes, independent header
+checks and optional MCUIP contracts, using the configured development checkouts:
 
 ```sh
 cmake --preset host
-cmake --build --preset host -j4
-ctest --preset host
-```
-
-To use a non-default test-framework checkout:
-
-```sh
-cmake --preset host \
-  -DMCUHW_MCUTEST_SOURCE_DIR=/absolute/path/to/mcutest
-cmake --build --preset host -j4
-ctest --preset host
+python3 tools/verify.py --build build/host --existing
 ```
 
 The native suite exercises metadata, solvers, ownership, register ordering,
@@ -162,10 +188,8 @@ real MCU addresses. It also builds negative cases that must fail to compile.
 
 ## Installation and use from another project
 
-`mcuhw` is currently a header-only CMake interface library. It does not yet
-define a system installation or exported CMake package, so `cmake --install`
-is not supported. Use it from a source checkout or vendor the `include/mcuhw`
-tree into the firmware repository.
+`mcuhw` is a header-only CMake interface library. Consume a source checkout,
+install a relocatable CMake package, or vendor the public headers.
 
 ### Use the CMake target
 
@@ -175,9 +199,7 @@ Add the checkout to the firmware project and link `mcuhw::mcuhw`:
 cmake_minimum_required(VERSION 3.25)
 project(my_firmware LANGUAGES CXX ASM)
 
-# Configure the application with -DBUILD_TESTING=OFF when mcutest is not
-# available. EXCLUDE_FROM_ALL keeps mcuhw's standalone probes out of the
-# application's default build.
+# Defaults expose library targets without enabling mcuhw's maintainer checks.
 add_subdirectory(external/mcuhw EXCLUDE_FROM_ALL)
 
 add_executable(my_firmware
@@ -194,14 +216,21 @@ target_compile_options(my_firmware PRIVATE
 )
 ```
 
-Configure that application with its MCU toolchain and testing disabled:
+Configure that application with its MCU toolchain:
 
 ```sh
 cmake -S . -B build -G Ninja \
-  -DCMAKE_TOOLCHAIN_FILE=cmake/my-mcu-toolchain.cmake \
-  -DBUILD_TESTING=OFF
+  -DCMAKE_TOOLCHAIN_FILE=cmake/my-mcu-toolchain.cmake
 cmake --build build
 ```
+
+To install a package, run `cmake -S . -B build/package`, then
+`cmake --install build/package --prefix /path/to/prefix`. In the consumer,
+replace `add_subdirectory` with `find_package(mcuhw 0.1 CONFIG REQUIRED)` and
+configure with `-DCMAKE_PREFIX_PATH=/path/to/prefix`. The same three targets
+are available: `mcuhw::mcuhw`, `mcuhw::io` and `mcuhw::device`. See
+[installation](doc/getting-started/installation.md) for package layout and
+[firmware integration](doc/getting-started/using-mcuhw.md) for startup ownership.
 
 ### Use the headers directly
 
@@ -263,28 +292,58 @@ implicit cancellation.
 
 ## Build presets
 
-The repository provides these CMake presets:
+Choose a configuration for the work you are doing. Its build preset selects
+the useful targets, so the normal Build action needs no target-menu selection:
 
-| Preset | Purpose |
-| --- | --- |
-| `host` | Native unit, compile, and compile-fail verification |
-| `arm-cortex-m4` | Generic Cortex-M4 public-header and architecture probes |
-| `uno-r4-minima` | Linked Arduino UNO R4 Minima bare-metal test images |
-| `arm-cortex-m7` | Generic Cortex-M7 public-header and architecture probes |
-| `nucleo-h753zi` | Linked NUCLEO-H753ZI bare-metal test images |
-| `esp32p4-riscv` | Generic ESP32-P4 RISC-V public-header and architecture probes |
+| Configure/build preset | Default build targets | Purpose |
+| --- | --- | --- |
+| `arm-cortex-m4`, `arm-cortex-m7`, `esp32p4-riscv` | `examples` | Examples for the configurable active-board set |
+| `component` | `native-tests` | Selected native suite, core by default |
+| `native` | `native-tests` | All native suites without maintainer probes or MCUIP contracts |
+| `host` | `native-tests`, `check-headers`, `check-compile` | Exhaustive host verification, including tooling and optional integration contracts |
+| `arm-cortex-m4-checks`, `arm-cortex-m7-checks`, `esp32p4-riscv-checks` | `check-headers`, `check-compile` | Architecture and public-header verification |
+| `uno-r4-minima`, `nucleo-h753zi` | `board-tests` | Existing instrumented board-test images and runners |
+| Existing `*-app` shortcuts | `firmware` | A single example for one board |
+
+```sh
+cmake --preset arm-cortex-m4 -DMCUHW_ACTIVE_BOARDS=arduino/uno_r4_minima
+cmake --build --preset arm-cortex-m4 --target arduino.uno_r4_minima.examples
+
+cmake --preset component -DMCUHW_TEST_SUITES=device:ti/tmp102
+cmake --build --preset component
+ctest --preset component
+```
+
+`MCUHW_ACTIVE_BOARDS` is a persistent CMake cache setting: edit it in CMake Tools,
+pass a quoted semicolon-separated list with `-D`, or save it in an ignored
+`CMakeUserPresets.json`. Reconfigure after editing it. Only active boards matching
+the architecture contribute targets. Each board exposes `.examples` and, when
+available, `.tests`; an example such as `.examples.blink` is also independently
+buildable. Vendor-qualified target names avoid board-name collisions.
+
+Examples produce separate firmware images below
+`build/<preset>/boards/<vendor>/<board>/<revision>/examples/<example>/`.
+Board-test dependencies are configured only when its `.tests` target is built.
+The original board-test presets retain their existing runner/output locations.
+New boards declare their architecture and examples locally without a new preset.
+
+Header self-containment now has one `check-headers` target; each header still
+compiles in its own translation unit, without unity builds or precompiled
+headers. Native suite executables remain individually selectable for debugging.
+See [focused targets and presets](doc/development/verification.md#targets-and-presets)
+for persistent component selection and the configure/build/test workflows.
 
 Run the architecture probes with:
 
 ```sh
-cmake --preset arm-cortex-m4
-cmake --build --preset arm-cortex-m4 -j4
+cmake --preset arm-cortex-m4-checks
+cmake --build --preset arm-cortex-m4-checks -j4
 
-cmake --preset arm-cortex-m7
-cmake --build --preset arm-cortex-m7 -j4
+cmake --preset arm-cortex-m7-checks
+cmake --build --preset arm-cortex-m7-checks -j4
 
-cmake --preset esp32p4-riscv
-cmake --build --preset esp32p4-riscv -j4
+cmake --preset esp32p4-riscv-checks
+cmake --build --preset esp32p4-riscv-checks -j4
 ```
 
 Each cross-build uses freestanding, exception-free, RTTI-free flags and writes
@@ -306,9 +365,9 @@ cmake --build --preset uno-r4-minima -j4
 
 Additional runner selections cover GPIO loopback, PWM, UART, I2C, SPI, ADC,
 DMAC, W5100 Ethernet, metrics, and link recovery. See the
-[UNO R4 Minima guide](doc/boards/arduino-uno-r4-minima/README.md),
+[UNO R4 Minima guide](board/arduino/uno_r4_minima/docs/README.md),
 [RA4M1 acceptance record](doc/acceptance/ra4m1-release.md), and
-[W5100 Ethernet guide](doc/boards/arduino-uno-r4-minima/ethernet-w5100.md).
+[W5100 Ethernet guide](board/arduino/uno_r4_minima/docs/ethernet-w5100.md).
 
 ### NUCLEO-H753ZI
 
@@ -319,23 +378,23 @@ cmake --build --preset nucleo-h753zi -j4
 ./tools/run-nucleo-h753zi-native.sh
 ```
 
-See the [NUCLEO-H753ZI guide](doc/boards/nucleo-h753zi/README.md) for
+See the [NUCLEO-H753ZI guide](board/st/nucleo_h753zi/docs/README.md) for
 ST-LINK, VCP, Ethernet jumper, and physical-evidence details.
 
 ### ESP32-P4-NANO
 
-The generic compile probe uses `esp32p4-riscv`. The physical board image is a
+The generic compile probe uses `esp32p4-riscv-checks`. The physical board image is a
 separate ESP-IDF build:
 
 ```sh
-idf.py -C board/esp32p4_nano/baremetal_smoke set-target esp32p4
-idf.py -C board/esp32p4_nano/baremetal_smoke build
+idf.py -C board/waveshare/esp32p4_nano/tests/firmware set-target esp32p4
+idf.py -C board/waveshare/esp32p4_nano/tests/firmware build
 ./tools/run-esp32p4-nano-smoke.sh /dev/cu.usbmodemXXXXXXXXXXXX
 ```
 
 This runner replaces selected flash regions. Read the recovery and silicon-
 revision notes in
-[ESP32-P4-NANO guide](doc/boards/esp32p4-nano/README.md) first.
+[ESP32-P4-NANO guide](board/waveshare/esp32p4_nano/docs/README.md) first.
 
 ## Verification philosophy
 
@@ -367,22 +426,27 @@ already exist.
    `include/mcuhw/board/<board_name>.hpp`. Select the exact MCU/package and add
    only board-level identities and connector aliases. Keep MCU register facts
    in `mcu/` and peripheral sequences in `backend/`.
-3. **Add the physical composition.** Create `board/<board_name>/` with the
+3. **Add the physical composition.** Create `board/<vendor>/<name>/` with the
    startup code, linker script, restricted runtime, execution hooks, interrupt
    dispatch, and focused test images required by the board.
 4. **Bind existing backends.** Form compile-time bindings from the selected
    peripheral instances and board pins. Invalid routes must fail at compile
    time rather than silently selecting another pin or mode.
-5. **Add a preset and runner.** Extend `CMakePresets.json` and `CMakeLists.txt`,
-   then add a reproducible runner under `tools/`. The runner must identify the
-   board, firmware, toolchain, fixture, and observation method.
+5. **Add a local manifest and build entry.** Copy the
+   [board template](catalog/templates/board.json), reference the shared MCU/IP
+   and toolchain, and configure a reusable runner. The common selection interface
+   loads local rules without a root CMake branch or handwritten preset.
 6. **Verify in layers.** Compile the board binding on the host where possible,
    cross-build every public header and the linked image, then run board-native
    and directly connected tests. Document what was not electrically observed.
 7. **Update traceability.** Add or update requirements and a plan item before
    claiming new support. Tag implementation and tests with the applicable
    requirement IDs, register evidence artifacts in `mcutrace.toml`, and update
-   the support table and board documentation.
+   the component's evidence references and documentation; regenerate the catalog.
+
+Follow the [board](doc/development/adding-a-board.md),
+[external-device](doc/development/adding-a-device.md), and
+[catalog](doc/development/catalog.md) guides for complete local workflows.
 
 ### Add a new microcontroller
 

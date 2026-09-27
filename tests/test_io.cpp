@@ -221,8 +221,3 @@ TEST(io, dma_channels_are_exclusive_and_released_tags_are_rejected, "REQ-0045") 
     ASSERT_TRUE(hw.shutdown());
 }
 } // namespace
-
-int main() {
-    mcutest::Runner<mcutest::JsonOutput> runner;
-    return mcutest::run_json_output(runner);
-}

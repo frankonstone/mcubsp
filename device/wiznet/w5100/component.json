@@ -1,0 +1,72 @@
+{
+  "schema_version": 2,
+  "kind": "device",
+  "id": "wiznet/w5100",
+  "name": "WIZnet W5100",
+  "summary": "WIZnet W5100 reusable device protocol/configuration support through declared transport contracts.",
+  "category": "ethernet",
+  "revisions": [
+    "w5100"
+  ],
+  "default_revision": "w5100",
+  "depends": [],
+  "provides": [
+    "ethernet"
+  ],
+  "requires": [
+    "spi"
+  ],
+  "described": [],
+  "capability_sources": {
+    "ethernet": {
+      "path": "include/mcuhw/device/ethernet/w5100.hpp",
+      "contains": "namespace mcuhw::device"
+    }
+  },
+  "ownership": {
+    "maintainers": [
+      "mcuhw maintainers"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/device/ethernet/w5100.hpp",
+    "include/mcuhw/device/ethernet/w5100_macraw.hpp",
+    "include/mcuhw/device/ethernet/w5100_spi.hpp",
+    "include/mcuhw/device/ethernet/w5100_types.hpp"
+  ],
+  "sources": [],
+  "tests": [
+    "tests/test_w5100.cpp",
+    "tests/test_w5100_io.cpp"
+  ],
+  "docs": [
+    "device/wiznet/w5100/README.md",
+    "doc/examples/ethernet-w5100.md",
+    "board/arduino/uno_r4_minima/docs/ethernet-w5100.md"
+  ],
+  "examples": [
+    "examples/io/w5100.cpp"
+  ],
+  "evidence": [
+    {
+      "stage": "host-test",
+      "state": "passed",
+      "revision": "w5100",
+      "scope": "Registered protocol/configuration and simulated bus/backend host cases passed in the 241-case native qualification run on macOS arm64. This does not refresh physical evidence.",
+      "path": "doc/acceptance/repository-adoption.md",
+      "sha256": "4529baa44b700e12f74001e4be1343b2bd99c012e0d09fd6a5542fd939c672aa"
+    },
+    {
+      "stage": "physical",
+      "state": "stale",
+      "revision": "w5100",
+      "path": "board/arduino/uno_r4_minima/docs/ethernet-w5100.md",
+      "scope": "Historical UNO R4 Minima Ethernet Shield R3 W5100 fixture, before the attached-device refactor. Current throughput and physical acceptance have not been remeasured; see exact observations and exclusions in the report.",
+      "sha256": "e53c69e85a1fde65752b45d182b3e2c8885fde26b39d1bbf00e9b97c13a9f2ff"
+    }
+  ],
+  "limitations": [
+    "W5100 SPI and MACRAW mode only; W5100S/W5500 support is not implied.",
+    "Requires board-owned chip-select/reset and optional shield SD deselection. See exact historical fixture report."
+  ]
+}

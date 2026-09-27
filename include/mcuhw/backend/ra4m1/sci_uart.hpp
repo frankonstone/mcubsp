@@ -11,7 +11,7 @@
 #include <mcuhw/core/metadata.hpp>
 #include <mcuhw/core/transfer.hpp>
 #include <mcuhw/driver/dma.hpp>
-#include <mcuhw/driver/uart.hpp>
+#include <mcuhw/backend/ra4m1/timing/uart.hpp>
 #include <mcuhw/mcu/ra4m1/description.hpp>
 
 namespace mcuhw::backend::ra4m1 {
@@ -99,7 +99,7 @@ public:
         : mmio_(mmio), tx_operations_(execution), rx_operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::uart_error>
-    initialize(driver::uart_baud_timing timing,
+    initialize(uart_baud_timing timing,
                driver::uart_format format) noexcept {
         if (initialized_) {
             return std::unexpected(driver::uart_error::already_owned);
@@ -146,33 +146,32 @@ public:
         // SCR.RE=0 does not clear RDRF, receive errors, or RDR. Disable the
         // peripheral before routing its pins, then discard state left by a
         // bootloader or an earlier owner while communication is aborted.
-        if (!write<std::uint8_t>(base() + 0x02U, 0U)) {
+        if (!write_sci<mcu::ra4m1::sci_scr>(0U)) {
             release_owner();
             return mmio_failure();
         }
-        const auto status = mmio_.template read<std::uint8_t>(base() + 0x04U);
+        const auto status = sci<mcu::ra4m1::sci_ssr>().read();
         if (!status) {
             release_owner();
             return mmio_failure();
         }
         if ((*status & (1U << 6U)) != 0U
-            && !mmio_.template read<std::uint8_t>(base() + 0x05U)) {
+            && !sci<mcu::ra4m1::sci_rdr>().read()) {
             release_owner();
             return mmio_failure();
         }
         const bool configured =
-            write<std::uint8_t>(base() + 0x06U, 0xF2U)
-            && write<std::uint8_t>(base() + 0x09U, 0U)
-            && write<std::uint8_t>(base() + 0x0DU, 0U)
+            write_sci<mcu::ra4m1::sci_scmr>(0xF2U)
+            && write_sci<mcu::ra4m1::sci_simr1>(0U)
+            && write_sci<mcu::ra4m1::sci_spmr>(0U)
             // Hold TXD in the asynchronous mark state while TE is off. A
             // high-impedance TXD can otherwise look like a start bit when a
             // looped-back receiver is enabled before the first transmission.
-            && write<std::uint8_t>(base() + 0x1CU, 0x06U)
-            && write<std::uint8_t>(base() + 0x00U, smr)
-            && write<std::uint8_t>(base() + 0x01U, timing.brr)
-            && write<std::uint8_t>(base() + 0x07U, semr)
-            && write<std::uint8_t>(base() + 0x04U,
-                                   static_cast<std::uint8_t>(*status & ~0x78U))
+            && write_sci<mcu::ra4m1::sci_sptr>(0x06U)
+            && write_sci<mcu::ra4m1::sci_smr>(smr)
+            && write_sci<mcu::ra4m1::sci_brr>(timing.brr)
+            && write_sci<mcu::ra4m1::sci_semr>(semr)
+            && write_status_snapshot(static_cast<std::uint8_t>(*status & ~0x78U))
             && configure_pins();
         if (!configured) {
             static_cast<void>(restore_pins());
@@ -267,7 +266,7 @@ public:
         tx_dma_mode_ = true;
         auto dma_started = dma.peripheral({
             .memory = reinterpret_cast<std::uintptr_t>(bytes.data()),
-            .peripheral = base() + 0x03U,
+            .peripheral = base() + mcu::ra4m1::sci_tdr::offset,
             .count = static_cast<std::uint32_t>(bytes.size()),
             .width = driver::dma_width::bits8,
             .event = transmit_dma_event(),
@@ -310,7 +309,7 @@ public:
         rx_dma_mode_ = true;
         auto dma_started = dma.peripheral({
             .memory = reinterpret_cast<std::uintptr_t>(bytes.data()),
-            .peripheral = base() + 0x05U,
+            .peripheral = base() + mcu::ra4m1::sci_rdr::offset,
             .count = static_cast<std::uint32_t>(bytes.size()),
             .width = driver::dma_width::bits8,
             .event = receive_dma_event(),
@@ -391,8 +390,7 @@ public:
             return false;
         }
         if (tx_index_ < tx_bytes_.size()
-            && !write<std::uint8_t>(base() + 0x03U,
-                                    tx_bytes_[tx_index_++])) {
+            && !write_sci<mcu::ra4m1::sci_tdr>(tx_bytes_[tx_index_++])) {
             return fail_tx(driver::uart_error::mmio);
         }
         if (tx_index_ == tx_bytes_.size()) {
@@ -408,7 +406,7 @@ public:
         if (!tx_id_) {
             return false;
         }
-        const auto status = mmio_.template read<std::uint8_t>(base() + 0x04U);
+        const auto status = sci<mcu::ra4m1::sci_ssr>().read();
         if (!status || (*status & (1U << 2U)) == 0U) {
             return false;
         }
@@ -426,7 +424,7 @@ public:
         if (!rx_id_ || rx_dma_mode_) {
             return false;
         }
-        const auto status = mmio_.template read<std::uint8_t>(base() + 0x04U);
+        const auto status = sci<mcu::ra4m1::sci_ssr>().read();
         if (!status) {
             return fail_rx(driver::uart_error::mmio);
         }
@@ -439,7 +437,7 @@ public:
         if ((*status & (1U << 6U)) == 0U) {
             return false;
         }
-        const auto value = mmio_.template read<std::uint8_t>(base() + 0x05U);
+        const auto value = sci<mcu::ra4m1::sci_rdr>().read();
         if (!value) {
             return fail_rx(driver::uart_error::mmio);
         }
@@ -458,8 +456,30 @@ public:
     }
 
     [[nodiscard]] bool handle_receive_error_interrupt() noexcept {
-        const auto status = mmio_.template read<std::uint8_t>(base() + 0x04U);
+        const auto status = sci<mcu::ra4m1::sci_ssr>().read();
         return status && handle_receive_error(*status);
+    }
+
+    // Foreground polling uses the same register dispatch as interrupt entry.
+    void poll() noexcept {
+        static_cast<void>(handle_dma_receive_completion());
+        static_cast<void>(handle_dma_transmit_completion());
+        const auto status = sci<mcu::ra4m1::sci_ssr>().read();
+        const auto enabled = sci<mcu::ra4m1::sci_scr>().read();
+        if (!status || !enabled) return;
+        if ((*status & 0x38U) != 0U && (*enabled & 0x40U) != 0U) {
+            static_cast<void>(handle_receive_error_interrupt());
+        } else if ((*status & 0x40U) != 0U && (*enabled & 0x40U) != 0U) {
+            static_cast<void>(handle_receive_interrupt());
+        }
+        if ((*status & 0x80U) != 0U && (*enabled & 0x80U) != 0U) {
+            static_cast<void>(handle_transmit_data_empty_interrupt());
+        }
+        // Use the enable snapshot from before feeding TDR: an old TEND flag
+        // must not complete a byte just written by the TX-empty handler.
+        if ((*status & 0x04U) != 0U && (*enabled & 0x04U) != 0U) {
+            static_cast<void>(handle_transmit_end_interrupt());
+        }
     }
 
     [[nodiscard]] std::expected<void, driver::uart_error> shutdown() noexcept {
@@ -469,7 +489,7 @@ public:
         if (tx_id_ || rx_id_) {
             return std::unexpected(driver::uart_error::busy);
         }
-        if (!write<std::uint8_t>(base() + 0x02U, 0U) || !restore_pins()) {
+        if (!write_sci<mcu::ra4m1::sci_scr>(0U) || !restore_pins()) {
             return mmio_failure();
         }
         initialized_ = false;
@@ -478,11 +498,11 @@ public:
     }
 
 private:
-    static constexpr std::uint8_t scr_tie = 1U << 7U;
-    static constexpr std::uint8_t scr_rie = 1U << 6U;
-    static constexpr std::uint8_t scr_te = 1U << 5U;
-    static constexpr std::uint8_t scr_re = 1U << 4U;
-    static constexpr std::uint8_t scr_teie = 1U << 2U;
+    static constexpr std::uint8_t scr_tie = mcu::ra4m1::sci_transmit_interrupt_enable::mask;
+    static constexpr std::uint8_t scr_rie = mcu::ra4m1::sci_receive_interrupt_enable::mask;
+    static constexpr std::uint8_t scr_te = mcu::ra4m1::sci_transmit_enable::mask;
+    static constexpr std::uint8_t scr_re = mcu::ra4m1::sci_receive_enable::mask;
+    static constexpr std::uint8_t scr_teie = mcu::ra4m1::sci_transmit_end_interrupt_enable::mask;
 
     [[nodiscard]] static constexpr std::uintptr_t base() noexcept {
         return Binding::metadata.base;
@@ -572,8 +592,7 @@ private:
         } else if ((status & (1U << 3U)) != 0U) {
             error = driver::uart_error::parity;
         }
-        if (!write<std::uint8_t>(base() + 0x04U,
-                                 static_cast<std::uint8_t>(status & ~0x38U))) {
+        if (!write_status_snapshot(static_cast<std::uint8_t>(status & ~0x38U))) {
             error = driver::uart_error::mmio;
         }
         return fail_rx(error);
@@ -609,10 +628,8 @@ private:
 
     [[nodiscard]] bool update_scr(std::uint8_t set,
                                   std::uint8_t clear) noexcept {
-        const auto current = mmio_.template read<std::uint8_t>(base() + 0x02U);
-        return current && write<std::uint8_t>(
-            base() + 0x02U,
-            static_cast<std::uint8_t>((*current | set) & ~clear));
+        const auto current = sci<mcu::ra4m1::sci_scr>().read();
+        return current && write_sci<mcu::ra4m1::sci_scr>(static_cast<std::uint8_t>((*current | set) & ~clear));
     }
 
     [[nodiscard]] bool release_module_stop() noexcept {
@@ -688,6 +705,23 @@ private:
             && write<std::uint8_t>(pwpr, 0x80U);
         arch::data_memory_barrier();
         return restored && locked;
+    }
+
+
+    template<typename Register>
+    [[nodiscard]] auto sci() noexcept {
+        return core::register_ref<Register, MmioPolicy>{mmio_, base()};
+    }
+    template<typename Register>
+    [[nodiscard]] bool write_sci(typename Register::value_type value) noexcept {
+        return sci<Register>().write(value).has_value();
+    }
+    // SSR mixes read-only status and write-zero-to-clear flags. Preserve the
+    // caller's status snapshot rather than using ordinary register writes/RMW.
+    [[nodiscard]] bool write_status_snapshot(
+        mcu::ra4m1::sci_ssr::value_type value) noexcept {
+        return mmio_.template write<mcu::ra4m1::sci_ssr::value_type>(
+            sci<mcu::ra4m1::sci_ssr>().address(), value).has_value();
     }
 
     template<typename Value>

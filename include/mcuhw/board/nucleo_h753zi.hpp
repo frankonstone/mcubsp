@@ -2,6 +2,7 @@
 
 // @req-file REQ-0031 REQ-0033
 
+#include <array>
 #include <mcuhw/core/metadata.hpp>
 
 namespace mcuhw::board::nucleo_h753zi {
@@ -31,5 +32,11 @@ inline constexpr core::pin_id ethernet_tx_en{6, 11};
 inline constexpr core::pin_id ethernet_txd0{6, 13};
 inline constexpr core::pin_id ethernet_txd1{1, 13};
 inline constexpr std::uint8_t ethernet_phy_address = 0U;
+
+struct ethernet_binding {
+    static constexpr std::array rmii_pins{
+        ethernet_ref_clk, ethernet_mdio, ethernet_mdc, ethernet_crs_dv,
+        ethernet_rxd0, ethernet_rxd1, ethernet_tx_en, ethernet_txd0, ethernet_txd1};
+};
 
 } // namespace mcuhw::board::nucleo_h753zi

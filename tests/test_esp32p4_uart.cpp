@@ -109,7 +109,7 @@ TEST(esp32p4_uart, solves_fractional_baud_and_rejects_bad_requests,
      "REQ-0011", "REQ-0027", "REQ-0034") {
     ASSERT_TRUE(baud_115200.has_value());
     EXPECT_EQ(baud_115200->divisor, 5'556U);
-    EXPECT_EQ(baud_115200->backend_encoding, 1U);
+    EXPECT_EQ(baud_115200->source_divider, 1U);
     EXPECT_EQ(baud_115200->achieved_baud, 115'191U);
     EXPECT_EQ(baud_115200->error_ppm, 80U);
     EXPECT_EQ(pll_baud_115200->divisor, 11'111U);

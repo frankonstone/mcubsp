@@ -42,12 +42,12 @@ using uart_backend = mcuhw::backend::ra4m1::sci_uart_backend<
 using i2c_backend = mcuhw::backend::ra4m1::iic_controller_backend<
     i2c_binding, example_mmio, execution_type>;
 
-constexpr auto uart_timing = mcuhw::driver::solve_uart_baud({
+constexpr auto uart_timing = mcuhw::backend::ra4m1::solve_uart_baud({
     .clock_hz = 24'000'000U,
     .target_baud = 115'200U,
     .maximum_error_ppm = 20'000U,
 });
-constexpr auto i2c_timing = mcuhw::driver::solve_i2c_timing({
+constexpr auto i2c_timing = mcuhw::backend::ra4m1::solve_i2c_timing({
     .clock_hz = 24'000'000U,
     .target_hz = 400'000U,
     .maximum_error_ppm = 30'000U,

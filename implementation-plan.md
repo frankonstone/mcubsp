@@ -685,11 +685,16 @@ throughput measurements of the refactored W5100 remain separate work.
 ## Phase D2: repository adoption and scale
 
 ## PLN-0027 Separate consumer builds and export the library package
-@status(planned)
+@status(done)
 @link(REQ-0002, REQ-0003, REQ-0038, REQ-0047)
 
 Prerequisite: PLN-0026. This begins the D18 adoption work immediately after the
 attached-device foundation.
+
+Delivered: interface-only default builds, explicit maintainer options and a
+versioned relocatable install/export. Real source, installed/relocated and
+direct-header consumers pass without sibling projects; parent tests and compiler
+settings remain intact. See [adoption qualification](doc/acceptance/repository-adoption.md).
 
 - Make embedded CMake use define only the public library interfaces by default.
   Gate tests, probes, header checks, coverage and hardware images with explicit
@@ -706,10 +711,15 @@ Exit: source and installed consumers build without sibling projects, source-tree
 path leakage or unrelated validation targets; parent test behavior is unchanged.
 
 ## PLN-0028 Establish local component manifests and hardware discovery
-@status(planned)
+@status(done)
 @link(REQ-0003, REQ-0005, REQ-0010, REQ-0038, REQ-0046, REQ-0048)
 
 Prerequisite: PLN-0027; use the existing MCU, board and attached-device contracts.
+
+Delivered: schema v1 and 12 local board/MCU/IP/device entries, direct selected
+lookup, dependency/capability validation, contribution templates and generated
+indexes. Catalog regression cases cover invalid entries and local additions;
+synthetic scale entries stay outside the published catalog.
 
 - Define the manifest schema/version, vendor-qualified identities, revision and
   variant rules, dependency/capability references, file layout and ownership.
@@ -729,11 +739,17 @@ Exit: the current catalog validates, invalid entries fail clearly, and another
 board/device needs no handwritten registration in central build or support lists.
 
 ## PLN-0029 Unify selected-board firmware builds across the existing targets
-@status(planned)
+@status(done)
 @link(REQ-0031, REQ-0038, REQ-0045, REQ-0046, REQ-0047, REQ-0048, REQ-0049)
 
 Prerequisite: PLN-0028. Reuse the existing UNO, NUCLEO and ESP32-P4 integrations;
 completion of the remaining PLN-0019/PLN-0023 peripheral work is not required.
+
+Delivered: pre-project board/toolchain selection, local build entries, explicit
+startup ownership and separate reusable runners. All six external Blink/TMP102
+applications link on the measured macOS host, including the ESP SDK boot path;
+external startup and relocated installed firmware also pass. No new physical
+acceptance is claimed. Detailed scope is in the adoption qualification record.
 
 - Replace central board-specific build branches with selected local board rules
   and shared firmware/linker/artifact helpers. Select toolchains before compiler
@@ -753,10 +769,18 @@ unrelated targets or duplicate startup ownership. Build results carry no new
 physical acceptance claim.
 
 ## PLN-0030 Deliver reproducible setup and the first-application workflow
-@status(planned)
+@status(in_progress)
 @link(REQ-0002, REQ-0036, REQ-0038, REQ-0047, REQ-0049, REQ-0050)
 
 Prerequisite: PLN-0029.
+
+Implemented: optional discovery/new/setup/doctor/build/flash frontend, pinned
+tool and SDK identities, validated archive caches, explicit overrides and
+operation-specific diagnostics. Real macOS setup/build/offline rebuilds and
+runner-command tests pass. Linux and Windows clean first-application setup and
+cross-build execution remain unqualified; the hosted native CI matrix has been
+added but has not run from this checkout. This item stays in progress until
+the required host-specific results exist.
 
 - Publish the tested Linux/macOS/Windows host matrix and compiler, C++23 library,
   CMake/Ninja, required SDK and debugger versions. Pin dependency/toolchain inputs
@@ -777,10 +801,15 @@ application. Tool/source identities and overrides are recorded; only physically
 exercised runner combinations receive hardware evidence.
 
 ## PLN-0031 Publish the searchable catalog and contribution workflows
-@status(planned)
+@status(done)
 @link(REQ-0036, REQ-0038, REQ-0039, REQ-0048, REQ-0049, REQ-0050, REQ-0051)
 
 Prerequisite: PLN-0030; catalog generation may develop alongside the build work.
+
+Delivered alongside PLN-0030: generated searchable support/evidence listings,
+complete compiled examples, local board/device/MCU guides and templates, plus
+API/catalog compatibility guidance. Evidence remains scoped to its recorded
+revision and observation; host qualification limits are explicit in the guides.
 
 - Generate board/device listings and support tables from manifests and evidence
   references. Filter by category, bus/capabilities, revision, runner and support
@@ -798,11 +827,38 @@ Exit: users can discover an appropriate component and reach its working example;
 contributors can add a local board/device using documented, focused checks.
 
 ## PLN-0032 Scale verification and qualify the repository adoption workflow
-@status(planned)
+@status(in_progress)
 @link(REQ-0035, REQ-0036, REQ-0037, REQ-0038, REQ-0039, REQ-0047, REQ-0048, REQ-0049, REQ-0050, REQ-0051, REQ-0052)
 
 Prerequisite: PLN-0027 through PLN-0031; suite decomposition may begin after
 PLN-0028 establishes component identities and dependencies.
+
+Implemented: selectable native/component suites, conservative affected-check
+selection, scheduled/release native CI recipes, selected-input firmware and
+flash-bundle provenance, and a measured 300-board/3,000-device growth check.
+The local complete maintainer regression and three-board external applications
+pass; test evidence is merged from the current selected CTest registry and
+registered in mcutrace. See the adoption qualification record for timings and
+actual test counts. Integrated Linux/Windows first-build qualification under
+PLN-0030 and hosted CI execution remain open, so this item stays in progress.
+
+Implemented target usability refinement: one `check-headers` target retains
+independent header compilation; the shared preset base disables optional checks.
+Selected application/component configurations have explicit default build targets,
+while exhaustive maintainer presets, focused executables and test artifacts remain
+available. Internal support targets have IDE folders. The local CMake File API
+reports one project target per board application, two for the TMP102 component
+configuration and 21 for full host verification. See
+[targets and presets](doc/development/verification.md#targets-and-presets).
+
+The D19 workspace refinement selects the architecture through a preset and
+persists `MCUHW_ACTIVE_BOARDS` as a local CMake setting. Selected manifests supply
+vendor-qualified board example/test aggregates, with separate example images and
+board/revision artifact directories. Reconfiguration removes inactive targets;
+board-test dependencies are configured only when that group is requested.
+An explicit `all` selection enables exhaustive compatible-board builds. The
+focused regression adds 100 unselected board entries without changing targets
+or compilation commands and builds two active board identities independently.
 
 - Split core, MCU/backend, board and device checks into selectable suites with
   separate artifacts. Select affected components/dependents for changes, with a

@@ -12,6 +12,21 @@
 
 namespace mcuhw::backend::stm32h753 {
 
+struct i2c_timing {
+    std::uint32_t clock_hz;
+    std::uint32_t target_hz;
+    std::uint32_t achieved_hz;
+    std::uint32_t error_ppm;
+    std::uint32_t rise_time_ns;
+    std::uint32_t fall_time_ns;
+
+    std::uint32_t timingr;
+    [[nodiscard]] constexpr operator driver::i2c_timing() const noexcept {
+        return {clock_hz, target_hz, achieved_hz, error_ppm, rise_time_ns, fall_time_ns};
+    }
+    friend constexpr bool operator==(i2c_timing, i2c_timing) = default;
+};
+
 enum class i2c_recovery_policy : std::uint8_t { none, exclusive_peripheral_reset };
 
 namespace detail {
@@ -23,7 +38,7 @@ struct i2c_owner { static inline bool claimed{}; };
 // Standard/Fast-mode high/low minima and includes configured edge times in the
 // achieved wire period. Analog/digital filter delay remains disabled here.
 // @req REQ-0011 REQ-0024 REQ-0033
-[[nodiscard]] constexpr std::expected<driver::i2c_timing, driver::i2c_error>
+[[nodiscard]] constexpr std::expected<i2c_timing, driver::i2c_error>
 solve_stm32_i2c_timing(driver::i2c_timing_request request) noexcept {
     if (request.clock_hz == 0U) {
         return std::unexpected(driver::i2c_error::invalid_clock);
@@ -40,7 +55,7 @@ solve_stm32_i2c_timing(driver::i2c_timing_request request) noexcept {
     const auto min_high = standard ? 4'000U : 600U;
     const auto setup = standard ? 250U : 100U;
     bool found{};
-    driver::i2c_timing best{};
+    i2c_timing best{};
     for (std::uint32_t presc = 0U; presc < 16U; ++presc) {
         const auto tick_ps = driver::i2c_detail::divide_rounded(
             static_cast<std::uint64_t>(presc + 1U) * 1'000'000'000'000ULL,
@@ -90,20 +105,17 @@ solve_stm32_i2c_timing(driver::i2c_timing_request request) noexcept {
                 const auto timingr = (presc << 28U)
                     | ((scldel_counts - 1U) << 20U)
                     | (sdadel_counts << 16U) | (sclh << 8U) | scll;
-                const driver::i2c_timing candidate{
+                const i2c_timing candidate{
                     .clock_hz = request.clock_hz,
                     .target_hz = request.target_hz,
                     .achieved_hz = achieved,
                     .error_ppm = error,
                     .rise_time_ns = request.rise_time_ns,
                     .fall_time_ns = request.fall_time_ns,
-                    .clock_select = 0U,
-                    .brl = 0U,
-                    .brh = 0U,
-                    .backend_encoding = static_cast<std::uint32_t>(timingr),
+                    .timingr = static_cast<std::uint32_t>(timingr),
                 };
                 if (!found || error < best.error_ppm
-                    || (error == best.error_ppm && timingr < best.backend_encoding)) {
+                    || (error == best.error_ppm && timingr < best.timingr)) {
                     best = candidate; found = true;
                 }
             }
@@ -154,11 +166,11 @@ public:
         : mmio_(mmio), operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::i2c_error> initialize(
-        driver::i2c_timing timing) noexcept {
+        i2c_timing timing) noexcept {
         if (initialized_ || detail::i2c_owner<Binding::instance>::claimed) {
             return std::unexpected(driver::i2c_error::already_owned);
         }
-        if (timing.backend_encoding == 0U) {
+        if (timing.timingr == 0U) {
             return std::unexpected(driver::i2c_error::invalid_rate);
         }
         detail::i2c_owner<Binding::instance>::claimed = true; owned_ = true;
@@ -166,7 +178,7 @@ public:
         if (!detail::enable_peripheral_clock(mmio_, Binding::metadata)
             || !pins.alternate(Binding::scl_pin, Binding::scl_af, true, 1U)
             || !pins.alternate(Binding::sda_pin, Binding::sda_af, true, 1U)
-            || !write(0x00U, 0U) || !write(0x10U, timing.backend_encoding)
+            || !write(0x00U, 0U) || !write(0x10U, timing.timingr)
             || !write(0x1CU, 0x0000'3F38U) || !write(0x00U, 1U)) {
             release_owner(); return mmio_failure();
         }

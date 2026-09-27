@@ -29,7 +29,4 @@ endif()
 
 set(CMAKE_CXX_COMPILER "${MCUHW_ESP32P4_CXX_COMPILER}")
 set(MCUHW_ARCH "esp32p4-riscv" CACHE STRING "Architecture probed by this build" FORCE)
-# ESP-IDF's compiler driver supplies the selected ESP32-P4 multilib. Board and
-# SDK-specific ISA flags belong to the later firmware configuration.
-set(MCUHW_ARCH_COMPILE_OPTIONS -ffreestanding
-    CACHE STRING "Architecture compile options" FORCE)
+include("${CMAKE_CURRENT_LIST_DIR}/architectures/esp32p4-riscv.cmake")

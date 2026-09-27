@@ -12,6 +12,19 @@
 
 namespace mcuhw::backend::esp32p4 {
 
+struct spi_timing {
+    std::uint32_t clock_hz;
+    std::uint32_t target_hz;
+    std::uint32_t achieved_hz;
+    std::uint32_t error_ppm;
+
+    std::uint32_t clock_register;
+    [[nodiscard]] constexpr operator driver::spi_timing() const noexcept {
+        return {clock_hz, target_hz, achieved_hz, error_ppm};
+    }
+    friend constexpr bool operator==(spi_timing, spi_timing) = default;
+};
+
 namespace detail {
 
 template<std::uint8_t Instance>
@@ -30,9 +43,9 @@ struct spi_select_handler<true> {
 
 // GPSPI either passes the source clock directly or divides it by (pre * n),
 // with pre in 1..16 and n in 2..64. Select the fastest rate which does not
-// exceed the device limit; backend_encoding is the native SPI_CLOCK_REG value.
+// exceed the device limit; clock_register is the native SPI_CLOCK_REG value.
 // @req REQ-0011 REQ-0028 REQ-0034
-[[nodiscard]] constexpr std::expected<driver::spi_timing, driver::spi_error>
+[[nodiscard]] constexpr std::expected<spi_timing, driver::spi_error>
 solve_spi_timing(driver::spi_timing_request request) noexcept {
     if (request.clock_hz == 0U) {
         return std::unexpected(driver::spi_error::invalid_clock);
@@ -41,19 +54,17 @@ solve_spi_timing(driver::spi_timing_request request) noexcept {
         return std::unexpected(driver::spi_error::invalid_rate);
     }
     if (request.target_hz == request.clock_hz) {
-        return driver::spi_timing{
+        return spi_timing{
             .clock_hz = request.clock_hz,
             .target_hz = request.target_hz,
             .achieved_hz = request.clock_hz,
             .error_ppm = 0U,
-            .spbr = 0U,
-            .brdv = 0U,
-            .backend_encoding = 1U << 31U,
+            .clock_register = 1U << 31U,
         };
     }
 
     bool found{};
-    driver::spi_timing best{};
+    spi_timing best{};
     for (std::uint32_t pre = 1U; pre <= 16U; ++pre) {
         for (std::uint32_t n = 2U; n <= 64U; ++n) {
             const auto achieved = request.clock_hz / (pre * n);
@@ -67,15 +78,13 @@ solve_spi_timing(driver::spi_timing_request request) noexcept {
                 | ((n - 1U) << 12U) | ((pre - 1U) << 18U);
             if (!found || achieved > best.achieved_hz
                 || (achieved == best.achieved_hz
-                    && encoding < best.backend_encoding)) {
+                    && encoding < best.clock_register)) {
                 best = {
                     .clock_hz = request.clock_hz,
                     .target_hz = request.target_hz,
                     .achieved_hz = achieved,
                     .error_ppm = error,
-                    .spbr = 0U,
-                    .brdv = 0U,
-                    .backend_encoding = encoding,
+                    .clock_register = encoding,
                 };
                 found = true;
             }
@@ -141,7 +150,7 @@ public:
         : mmio_(mmio), operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::spi_error> initialize(
-        driver::spi_timing timing,
+        spi_timing timing,
         driver::spi_configuration configuration = {}) noexcept {
         if (initialized_ || detail::spi_owner<Binding::instance>::claimed) {
             return std::unexpected(driver::spi_error::already_owned);
@@ -199,7 +208,7 @@ public:
     }
 
     [[nodiscard]] std::expected<void, driver::spi_error> reconfigure(
-        driver::spi_timing timing,
+        spi_timing timing,
         driver::spi_configuration configuration = {}) noexcept {
         if (!initialized_) return std::unexpected(driver::spi_error::not_initialized);
         if (busy()) return std::unexpected(driver::spi_error::busy);
@@ -303,21 +312,21 @@ public:
 
 private:
     [[nodiscard]] static constexpr bool timing_is_valid(
-        driver::spi_timing timing) noexcept {
+        spi_timing timing) noexcept {
         if (timing.clock_hz != 40'000'000U || timing.achieved_hz == 0U
             || timing.achieved_hz > timing.target_hz
             || timing.target_hz > timing.clock_hz
-            || (timing.backend_encoding & ~clock_register_mask) != 0U) {
+            || (timing.clock_register & ~clock_register_mask) != 0U) {
             return false;
         }
-        if ((timing.backend_encoding & (1U << 31U)) != 0U) {
-            return timing.backend_encoding == (1U << 31U)
+        if ((timing.clock_register & (1U << 31U)) != 0U) {
+            return timing.clock_register == (1U << 31U)
                 && timing.achieved_hz == timing.clock_hz;
         }
-        const auto pre = ((timing.backend_encoding >> 18U) & 0xFU) + 1U;
-        const auto n = ((timing.backend_encoding >> 12U) & 0x3FU) + 1U;
-        const auto high = ((timing.backend_encoding >> 6U) & 0x3FU) + 1U;
-        const auto low = (timing.backend_encoding & 0x3FU) + 1U;
+        const auto pre = ((timing.clock_register >> 18U) & 0xFU) + 1U;
+        const auto n = ((timing.clock_register >> 12U) & 0x3FU) + 1U;
+        const auto high = ((timing.clock_register >> 6U) & 0x3FU) + 1U;
+        const auto low = (timing.clock_register & 0x3FU) + 1U;
         return n >= 2U && low == n && high < n
             && timing.achieved_hz == timing.clock_hz / (pre * n);
     }
@@ -331,9 +340,9 @@ private:
             && static_cast<std::uint8_t>(configuration.chip_select) <= 1U;
     }
 
-    [[nodiscard]] bool program(driver::spi_timing timing,
+    [[nodiscard]] bool program(spi_timing timing,
                                driver::spi_configuration configuration) noexcept {
-        return write(reg_clock, timing.backend_encoding)
+        return write(reg_clock, timing.clock_register)
             && write(reg_control, control_value(configuration))
             && write(reg_user, user_value(configuration))
             && write(reg_user1, 0U) && write(reg_user2, 0U)

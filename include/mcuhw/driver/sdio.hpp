@@ -37,6 +37,7 @@ public:
         if (initialized_) {
             return std::unexpected(sdmmc_error::already_initialized);
         }
+        info_ = {};
         if (!host_.initialize()) {
             return std::unexpected(sdmmc_error::host_initialization);
         }

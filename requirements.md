@@ -24,6 +24,7 @@ Requirements baseline, 26 September 2026. Derived from [proposal.md](proposal.md
 | D16 | Add `mcuhw::io` in this repository as a modern C++ application interface with familiar board/pin/peripheral operations, explicit DMA access, replaceable execution, shared ownership and compile-time storage selection. Implement the bare-metal foundation now. Camera, RTOS and network integration are future extensions, and Arduino sketch compatibility is outside this increment. Measure actual RAM/flash cost against the existing driver layer. | Accepted by user, 26 September 2026 |
 | D17 | Introduce reusable attached-device drivers with shared I2C address and SPI chip-select handles supplied by `io`. Keep chip protocols independent of board composition, preserve checked fast transfers, and supply TMP102 and W5100 components plus generic MCUIP integration. Use explicit storage, ownership, deadlines and bounded polling; RTOS concurrency remains a later stage. | Accepted by user, 26 September 2026 |
 | D18 | Make ease of use, building and contribution a first-class adoption requirement for hundreds of boards and thousands of devices. Keep one modular repository, independently consumable CMake/header interfaces, locally defined hardware components, selected-board builds, reproducible setup, searchable support information and dependency-scoped verification. Schedule the repository adoption work immediately after PLN-0026, before deferred MCUOS integration; preserve existing hardware and evidence boundaries. | Accepted for requirements and planning by user, 26 September 2026 |
+| D19 | Configure the architecture once and expose board task groups only for a configurable active-board set. Persist the local selection, keep examples as separate firmware images beneath an aggregate, and isolate board/revision artifacts and optional test dependencies. | Accepted by user, 26 September 2026 |
 
 Existing proposal decisions are retained: C++23; compile-time configuration and validation; metadata separate from drivers; functional abstraction with capabilities; RA4M1 as the first physical driver target after all three descriptions; `transfer<T>` as the async primitive; optional coroutine adapters.
 
@@ -598,6 +599,16 @@ firmware, linker, artifact and runner helpers; adding a board on an existing
 platform shall not require a root CMake branch, a new global option or a
 handwritten preset. Different board/toolchain configurations shall use isolated
 build directories.
+
+Repository workspaces shall select an architecture through a configure preset
+and an explicit, persistent active-board list through CMake cache settings or a
+local user preset. Only those boards shall contribute task groups such as
+`<board>.examples` and `<board>.tests`; individual example images remain
+independently buildable. Resolve examples from each selected board's manifest,
+reject incompatible architecture/revision selections, and isolate generated
+configuration and artifacts per board/revision/example. Changing the active set
+shall remove inactive targets on reconfiguration. Unselected catalog growth
+shall not enlarge the workspace target list or configure test dependencies.
 
 Applications shall explicitly choose supplied board startup or their existing
 BSP/RTOS startup. Supplied integration shall bind clocks, memory layout, vectors

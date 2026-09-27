@@ -3,3 +3,9 @@ doc/_vendor/
 doc/_generated/
 outputs
 tmp
+*.pyc
+__pycache__/
+CMakeUserPresets.json
+# Preserve ignored local SDK configuration left at the former test-project path.
+/board/esp32p4_nano/baremetal_smoke/sdkconfig
+/board/esp32p4_nano/baremetal_smoke/sdkconfig.old

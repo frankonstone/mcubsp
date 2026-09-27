@@ -9,7 +9,7 @@
 #include <mcuhw/arch/barrier.hpp>
 #include <mcuhw/core/metadata.hpp>
 #include <mcuhw/core/transfer.hpp>
-#include <mcuhw/driver/i2c.hpp>
+#include <mcuhw/backend/ra4m1/timing/i2c.hpp>
 #include <mcuhw/mcu/ra4m1/description.hpp>
 
 namespace mcuhw::backend::ra4m1 {
@@ -87,7 +87,7 @@ public:
         : mmio_(mmio), operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::i2c_error>
-    initialize(driver::i2c_timing timing) noexcept {
+    initialize(i2c_timing timing) noexcept {
         if (initialized_ || iic_detail::owner<Binding::instance>::claimed) {
             return std::unexpected(driver::i2c_error::already_owned);
         }
@@ -292,6 +292,29 @@ public:
             return std::unexpected(driver::i2c_error::bus_stuck);
         }
         return {};
+    }
+
+    // Foreground polling uses the same register dispatch as interrupt entry.
+    void poll() noexcept {
+        const auto status = mmio_.template read<std::uint8_t>(
+            Binding::metadata.base + 0x09U);
+        const auto enabled = mmio_.template read<std::uint8_t>(
+            Binding::metadata.base + 0x07U);
+        if (!status || !enabled) return;
+        const auto pending = static_cast<std::uint8_t>(*status & *enabled);
+        if ((pending & 0x1BU) != 0U) {
+            static_cast<void>(handle_error_interrupt());
+            return;
+        }
+        // Dispatch one condition per poll: handlers may change the phase and
+        // interrupt enables, making the original status snapshot stale.
+        if ((pending & 0x20U) != 0U) {
+            static_cast<void>(handle_receive_interrupt());
+        } else if ((pending & 0x80U) != 0U) {
+            static_cast<void>(handle_transmit_empty_interrupt());
+        } else if ((pending & 0x40U) != 0U) {
+            static_cast<void>(handle_transmit_end_interrupt());
+        }
     }
 
     [[nodiscard]] std::expected<void, driver::i2c_error> shutdown() noexcept {
@@ -611,7 +634,7 @@ private:
 
     MmioPolicy& mmio_;
     pool_type operations_;
-    driver::i2c_timing timing_{};
+    i2c_timing timing_{};
     driver::i2c_address address_{};
     std::span<const std::uint8_t> write_bytes_{};
     std::span<std::uint8_t> read_bytes_{};

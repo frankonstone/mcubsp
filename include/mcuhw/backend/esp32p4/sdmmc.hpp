@@ -1,7 +1,9 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <expected>
 #include <span>
 
@@ -12,58 +14,30 @@
 namespace mcuhw::backend::esp32p4 {
 
 namespace detail {
-struct sdmmc_owner { static inline bool claimed{}; };
+struct alignas(64) sdmmc_dma_descriptor {
+    std::uint32_t control{};
+    std::uint32_t size{};
+    std::uint32_t buffer{};
+    std::uint32_t next{};
+    std::uint32_t reserved[12]{};
+};
+static_assert(sizeof(sdmmc_dma_descriptor) == 64U);
+
+struct sdmmc_owner {
+    static inline bool claimed{};
+    // DMA storage outlives any host or caller buffer, including a failed reset.
+    static inline sdmmc_dma_descriptor descriptor{};
+    alignas(64) static inline std::array<std::byte, 512> data{};
+};
 } // namespace detail
 
-struct sdmmc_slot0_binding {
-    static constexpr std::uintptr_t base = 0x5008'3000U;
-    static constexpr std::uintptr_t hp_clock_base = 0x500E'6000U;
-    static constexpr std::uintptr_t lp_clock_base = 0x5011'1000U;
-    static constexpr std::uintptr_t pmu_base = 0x5011'5000U;
-    static constexpr std::uint8_t d0 = 39U;
-    static constexpr std::uint8_t d1 = 40U;
-    static constexpr std::uint8_t d2 = 41U;
-    static constexpr std::uint8_t d3 = 42U;
-    static constexpr std::uint8_t clock = 43U;
-    static constexpr std::uint8_t command = 44U;
-    static constexpr std::uint8_t slot = 0U;
-    static constexpr bool uses_gpio_matrix = false;
-    static constexpr bool requires_io_power = true;
-};
-
-// Slot 1 is routed through the GPIO matrix to the ESP32-C5 wireless
-// coprocessor on ESP32-P4-NANO-WIFI6-DB. Signal indices are the ESP32-P4
-// SDMMC slot-1 matrix signals published by Espressif.
-struct sdmmc_slot1_wifi_binding {
-    static constexpr std::uintptr_t base = sdmmc_slot0_binding::base;
-    static constexpr std::uintptr_t hp_clock_base =
-        sdmmc_slot0_binding::hp_clock_base;
-    static constexpr std::uintptr_t lp_clock_base =
-        sdmmc_slot0_binding::lp_clock_base;
-    static constexpr std::uintptr_t pmu_base = sdmmc_slot0_binding::pmu_base;
-    static constexpr std::uint8_t d0 = 14U;
-    static constexpr std::uint8_t d1 = 15U;
-    static constexpr std::uint8_t d2 = 16U;
-    static constexpr std::uint8_t d3 = 17U;
-    static constexpr std::uint8_t clock = 18U;
-    static constexpr std::uint8_t command = 19U;
-    static constexpr std::uint8_t slot = 1U;
-    static constexpr bool uses_gpio_matrix = true;
-    static constexpr bool requires_io_power = false;
-    static constexpr std::uint16_t clock_signal = 0U;
-    static constexpr std::uint16_t command_signal = 1U;
-    static constexpr std::uint16_t d0_signal = 2U;
-    static constexpr std::uint16_t d1_signal = 3U;
-    static constexpr std::uint16_t d2_signal = 4U;
-    static constexpr std::uint16_t d3_signal = 5U;
-};
-
 // ESP32-P4 native SDMMC host. Slot bindings select dedicated IO-MUX or GPIO
-// matrix routing. A single fixed 64-byte IDMAC descriptor is used. Commands and
+// matrix routing. A fixed IDMAC descriptor and sector staging buffer are used.
+// Caller buffers are never exposed to DMA. Commands and
 // one-sector transfers are synchronously polled with finite limits; no
 // scheduler or allocator is used.
 template<typename MmioPolicy, typename MemoryPolicy,
-         typename Binding = sdmmc_slot0_binding>
+         typename Binding>
 // @req REQ-0003 REQ-0009 REQ-0010 REQ-0011 REQ-0013 REQ-0014 REQ-0016 REQ-0019 REQ-0034 REQ-0037
 class sdmmc_host_backend {
 public:
@@ -175,7 +149,7 @@ public:
     [[nodiscard]] std::expected<driver::sdmmc_response,
                                 driver::sdmmc_error>
     command(driver::sdmmc_command command) noexcept {
-        if (!initialized_ && !owned_) {
+        if (!initialized_) {
             return std::unexpected(driver::sdmmc_error::not_initialized);
         }
         return transact(command);
@@ -188,7 +162,7 @@ public:
         if (!initialized_) {
             return std::unexpected(driver::sdmmc_error::not_initialized);
         }
-        const auto buffer = memory_.address(data.data());
+        const auto buffer = memory_.address(staging_.data());
         const auto descriptor = memory_.address(&descriptor_);
         if (!buffer || !descriptor) {
             return std::unexpected(driver::sdmmc_error::dma);
@@ -200,20 +174,24 @@ public:
             .buffer = *buffer,
             .next = 0U,
         };
+        dma_active_ = true;
         if (!memory_.prepare_for_device(&descriptor_, sizeof(descriptor_))
-            || !memory_.prepare_for_device(data.data(), data.size())
+            || !memory_.prepare_for_device(staging_.data(), staging_.size())
             || !write(reg_bytcnt, 512U) || !write(reg_blksiz, 512U)
             || !write(reg_dbaddr, *descriptor)
             || !modify(reg_ctrl, (1U << 5U) | (1U << 25U), 0U)
             || !modify(reg_bmod, (1U << 1U) | (1U << 7U), 0U)
             || !write(reg_pldmnd, 1U)) {
+            static_cast<void>(stop_dma());
             return std::unexpected(driver::sdmmc_error::dma);
         }
         auto response = transact(command, transfer_direction::read);
+        if (!stop_dma()) return std::unexpected(driver::sdmmc_error::dma);
         if (!response) return response;
-        if (!memory_.complete_from_device(data.data(), data.size())) {
+        if (!memory_.complete_from_device(staging_.data(), staging_.size())) {
             return std::unexpected(driver::sdmmc_error::dma);
         }
+        std::memcpy(data.data(), staging_.data(), data.size());
         return response;
     }
 
@@ -224,7 +202,7 @@ public:
         if (!initialized_) {
             return std::unexpected(driver::sdmmc_error::not_initialized);
         }
-        const auto buffer = memory_.address(data.data());
+        const auto buffer = memory_.address(staging_.data());
         const auto descriptor = memory_.address(&descriptor_);
         if (!buffer || !descriptor) {
             return std::unexpected(driver::sdmmc_error::dma);
@@ -236,16 +214,21 @@ public:
             .buffer = *buffer,
             .next = 0U,
         };
+        std::memcpy(staging_.data(), data.data(), data.size());
+        dma_active_ = true;
         if (!memory_.prepare_for_device(&descriptor_, sizeof(descriptor_))
-            || !memory_.prepare_for_device(data.data(), data.size())
+            || !memory_.prepare_for_device(staging_.data(), staging_.size())
             || !write(reg_bytcnt, 512U) || !write(reg_blksiz, 512U)
             || !write(reg_dbaddr, *descriptor)
             || !modify(reg_ctrl, (1U << 5U) | (1U << 25U), 0U)
             || !modify(reg_bmod, (1U << 1U) | (1U << 7U), 0U)
             || !write(reg_pldmnd, 1U)) {
+            static_cast<void>(stop_dma());
             return std::unexpected(driver::sdmmc_error::dma);
         }
-        return transact(command, transfer_direction::write);
+        auto response = transact(command, transfer_direction::write);
+        if (!stop_dma()) return std::unexpected(driver::sdmmc_error::dma);
+        return response;
     }
 
     [[nodiscard]] bool set_bus_width_4() noexcept {
@@ -266,6 +249,9 @@ public:
         if (!owned_) {
             return std::unexpected(driver::sdmmc_error::not_initialized);
         }
+        if (!stop_dma()) {
+            return std::unexpected(driver::sdmmc_error::dma);
+        }
         bool ok = true;
         if (initialized_) {
             ok = disable_card_clock();
@@ -279,15 +265,6 @@ public:
     }
 
 private:
-    struct alignas(64) dma_descriptor {
-        std::uint32_t control{};
-        std::uint32_t size{};
-        std::uint32_t buffer{};
-        std::uint32_t next{};
-        std::uint32_t reserved[12]{};
-    };
-    static_assert(sizeof(dma_descriptor) == 64U);
-
     static constexpr std::uintptr_t reg_ctrl = Binding::base + 0x00U;
     static constexpr std::uintptr_t reg_clkdiv = Binding::base + 0x08U;
     static constexpr std::uintptr_t reg_clksrc = Binding::base + 0x0CU;
@@ -345,6 +322,25 @@ private:
     static constexpr std::size_t poll_limit = 2'000'000U;
 
     enum class transfer_direction : std::uint8_t { none, read, write };
+
+    [[nodiscard]] bool stop_dma() noexcept {
+        if (!dma_active_) return true;
+        // Disable both DMA interfaces before resetting their state machines.
+        // CTRL.DMA_RESET and BMOD.SWR must self-clear before storage is reused.
+        const bool controller = modify(reg_ctrl, (1U << 1U) | (1U << 2U),
+                                       (1U << 5U) | (1U << 25U));
+        const bool bus = write(reg_bmod, 1U);
+        const bool controller_idle = wait_clear(reg_ctrl, (1U << 1U) | (1U << 2U));
+        const bool bus_idle = wait_clear(reg_bmod, 1U);
+        if (!controller || !bus || !controller_idle || !bus_idle) {
+            initialized_ = false;
+            // Retain ownership and static storage until shutdown can confirm
+            // quiescence. A later host cannot reuse a still-owned descriptor.
+            return false;
+        }
+        dma_active_ = false;
+        return true;
+    }
 
     [[nodiscard]] std::expected<driver::sdmmc_response,
                                 driver::sdmmc_error>
@@ -643,13 +639,15 @@ private:
 
     MmioPolicy& mmio_;
     MemoryPolicy& memory_;
-    dma_descriptor descriptor_{};
+    static inline auto& descriptor_ = detail::sdmmc_owner::descriptor;
+    static inline auto& staging_ = detail::sdmmc_owner::data;
     initialization_stage init_stage_{initialization_stage::none};
     std::uint32_t last_interrupt_status_{};
     std::uint32_t last_dma_status_{};
     std::uint8_t last_command_index_{};
     bool initialized_{};
     bool owned_{};
+    bool dma_active_{};
     bool io_power_enabled_{};
 };
 

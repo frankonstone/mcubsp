@@ -1,7 +1,7 @@
 # Timer and PWM implementation notes
 
-PLN-0007 adds a target-independent integer timing solver and the first GPT
-backend, for the RA4M1. The solver is `constexpr`, uses the instance's real
+The RA4M1 backend owns its integer timing solver and GPT register encoding.
+Generic driver types describe requests and report timing results. The solver is `constexpr`, uses the instance's real
 16- or 32-bit width and the legal GPT divisors (`1, 4, 16, 64, 256, 1024`),
 and reports the achieved frequency and error in parts per million. A request is
 rejected when its clock or target frequency is zero, its counter width is not
@@ -15,7 +15,7 @@ using binding = mcuhw::backend::ra4m1::gpt_binding<
     1, mcuhw::mcu::ra4m1::gpt_output::b,
     mcuhw::board::arduino_uno_r4_minima::d3>;
 
-constexpr auto timing = mcuhw::driver::solve_pwm_timing({
+constexpr auto timing = mcuhw::backend::ra4m1::solve_pwm_timing({
     .clock_hz = 48'000'000,
     .target_hz = 20'000,
     .maximum_error_ppm = 0,

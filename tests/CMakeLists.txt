@@ -1,90 +1,116 @@
-# @req REQ-0001 REQ-0002 REQ-0006 REQ-0008 REQ-0038 REQ-0039 REQ-0040
-add_executable(mcuhw_tests
-    test_description_suite.cpp
-    test_esp32p4_description.cpp
-    test_esp32p4_ethernet.cpp
-    test_esp32p4_gpio.cpp
-    test_esp32p4_i2c.cpp
-    test_esp32p4_i2s.cpp
-    test_esp32p4_sdmmc.cpp
-    test_esp32p4_spi.cpp
-    test_esp32p4_uart.cpp
-    test_sdmmc.cpp
-    test_sdio.cpp
-    test_metadata.cpp
-    test_ownership.cpp
-    test_protected_access.cpp
-    test_ra4m1_description.cpp
-    test_ra4m1_clock.cpp
-    test_ra4m1_gpio.cpp
-    test_uart.cpp
-    test_i2c.cpp
-    test_spi.cpp
-    test_adc.cpp
-    test_dmac.cpp
-    test_pwm.cpp
-    test_stm32h753_clock.cpp
-    test_stm32h753_description.cpp
-    test_stm32h753_gpio.cpp
-    test_stm32h753_ethernet.cpp
-    test_w5100.cpp
-    test_w5100_io.cpp
-    test_stm32h753_drivers.cpp
-    test_three_description_gate.cpp
-    test_register.cpp
-    test_recording_mmio.cpp
-    test_execution_policy.cpp
-    test_transfer.cpp
-)
-target_link_libraries(mcuhw_tests PRIVATE mcuhw::mcuhw mcutest::mcutest)
-if(EXISTS "${MCUHW_MCUIP_SOURCE_DIR}/include/mcuip/target.hpp")
-    target_include_directories(mcuhw_tests PRIVATE
-        "${MCUHW_MCUIP_SOURCE_DIR}/include")
+# Component-focused native suites. # @req REQ-0035 REQ-0038 REQ-0052
+set(MCUHW_TEST_SUITES "all" CACHE STRING "Native suites: all, core, drivers, io, descriptions, compile, or kind:vendor/id")
+add_custom_target(native-tests)
+set_target_properties(native-tests PROPERTIES FOLDER "Verification")
+function(mcuhw_native_suite name)
+    if(NOT "all" IN_LIST MCUHW_TEST_SUITES AND NOT "${name}" IN_LIST MCUHW_TEST_SUITES)
+        return()
+    endif()
+    string(MAKE_C_IDENTIFIER "${name}" identifier)
+    set(target "mcuhw_test_${identifier}")
+    # Every translation unit has one executable owner. Shared contracts belong
+    # in a dedicated integration suite instead of selection-dependent deduplication.
+    set(unique_sources "")
+    foreach(source IN LISTS ARGN)
+        get_filename_component(absolute "${source}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+        string(SHA256 key "${absolute}")
+        get_property(owner GLOBAL PROPERTY "mcuhw_test_owner_${key}")
+        if(owner)
+            message(FATAL_ERROR "Native test ${source} belongs to both ${owner} and ${name}; give it one suite owner.")
+        endif()
+        set_property(GLOBAL PROPERTY "mcuhw_test_owner_${key}" "${name}")
+        list(APPEND unique_sources "${absolute}")
+    endforeach()
+    if(NOT unique_sources)
+        return()
+    endif()
+    add_executable(${target} ${unique_sources} main.cpp)
+    add_dependencies(native-tests ${target})
+    set_target_properties(${target} PROPERTIES FOLDER "Verification/Native suites")
+    target_link_libraries(${target} PRIVATE mcuhw::io mcutest::mcutest)
+    target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    if(MCUHW_BUILD_MCUIP_CONTRACTS)
+        target_include_directories(${target} PRIVATE "${MCUHW_MCUIP_SOURCE_DIR}/include")
+        target_compile_definitions(${target} PRIVATE MCUHW_TEST_MCUIP_CONTRACTS=1)
+    endif()
+    mcuhw_apply_restricted_runtime(${target})
+    mcutest_configure_target(${target} MAX_TESTS 256 SOURCE_LOCATION ON)
+    add_test(NAME "mcuhw.${name}" COMMAND "${CMAKE_COMMAND}"
+        -DTEST_PROGRAM=$<TARGET_FILE:${target}>
+        -DOUTPUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/../artifacts/native/${identifier}.json
+        -P "${mcuhw_SOURCE_DIR}/cmake/CaptureMcutest.cmake")
+    set_tests_properties("mcuhw.${name}" PROPERTIES LABELS "native;${name}")
+endfunction()
+
+mcuhw_native_suite(core test_metadata.cpp test_ownership.cpp test_protected_access.cpp
+    test_register.cpp test_recording_mmio.cpp test_execution_policy.cpp test_transfer.cpp)
+mcuhw_native_suite(drivers test_sdmmc.cpp test_sdio.cpp test_timing_contracts.cpp)
+mcuhw_native_suite(io test_io.cpp test_io_boards.cpp test_io_peripherals.cpp
+    test_io_spi_devices.cpp test_spi_device_backends.cpp test_io_i2c_devices.cpp)
+mcuhw_native_suite(descriptions test_description_suite.cpp test_three_description_gate.cpp)
+
+# Only full maintainer runs enumerate the catalog; selected suites use direct paths.
+set(component_manifests "")
+if("all" IN_LIST MCUHW_TEST_SUITES)
+    file(GLOB component_manifests CONFIGURE_DEPENDS
+        "${mcuhw_SOURCE_DIR}/mcu/*/*/component.json"
+        "${mcuhw_SOURCE_DIR}/ip/*/*/component.json"
+        "${mcuhw_SOURCE_DIR}/device/*/*/component.json")
+else()
+    foreach(suite IN LISTS MCUHW_TEST_SUITES)
+        if(suite MATCHES "^(mcu|device|ip):([a-z0-9][a-z0-9_-]*/[a-z0-9][a-z0-9_.-]*)$")
+            list(APPEND component_manifests "${mcuhw_SOURCE_DIR}/${CMAKE_MATCH_1}/${CMAKE_MATCH_2}/component.json")
+        elseif(NOT suite MATCHES "^(core|drivers|io|descriptions|compile)$")
+            message(FATAL_ERROR "Unknown native suite ${suite}")
+        endif()
+    endforeach()
 endif()
-mcuhw_apply_restricted_runtime(mcuhw_tests)
-mcutest_configure_target(mcuhw_tests MAX_TESTS 256 SOURCE_LOCATION ON)
+foreach(manifest IN LISTS component_manifests)
+    if(NOT EXISTS "${manifest}")
+        message(FATAL_ERROR "Missing component suite manifest: ${manifest}")
+    endif()
+    file(READ "${manifest}" json)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${manifest}")
+    string(JSON kind GET "${json}" kind)
+    string(JSON id GET "${json}" id)
+    string(JSON count LENGTH "${json}" tests)
+    set(sources "")
+    if(count GREATER 0)
+        math(EXPR last "${count} - 1")
+        foreach(index RANGE 0 ${last})
+            string(JSON source GET "${json}" tests ${index})
+            if(source MATCHES "\\.cpp$")
+                list(APPEND sources "${mcuhw_SOURCE_DIR}/${source}")
+            endif()
+        endforeach()
+    endif()
+    if(sources)
+        mcuhw_native_suite("${kind}:${id}" ${sources})
+    endif()
+endforeach()
 
-add_test(
-    NAME mcuhw.unit
-    COMMAND "${CMAKE_COMMAND}"
-        -DTEST_PROGRAM=$<TARGET_FILE:mcuhw_tests>
-        -DOUTPUT_FILE=${CMAKE_BINARY_DIR}/artifacts/mcutest.json
-        -P "${CMAKE_SOURCE_DIR}/cmake/CaptureMcutest.cmake"
-)
+if("all" IN_LIST MCUHW_TEST_SUITES OR "core" IN_LIST MCUHW_TEST_SUITES)
+    add_executable(mcuhw_fixture_failure test_fixture_failure.cpp)
+    add_dependencies(native-tests mcuhw_fixture_failure)
+    set_target_properties(mcuhw_fixture_failure PROPERTIES FOLDER "Internal/Test fixtures")
+    target_link_libraries(mcuhw_fixture_failure PRIVATE mcutest::mcutest)
+    mcuhw_apply_restricted_runtime(mcuhw_fixture_failure)
+    mcutest_configure_target(mcuhw_fixture_failure MAX_TESTS 4 SOURCE_LOCATION ON)
+    add_test(NAME mcuhw.fixture_failure COMMAND mcuhw_fixture_failure)
+    set_tests_properties(mcuhw.fixture_failure PROPERTIES WILL_FAIL TRUE LABELS "native;core")
+endif()
 
-add_executable(mcuhw_fixture_failure test_fixture_failure.cpp)
-target_link_libraries(mcuhw_fixture_failure PRIVATE mcutest::mcutest)
-mcuhw_apply_restricted_runtime(mcuhw_fixture_failure)
-mcutest_configure_target(mcuhw_fixture_failure MAX_TESTS 4 SOURCE_LOCATION ON)
-add_test(NAME mcuhw.fixture_failure COMMAND mcuhw_fixture_failure)
-set_tests_properties(mcuhw.fixture_failure PROPERTIES WILL_FAIL TRUE)
-
-# @req REQ-0045
-add_executable(mcuhw_io_tests
-    test_io.cpp test_io_boards.cpp test_io_peripherals.cpp
-    test_io_spi_devices.cpp test_spi_device_backends.cpp
-    test_io_i2c_devices.cpp test_tmp102.cpp)
-target_link_libraries(mcuhw_io_tests PRIVATE mcuhw::io mcutest::mcutest)
-mcuhw_apply_restricted_runtime(mcuhw_io_tests)
-mcutest_configure_target(mcuhw_io_tests MAX_TESTS 64 SOURCE_LOCATION ON)
-add_test(
-    NAME mcuhw.io
-    COMMAND "${CMAKE_COMMAND}"
-        -DTEST_PROGRAM=$<TARGET_FILE:mcuhw_io_tests>
-        -DOUTPUT_FILE=${CMAKE_BINARY_DIR}/artifacts/mcutest-io.json
-        -P "${CMAKE_SOURCE_DIR}/cmake/CaptureMcutest.cmake"
-)
-
+if("all" IN_LIST MCUHW_TEST_SUITES OR "compile" IN_LIST MCUHW_TEST_SUITES)
 function(mcuhw_add_compile_case name source expect_success)
     add_test(
         NAME "compile.${name}"
         COMMAND "${CMAKE_COMMAND}"
             -DCXX_COMPILER=${CMAKE_CXX_COMPILER}
             "-DCOMPILE_OPTIONS=${MCUHW_RESTRICTED_COMPILE_OPTIONS}"
-            -DINCLUDE_DIR=${CMAKE_SOURCE_DIR}/include
+            -DINCLUDE_DIR=${mcuhw_SOURCE_DIR}/include
             -DSOURCE=${CMAKE_CURRENT_SOURCE_DIR}/compile/${source}
             -DEXPECT_SUCCESS=${expect_success}
-            -P "${CMAKE_SOURCE_DIR}/cmake/CompileCase.cmake"
+            -P "${mcuhw_SOURCE_DIR}/cmake/CompileCase.cmake"
     )
 endfunction()
 
@@ -119,9 +145,9 @@ mcuhw_add_compile_case(esp32p4_i3c_capability_rejected esp32p4_i3c_capability_fo
 # source-backed description headers exist. No placeholder MCU types are used.
 # @req REQ-0040
 set(description_headers
-    "${CMAKE_SOURCE_DIR}/include/mcuhw/mcu/ra4m1/description.hpp"
-    "${CMAKE_SOURCE_DIR}/include/mcuhw/mcu/stm32h753/description.hpp"
-    "${CMAKE_SOURCE_DIR}/include/mcuhw/mcu/esp32p4/description.hpp"
+    "${mcuhw_SOURCE_DIR}/include/mcuhw/mcu/ra4m1/description.hpp"
+    "${mcuhw_SOURCE_DIR}/include/mcuhw/mcu/stm32h753/description.hpp"
+    "${mcuhw_SOURCE_DIR}/include/mcuhw/mcu/esp32p4/description.hpp"
 )
 set(all_descriptions_available TRUE)
 foreach(header IN LISTS description_headers)
@@ -131,9 +157,13 @@ foreach(header IN LISTS description_headers)
 endforeach()
 if(all_descriptions_available)
     add_library(mcuhw_all_descriptions OBJECT description_all.cpp)
+    add_dependencies(native-tests mcuhw_all_descriptions)
+    set_target_properties(mcuhw_all_descriptions PROPERTIES FOLDER "Verification/Compile")
     target_link_libraries(mcuhw_all_descriptions PRIVATE mcuhw::mcuhw)
     mcuhw_apply_restricted_runtime(mcuhw_all_descriptions)
 else()
     message(STATUS
         "All-three description gate deferred until the three real description headers exist")
+endif()
+
 endif()

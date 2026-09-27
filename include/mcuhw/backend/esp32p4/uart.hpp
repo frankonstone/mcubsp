@@ -12,6 +12,21 @@
 
 namespace mcuhw::backend::esp32p4 {
 
+struct uart_baud_timing {
+    std::uint32_t clock_hz;
+    std::uint32_t target_baud;
+    std::uint32_t achieved_baud;
+    std::uint32_t error_ppm;
+
+    std::uint16_t divisor;
+    std::uint8_t clock_select;
+    std::uint32_t source_divider;
+    [[nodiscard]] constexpr operator driver::uart_baud_timing() const noexcept {
+        return {clock_hz, target_baud, achieved_baud, error_ppm};
+    }
+    friend constexpr bool operator==(uart_baud_timing, uart_baud_timing) = default;
+};
+
 namespace detail {
 
 template<std::uint8_t Instance>
@@ -39,9 +54,9 @@ struct uart_owner { static inline bool claimed{}; };
 
 // HP UART uses an 8-bit integer source pre-divider followed by a 12.4-bit
 // UART divider. The fixed-point UART divider is retained in divisor and the
-// source pre-divider in backend_encoding.
+// source pre-divider in source_divider.
 // @req REQ-0011 REQ-0027 REQ-0034
-[[nodiscard]] constexpr std::expected<driver::uart_baud_timing,
+[[nodiscard]] constexpr std::expected<uart_baud_timing,
                                       driver::uart_error>
 solve_uart_baud(driver::uart_baud_request request) noexcept {
     if (request.clock_hz != 40'000'000U
@@ -53,7 +68,7 @@ solve_uart_baud(driver::uart_baud_request request) noexcept {
     }
 
     bool found{};
-    driver::uart_baud_timing best{};
+    uart_baud_timing best{};
     for (std::uint32_t source_divider = 1U; source_divider <= 256U;
          ++source_divider) {
         const auto fixed_divider = driver::uart_detail::rounded_divide(
@@ -71,8 +86,8 @@ solve_uart_baud(driver::uart_baud_request request) noexcept {
             ? source_ticks - target_ticks : target_ticks - source_ticks;
         const auto error = static_cast<std::uint32_t>(
             driver::uart_detail::rounded_divide(
-                difference * 1'000'000ULL, source_ticks));
-        const auto candidate = driver::uart_baud_timing{
+                difference * 1'000'000ULL, target_ticks));
+        const auto candidate = uart_baud_timing{
             .clock_hz = request.clock_hz,
             .target_baud = request.target_baud,
             .achieved_baud = static_cast<std::uint32_t>(
@@ -82,15 +97,11 @@ solve_uart_baud(driver::uart_baud_request request) noexcept {
             .divisor = static_cast<std::uint16_t>(fixed_divider),
             .clock_select = static_cast<std::uint8_t>(
                 request.clock_hz == 80'000'000U ? 2U : 0U),
-            .brr = 0U,
-            .double_speed = false,
-            .asynchronous_base_clock_select = false,
-            .extended_base_clock_select = false,
-            .backend_encoding = source_divider,
+            .source_divider = source_divider,
         };
         if (!found || candidate.error_ppm < best.error_ppm
             || (candidate.error_ppm == best.error_ppm
-                && candidate.backend_encoding < best.backend_encoding)) {
+                && candidate.source_divider < best.source_divider)) {
             best = candidate;
             found = true;
         }
@@ -144,7 +155,7 @@ public:
         : mmio_(mmio), tx_operations_(execution), rx_operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::uart_error> initialize(
-        driver::uart_baud_timing timing, driver::uart_format format) noexcept {
+        uart_baud_timing timing, driver::uart_format format) noexcept {
         if (initialized_ || detail::uart_owner<Binding::instance>::claimed) {
             return std::unexpected(driver::uart_error::already_owned);
         }
@@ -154,8 +165,8 @@ public:
                 && format.stop_bits != driver::uart_stop_bits::two)) {
             return std::unexpected(driver::uart_error::invalid_format);
         }
-        if (timing.divisor < 16U || timing.backend_encoding == 0U
-            || timing.backend_encoding > 256U || timing.clock_select > 2U) {
+        if (timing.divisor < 16U || timing.source_divider == 0U
+            || timing.source_divider > 256U || timing.clock_select > 2U) {
             return std::unexpected(driver::uart_error::invalid_baud);
         }
 
@@ -177,7 +188,7 @@ public:
                               << 24U),
                        0x3U << 24U)
             || !modify(Binding::clocks.divider_register,
-                       timing.backend_encoding - 1U, 0x00FF'FFFFU)
+                       timing.source_divider - 1U, 0x00FF'FFFFU)
             || !modify(Binding::base + reg_clock_configuration,
                        (1U << 24U) | (1U << 25U),
                        (1U << 26U) | (1U << 27U))

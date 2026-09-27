@@ -145,6 +145,36 @@ public:
     }
 };
 
+class reinitializing_host : public fake_sdio_host {
+public:
+    bool function_ready{true};
+
+    [[nodiscard]] std::expected<sdmmc_response, sdmmc_error>
+    command(sdmmc_command command) noexcept {
+        if (!function_ready && command.index == 52U
+            && ((command.argument >> 9U) & 0x1FFFFU) == 0x03U) {
+            return sdmmc_response{};
+        }
+        return fake_sdio_host::command(command);
+    }
+};
+
+TEST(sdio, reinitialization_requires_fresh_function_readiness,
+     "REQ-0014", "REQ-0019", "REQ-0037") {
+    reinitializing_host host;
+    fake_delay delay;
+    sdio_device device{host, delay};
+    ASSERT_TRUE(device.initialize().has_value());
+    ASSERT_TRUE(device.shutdown().has_value());
+    host.function_ready = false;
+    const auto retried = device.initialize();
+    ASSERT_FALSE(retried.has_value());
+    EXPECT_TRUE(retried.error() == sdmmc_error::card_not_ready);
+    EXPECT_FALSE(device.info().function1_ready);
+    EXPECT_FALSE(device.info().four_bit);
+    EXPECT_EQ(host.shutdown_count(), 2U);
+}
+
 TEST(sdio, rejects_a_response_without_io_functions_and_releases_host,
      "REQ-0014", "REQ-0019", "REQ-0037") {
     no_function_host host;

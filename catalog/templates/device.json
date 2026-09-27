@@ -1,0 +1,56 @@
+{
+  "schema_version": 2,
+  "kind": "device",
+  "id": "vendor/component",
+  "name": "Replace with reviewed component name",
+  "summary": "Replace with exact implemented scope",
+  "category": "temperature",
+  "revisions": [
+    "v1"
+  ],
+  "default_revision": "v1",
+  "depends": [],
+  "provides": [
+    "temperature"
+  ],
+  "requires": [
+    "i2c"
+  ],
+  "described": [],
+  "capability_sources": {
+    "temperature": {
+      "path": "include/mcuhw/device/sensor/tmp102.hpp",
+      "contains": "class tmp102"
+    }
+  },
+  "ownership": {
+    "maintainers": [
+      "Replace with responsible maintainer"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/device/sensor/tmp102.hpp"
+  ],
+  "sources": [],
+  "tests": [
+    "tests/test_tmp102.cpp",
+    "tests/test_io_i2c_devices.cpp"
+  ],
+  "docs": [
+    "device/ti/tmp102/README.md"
+  ],
+  "examples": [
+    "examples/io/tmp102.cpp"
+  ],
+  "evidence": [
+    {
+      "stage": "physical",
+      "state": "missing",
+      "revision": "v1",
+      "scope": "No physical evidence yet."
+    }
+  ],
+  "limitations": [
+    "Record unsupported functions, revision limits and unexecuted physical procedures."
+  ]
+}

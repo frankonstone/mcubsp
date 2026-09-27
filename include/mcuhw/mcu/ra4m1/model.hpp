@@ -40,6 +40,17 @@ struct register_record {
     core::source_ref provenance;
 };
 
+// Build documentary catalogue entries from the same definitions used by MMIO.
+template<typename Register>
+[[nodiscard]] consteval register_record describe_register(
+    std::string_view name, std::uintptr_t base, core::source_ref provenance) {
+    return {name, base + Register::offset,
+            static_cast<std::uint8_t>(Register::width), Register::access,
+            Register::writable_mask, Register::reset_value,
+            Register::reset_known_mask, Register::reserved_bits, provenance};
+}
+
+
 // @req REQ-0005 REQ-0006 REQ-0007
 struct field_record {
     std::string_view register_name;

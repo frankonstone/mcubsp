@@ -35,7 +35,7 @@ void use_identity(const std::array<std::uint16_t, 3>& identity);
 using binding = mcuhw::backend::ra4m1::spi_binding<
     1, board::d12_miso, board::d11_mosi, board::d13_sck, board::d10_ssl>;
 
-constexpr auto timing = mcuhw::driver::solve_spi_timing({
+constexpr auto timing = mcuhw::backend::ra4m1::solve_spi_timing({
     .clock_hz = 48'000'000U,
     .target_hz = 1'000'000U,
     .maximum_error_ppm = 0U,

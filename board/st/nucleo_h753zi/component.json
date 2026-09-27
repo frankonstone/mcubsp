@@ -1,0 +1,133 @@
+{
+  "schema_version": 2,
+  "kind": "board",
+  "id": "st/nucleo_h753zi",
+  "name": "ST NUCLEO-H753ZI",
+  "summary": "ST NUCLEO-H753ZI board wiring and explicit startup integration.",
+  "category": "development-board",
+  "revisions": [
+    "mb1364-rev-e"
+  ],
+  "default_revision": "mb1364-rev-e",
+  "depends": [
+    "mcu:st/stm32h753"
+  ],
+  "provides": [
+    "gpio",
+    "i2c",
+    "spi",
+    "uart",
+    "pwm",
+    "adc",
+    "ethernet"
+  ],
+  "requires": [],
+  "described": [],
+  "capability_sources": {
+    "gpio": {
+      "path": "include/mcuhw/board/nucleo_h753zi.hpp",
+      "contains": "user_led_yellow"
+    },
+    "i2c": {
+      "path": "include/mcuhw/board/nucleo_h753zi.hpp",
+      "contains": "arduino_d14_sda"
+    },
+    "spi": {
+      "path": "include/mcuhw/board/nucleo_h753zi.hpp",
+      "contains": "arduino_d13_sck"
+    },
+    "uart": {
+      "path": "include/mcuhw/board/nucleo_h753zi.hpp",
+      "contains": "stlink_vcp_tx"
+    },
+    "pwm": {
+      "path": "include/mcuhw/board/nucleo_h753zi.hpp",
+      "contains": "timer1_ch1"
+    },
+    "adc": {
+      "path": "include/mcuhw/board/nucleo_h753zi.hpp",
+      "contains": "arduino_a0"
+    },
+    "ethernet": {
+      "path": "include/mcuhw/board/nucleo_h753zi.hpp",
+      "contains": "ethernet_mdio"
+    }
+  },
+  "ownership": {
+    "maintainers": [
+      "mcuhw maintainers"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/board/nucleo_h753zi.hpp",
+    "include/mcuhw/io/boards/nucleo_h753zi.hpp"
+  ],
+  "sources": [
+    "board/st/nucleo_h753zi/bsp/early_init.cpp",
+    "board/st/nucleo_h753zi/bsp/linker.ld",
+    "board/st/nucleo_h753zi/bsp/restricted_runtime.cpp",
+    "board/st/nucleo_h753zi/bsp/startup.S"
+  ],
+  "tests": [
+    "board/st/nucleo_h753zi/tests/ethernet_mcuip.cpp",
+    "board/st/nucleo_h753zi/tests/native_peripherals.cpp",
+    "board/st/nucleo_h753zi/tests/startup_gpio.cpp"
+  ],
+  "docs": [
+    "board/st/nucleo_h753zi/README.md",
+    "board/st/nucleo_h753zi/docs/README.md"
+  ],
+  "examples": [
+    "examples/apps/blink/CMakeLists.txt",
+    "examples/apps/tmp102/CMakeLists.txt"
+  ],
+  "evidence": [
+    {
+      "stage": "physical",
+      "state": "passed",
+      "revision": "mb1364-rev-e",
+      "path": "board/st/nucleo_h753zi/docs/README.md",
+      "scope": "Historical MB1364 revision E startup/LED/VCP and native-controller observations only. Ethernet PHY/MDIO identity observed with link down; frame exchange remains unexecuted.",
+      "sha256": "c136e50b3db177046791da3811553f168946dc4a12c25d27e4051f02eaa82131"
+    },
+    {
+      "stage": "cross-build",
+      "state": "passed",
+      "revision": "mb1364-rev-e",
+      "scope": "Complete external Blink and TMP102 applications linked on the macOS arm64 qualification host for this exact binding revision. No flashing or physical device acceptance.",
+      "path": "doc/acceptance/repository-adoption.md",
+      "sha256": "4529baa44b700e12f74001e4be1343b2bd99c012e0d09fd6a5542fd939c672aa"
+    }
+  ],
+  "limitations": [
+    "MB1364 revision E, received jumper/bridge configuration; supplied startup uses HSI 64 MHz.",
+    "Ethernet availability is implemented MAC/PHY wiring; a passed Ethernet protocol exchange is not claimed.",
+    "PWM/ADC/I2C/SPI electrical and external-device acceptance remains limited as documented."
+  ],
+  "build": {
+    "entry": "board/st/nucleo_h753zi/board.cmake",
+    "toolchain": "cmake/toolchain-arm-cortex-m7.cmake",
+    "profile_header": "include/mcuhw/io/boards/nucleo_h753zi.hpp",
+    "profile_type": "mcuhw::io::boards::nucleo_h753zi",
+    "tools": [
+      "cmake",
+      "ninja",
+      "arm-gcc"
+    ],
+    "runner": {
+      "type": "openocd",
+      "tool": "openocd",
+      "interface": "interface/stlink.cfg",
+      "target": "target/stm32h7x.cfg",
+      "artifact": "firmware.elf",
+      "flash_regions": [
+        {
+          "start": "0x08000000",
+          "size": "0x200000"
+        }
+      ],
+      "recovery_doc": "board/st/nucleo_h753zi/docs/README.md"
+    },
+    "architecture": "cortex-m7"
+  }
+}

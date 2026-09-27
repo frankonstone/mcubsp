@@ -1,27 +1,50 @@
 # Build and verification
 
-PLN-0002 uses one host build and three architecture compile-probe presets. The
-probes compile only; they do not link startup code, an RTOS, or a board SDK.
+For application builds, use the [first-build guide](building.md). Maintainer
+verification has selectable native suites and three architecture probe presets.
+The probes compile only; they do not link startup code, an RTOS, or a board SDK.
+The full presets explicitly enable independent header checks and MCUIP contracts,
+so install the [development dependencies](installation.md) first. For a focused
+native run requiring only mcutest:
+
+```sh
+python3 tools/verify.py --build build/verification --suites all
+python3 tools/verify.py --build build/tmp102-tests --suites device:ti/tmp102
+```
+
+The `component` and `native` configure/build/test presets also provide focused
+IDE workflows; `host` remains the explicit full maintainer configuration.
+Build presets select `native-tests`, `check-headers`, `check-compile` or
+`board-tests` as appropriate. Header checks remain independent compiler jobs
+inside one target. See [targets and presets](../development/verification.md#targets-and-presets)
+for menu organization and persistent user presets.
+
+For the exhaustive local maintainer workflow:
 
 ```sh
 cmake --preset host
-cmake --build --preset host
-ctest --preset host
+python3 tools/verify.py --build build/host --existing
 
-cmake --preset arm-cortex-m4
-cmake --build --preset arm-cortex-m4
+cmake --preset arm-cortex-m4-checks
+cmake --build --preset arm-cortex-m4-checks
 
-cmake --preset arm-cortex-m7
-cmake --build --preset arm-cortex-m7
+cmake --preset arm-cortex-m7-checks
+cmake --build --preset arm-cortex-m7-checks
 
-cmake --preset esp32p4-riscv
-cmake --build --preset esp32p4-riscv
+cmake --preset esp32p4-riscv-checks
+cmake --build --preset esp32p4-riscv-checks
 ```
 
 Each configured build writes `toolchain-report.txt` with the compiler,
 standard-library identity, CMake generator, selected architecture and exact
-restricted-runtime flags. The host test also writes
-`build/host/artifacts/mcutest.json`, the evidence file consumed by mcutrace.
+restricted-runtime flags. Native suites write separate results under
+`build/host/artifacts/native/`. `tools/verify.py` merges only the current CTest
+selection into `build/host/artifacts/mcutest-native.json` for mcutrace; it deletes
+previous selected results before running, so stale artifacts are not reused.
+Tooling tests write `build/host/artifacts/mcutest-tooling.json`. Direct CTest
+invocation remains supported but does not refresh the merged native artifact.
+See [verification and CI](../development/verification.md) for affected checks,
+scale measurements and evidence scope.
 Each cross build writes `barrier-report.txt` after disassembling the barrier
 probe and checking the architecture's required instructions.
 The `mcuhw.fixture_failure` CTest entry uses `WILL_FAIL` so a deliberately

@@ -156,6 +156,42 @@ struct enum_field_descriptor {
     }
 };
 
+// Access permission is a compile-time property, separate from the operations'
+// runtime decisions. Named concepts also keep source coverage tools from
+// treating compound trailing constraints as executable boolean expressions.
+namespace register_detail {
+
+template<typename Register>
+concept readable = Register::access == access_semantics::read_only
+    || Register::access == access_semantics::read_write
+    || Register::access == access_semantics::write_one_to_clear
+    || Register::access == access_semantics::write_zero_to_clear;
+
+template<typename Register>
+concept directly_writable =
+    (Register::access == access_semantics::write_only
+     || Register::access == access_semantics::read_write)
+    && (Register::reserved_bits == reserved_bit_policy::write_zero
+        || static_cast<typename Register::value_type>(Register::writable_mask
+                                                     | Register::required_one_mask)
+            == std::numeric_limits<typename Register::value_type>::max());
+
+template<typename Register>
+concept command_writable = Register::access == access_semantics::command
+    || Register::access == access_semantics::set_alias
+    || Register::access == access_semantics::clear_alias;
+
+template<typename Register>
+concept bit_clearable = Register::access == access_semantics::write_one_to_clear
+    || (Register::access == access_semantics::write_zero_to_clear
+        && Register::reserved_bits == reserved_bit_policy::write_zero);
+
+template<typename Register>
+concept safely_modifiable = Register::access == access_semantics::read_write
+    && Register::read_modify_write_safe;
+
+} // namespace register_detail
+
 template<typename Register, typename Policy>
     requires mmio_policy_for<Policy, typename Register::value_type>
 // @req REQ-0008
@@ -171,10 +207,7 @@ public:
     }
 
     [[nodiscard]] std::expected<value_type, mmio_error> read() noexcept
-        requires(Register::access == access_semantics::read_only
-                 || Register::access == access_semantics::read_write
-                 || Register::access == access_semantics::write_one_to_clear
-                 || Register::access == access_semantics::write_zero_to_clear)
+        requires register_detail::readable<Register>
     {
         return policy_.template read<value_type>(address());
     }
@@ -187,12 +220,7 @@ public:
     }
 
     [[nodiscard]] std::expected<void, mmio_error> write(value_type value) noexcept
-        requires(Register::access == access_semantics::write_only
-                     || Register::access == access_semantics::read_write)
-              && (Register::reserved_bits == reserved_bit_policy::write_zero
-                  || static_cast<value_type>(Register::writable_mask
-                                             | Register::required_one_mask)
-                         == std::numeric_limits<value_type>::max())
+        requires register_detail::directly_writable<Register>
     {
         if (!direct_value_is_valid(value)) {
             return std::unexpected(mmio_error::invalid_value);
@@ -202,9 +230,7 @@ public:
 
     [[nodiscard]] std::expected<void, mmio_error>
     issue(value_type value) noexcept
-        requires(Register::access == access_semantics::command
-                 || Register::access == access_semantics::set_alias
-                 || Register::access == access_semantics::clear_alias)
+        requires register_detail::command_writable<Register>
     {
         if (!direct_value_is_valid(value)) {
             return std::unexpected(mmio_error::invalid_value);
@@ -214,9 +240,7 @@ public:
 
     [[nodiscard]] std::expected<void, mmio_error>
     clear_bits(value_type bits) noexcept
-        requires(Register::access == access_semantics::write_one_to_clear
-                 || (Register::access == access_semantics::write_zero_to_clear
-                     && Register::reserved_bits == reserved_bit_policy::write_zero))
+        requires register_detail::bit_clearable<Register>
     {
         if ((bits & static_cast<value_type>(~Register::writable_mask)) != 0) {
             return std::unexpected(mmio_error::invalid_value);
@@ -233,8 +257,7 @@ public:
 
     [[nodiscard]] std::expected<void, mmio_error>
     modify(value_type clear_mask, value_type set_mask) noexcept
-        requires(Register::access == access_semantics::read_write
-                 && Register::read_modify_write_safe)
+        requires register_detail::safely_modifiable<Register>
     {
         const auto changed = static_cast<value_type>(clear_mask | set_mask);
         if ((changed & static_cast<value_type>(~Register::writable_mask)) != 0) {

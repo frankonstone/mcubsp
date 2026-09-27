@@ -1,0 +1,41 @@
+"""Component-owned cross-build actions shared by local verification and CI.
+
+Build actions never flash hardware. A missing tool is a failure, not a skipped
+acceptance check. Infrastructure fixture tests remain a separate suite.
+"""
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path, PurePosixPath
+
+from . import catalog
+
+
+def board_actions(root, boards):
+    actions = []
+    for identifier in sorted(set(boards)):
+        board = catalog.load(root, "board", identifier)
+        tools = set(board["build"].get("tools", []))
+        if "esp-idf" in tools:
+            environment = "esp-idf"
+        elif "arm-gcc" in tools:
+            environment = "arm-gcc"
+        else:
+            raise catalog.CatalogError(f"board:{identifier}: no cross-build environment for build.tools")
+        for example in sorted(board["examples"]):
+            path = PurePosixPath(example)
+            if (not example.startswith('examples/') or not example.endswith("/CMakeLists.txt") or
+                    path.is_absolute() or '..' in path.parts or '\\' in example):
+                raise catalog.CatalogError(f"board:{identifier}: example {example!r} must name an examples/.../CMakeLists.txt project")
+            project = str(Path(example).parent.as_posix())
+            for revision in board["revisions"]:
+                key = hashlib.sha256(f"{identifier}@{revision}:{project}".encode()).hexdigest()[:12]
+                actions.append({"board": identifier, "revision": revision,
+                                "example": project, "environment": environment, "key": key})
+    return actions
+
+
+def matrices(root, boards):
+    actions = board_actions(root, boards)
+    return {environment: {"include": [item for item in actions if item["environment"] == environment]}
+            for environment in ("arm-gcc", "esp-idf")}

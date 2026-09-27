@@ -1,0 +1,121 @@
+{
+  "schema_version": 2,
+  "kind": "mcu",
+  "id": "st/stm32h753",
+  "name": "STM32H753",
+  "summary": "STM32H753 authoritative part/package/silicon description; shared native implementations are separate IP components.",
+  "category": "microcontroller",
+  "revisions": [
+    "description-v1"
+  ],
+  "default_revision": "description-v1",
+  "depends": [
+    "ip:st/stm32h753_native"
+  ],
+  "provides": [],
+  "requires": [],
+  "described": [],
+  "capability_sources": {},
+  "ownership": {
+    "maintainers": [
+      "mcuhw maintainers"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/mcu/stm32h753/coverage.hpp",
+    "include/mcuhw/mcu/stm32h753/description.hpp",
+    "include/mcuhw/mcu/stm32h753/ethernet.hpp",
+    "include/mcuhw/mcu/stm32h753/interrupts_dma.hpp",
+    "include/mcuhw/mcu/stm32h753/model.hpp",
+    "include/mcuhw/mcu/stm32h753/peripherals.hpp",
+    "include/mcuhw/mcu/stm32h753/pins.hpp",
+    "include/mcuhw/mcu/stm32h753/system.hpp"
+  ],
+  "sources": [],
+  "tests": [
+    "tests/test_stm32h753_description.cpp"
+  ],
+  "docs": [
+    "doc/reference/mcu-reviews/stm32h753.md"
+  ],
+  "examples": [],
+  "evidence": [
+    {
+      "stage": "host-test",
+      "state": "missing",
+      "revision": "description-v1",
+      "scope": "Description test sources are listed; consult current test artifacts for execution results."
+    }
+  ],
+  "limitations": [
+    "Described hardware and implemented backend capabilities are separate; package, routes and silicon constraints remain authoritative in C++."
+  ],
+  "variants": [
+    {
+      "id": "vi",
+      "family": "STM32H7",
+      "part": "STM32H753VI",
+      "package": "LQFP100 or TFBGA100",
+      "silicon": "Y/W, X, V",
+      "source": {
+        "path": "include/mcuhw/mcu/stm32h753/system.hpp",
+        "contains": "STM32H753VI"
+      }
+    },
+    {
+      "id": "zi",
+      "family": "STM32H7",
+      "part": "STM32H753ZI",
+      "package": "LQFP144",
+      "silicon": "Y/W, X, V",
+      "source": {
+        "path": "include/mcuhw/mcu/stm32h753/system.hpp",
+        "contains": "\"ZI\", \"LQFP144\""
+      }
+    },
+    {
+      "id": "ii",
+      "family": "STM32H7",
+      "part": "STM32H753II",
+      "package": "UFBGA169 or LQFP176",
+      "silicon": "Y/W, X, V",
+      "source": {
+        "path": "include/mcuhw/mcu/stm32h753/system.hpp",
+        "contains": "\"II\", \"UFBGA169\""
+      }
+    },
+    {
+      "id": "bi",
+      "family": "STM32H7",
+      "part": "STM32H753BI",
+      "package": "UFBGA176+25",
+      "silicon": "Y/W, X, V",
+      "source": {
+        "path": "include/mcuhw/mcu/stm32h753/system.hpp",
+        "contains": "\"BI\", \"UFBGA176+25\""
+      }
+    },
+    {
+      "id": "xi",
+      "family": "STM32H7",
+      "part": "STM32H753XI",
+      "package": "LQFP208",
+      "silicon": "Y/W, X, V",
+      "source": {
+        "path": "include/mcuhw/mcu/stm32h753/system.hpp",
+        "contains": "\"XI\", \"LQFP208\""
+      }
+    },
+    {
+      "id": "ai",
+      "family": "STM32H7",
+      "part": "STM32H753AI",
+      "package": "TFBGA240+25",
+      "silicon": "Y/W, X, V",
+      "source": {
+        "path": "include/mcuhw/mcu/stm32h753/system.hpp",
+        "contains": "\"AI\", \"TFBGA240+25\""
+      }
+    }
+  ]
+}

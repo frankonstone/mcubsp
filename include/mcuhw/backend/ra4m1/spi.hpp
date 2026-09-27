@@ -11,7 +11,7 @@
 #include <mcuhw/core/metadata.hpp>
 #include <mcuhw/core/transfer.hpp>
 #include <mcuhw/driver/dma.hpp>
-#include <mcuhw/driver/spi.hpp>
+#include <mcuhw/backend/ra4m1/timing/spi.hpp>
 #include <mcuhw/mcu/ra4m1/description.hpp>
 
 namespace mcuhw::backend::ra4m1 {
@@ -117,7 +117,7 @@ public:
         : mmio_(mmio), operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::spi_error>
-    initialize(driver::spi_timing timing,
+    initialize(spi_timing timing,
                driver::spi_configuration configuration = {}) noexcept {
         if (initialized_ || spi_detail::owner<Binding::instance>::claimed) {
             return std::unexpected(driver::spi_error::already_owned);
@@ -158,7 +158,7 @@ public:
     }
 
     [[nodiscard]] std::expected<void, driver::spi_error> reconfigure(
-        driver::spi_timing timing,
+        spi_timing timing,
         driver::spi_configuration configuration = {}) noexcept {
         if (!initialized_) return std::unexpected(driver::spi_error::not_initialized);
         if (busy()) return std::unexpected(driver::spi_error::busy);
@@ -464,6 +464,28 @@ public:
         return finish_error(error);
     }
 
+    // Foreground polling uses the same register dispatch as interrupt entry.
+    void poll() noexcept {
+        static_cast<void>(handle_dma_receive_completion());
+        static_cast<void>(handle_dma_transmit_completion());
+        const auto status = mmio_.template read<std::uint8_t>(
+            Binding::metadata.base + 0x03U);
+        if (!status) return;
+        if ((*status & 0x0DU) != 0U) {
+            static_cast<void>(handle_error_interrupt());
+            return;
+        }
+        if ((*status & 0x80U) != 0U) {
+            static_cast<void>(handle_receive_interrupt());
+        }
+        if ((*status & 0x20U) != 0U) {
+            static_cast<void>(handle_transmit_empty_interrupt());
+        }
+        if ((*status & 0x02U) == 0U) {
+            static_cast<void>(handle_idle_interrupt());
+        }
+    }
+
     [[nodiscard]] std::expected<void, driver::spi_error> shutdown() noexcept {
         if (!initialized_) {
             return std::unexpected(driver::spi_error::not_initialized);
@@ -578,7 +600,7 @@ private:
     }
 
     [[nodiscard]] static constexpr bool
-    timing_is_valid(driver::spi_timing timing) noexcept {
+    timing_is_valid(spi_timing timing) noexcept {
         if (timing.clock_hz == 0U || timing.target_hz == 0U
             || timing.brdv > 3U) {
             return false;
@@ -922,7 +944,7 @@ private:
     MmioPolicy& mmio_;
     [[no_unique_address]] spi_detail::select_handler<ExternalSelect> select_handler_{};
     pool_type operations_;
-    driver::spi_timing timing_{};
+    spi_timing timing_{};
     driver::spi_configuration configuration_{};
     std::span<const driver::spi_segment> segments_{};
     std::optional<core::operation_id> operation_id_{};

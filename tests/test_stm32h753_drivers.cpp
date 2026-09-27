@@ -120,11 +120,11 @@ TEST(stm32h753_solvers, produce_native_timer_uart_i2c_and_spi_encodings,
     ASSERT_TRUE(timer.has_value());
     EXPECT_EQ(timer->period_counts, 3200U);
     ASSERT_TRUE(uart.has_value());
-    EXPECT_EQ(uart->backend_encoding, 556U);
+    EXPECT_EQ(uart->brr, 556U);
     ASSERT_TRUE(i2c.has_value());
-    EXPECT_TRUE(i2c->backend_encoding != 0U);
+    EXPECT_TRUE(i2c->timingr != 0U);
     ASSERT_TRUE(spi.has_value());
-    EXPECT_EQ(spi->backend_encoding, 2U);
+    EXPECT_EQ(spi->prescaler_encoding, 2U);
 }
 
 TEST(stm32h753_timer, drives_pwm_and_publishes_update_event,

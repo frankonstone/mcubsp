@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "kind": "board",
+  "id": "arduino/uno_r4_minima",
+  "name": "Arduino UNO R4 Minima",
+  "summary": "Arduino UNO R4 Minima board wiring and explicit startup integration.",
+  "category": "development-board",
+  "revisions": [
+    "r4"
+  ],
+  "default_revision": "r4",
+  "depends": [
+    "mcu:renesas/ra4m1"
+  ],
+  "provides": [
+    "gpio",
+    "i2c",
+    "spi",
+    "uart",
+    "pwm",
+    "adc"
+  ],
+  "requires": [],
+  "described": [],
+  "capability_sources": {
+    "gpio": {
+      "path": "include/mcuhw/board/arduino_uno_r4_minima.hpp",
+      "contains": "led_builtin_d13"
+    },
+    "i2c": {
+      "path": "include/mcuhw/board/arduino_uno_r4_minima.hpp",
+      "contains": "a4_sda"
+    },
+    "spi": {
+      "path": "include/mcuhw/board/arduino_uno_r4_minima.hpp",
+      "contains": "d13_sck"
+    },
+    "uart": {
+      "path": "include/mcuhw/board/arduino_uno_r4_minima.hpp",
+      "contains": "d0_rx"
+    },
+    "pwm": {
+      "path": "include/mcuhw/board/arduino_uno_r4_minima.hpp",
+      "contains": "d3"
+    },
+    "adc": {
+      "path": "include/mcuhw/board/arduino_uno_r4_minima.hpp",
+      "contains": "a0_an009"
+    }
+  },
+  "ownership": {
+    "maintainers": [
+      "mcuhw maintainers"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/board/arduino_uno_r4_minima.hpp",
+    "include/mcuhw/io/boards/uno_r4_minima.hpp"
+  ],
+  "sources": [
+    "board/arduino/uno_r4_minima/bsp/early_init.cpp",
+    "board/arduino/uno_r4_minima/bsp/linker.ld",
+    "board/arduino/uno_r4_minima/bsp/restricted_runtime.cpp",
+    "board/arduino/uno_r4_minima/bsp/startup.S"
+  ],
+  "tests": [
+    "board/arduino/uno_r4_minima/tests/adc.cpp",
+    "board/arduino/uno_r4_minima/tests/dmac.cpp",
+    "board/arduino/uno_r4_minima/tests/ethernet_mcuip.cpp",
+    "board/arduino/uno_r4_minima/tests/gpio_loopback.cpp",
+    "board/arduino/uno_r4_minima/tests/i2c.cpp",
+    "board/arduino/uno_r4_minima/tests/pwm.cpp",
+    "board/arduino/uno_r4_minima/tests/release_metrics.cpp",
+    "board/arduino/uno_r4_minima/tests/spi.cpp",
+    "board/arduino/uno_r4_minima/tests/startup_gpio.cpp",
+    "board/arduino/uno_r4_minima/tests/uart.cpp"
+  ],
+  "docs": [
+    "board/arduino/uno_r4_minima/README.md",
+    "board/arduino/uno_r4_minima/docs/README.md"
+  ],
+  "examples": [
+    "examples/apps/blink/CMakeLists.txt",
+    "examples/apps/tmp102/CMakeLists.txt"
+  ],
+  "evidence": [
+    {
+      "stage": "physical",
+      "state": "passed",
+      "revision": "r4",
+      "path": "board/arduino/uno_r4_minima/docs/README.md",
+      "scope": "Historical UNO R4 Minima fixture runs recorded in the linked report: startup, LED/GPIO, loopback, PWM and UART. Board PCB revision was not recorded; r4 identifies the supported UNO R4 Minima binding, not an inferred PCB revision.",
+      "sha256": "6d7a5add99ba8bd539668eec886ead8113bfd2a2fd67bbbdd0716ecf82628dc3"
+    },
+    {
+      "stage": "cross-build",
+      "state": "passed",
+      "revision": "r4",
+      "scope": "Complete external Blink and TMP102 applications linked on the macOS arm64 qualification host for this exact binding revision. No flashing or physical device acceptance.",
+      "path": "doc/acceptance/repository-adoption.md",
+      "sha256": "4529baa44b700e12f74001e4be1343b2bd99c012e0d09fd6a5542fd939c672aa"
+    }
+  ],
+  "limitations": [
+    "Retains the Arduino DFU bootloader below 0x4000; supplied startup owns 48 MHz HOCO and vectors.",
+    "The binding revision r4 names the documented board model; the historical records do not establish an exact PCB revision.",
+    "External TMP102 wiring is an application requirement; no physical TMP102 acceptance is claimed."
+  ],
+  "build": {
+    "entry": "board/arduino/uno_r4_minima/board.cmake",
+    "toolchain": "cmake/toolchain-arm-cortex-m4.cmake",
+    "profile_header": "include/mcuhw/io/boards/uno_r4_minima.hpp",
+    "profile_type": "mcuhw::io::boards::uno_r4_minima",
+    "tools": [
+      "cmake",
+      "ninja",
+      "arm-gcc"
+    ],
+    "runner": {
+      "type": "jlink",
+      "tool": "jlink",
+      "device": "R7FA4M1AB",
+      "interface": "SWD",
+      "speed_khz": 4000,
+      "artifact": "firmware.elf",
+      "flash_regions": [
+        {
+          "start": "0x4000",
+          "size": "0x3c000"
+        }
+      ],
+      "recovery_doc": "board/arduino/uno_r4_minima/docs/README.md"
+    },
+    "architecture": "cortex-m4"
+  }
+}

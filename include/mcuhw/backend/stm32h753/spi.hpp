@@ -12,6 +12,19 @@
 
 namespace mcuhw::backend::stm32h753 {
 
+struct spi_timing {
+    std::uint32_t clock_hz;
+    std::uint32_t target_hz;
+    std::uint32_t achieved_hz;
+    std::uint32_t error_ppm;
+
+    std::uint32_t prescaler_encoding;
+    [[nodiscard]] constexpr operator driver::spi_timing() const noexcept {
+        return {clock_hz, target_hz, achieved_hz, error_ppm};
+    }
+    friend constexpr bool operator==(spi_timing, spi_timing) = default;
+};
+
 namespace detail {
 template<std::uint8_t Instance>
 struct spi_owner { static inline bool claimed{}; };
@@ -28,7 +41,7 @@ struct spi_select_handler<true> {
 
 // STM32 SPI MBR offers power-of-two divisors from 2 through 256.
 // @req REQ-0011 REQ-0028 REQ-0033
-[[nodiscard]] constexpr std::expected<driver::spi_timing, driver::spi_error>
+[[nodiscard]] constexpr std::expected<spi_timing, driver::spi_error>
 solve_stm32_spi_timing(driver::spi_timing_request request) noexcept {
     if (request.clock_hz == 0U) return std::unexpected(driver::spi_error::invalid_clock);
     if (request.target_hz == 0U || request.target_hz > request.clock_hz / 2U) {
@@ -45,14 +58,12 @@ solve_stm32_spi_timing(driver::spi_timing_request request) noexcept {
         if (error > request.maximum_error_ppm) {
             return std::unexpected(driver::spi_error::unattainable_tolerance);
         }
-        return driver::spi_timing{
+        return spi_timing{
             .clock_hz = request.clock_hz,
             .target_hz = request.target_hz,
             .achieved_hz = achieved,
             .error_ppm = error,
-            .spbr = 0U,
-            .brdv = 0U,
-            .backend_encoding = encoding,
+            .prescaler_encoding = encoding,
         };
     }
     return std::unexpected(driver::spi_error::unattainable_tolerance);
@@ -101,7 +112,7 @@ public:
         : mmio_(mmio), operations_(execution) {}
 
     [[nodiscard]] std::expected<void, driver::spi_error> initialize(
-        driver::spi_timing timing,
+        spi_timing timing,
         driver::spi_configuration configuration = {}) noexcept {
         if (initialized_ || detail::spi_owner<Binding::instance>::claimed) {
             return std::unexpected(driver::spi_error::already_owned);
@@ -143,7 +154,7 @@ public:
     }
 
     [[nodiscard]] std::expected<void, driver::spi_error> reconfigure(
-        driver::spi_timing timing,
+        spi_timing timing,
         driver::spi_configuration configuration = {}) noexcept {
         if (!initialized_) return std::unexpected(driver::spi_error::not_initialized);
         if (busy()) return std::unexpected(driver::spi_error::busy);
@@ -229,12 +240,12 @@ public:
 
 private:
     [[nodiscard]] static constexpr bool timing_is_valid(
-        driver::spi_timing timing) noexcept {
-        return timing.backend_encoding <= 7U && timing.clock_hz != 0U
+        spi_timing timing) noexcept {
+        return timing.prescaler_encoding <= 7U && timing.clock_hz != 0U
             && timing.achieved_hz != 0U
             && timing.achieved_hz <= timing.target_hz
             && timing.achieved_hz
-                == timing.clock_hz / (2U << timing.backend_encoding);
+                == timing.clock_hz / (2U << timing.prescaler_encoding);
     }
 
     [[nodiscard]] static constexpr bool configuration_is_valid(
@@ -258,7 +269,7 @@ private:
     [[nodiscard]] bool program() noexcept {
         const auto width = static_cast<std::uint32_t>(configuration_.frame_width);
         std::uint32_t cfg1 = width - 1U;
-        cfg1 |= timing_.backend_encoding << 28U;
+        cfg1 |= timing_.prescaler_encoding << 28U;
         std::uint32_t cfg2 = (1U << 22U) | (1U << 26U) | (1U << 31U);
         if (configuration_.bit_order == driver::spi_bit_order::least_significant_first) {
             cfg2 |= 1U << 23U;
@@ -391,7 +402,7 @@ private:
     pool_type operations_;
     std::optional<core::operation_id> id_{};
     std::span<const driver::spi_segment> segments_{};
-    driver::spi_timing timing_{};
+    spi_timing timing_{};
     driver::spi_configuration configuration_{};
     std::size_t total_{};
     std::size_t transmitted_{};

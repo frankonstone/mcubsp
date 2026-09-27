@@ -175,9 +175,11 @@ public:
 };
 
 using device = mcuhw::device::w5100_macraw_device<fake_w5100_bus>;
+#if defined(MCUHW_TEST_MCUIP_CONTRACTS)
 static_assert(::mcuip::NetworkDevice<device>);
 static_assert(::mcuip::NetworkDevice<mcuhw::integration::mcuip::
     w5100_macraw_network_device<fake_w5100_bus>>);
+#endif
 
 constexpr mcuhw::device::w5100_configuration configuration{
     .mac = {{0x02U, 0x00U, 0x00U, 0x04U, 0x51U, 0x00U}},

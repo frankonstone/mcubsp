@@ -7,7 +7,7 @@
 #include <mcuhw/arch/barrier.hpp>
 #include <mcuhw/core/metadata.hpp>
 #include <mcuhw/core/transfer.hpp>
-#include <mcuhw/driver/pwm.hpp>
+#include <mcuhw/backend/ra4m1/timing/pwm.hpp>
 #include <mcuhw/mcu/ra4m1/peripherals.hpp>
 
 namespace mcuhw::backend::ra4m1 {
@@ -85,7 +85,7 @@ public:
     }
 
     [[nodiscard]] std::expected<void, driver::pwm_error>
-    configure(driver::pwm_timing timing,
+    configure(pwm_timing timing,
               driver::pwm_compare compare) noexcept {
         if (!owned_) {
             return std::unexpected(driver::pwm_error::not_initialized);

@@ -15,7 +15,7 @@
 
 namespace mcuhw::io::boards {
 
-// Matches board/nucleo_h753zi/early_init.cpp: HSI SYSCLK/HCLK/PCLK at
+// Matches board/st/nucleo_h753zi/bsp/early_init.cpp: HSI SYSCLK/HCLK/PCLK at
 // 64 MHz. Applications with another clock tree supply corresponding traits.
 struct nucleo_h753zi {
     using target_identity = nucleo_h753zi;

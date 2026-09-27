@@ -26,7 +26,7 @@ namespace board = mcuhw::board::arduino_uno_r4_minima;
 using binding = mcuhw::backend::ra4m1::gpt_binding<
     1, mcuhw::mcu::ra4m1::gpt_output::b, board::d3>;
 
-constexpr auto timing = mcuhw::driver::solve_pwm_timing({
+constexpr auto timing = mcuhw::backend::ra4m1::solve_pwm_timing({
     .clock_hz = 48'000'000U,
     .target_hz = 20'000U,
     .maximum_error_ppm = 0U,

@@ -7,6 +7,14 @@
 
 namespace mcuhw::mcu::esp32p4 {
 
+struct sdmmc_instance {
+    static constexpr std::uintptr_t base = 0x5008'3000U;
+    static constexpr std::uintptr_t hp_clock_base = 0x500E'6000U;
+    static constexpr std::uintptr_t lp_clock_base = 0x5011'1000U;
+    static constexpr std::uintptr_t pmu_base = 0x5011'5000U;
+};
+
+
 inline constexpr core::source_ref identity_source{
     "ESP32-P4 Series Datasheet / Chip Revision v3.x User Guide",
     "pre-release v0.7 / v3.x", "Datasheet Tables 1-1 and 2-1; QFN104; revision guide"};

@@ -30,7 +30,7 @@ using spi_backend = mcuhw::backend::ra4m1::spi_master_backend<
     spi_binding, example_mmio, execution>;
 using adc_backend = mcuhw::backend::ra4m1::adc14_backend<
     adc_binding, example_mmio, execution>;
-constexpr auto timing = mcuhw::driver::solve_spi_timing(
+constexpr auto timing = mcuhw::backend::ra4m1::solve_spi_timing(
     {48'000'000U, 1'000'000U, 0U});
 static_assert(timing.has_value());
 } // namespace

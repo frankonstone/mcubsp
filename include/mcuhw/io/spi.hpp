@@ -22,6 +22,7 @@ class spi_bus {
 public:
     using backend_type = typename board_type::template spi_backend<
         typename Context::mmio_type, typename Context::execution_type>;
+    using timing_type = typename decltype(board_type::solve_spi(0U))::value_type;
     using gpio_backend_type = typename board_type::template gpio_backend<typename Context::mmio_type>;
     using transfer_operation = operation<typename backend_type::transfer_type, spi_bus>;
     using device_type = spi_device<spi_bus>;
@@ -262,7 +263,7 @@ private:
         if (configured_ && cs == current_cs_) configured_ = false;
         return {};
     }
-    [[nodiscard]] result<void> prepare(core::pin_id cs, driver::spi_timing timing,
+    [[nodiscard]] result<void> prepare(core::pin_id cs, timing_type timing,
                                        driver::spi_configuration configuration) noexcept {
         if (auto checked = idle(); !checked) return checked;
         if (configured_ && cache_valid_ && cs == current_cs_ && timing == current_timing_
@@ -328,9 +329,9 @@ private:
     Context& context_;
     backend_type backend_;
     gpio_backend_type gpio_;
-    driver::spi_timing default_timing_{};
+    timing_type default_timing_{};
     driver::spi_configuration default_configuration_{};
-    driver::spi_timing current_timing_{};
+    timing_type current_timing_{};
     driver::spi_configuration current_configuration_{};
     core::pin_id current_cs_{};
     std::uint16_t devices_{};

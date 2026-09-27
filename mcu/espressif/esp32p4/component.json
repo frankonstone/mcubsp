@@ -1,0 +1,78 @@
+{
+  "schema_version": 2,
+  "kind": "mcu",
+  "id": "espressif/esp32p4",
+  "name": "ESP32-P4",
+  "summary": "ESP32-P4 authoritative part/package/silicon description; shared native implementations are separate IP components.",
+  "category": "microcontroller",
+  "revisions": [
+    "production-v3.x"
+  ],
+  "default_revision": "production-v3.x",
+  "depends": [
+    "ip:espressif/esp32p4_native"
+  ],
+  "provides": [],
+  "requires": [],
+  "described": [],
+  "capability_sources": {},
+  "ownership": {
+    "maintainers": [
+      "mcuhw maintainers"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/mcu/esp32p4/coverage.hpp",
+    "include/mcuhw/mcu/esp32p4/description.hpp",
+    "include/mcuhw/mcu/esp32p4/ethernet.hpp",
+    "include/mcuhw/mcu/esp32p4/interrupts_dma.hpp",
+    "include/mcuhw/mcu/esp32p4/model.hpp",
+    "include/mcuhw/mcu/esp32p4/peripherals.hpp",
+    "include/mcuhw/mcu/esp32p4/pins.hpp",
+    "include/mcuhw/mcu/esp32p4/system.hpp"
+  ],
+  "sources": [],
+  "tests": [
+    "tests/test_esp32p4_description.cpp"
+  ],
+  "docs": [
+    "doc/reference/mcu-reviews/esp32p4.md"
+  ],
+  "examples": [],
+  "evidence": [
+    {
+      "stage": "host-test",
+      "state": "missing",
+      "revision": "production-v3.x",
+      "scope": "Description test sources are listed; consult current test artifacts for execution results."
+    }
+  ],
+  "limitations": [
+    "Described hardware and implemented backend capabilities are separate; package, routes and silicon constraints remain authoritative in C++.",
+    "Production v3.x description is not physically qualified by the ESP32-P4-NANO development-v1.0 board observations."
+  ],
+  "variants": [
+    {
+      "id": "nrw16x",
+      "family": "ESP32-P4",
+      "part": "ESP32-P4NRW16X",
+      "package": "QFN104",
+      "silicon": "production v3.0/v3.1/v3.2",
+      "source": {
+        "path": "include/mcuhw/mcu/esp32p4/system.hpp",
+        "contains": "ESP32-P4NRW16X"
+      }
+    },
+    {
+      "id": "nrw32x",
+      "family": "ESP32-P4",
+      "part": "ESP32-P4NRW32X",
+      "package": "QFN104",
+      "silicon": "production v3.0/v3.1/v3.2",
+      "source": {
+        "path": "include/mcuhw/mcu/esp32p4/system.hpp",
+        "contains": "ESP32-P4NRW32X"
+      }
+    }
+  ]
+}

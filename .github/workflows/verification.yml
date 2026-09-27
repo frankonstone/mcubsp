@@ -1,0 +1,232 @@
+name: Verification
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verification-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  selection:
+    runs-on: ubuntu-24.04
+    outputs:
+      suites: ${{ steps.select.outputs.suites }}
+      run_native: ${{ steps.select.outputs.run_native }}
+      arm_gcc_matrix: ${{ steps.select.outputs.arm_gcc_matrix }}
+      esp_idf_matrix: ${{ steps.select.outputs.esp_idf_matrix }}
+      run_arm_gcc: ${{ steps.select.outputs.run_arm_gcc }}
+      run_esp_idf: ${{ steps.select.outputs.run_esp_idf }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.10'
+      - name: Select affected native suites and board builds
+        id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: >-
+          python tools/ci-select.py --event "$EVENT_NAME" --base "$BASE_SHA"
+          --output build/selection.json --github-output "$GITHUB_OUTPUT"
+      - name: Validate the complete catalog
+        run: python tools/catalog.py validate
+      - name: Preserve selection and reasons
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verification-selection
+          path: build/selection.json
+          if-no-files-found: warn
+
+  native:
+    name: Native / ${{ matrix.os }}
+    needs: selection
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            shell: bash
+            cxx: g++-14
+          - os: macos-14
+            shell: bash
+            cxx: g++-15
+          - os: windows-2022
+            shell: 'msys2 {0}'
+            cxx: g++
+    env:
+      CXX: ${{ matrix.cxx }}
+      MCUHW_CI_SUITES: ${{ needs.selection.outputs.suites }}
+      CMAKE_BUILD_PARALLEL_LEVEL: '2'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Checkout exact native test dependency
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: frankonstone/mcutest
+          ref: 532327858ead93140535b539cf65b35eb96fdf01
+          path: _ci/mcutest
+          persist-credentials: false
+      - name: Setup Python on Unix hosts
+        if: runner.os != 'Windows'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.10'
+      - name: Setup Linux build tools
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends g++-14 cmake ninja-build
+      - name: Setup macOS build tools
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install gcc@15 cmake ninja
+          echo "$(brew --prefix gcc@15)/bin" >> "$GITHUB_PATH"
+      - name: Setup native Windows UCRT tools
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@fb197b72ce45fb24f17bf3f807a388985654d1f2 # v2.29.0
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-python
+      - name: Record exact host tools and dependency
+        shell: ${{ matrix.shell }}
+        run: |
+          mkdir -p build/verification/artifacts
+          python -c 'import json, platform, subprocess; from pathlib import Path; cmd=lambda *a: subprocess.check_output(a,text=True).strip(); data={"host":platform.platform(),"python":platform.python_version(),"compiler":cmd("${{ matrix.cxx }}","--version"),"compiler_target":cmd("${{ matrix.cxx }}","-dumpmachine"),"cmake":cmd("cmake","--version"),"ninja":cmd("ninja","--version"),"mcutest":cmd("git","-C","_ci/mcutest","rev-parse","HEAD")}; Path("build/verification/artifacts/host-tools.json").write_text(json.dumps(data,indent=2)+"\n")'
+      - name: Validate and generate catalog artifacts
+        shell: ${{ matrix.shell }}
+        run: |
+          python tools/catalog.py validate
+          python tools/catalog.py index --output build/verification/artifacts/catalog.json
+          python tools/catalog.py docs --output build/verification/artifacts/catalog.md
+      - name: Run selected native suites and complete tooling checks
+        if: needs.selection.outputs.run_native == 'true'
+        shell: ${{ matrix.shell }}
+        run: >-
+          python tools/verify.py --build build/verification --suites "$MCUHW_CI_SUITES"
+          --mcutest _ci/mcutest --compiler "$CXX" --tooling --jobs 2
+      - name: Run tooling for an empty native diff
+        if: needs.selection.outputs.run_native != 'true'
+        shell: ${{ matrix.shell }}
+        run: >-
+          python tests/tooling/run_tests.py
+          --output build/verification/artifacts/mcutest-tooling.json
+      - name: Check every public header on complete runs
+        if: github.event_name != 'pull_request'
+        shell: ${{ matrix.shell }}
+        run: |
+          cmake -S . -B build/headers -G Ninja -DCMAKE_CXX_COMPILER="$CXX" -DMCUHW_CHECK_HEADERS=ON -DMCUHW_INSTALL=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build build/headers --parallel 2
+          cmake -E copy build/headers/compile_commands.json build/verification/artifacts/header-compile-commands.json
+      - name: Measure native consumer isolation with 300 boards and 3000 devices
+        shell: ${{ matrix.shell }}
+        run: >-
+          python tools/check-scale.py --mode host-device --compiler "$CXX"
+          --output build/verification/artifacts/scaling.json
+      - name: Upload scoped verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verification-${{ matrix.os }}
+          path: |
+            build/verification/artifacts/
+            build/verification/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  arm-firmware:
+    name: Firmware / ${{ matrix.board }} / ${{ matrix.example }}
+    needs: selection
+    if: needs.selection.outputs.run_arm_gcc == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.selection.outputs.arm_gcc_matrix) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Provision Arm GNU 15.2.Rel1
+        shell: bash
+        run: |
+          curl --fail --location --retry 3 --output /tmp/arm-toolchain.tar.xz https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi.tar.xz
+          echo '597893282ac8c6ab1a4073977f2362990184599643b4c5ee34870a8215783a16  /tmp/arm-toolchain.tar.xz' | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/arm-toolchain"
+          tar -xJf /tmp/arm-toolchain.tar.xz --strip-components=1 -C "$RUNNER_TEMP/arm-toolchain"
+          echo "$RUNNER_TEMP/arm-toolchain/bin" >> "$GITHUB_PATH"
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends cmake ninja-build
+      - name: Compile and link declared application
+        env:
+          BOARD: ${{ matrix.board }}
+          REVISION: ${{ matrix.revision }}
+          EXAMPLE: ${{ matrix.example }}
+        run: >-
+          python3 tools/verify-boards.py --board "$BOARD" --revision "$REVISION"
+          --example "$EXAMPLE" --build build/firmware --jobs 2
+      - name: Preserve cross-build result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cross-build-${{ matrix.key }}
+          path: build/firmware/artifacts/
+          if-no-files-found: warn
+
+  esp-firmware:
+    name: Firmware / ${{ matrix.board }} / ${{ matrix.example }}
+    needs: selection
+    if: needs.selection.outputs.run_esp_idf == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.selection.outputs.esp_idf_matrix) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Compile and link in the ESP-IDF v6.1 environment
+        env:
+          BOARD: ${{ matrix.board }}
+          REVISION: ${{ matrix.revision }}
+          EXAMPLE: ${{ matrix.example }}
+        run: >-
+          docker run --rm -v "$PWD:/project" -w /project
+          espressif/idf:v6.1@sha256:81893c71bb5e570088901f21def8684c25cd2a9020281bd01b843a7655edb18c python tools/verify-boards.py
+          --board "$BOARD" --revision "$REVISION" --example "$EXAMPLE"
+          --build build/firmware --jobs 2
+      - name: Preserve cross-build result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cross-build-${{ matrix.key }}
+          path: build/firmware/artifacts/
+          if-no-files-found: warn

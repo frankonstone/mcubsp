@@ -26,6 +26,7 @@ class spi_device {
 public:
     using transfer_operation = typename Bus::transfer_operation;
     using backend_type = typename Bus::backend_type;
+    using timing_type = typename Bus::timing_type;
     spi_device(const spi_device&) = delete;
     spi_device& operator=(const spi_device&) = delete;
     spi_device(spi_device&& other) noexcept
@@ -128,12 +129,12 @@ public:
     }
 private:
     friend Bus;
-    spi_device(Bus& bus, core::pin_id cs, driver::spi_timing timing,
+    spi_device(Bus& bus, core::pin_id cs, timing_type timing,
                driver::spi_configuration configuration) noexcept
         : bus_(&bus), cs_(cs), timing_(timing), configuration_(configuration) {}
     Bus* bus_;
     core::pin_id cs_;
-    driver::spi_timing timing_;
+    timing_type timing_;
     driver::spi_configuration configuration_;
 };
 } // namespace mcuhw::io

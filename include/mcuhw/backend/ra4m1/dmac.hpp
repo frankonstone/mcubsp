@@ -181,6 +181,17 @@ public:
         return operations_.complete(id, result);
     }
 
+    // Foreground polling uses the same register dispatch as interrupt entry.
+    void poll() noexcept {
+        static_assert(Channel < 4U);
+        const auto status = mmio_.template read<std::uint8_t>(
+            dmac_detail::metadata(Channel).base + 0x1EU);
+        if (status && (*status & 0x80U) == 0U
+            && (*status & 0x11U) != 0U) {
+            static_cast<void>(handle_transfer_end_interrupt());
+        }
+    }
+
     [[nodiscard]] std::expected<void, driver::dma_error> shutdown() noexcept {
         if (!initialized_) {
             return std::unexpected(driver::dma_error::not_initialized);

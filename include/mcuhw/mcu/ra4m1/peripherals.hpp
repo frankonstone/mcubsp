@@ -104,28 +104,36 @@ inline constexpr std::array gpt_registers{
 inline constexpr core::source_ref sci_source{
     "R01UH0887EJ0110", "Rev.1.10",
     "28.1-28.2 and 28.10-28.14, PDF pages 696-821"};
-using sci_smr = core::register_descriptor<std::uint8_t, 0x00, core::access_semantics::read_write>;
+using sci_smr = core::register_descriptor<std::uint8_t, 0x00, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0U, 0xFFU>;
 using sci_brr = core::register_descriptor<std::uint8_t, 0x01, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0xFFU, 0xFFU>;
-using sci_scr = core::register_descriptor<std::uint8_t, 0x02, core::access_semantics::read_write>;
-using sci_tdr = core::register_descriptor<std::uint8_t, 0x03, core::access_semantics::write_only>;
+using sci_scr = core::register_descriptor<std::uint8_t, 0x02, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0U, 0xFFU>;
+using sci_tdr = core::register_descriptor<std::uint8_t, 0x03, core::access_semantics::write_only, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0xFFU, 0xFFU>;
 using sci_ssr = core::register_descriptor<std::uint8_t, 0x04, core::access_semantics::read_write, 0x38U, false, core::reserved_bit_policy::preserve, 0U, 0x84U, 0xFFU>;
 using sci_rdr = core::register_descriptor<std::uint8_t, 0x05, core::access_semantics::read_only, 0U, false, core::reserved_bit_policy::write_zero, 0U, 0U, 0U>;
-using sci_semr = core::register_descriptor<std::uint8_t, 0x07, core::access_semantics::read_write>;
+using sci_scmr = core::register_descriptor<std::uint8_t, 0x06, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0xF2U, 0xFFU>;
+using sci_semr = core::register_descriptor<std::uint8_t, 0x07, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0U, 0xFFU>;
+using sci_simr1 = core::register_descriptor<std::uint8_t, 0x09, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0U, 0U>;
+using sci_spmr = core::register_descriptor<std::uint8_t, 0x0D, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0U, 0U>;
+using sci_mddr = core::register_descriptor<std::uint8_t, 0x12, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0xFFU, 0xFFU>;
+using sci_sptr = core::register_descriptor<std::uint8_t, 0x1C, core::access_semantics::read_write, 0xFFU, false, core::reserved_bit_policy::write_zero, 0U, 0U, 0U>;
 using sci_clock_select = core::field_descriptor<sci_smr, 0, 2>;
 using sci_transmit_enable = core::field_descriptor<sci_scr, 5, 1>;
 using sci_receive_enable = core::field_descriptor<sci_scr, 4, 1>;
+using sci_transmit_interrupt_enable = core::field_descriptor<sci_scr, 7, 1>;
+using sci_receive_interrupt_enable = core::field_descriptor<sci_scr, 6, 1>;
+using sci_transmit_end_interrupt_enable = core::field_descriptor<sci_scr, 2, 1>;
 using sci_parity_error = core::field_descriptor<sci_ssr, 3, 1, core::access_semantics::write_zero_to_clear>;
 
 inline constexpr std::array sci_uart_registers{
-    register_record{"SMR", 0x4007'0000U, 1, core::access_semantics::read_write, 0xFFU, 0U, 0xFFU, core::reserved_bit_policy::write_zero, sci_source},
-    register_record{"BRR", 0x4007'0001U, 1, core::access_semantics::read_write, 0xFFU, 0xFFU, 0xFFU, core::reserved_bit_policy::write_zero, sci_source},
-    register_record{"SCR", 0x4007'0002U, 1, core::access_semantics::read_write, 0xFFU, 0U, 0xFFU, core::reserved_bit_policy::write_zero, sci_source},
-    register_record{"TDR", 0x4007'0003U, 1, core::access_semantics::write_only, 0xFFU, 0xFFU, 0xFFU, core::reserved_bit_policy::write_zero, sci_source},
-    register_record{"SSR", 0x4007'0004U, 1, core::access_semantics::read_write, 0x38U, 0x84U, 0xFFU, core::reserved_bit_policy::preserve, sci_source},
-    register_record{"RDR", 0x4007'0005U, 1, core::access_semantics::read_only, 0U, 0U, 0U, core::reserved_bit_policy::write_zero, sci_source},
-    register_record{"SCMR", 0x4007'0006U, 1, core::access_semantics::read_write, 0xFFU, 0xF2U, 0xFFU, core::reserved_bit_policy::write_zero, sci_source},
-    register_record{"SEMR", 0x4007'0007U, 1, core::access_semantics::read_write, 0xFFU, 0U, 0xFFU, core::reserved_bit_policy::write_zero, sci_source},
-    register_record{"MDDR", 0x4007'0012U, 1, core::access_semantics::read_write, 0xFFU, 0xFFU, 0xFFU, core::reserved_bit_policy::write_zero, sci_source},
+    describe_register<sci_smr>("SMR", 0x4007'0000U, sci_source),
+    describe_register<sci_brr>("BRR", 0x4007'0000U, sci_source),
+    describe_register<sci_scr>("SCR", 0x4007'0000U, sci_source),
+    describe_register<sci_tdr>("TDR", 0x4007'0000U, sci_source),
+    describe_register<sci_ssr>("SSR", 0x4007'0000U, sci_source),
+    describe_register<sci_rdr>("RDR", 0x4007'0000U, sci_source),
+    describe_register<sci_scmr>("SCMR", 0x4007'0000U, sci_source),
+    describe_register<sci_semr>("SEMR", 0x4007'0000U, sci_source),
+    describe_register<sci_mddr>("MDDR", 0x4007'0000U, sci_source),
 };
 
 inline constexpr core::source_ref iic_source{

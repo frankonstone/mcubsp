@@ -1,0 +1,93 @@
+{
+  "schema_version": 2,
+  "kind": "ip",
+  "id": "st/stm32h753_native",
+  "name": "STM32H753 native peripheral implementations",
+  "summary": "Shared STM32H753 backend implementation collection. Board-specific pins, clocks and startup remain outside this component.",
+  "category": "native-backends",
+  "revisions": [
+    "implementation-v1"
+  ],
+  "default_revision": "implementation-v1",
+  "depends": [],
+  "provides": [
+    "gpio",
+    "i2c",
+    "spi",
+    "uart",
+    "pwm",
+    "adc",
+    "ethernet"
+  ],
+  "requires": [],
+  "described": [],
+  "capability_sources": {
+    "gpio": {
+      "path": "include/mcuhw/backend/stm32h753/gpio.hpp",
+      "contains": "namespace mcuhw::backend::stm32h753"
+    },
+    "i2c": {
+      "path": "include/mcuhw/backend/stm32h753/i2c.hpp",
+      "contains": "namespace mcuhw::backend::stm32h753"
+    },
+    "spi": {
+      "path": "include/mcuhw/backend/stm32h753/spi.hpp",
+      "contains": "namespace mcuhw::backend::stm32h753"
+    },
+    "uart": {
+      "path": "include/mcuhw/backend/stm32h753/usart.hpp",
+      "contains": "namespace mcuhw::backend::stm32h753"
+    },
+    "pwm": {
+      "path": "include/mcuhw/backend/stm32h753/timer.hpp",
+      "contains": "namespace mcuhw::backend::stm32h753"
+    },
+    "adc": {
+      "path": "include/mcuhw/backend/stm32h753/adc.hpp",
+      "contains": "namespace mcuhw::backend::stm32h753"
+    },
+    "ethernet": {
+      "path": "include/mcuhw/backend/stm32h753/ethernet.hpp",
+      "contains": "namespace mcuhw::backend::stm32h753"
+    }
+  },
+  "ownership": {
+    "maintainers": [
+      "mcuhw maintainers"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/backend/stm32h753/adc.hpp",
+    "include/mcuhw/backend/stm32h753/clock.hpp",
+    "include/mcuhw/backend/stm32h753/detail.hpp",
+    "include/mcuhw/backend/stm32h753/ethernet.hpp",
+    "include/mcuhw/backend/stm32h753/gpio.hpp",
+    "include/mcuhw/backend/stm32h753/i2c.hpp",
+    "include/mcuhw/backend/stm32h753/memory.hpp",
+    "include/mcuhw/backend/stm32h753/spi.hpp",
+    "include/mcuhw/backend/stm32h753/timer.hpp",
+    "include/mcuhw/backend/stm32h753/usart.hpp"
+  ],
+  "sources": [],
+  "tests": [
+    "tests/test_stm32h753_clock.cpp",
+    "tests/test_stm32h753_drivers.cpp",
+    "tests/test_stm32h753_ethernet.cpp",
+    "tests/test_stm32h753_gpio.cpp"
+  ],
+  "docs": [
+    "doc/reference/mcu-reviews/stm32h753.md"
+  ],
+  "examples": [],
+  "evidence": [
+    {
+      "stage": "host-test",
+      "state": "missing",
+      "revision": "implementation-v1",
+      "scope": "Backend host-test sources are available; catalog existence does not report a test execution."
+    }
+  ],
+  "limitations": [
+    "Capabilities identify implemented interfaces, not arbitrary routes, electrical timing or completed physical acceptance."
+  ]
+}

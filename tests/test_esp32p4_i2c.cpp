@@ -135,8 +135,8 @@ TEST(esp32p4_i2c, solves_standard_and_fast_mode_timing,
     ASSERT_TRUE(timing_100k.has_value());
     EXPECT_EQ(timing_100k->achieved_hz, 100'000U);
     EXPECT_EQ(timing_100k->error_ppm, 0U);
-    EXPECT_TRUE(timing_100k->brl != 0U);
-    EXPECT_TRUE(timing_100k->brh >= 6U);
+    EXPECT_TRUE(timing_100k->low_count != 0U);
+    EXPECT_TRUE(timing_100k->high_count >= 6U);
 
     constexpr auto timing_400k =
         mcuhw::backend::esp32p4::solve_i2c_timing({
@@ -171,8 +171,8 @@ TEST(esp32p4_i2c, initializes_clock_timing_and_gpio_matrix,
     EXPECT_TRUE((mmio.value(binding::clocks.source_register) & (1U << 1U))
                 != 0U);
     EXPECT_EQ((mmio.value(binding::clocks.divider_register) >> 2U) & 0xFFU,
-              timing_100k->backend_encoding - 1U);
-    EXPECT_EQ(mmio.value(i2c_base + 0x00U), timing_100k->brl - 1U);
+              timing_100k->source_divider - 1U);
+    EXPECT_EQ(mmio.value(i2c_base + 0x00U), timing_100k->low_count - 1U);
     EXPECT_TRUE((mmio.value(i2c_base + 0x04U) & (1U << 4U)) != 0U);
     EXPECT_TRUE((mmio.value(i2c_base + 0x04U) & (1U << 9U)) != 0U);
 

@@ -2,6 +2,7 @@
 
 // @req-file REQ-0031 REQ-0034
 
+#include <array>
 #include <cstdint>
 #include <string_view>
 
@@ -81,5 +82,45 @@ inline constexpr core::pin_id default_spi_cs{0, 23};
 // silently alter the accepted production description.
 inline constexpr std::uint32_t development_i2c0_apb_gate_mask = 1U << 12U;
 inline constexpr std::uint32_t development_i2c0_reset_mask = 1U << 22U;
+
+
+struct ethernet_binding {
+    static constexpr std::array rmii_inputs{ethernet_crs_dv.index, ethernet_rxd0.index, ethernet_rxd1.index};
+    static constexpr std::array rmii_outputs{ethernet_txd0.index, ethernet_txd1.index, ethernet_tx_enable.index};
+    static constexpr auto reference_clock = ethernet_reference_clock.index;
+    static constexpr auto mdc = ethernet_mdc.index;
+    static constexpr auto mdio = ethernet_mdio.index;
+    static constexpr auto phy_address = ethernet_phy_address;
+};
+
+struct sdmmc_slot0_binding : mcu::esp32p4::sdmmc_instance {
+    static constexpr auto d0 = microsd_d0.index;
+    static constexpr auto d1 = microsd_d1.index;
+    static constexpr auto d2 = microsd_d2.index;
+    static constexpr auto d3 = microsd_d3.index;
+    static constexpr auto clock = microsd_clock.index;
+    static constexpr auto command = microsd_command.index;
+    static constexpr std::uint8_t slot = 0U;
+    static constexpr bool uses_gpio_matrix = false;
+    static constexpr bool requires_io_power = true;
+};
+
+struct sdmmc_slot1_wifi_binding : mcu::esp32p4::sdmmc_instance {
+    static constexpr auto d0 = wifi_sdio_d0.index;
+    static constexpr auto d1 = wifi_sdio_d1.index;
+    static constexpr auto d2 = wifi_sdio_d2.index;
+    static constexpr auto d3 = wifi_sdio_d3.index;
+    static constexpr auto clock = wifi_sdio_clock.index;
+    static constexpr auto command = wifi_sdio_command.index;
+    static constexpr std::uint8_t slot = 1U;
+    static constexpr bool uses_gpio_matrix = true;
+    static constexpr bool requires_io_power = false;
+    static constexpr std::uint16_t clock_signal = 0U;
+    static constexpr std::uint16_t command_signal = 1U;
+    static constexpr std::uint16_t d0_signal = 2U;
+    static constexpr std::uint16_t d1_signal = 3U;
+    static constexpr std::uint16_t d2_signal = 4U;
+    static constexpr std::uint16_t d3_signal = 5U;
+};
 
 } // namespace mcuhw::board::esp32p4_nano

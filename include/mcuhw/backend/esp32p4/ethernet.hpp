@@ -41,10 +41,10 @@ struct ip101_identity {
 };
 
 // ESP32-P4 native EMAC using an external 50 MHz RMII reference clock. This
-// binding selects the ESP32-P4-NANO IOMUX data pins and GPIO-matrix SMI pins.
+// binding selects the board's IOMUX data pins and GPIO-matrix SMI pins.
 // PHY reset remains a board concern because its polarity and timing are not an
 // EMAC property.
-template<typename MmioPolicy>
+template<typename MmioPolicy, typename Binding>
 class ethernet_rmii_mac {
 public:
     explicit ethernet_rmii_mac(MmioPolicy& mmio) noexcept : mmio_(mmio) {}
@@ -149,7 +149,7 @@ public:
     }
 
     [[nodiscard]] std::optional<ip101_identity> identify_ip101(
-        std::uint8_t phy = 1U,
+        std::uint8_t phy = Binding::phy_address,
         std::uint32_t timeout = 100'000U) noexcept {
         const auto id1 = read_phy(phy, 2U, timeout);
         const auto id2 = read_phy(phy, 3U, timeout);
@@ -201,15 +201,13 @@ private:
     }
 
     [[nodiscard]] bool configure_rmii_pins() noexcept {
-        constexpr std::array<std::uint8_t, 3> inputs{{28U, 29U, 30U}};
-        constexpr std::array<std::uint8_t, 3> outputs{{34U, 35U, 49U}};
-        for (const auto pin : inputs) {
+        for (const auto pin : Binding::rmii_inputs) {
             if (!configure_iomux(pin, true)) return false;
         }
-        for (const auto pin : outputs) {
+        for (const auto pin : Binding::rmii_outputs) {
             if (!configure_iomux(pin, false)) return false;
         }
-        return configure_iomux(50U, true);
+        return configure_iomux(Binding::reference_clock, true);
     }
 
     [[nodiscard]] bool configure_iomux(std::uint8_t pin,
@@ -225,13 +223,13 @@ private:
     }
 
     [[nodiscard]] bool configure_smi_pins() noexcept {
-        // MDC GPIO31 -> matrix output 108. MDIO GPIO52 is matrix output 109
+        // MDC uses matrix output 108. MDIO uses matrix output 109
         // plus matrix input 107; peripheral-controlled output enable is kept.
-        return configure_matrix_pad(31U, false)
-            && route_output(31U, 108U)
-            && configure_matrix_pad(52U, true)
-            && route_output(52U, 109U)
-            && route_input(52U, 107U);
+        return configure_matrix_pad(Binding::mdc, false)
+            && route_output(Binding::mdc, 108U)
+            && configure_matrix_pad(Binding::mdio, true)
+            && route_output(Binding::mdio, 109U)
+            && route_input(Binding::mdio, 107U);
     }
 
     [[nodiscard]] bool configure_matrix_pad(std::uint8_t pin,

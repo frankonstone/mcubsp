@@ -118,13 +118,13 @@ TEST(esp32p4_spi, solves_native_non_overspeed_clock,
     ASSERT_TRUE(timing_1m.has_value());
     EXPECT_EQ(timing_1m->achieved_hz, 1'000'000U);
     EXPECT_EQ(timing_1m->error_ppm, 0U);
-    EXPECT_TRUE((timing_1m->backend_encoding & (1U << 31U)) == 0U);
+    EXPECT_TRUE((timing_1m->clock_register & (1U << 31U)) == 0U);
 
     constexpr auto direct = mcuhw::backend::esp32p4::solve_spi_timing(
         {40'000'000U, 40'000'000U, 0U});
     ASSERT_TRUE(direct.has_value());
     EXPECT_EQ(direct->achieved_hz, 40'000'000U);
-    EXPECT_EQ(direct->backend_encoding, 1U << 31U);
+    EXPECT_EQ(direct->clock_register, 1U << 31U);
 
     constexpr auto below = mcuhw::backend::esp32p4::solve_spi_timing(
         {40'000'000U, 7'000'000U, 200'000U});
@@ -157,7 +157,7 @@ TEST(esp32p4_spi, configures_mode_order_rate_and_gpio_matrix,
                  & binding::clocks.system_gate_mask) != 0U);
     EXPECT_TRUE((mmio.value(binding::clocks.apb_gate_register)
                  & binding::clocks.apb_gate_mask) != 0U);
-    EXPECT_EQ(mmio.value(base + 0x0CU), timing_1m->backend_encoding);
+    EXPECT_EQ(mmio.value(base + 0x0CU), timing_1m->clock_register);
     EXPECT_TRUE((mmio.value(base + 0x08U) & (1U << 23U)) != 0U);
     EXPECT_TRUE((mmio.value(base + 0x08U) & (1U << 25U)) != 0U);
     EXPECT_TRUE((mmio.value(base + 0x10U) & (1U << 9U)) == 0U);

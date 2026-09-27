@@ -32,7 +32,7 @@ namespace board = mcuhw::board::arduino_uno_r4_minima;
 using binding = mcuhw::backend::ra4m1::sci_uart_binding<
     2, board::d0_rx, board::d1_tx>;
 
-constexpr auto timing = mcuhw::driver::solve_uart_baud({
+constexpr auto timing = mcuhw::backend::ra4m1::solve_uart_baud({
     .clock_hz = 24'000'000U,
     .target_baud = 115'200U,
     .maximum_error_ppm = 20'000U, // 2%

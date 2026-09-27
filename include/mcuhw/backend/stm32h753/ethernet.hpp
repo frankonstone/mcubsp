@@ -24,12 +24,12 @@ struct ethernet_mac_address {
     std::array<std::uint8_t, 6> bytes{};
 };
 
-template<typename MmioPolicy>
+template<typename MmioPolicy, typename Binding>
 class ethernet_rmii_mac {
 public:
     explicit ethernet_rmii_mac(MmioPolicy& mmio) noexcept : mmio_(mmio) {}
 
-    // Configure the Nucleo RMII pin set, select RMII before releasing the MAC
+    // Configure the binding's RMII pin set, select RMII before releasing the MAC
     // reset, and initialize store-and-forward operation at 100 Mbit/s full
     // duplex. The PHY-provided 50 MHz reference clock must already be present.
     [[nodiscard]] std::expected<void, ethernet_error> initialize(
@@ -122,20 +122,18 @@ private:
     }
     [[nodiscard]] bool enable_clocks() noexcept {
         constexpr auto rcc = mcu::stm32h753::rcc_base;
+        std::uint32_t ports{};
+        for (const auto pin : Binding::rmii_pins) ports |= 1U << pin.port;
         const auto ahb4 = read(rcc + 0xE0U);
         const auto apb4 = read(rcc + 0xF4U);
         const auto ahb1 = read(rcc + 0xD8U);
         return ahb4 && apb4 && ahb1
-            && write(rcc + 0xE0U, *ahb4 | 0x47U)
+            && write(rcc + 0xE0U, *ahb4 | ports)
             && write(rcc + 0xF4U, *apb4 | (1U << 1U))
             && write(rcc + 0xD8U, *ahb1 | (0x7U << 15U));
     }
     [[nodiscard]] bool configure_rmii_pins() noexcept {
-        constexpr std::array<core::pin_id, 9> pins{{
-            {0, 1}, {0, 2}, {2, 1}, {0, 7}, {2, 4},
-            {2, 5}, {6, 11}, {6, 13}, {1, 13},
-        }};
-        for (const auto pin : pins) {
+        for (const auto pin : Binding::rmii_pins) {
             const auto base = mcu::stm32h753::gpio_base(pin.port);
             const auto pair_shift = static_cast<unsigned>(pin.index * 2U);
             const auto pair_mask = 0x3U << pair_shift;
@@ -195,13 +193,16 @@ private:
     MmioPolicy& mmio_;
 };
 
-struct alignas(16) ethernet_descriptor {
+// Hardware consumes the first four words. Each slot owns a complete M7 cache
+// line so publishing one descriptor cannot overwrite a neighbor's DMA result.
+struct alignas(32) ethernet_descriptor {
     std::uint32_t word0{};
     std::uint32_t word1{};
     std::uint32_t word2{};
     std::uint32_t word3{};
+    std::array<std::uint32_t, 4> padding{};
 };
-static_assert(sizeof(ethernet_descriptor) == 16U);
+static_assert(sizeof(ethernet_descriptor) == 32U);
 
 struct ethernet_receive_completion {
     std::size_t size{};
@@ -264,7 +265,9 @@ public:
 
     [[nodiscard]] bool initialize() noexcept {
         clear_descriptors();
-        if (!write(0x1100U, 0U)
+        // DMACCR.DSL counts skipped 32-bit words after the 16-byte hardware
+        // descriptor: four words produce the 32-byte software slot stride.
+        if (!write(0x1100U, 4U << 18U)
             || !write(0x1104U, 8U << 16U)
             || !write(0x1108U, (8U << 16U) | (buffer_size << 1U))
             || !write(0x1114U, address_of(tx_descriptors_.data()))
@@ -290,7 +293,7 @@ public:
         rx_buffers_[index] = buffer.first(buffer_size);
         rx_completions_[index].reset();
         rx_active_[index] = true;
-        clean_descriptor_rings();
+        protection_.clean_for_device(std::as_bytes(std::span{&descriptor, 1U}));
         protection_.publish_barrier();
         (void)write(0x1128U, address_of(&rx_descriptors_[index]));
         protection_.leave();
@@ -311,7 +314,7 @@ public:
                       descriptor_owned | descriptor_first | descriptor_last};
         tx_active_[index] = true;
         tx_completions_[index] = false;
-        clean_descriptor_rings();
+        protection_.clean_for_device(std::as_bytes(std::span{&descriptor, 1U}));
         protection_.publish_barrier();
         (void)write(0x1120U, address_of(&tx_descriptors_[index]));
         protection_.leave();

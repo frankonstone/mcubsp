@@ -14,7 +14,7 @@
 namespace mcuhw::io::boards {
 
 // The existing NANO board integration is development silicon v1.0, HP CPU0
-// only, booted by board/esp32p4_nano/baremetal_smoke at a fixed 360 MHz.
+// only, booted by board/waveshare/esp32p4_nano/tests/firmware at a fixed 360 MHz.
 // These traits intentionally preserve its observed I2C clock/reset wiring and
 // pre-v3 CLIC layout. They do not qualify production-v3 silicon. A different
 // silicon revision or CPU clock requires a corresponding board composition.

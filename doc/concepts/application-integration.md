@@ -303,7 +303,7 @@ using backend_type = mcuhw::backend::ra4m1::sci_uart_backend<
 backend_type uart_hardware{mmio, execution};
 mcuhw::driver::uart uart{uart_hardware};
 
-constexpr auto uart_timing = mcuhw::driver::solve_uart_baud({
+constexpr auto uart_timing = mcuhw::backend::ra4m1::solve_uart_baud({
     .clock_hz = 24'000'000U,
     .target_baud = 115'200U,
     .maximum_error_ppm = 20'000U,

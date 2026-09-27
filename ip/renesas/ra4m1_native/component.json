@@ -1,0 +1,99 @@
+{
+  "schema_version": 2,
+  "kind": "ip",
+  "id": "renesas/ra4m1_native",
+  "name": "RA4M1 native peripheral implementations",
+  "summary": "Shared RA4M1 backend implementation collection. Board-specific pins, clocks and startup remain outside this component.",
+  "category": "native-backends",
+  "revisions": [
+    "implementation-v1"
+  ],
+  "default_revision": "implementation-v1",
+  "depends": [],
+  "provides": [
+    "gpio",
+    "i2c",
+    "spi",
+    "uart",
+    "pwm",
+    "adc",
+    "dma"
+  ],
+  "requires": [],
+  "described": [],
+  "capability_sources": {
+    "gpio": {
+      "path": "include/mcuhw/backend/ra4m1/gpio.hpp",
+      "contains": "namespace mcuhw::backend::ra4m1"
+    },
+    "i2c": {
+      "path": "include/mcuhw/backend/ra4m1/iic.hpp",
+      "contains": "namespace mcuhw::backend::ra4m1"
+    },
+    "spi": {
+      "path": "include/mcuhw/backend/ra4m1/spi.hpp",
+      "contains": "namespace mcuhw::backend::ra4m1"
+    },
+    "uart": {
+      "path": "include/mcuhw/backend/ra4m1/sci_uart.hpp",
+      "contains": "namespace mcuhw::backend::ra4m1"
+    },
+    "pwm": {
+      "path": "include/mcuhw/backend/ra4m1/gpt.hpp",
+      "contains": "namespace mcuhw::backend::ra4m1"
+    },
+    "adc": {
+      "path": "include/mcuhw/backend/ra4m1/adc.hpp",
+      "contains": "namespace mcuhw::backend::ra4m1"
+    },
+    "dma": {
+      "path": "include/mcuhw/backend/ra4m1/dmac.hpp",
+      "contains": "namespace mcuhw::backend::ra4m1"
+    }
+  },
+  "ownership": {
+    "maintainers": [
+      "mcuhw maintainers"
+    ]
+  },
+  "headers": [
+    "include/mcuhw/backend/ra4m1/adc.hpp",
+    "include/mcuhw/backend/ra4m1/clock.hpp",
+    "include/mcuhw/backend/ra4m1/dmac.hpp",
+    "include/mcuhw/backend/ra4m1/gpio.hpp",
+    "include/mcuhw/backend/ra4m1/gpt.hpp",
+    "include/mcuhw/backend/ra4m1/iic.hpp",
+    "include/mcuhw/backend/ra4m1/sci_uart.hpp",
+    "include/mcuhw/backend/ra4m1/spi.hpp",
+    "include/mcuhw/backend/ra4m1/timing/i2c.hpp",
+    "include/mcuhw/backend/ra4m1/timing/pwm.hpp",
+    "include/mcuhw/backend/ra4m1/timing/spi.hpp",
+    "include/mcuhw/backend/ra4m1/timing/uart.hpp"
+  ],
+  "sources": [],
+  "tests": [
+    "tests/backend/ra4m1/test_clock.cpp",
+    "tests/backend/ra4m1/test_gpio.cpp",
+    "tests/backend/ra4m1/test_uart.cpp",
+    "tests/backend/ra4m1/test_i2c.cpp",
+    "tests/backend/ra4m1/test_spi.cpp",
+    "tests/backend/ra4m1/test_adc.cpp",
+    "tests/backend/ra4m1/test_dmac.cpp",
+    "tests/backend/ra4m1/test_pwm.cpp"
+  ],
+  "docs": [
+    "doc/reference/mcu-reviews/ra4m1.md"
+  ],
+  "examples": [],
+  "evidence": [
+    {
+      "stage": "host-test",
+      "state": "missing",
+      "revision": "implementation-v1",
+      "scope": "Backend host-test sources are available; catalog existence does not report a test execution."
+    }
+  ],
+  "limitations": [
+    "Capabilities identify implemented interfaces, not arbitrary routes, electrical timing or completed physical acceptance."
+  ]
+}

@@ -8,6 +8,7 @@
 #include <mcutest/mcutest.hpp>
 
 #include <mcuhw/backend/esp32p4/ethernet.hpp>
+#include <mcuhw/board/esp32p4_nano.hpp>
 #include <mcuhw/integration/mcuip/esp32p4_ethernet.hpp>
 #include <mcuhw/testing/recording_mmio.hpp>
 
@@ -82,15 +83,17 @@ using dma_mmio = mcuhw::testing::recording_mmio<0x1100, 128>;
 using dma_device = mcuhw::backend::esp32p4::ethernet_dma_device<
     dma_mmio, fake_protection, 4U, 4U>;
 
+#if defined(MCUHW_TEST_MCUIP_CONTRACTS)
 static_assert(::mcuip::NetworkDevice<dma_device>);
 static_assert(::mcuip::DescriptorProtection<fake_protection>);
 static_assert(::mcuip::valid_hardware(
     mcuhw::integration::mcuip::esp32p4_nano_hardware));
+#endif
 
 TEST(esp32p4_ethernet, sequences_rmii_clock_pins_mac_and_ip101_mdio,
      "REQ-0003", "REQ-0010", "REQ-0011", "REQ-0034", "REQ-0043") {
     sparse_mmio mmio;
-    mcuhw::backend::esp32p4::ethernet_rmii_mac mac{mmio};
+    mcuhw::backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcuhw::board::esp32p4_nano::ethernet_binding> mac{mmio};
     const mcuhw::backend::esp32p4::ethernet_mac_address address{
         {0x02U, 0x00U, 0x00U, 0x04U, 0x00U, 0x01U}};
     EXPECT_TRUE(mac.initialize(address).has_value());
@@ -119,7 +122,7 @@ TEST(esp32p4_ethernet, sequences_rmii_clock_pins_mac_and_ip101_mdio,
 TEST(esp32p4_ethernet, rejects_multicast_and_invalid_phy_arguments,
      "REQ-0002", "REQ-0043") {
     sparse_mmio mmio;
-    mcuhw::backend::esp32p4::ethernet_rmii_mac mac{mmio};
+    mcuhw::backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcuhw::board::esp32p4_nano::ethernet_binding> mac{mmio};
     const mcuhw::backend::esp32p4::ethernet_mac_address multicast{
         {0x01U, 0U, 0U, 0U, 0U, 1U}};
     EXPECT_TRUE(!mac.initialize(multicast).has_value());

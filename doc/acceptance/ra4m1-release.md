@@ -77,8 +77,8 @@ Cross-build all public headers, examples and architecture probes, then link the
 UNO images:
 
 ```sh
-cmake --preset arm-cortex-m4
-cmake --build --preset arm-cortex-m4 -j4
+cmake --preset arm-cortex-m4-checks
+cmake --build --preset arm-cortex-m4-checks -j4
 cmake --preset uno-r4-minima
 cmake --build --preset uno-r4-minima -j4
 ```

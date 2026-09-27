@@ -11,6 +11,22 @@
 
 namespace mcuhw::backend::stm32h753 {
 
+struct pwm_timing {
+    std::uint32_t clock_hz;
+    std::uint32_t target_hz;
+    std::uint32_t achieved_hz;
+    std::uint32_t error_ppm;
+    std::uint32_t prescaler;
+    std::uint8_t counter_width;
+    std::uint64_t period_counts;
+
+    std::uint32_t period_register;
+    [[nodiscard]] constexpr operator driver::pwm_timing() const noexcept {
+        return {clock_hz, target_hz, achieved_hz, error_ppm, prescaler, counter_width, period_counts};
+    }
+    friend constexpr bool operator==(pwm_timing, pwm_timing) = default;
+};
+
 namespace detail {
 
 [[nodiscard]] constexpr mcu::stm32h753::timer_instance timer(
@@ -40,11 +56,10 @@ struct timer_owner {
 
 } // namespace detail
 
-// STM32 timers accept every integer prescaler from 1 through 65536. Keep the
-// common timing result while using prescaler_encoding only as an informational
-// low byte; configure() always programs the full prescaler value.
+// STM32 timers accept every integer prescaler from 1 through 65536.
+// The native configuration retains the full prescaler and period register.
 // @req REQ-0004 REQ-0011 REQ-0022
-[[nodiscard]] constexpr std::expected<driver::pwm_timing, driver::pwm_error>
+[[nodiscard]] constexpr std::expected<pwm_timing, driver::pwm_error>
 solve_timer_pwm(driver::pwm_timing_request request) noexcept {
     if (request.clock_hz == 0U) {
         return std::unexpected(driver::pwm_error::invalid_clock);
@@ -59,7 +74,7 @@ solve_timer_pwm(driver::pwm_timing_request request) noexcept {
         ? (std::uint64_t{1U} << 32U)
         : (std::uint64_t{1U} << 16U);
     bool found{};
-    driver::pwm_timing best{};
+    pwm_timing best{};
     for (std::uint32_t prescaler = 1U; prescaler <= 65'536U; ++prescaler) {
         const auto denominator =
             static_cast<std::uint64_t>(request.target_hz) * prescaler;
@@ -76,16 +91,15 @@ solve_timer_pwm(driver::pwm_timing_request request) noexcept {
         const auto difference = target_product > request.clock_hz
             ? target_product - request.clock_hz
             : request.clock_hz - target_product;
-        const driver::pwm_timing candidate{
+        const pwm_timing candidate{
             .clock_hz = request.clock_hz,
             .target_hz = request.target_hz,
             .achieved_hz = static_cast<std::uint32_t>(
                 driver::detail::rounded_quotient(request.clock_hz,
                                                  actual_denominator)),
             .error_ppm = driver::detail::rounded_ppm(difference,
-                                                     request.clock_hz),
+                                                     target_product),
             .prescaler = prescaler,
-            .prescaler_encoding = static_cast<std::uint8_t>(prescaler - 1U),
             .counter_width = request.counter_width,
             .period_counts = counts,
             .period_register = static_cast<std::uint32_t>(counts - 1U),
@@ -160,7 +174,7 @@ public:
     }
 
     [[nodiscard]] std::expected<void, driver::pwm_error> configure(
-        driver::pwm_timing timing, driver::pwm_compare compare) noexcept {
+        pwm_timing timing, driver::pwm_compare compare) noexcept {
         if (!owned_) {
             return std::unexpected(driver::pwm_error::not_initialized);
         }
@@ -328,7 +342,7 @@ private:
     MmioPolicy& mmio_;
     transfer_pool period_events_;
     std::optional<core::operation_id> pending_period_{};
-    driver::pwm_timing timing_{};
+    pwm_timing timing_{};
     driver::pwm_compare compare_{};
     bool owned_{};
     bool configured_{};

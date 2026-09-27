@@ -16,7 +16,7 @@
 
 namespace mcuhw::io::boards {
 
-// Matches board/uno_r4_minima/early_init.cpp: ICLK/PCLKA 48 MHz,
+// Matches board/arduino/uno_r4_minima/bsp/early_init.cpp: ICLK/PCLKA 48 MHz,
 // PCLKB 24 MHz. Startup, vectors and interrupt routing remain application-owned.
 struct uno_r4_minima {
     using target_identity = uno_r4_minima;
@@ -95,18 +95,18 @@ struct uno_r4_minima {
     static constexpr std::array adc_channels{driver::adc_channel{9U}};
 
     static constexpr auto solve_serial(std::uint32_t baud) noexcept {
-        return driver::solve_uart_baud({48'000'000U, baud, 20'000U});
+        return backend::ra4m1::solve_uart_baud({48'000'000U, baud, 20'000U});
     }
     static constexpr auto solve_spi(std::uint32_t hz) noexcept {
-        return driver::solve_spi_timing({48'000'000U, hz, 50'000U});
+        return backend::ra4m1::solve_spi_timing({48'000'000U, hz, 50'000U});
     }
     static constexpr auto solve_i2c(std::uint32_t hz) noexcept {
-        return driver::solve_i2c_timing({24'000'000U, hz, 30'000U,
+        return backend::ra4m1::solve_i2c_timing({24'000'000U, hz, 30'000U,
                                        hz > 100'000U ? 120U : 300U,
                                        hz > 100'000U ? 60U : 100U});
     }
     static constexpr auto solve_pwm(std::uint32_t hz) noexcept {
-        return driver::solve_pwm_timing(
+        return backend::ra4m1::solve_pwm_timing(
             {48'000'000U, hz, 30'000U, pwm_binding::metadata.counter_width});
     }
 
@@ -114,83 +114,23 @@ struct uno_r4_minima {
     template<typename M> static void stop(M&) noexcept {}
 
     template<typename M, typename B>
-    static void poll_serial(M& mmio, B& peripheral) noexcept {
-        static_cast<void>(peripheral.handle_dma_receive_completion());
-        static_cast<void>(peripheral.handle_dma_transmit_completion());
-        const auto status = mmio.template read<std::uint8_t>(
-            serial_binding::metadata.base + 0x04U);
-        const auto enabled = mmio.template read<std::uint8_t>(
-            serial_binding::metadata.base + 0x02U);
-        if (!status || !enabled) return;
-        if ((*status & 0x38U) != 0U && (*enabled & 0x40U) != 0U) {
-            static_cast<void>(peripheral.handle_receive_error_interrupt());
-        } else if ((*status & 0x40U) != 0U && (*enabled & 0x40U) != 0U) {
-            static_cast<void>(peripheral.handle_receive_interrupt());
-        }
-        if ((*status & 0x80U) != 0U && (*enabled & 0x80U) != 0U) {
-            static_cast<void>(peripheral.handle_transmit_data_empty_interrupt());
-        }
-        // Use the enable snapshot from before feeding TDR: an old TEND flag
-        // must not complete a byte just written by the TX-empty handler.
-        if ((*status & 0x04U) != 0U && (*enabled & 0x04U) != 0U) {
-            static_cast<void>(peripheral.handle_transmit_end_interrupt());
-        }
+    static void poll_serial(M&, B& peripheral) noexcept {
+        peripheral.poll();
     }
 
     template<typename M, typename B>
-    static void poll_spi(M& mmio, B& peripheral) noexcept {
-        static_cast<void>(peripheral.handle_dma_receive_completion());
-        static_cast<void>(peripheral.handle_dma_transmit_completion());
-        const auto status = mmio.template read<std::uint8_t>(
-            spi_binding::metadata.base + 0x03U);
-        if (!status) return;
-        if ((*status & 0x0DU) != 0U) {
-            static_cast<void>(peripheral.handle_error_interrupt());
-            return;
-        }
-        if ((*status & 0x80U) != 0U) {
-            static_cast<void>(peripheral.handle_receive_interrupt());
-        }
-        if ((*status & 0x20U) != 0U) {
-            static_cast<void>(peripheral.handle_transmit_empty_interrupt());
-        }
-        if ((*status & 0x02U) == 0U) {
-            static_cast<void>(peripheral.handle_idle_interrupt());
-        }
+    static void poll_spi(M&, B& peripheral) noexcept {
+        peripheral.poll();
     }
 
     template<typename M, typename B>
-    static void poll_i2c(M& mmio, B& peripheral) noexcept {
-        const auto status = mmio.template read<std::uint8_t>(
-            i2c_binding::metadata.base + 0x09U);
-        const auto enabled = mmio.template read<std::uint8_t>(
-            i2c_binding::metadata.base + 0x07U);
-        if (!status || !enabled) return;
-        const auto pending = static_cast<std::uint8_t>(*status & *enabled);
-        if ((pending & 0x1BU) != 0U) {
-            static_cast<void>(peripheral.handle_error_interrupt());
-            return;
-        }
-        // Dispatch one condition per poll: handlers may change the phase and
-        // interrupt enables, making the original status snapshot stale.
-        if ((pending & 0x20U) != 0U) {
-            static_cast<void>(peripheral.handle_receive_interrupt());
-        } else if ((pending & 0x80U) != 0U) {
-            static_cast<void>(peripheral.handle_transmit_empty_interrupt());
-        } else if ((pending & 0x40U) != 0U) {
-            static_cast<void>(peripheral.handle_transmit_end_interrupt());
-        }
+    static void poll_i2c(M&, B& peripheral) noexcept {
+        peripheral.poll();
     }
 
     template<unsigned Channel, typename M, typename B>
-    static void poll_dma(M& mmio, B& peripheral) noexcept {
-        static_assert(Channel < 4U);
-        const auto status = mmio.template read<std::uint8_t>(
-            backend::ra4m1::dmac_detail::metadata(Channel).base + 0x1EU);
-        if (status && (*status & 0x80U) == 0U
-            && (*status & 0x11U) != 0U) {
-            static_cast<void>(peripheral.handle_transfer_end_interrupt());
-        }
+    static void poll_dma(M&, B& peripheral) noexcept {
+        peripheral.poll();
     }
 
     template<typename M, typename B>
