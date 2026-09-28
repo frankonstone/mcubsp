@@ -37,8 +37,8 @@ def board_targets(board):
     result = {"tests"}
     result.update(f"test.{group}" for group in ("board", "core", "driver", "io", "backend", "device", "mcu", "compile"))
     if board == "arduino/uno_r4_minima":
-        result.update(("firmware", "examples", "example.app.blink", "example.app.tmp102"))
-        result.update(f"example.io.{name}" for name in ("blink", "serial_echo", "spi_dma", "tmp102", "w5100"))
+        result.update(("firmware", "examples"))
+        result.update(f"example.{name}" for name in ("blink", "serial_echo", "spi_dma", "tmp102", "w5100"))
     return result
 
 
@@ -142,7 +142,7 @@ class FocusedTargets(unittest.TestCase):
                     identity = json.loads((build / "application/firmware.identity.json").read_text())
                     self.assertEqual(identity["target"], "application/firmware.elf")
                     paths = {p["path"] for p in identity["files"]}
-                    self.assertIn(f"source:example/app/{example}/main.cpp", paths)
+                    self.assertIn(f"source:board/arduino/uno_r4_minima/example/{example}.cpp", paths)
                     self.assertFalse(any("mcutest" in p or "header-checks" in p for p in paths))
                     commands = json.loads((build / "compile_commands.json").read_text())
                     self.assertTrue(all("-DMCUHW_GLOBAL_FLAG=1" in c["command"] for c in commands if c["file"].endswith(".cpp")))
@@ -162,7 +162,7 @@ class FocusedTargets(unittest.TestCase):
         for board, example, message in (
             ("st/nucleo_h753zi", "", "requires architecture 'cortex-m7'"),
             ("missing/board", "", "Unknown mcuhw board"),
-            ("arduino/uno_r4_minima", "missing", "not a declared application"),
+            ("arduino/uno_r4_minima", "missing", "not a declared example"),
         ):
             with self.subTest(board=board, example=example), tempfile.TemporaryDirectory() as directory:
                 output = run("cmake", "--preset", "arm-cortex-m4", "-B", directory,
@@ -173,7 +173,7 @@ class FocusedTargets(unittest.TestCase):
     def test_io_examples_configure_standalone(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw standalone io ") as directory:
             build = Path(directory)
-            run("cmake", "-S", ROOT / "example/io", "-B", build, "-G", "Ninja",
+            run("cmake", "-S", ROOT / "board/arduino/uno_r4_minima/example", "-B", build, "-G", "Ninja",
                 f"-DMCUHW_SOURCE_DIR={ROOT}",
                 f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake",
                 "-DMCUHW_BOARD=arduino/uno_r4_minima", "-DMCUHW_IO_EXAMPLE=tmp102",

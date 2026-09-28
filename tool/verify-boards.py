@@ -19,7 +19,7 @@ def main(argv=None):
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--board", required=True)
     parser.add_argument("--revision")
-    parser.add_argument("--example", required=True, help="Declared CMake project, e.g. example/app/blink")
+    parser.add_argument("--example", required=True, help="Declared source, e.g. board/arduino/uno_r4_minima/example/blink")
     parser.add_argument("--build", type=Path, required=True)
     parser.add_argument("--cmake", default="cmake")
     parser.add_argument("--jobs", type=int, default=2)
@@ -57,8 +57,9 @@ def main(argv=None):
             if not compiler:
                 raise ValueError('ESP cross-build requires the locked RISC-V compiler in PATH')
             result['tools']['riscv-gcc'] = environment.inspect_tool('riscv-gcc', lock['tools']['riscv-gcc'], Path(compiler))
-        configure = [args.cmake, "-S", str(root / args.example), "-B", str(build), "-G", "Ninja",
+        configure = [args.cmake, "-S", str(root / Path(args.example).parent), "-B", str(build), "-G", "Ninja",
                      f"-DMCUHW_SOURCE_DIR={root}", f"-DMCUHW_BOARD={args.board}",
+                     f"-DMCUHW_IO_EXAMPLE={Path(args.example).name}",
                      f"-DMCUHW_BOARD_REVISION={revision}", "-DMCUHW_STARTUP=supplied",
                      f"-DCMAKE_TOOLCHAIN_FILE={root}/cmake/McuhwToolchain.cmake",
                      f"-DPython3_EXECUTABLE={sys.executable}", f"-DPYTHON={sys.executable}"]

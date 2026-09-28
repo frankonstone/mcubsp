@@ -13,7 +13,7 @@ configure a new system clock tree.
 
 ## First program
 
-The [UNO blink example](../../example/io/blink.cpp) uses the repository's
+The [UNO blink example](../../board/arduino/uno_r4_minima/example/blink.cpp) uses the repository's
 UNO startup and checks that its clock initialization succeeded:
 
 ```cpp
@@ -88,7 +88,7 @@ if (received) io::require(hw.serial.write(byte, 100ms));
 The default serial format is 8N1. Reads request a finite buffer; they do not
 provide an Arduino-style background receive queue. `println()` writes its
 text and CRLF with one overall deadline. The [serial echo
-example](../../example/io/serial_echo.cpp) handles idle read timeouts.
+example](../../board/arduino/uno_r4_minima/example/serial_echo.cpp) handles idle read timeouts.
 On UNO this port is SCI2 on D0/D1; it is not USB CDC.
 
 ```cpp
@@ -174,7 +174,7 @@ io::require(rx_dma.release());
 io::require(tx_dma.release());
 ```
 
-The complete [SPI DMA example](../../example/io/spi_dma.cpp) includes
+The complete [SPI DMA example](../../board/arduino/uno_r4_minima/example/spi_dma.cpp) includes
 initialization and wiring. Its buffers reside in RAM. The backend validates
 DMA reachability and transfer constraints; requesting DMA does not silently
 fall back to CPU transfer. SPI completion includes both DMA transfers and

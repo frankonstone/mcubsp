@@ -5,7 +5,7 @@ bytes from an addressed device register using a repeated START.
 
 The `application_execution_policy` and board-owned interrupt functions used
 below are defined in the
-[bare-metal application integration guide](../concept/application-integration.md).
+[bare-metal application integration guide](../../../../../doc/concept/application-integration.md).
 
 ## Wiring
 

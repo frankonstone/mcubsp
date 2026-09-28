@@ -10,6 +10,6 @@ if(MCUHW_BUILD_IO_EXAMPLES)
     set(MCUHW_BOARD arduino/uno_r4_minima)
     foreach(_example IN ITEMS blink serial_echo spi_dma tmp102 w5100)
         mcuhw_add_firmware(mcuhw_io_${_example}
-            SOURCES "example/io/${_example}.cpp" STARTUP supplied)
+            SOURCES "board/arduino/uno_r4_minima/example/${_example}.cpp" STARTUP supplied)
     endforeach()
 endif()

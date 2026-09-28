@@ -22,7 +22,7 @@ native build.
 
 ## Examples
 
-The [examples index](example/README.md) orders the examples from GPIO through
+The [examples index](../board/arduino/uno_r4_minima/doc/example/README.md) orders the examples from GPIO through
 asynchronous peripheral and network use. Each page contains its code, wiring,
 lifecycle, and bring-up guidance directly in the documentation.
 

@@ -670,7 +670,6 @@ mcuhw/
 │       ├── adc.hpp
 │       └── dma.hpp
 │
-├── example/
 ├── test/
 └── CMakeLists.txt
 ```
@@ -832,4 +831,3 @@ The most important decisions so far are:
 - Arduino UNO R4 Minima first board
 - **`transfer<T>` is the preferred async primitive**
 - coroutines are an optional adapter only
-

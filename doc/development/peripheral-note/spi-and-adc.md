@@ -57,6 +57,6 @@ The runner writes separate RTT result and coverage artifacts for each image.
 Cross-building an image is not physical evidence; artifacts are registered only
 after the corresponding fixture runs successfully.
 
-The standalone [SPI](../../example/spi.md) and
-[ADC](../../example/adc.md) guides include their code, wiring, lifecycle, and
+The standalone [SPI](../../../board/arduino/uno_r4_minima/doc/example/spi.md) and
+[ADC](../../../board/arduino/uno_r4_minima/doc/example/adc.md) guides include their code, wiring, lifecycle, and
 bring-up hints. Native tests cover the corresponding success and failure paths.

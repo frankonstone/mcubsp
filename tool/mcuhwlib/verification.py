@@ -24,10 +24,12 @@ def board_actions(root, boards):
             raise ValueError(f"board:{identifier}: no cross-build environment for build.tools")
         for example in sorted(board["examples"]):
             path = PurePosixPath(example)
-            if (not example.startswith('example/') or not example.endswith("/CMakeLists.txt") or
+            example_root = f'board/{identifier}/example/'
+            if (not example.startswith(example_root) or path.parent.as_posix() != example_root.rstrip('/') or
+                    path.suffix != '.cpp' or not path.stem.replace('_', '').isalnum() or
                     path.is_absolute() or '..' in path.parts or '\\' in example):
-                raise ValueError(f"board:{identifier}: example {example!r} must name an example/.../CMakeLists.txt project")
-            project = str(Path(example).parent.as_posix())
+                raise ValueError(f"board:{identifier}: example {example!r} must name an example source under {example_root}")
+            project = str(path.with_suffix(''))
             for revision in board["revisions"]:
                 key = hashlib.sha256(f"{identifier}@{revision}:{project}".encode()).hexdigest()[:12]
                 actions.append({"board": identifier, "revision": revision,

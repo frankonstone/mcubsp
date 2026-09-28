@@ -5,7 +5,7 @@ parity, and one stop bit, then transmits `OK`.
 
 The `application_execution_policy` and board-owned initialization functions
 used below are defined in the
-[bare-metal application integration guide](../concept/application-integration.md).
+[bare-metal application integration guide](../../../../../doc/concept/application-integration.md).
 
 ## Wiring
 

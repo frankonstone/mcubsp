@@ -11,9 +11,10 @@ headers and controller sequencing in the reusable backend. Put startup sources
 in `bsp/`, physical fixtures in `test/`, and wiring and recovery procedures in
 `doc/`.
 
-`MCUHW_BOARD_EXAMPLES` lists complete `example/.../CMakeLists.txt` projects.
-Each project creates the requested `MCUHW_FIRMWARE_TARGET`. A board may also
-set `MCUHW_BOARD_IO_EXAMPLES` to source names from `example/io/`. Add
+`MCUHW_BOARD_EXAMPLES` lists `board/<vendor>/<name>/example/<name>.cpp` sources.
+The board's `example/CMakeLists.txt` creates the requested
+`MCUHW_FIRMWARE_TARGET`. A board may also set `MCUHW_BOARD_IO_EXAMPLES` to
+source names from `example/`. Add
 `tests.cmake` for a root style instrumented test build, or set
 `MCUHW_BOARD_TEST_PROJECT` for a standalone SDK test project.
 

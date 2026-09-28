@@ -432,6 +432,6 @@ Recommended shutdown or reconfiguration order:
 4. Call the driver/backend shutdown or release function.
 5. Only then reuse pins, buffers, DMA channels, or object storage.
 
-Continue with the [examples index](../example/README.md). Each peripheral page
+Continue with the [examples index](../../board/arduino/uno_r4_minima/doc/example/README.md). Each peripheral page
 adds its binding, timing, buffer, and hardware-specific notes to this common
 application structure.

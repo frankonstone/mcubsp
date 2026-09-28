@@ -122,8 +122,8 @@ Capture A4 and A5 with a logic analyzer during the run. The RTT result records
 the configured and achieved rates, but it is not an independent waveform or
 protocol measurement.
 
-The standalone [UART](../../example/uart.md) and
-[I2C](../../example/i2c.md) guides include their code, wiring, lifecycle, and
+The standalone [UART](../../../board/arduino/uno_r4_minima/doc/example/uart.md) and
+[I2C](../../../board/arduino/uno_r4_minima/doc/example/i2c.md) guides include their code, wiring, lifecycle, and
 bring-up hints. Native fixtures additionally inject every IRQ transition,
 timeout, NACK class, arbitration loss, cancellation, and slot reuse without
 wall-clock sleeps.

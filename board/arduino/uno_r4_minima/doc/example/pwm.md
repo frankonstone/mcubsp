@@ -4,7 +4,7 @@ This example produces a 20 kHz PWM signal on UNO D3 with a 25% duty cycle,
 then changes it to 75%. D3 is the GPT1 channel B route on the RA4M1.
 
 The `application_execution_policy` used by the example is defined in the
-[bare-metal application integration guide](../concept/application-integration.md).
+[bare-metal application integration guide](../../../../../doc/concept/application-integration.md).
 
 ## Wiring
 
@@ -90,7 +90,7 @@ takes an execution policy because it also provides the asynchronous
 `next_period()` operation. If that operation is used, move MMIO, policy,
 backend, and driver to application scope and route the GPT overflow ISR to
 `hardware.handle_overflow_interrupt()`, following the lifetime pattern in the
-[application integration guide](../concept/application-integration.md).
+[application integration guide](../../../../../doc/concept/application-integration.md).
 
 ## Hardware check
 

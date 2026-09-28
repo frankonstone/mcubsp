@@ -1,7 +1,7 @@
 # W5100 Ethernet
 
-For the application API, use the [attached-device guide](../getting-started/components.md)
-and [linked IO example](../../example/io/w5100.cpp). They create
+For the application API, use the [attached-device guide](../../../../../doc/getting-started/components.md)
+and [linked IO example](../../example/w5100.cpp). They create
 `device::w5100` from an `hw.spi.device(...)` handle. The lower-level composition
 below uses the device register protocol and a direct controller transport.
 
@@ -12,7 +12,7 @@ and presents fixed receive/transmit slots suitable for an `mcuip`
 the W5100 hardware TCP/UDP socket API or use the Arduino Ethernet library.
 
 The `application_execution_policy` used below is defined in the
-[bare-metal application integration guide](../concept/application-integration.md).
+[bare-metal application integration guide](../../../../../doc/concept/application-integration.md).
 
 ## Hardware and network setup
 
@@ -207,4 +207,4 @@ goodput and round-trip latency; it is not a raw SPI bandwidth measurement.
 
 For cable-loss recovery and the network values used by the repository's
 physical fixture, see the
-[UNO W5100 hardware procedure](../board/arduino-uno-r4-minima/ethernet-w5100.md).
+[UNO W5100 hardware procedure](../../../../../doc/board/arduino-uno-r4-minima/ethernet-w5100.md).

@@ -5,7 +5,7 @@ most-significant-bit-first controller and performs one full-duplex transaction.
 
 The `application_execution_policy` and board-owned interrupt functions used
 below are defined in the
-[bare-metal application integration guide](../concept/application-integration.md).
+[bare-metal application integration guide](../../../../../doc/concept/application-integration.md).
 
 ## Wiring
 

@@ -16,10 +16,9 @@ Run these commands from the mcuhw checkout or installed `share/mcuhw` directory:
 python tool/mcuhw.py new ../my-blink --board arduino/uno_r4_minima
 ```
 
-`new` copies [Blink](../../example/app/blink/README.md) into an external
-directory. Choose `--example tmp102` for a complete
-[TMP102 application](../../example/app/tmp102/README.md), and read its
-wiring instructions before connecting hardware. The selected revision is
+`new` copies the [UNO examples](../../board/arduino/uno_r4_minima/example/README.md) into an external
+directory and selects Blink. Choose `--example tmp102` for the TMP102 firmware;
+read its [wiring guide](../../device/ti/tmp102/README.md) before connecting hardware. The selected revision is
 written explicitly into `mcuhw.json`; `--revision` selects another revision
 supported by that board. An unknown board or revision fails before creation.
 Existing nonempty directories are never overwritten.
@@ -250,11 +249,11 @@ output. Use `arm-cortex-m7` with `st/nucleo_h753zi` or `esp32p4-riscv` with
 `waveshare/esp32p4_nano`. Supply the ESP SDK paths described below.
 
 On the UNO R4 Minima, `firmware` builds Blink by default; set
-`-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds its application
-and I/O examples separately; `example.app.blink` and
-`example.app.tmp102` allow individual builds. Firmware appears in
+`-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds all five
+examples; `example.blink`, `example.serial_echo`, `example.spi_dma`,
+`example.tmp102`, and `example.w5100` allow individual builds. Firmware appears in
 `build/<preset>/application/`; other examples appear under `example/`.
-The other boards currently have no declared application examples; selecting
+The other boards currently have no declared examples; selecting
 them still exposes their available test targets.
 `test.board` configures a separate instrumented build under
 `board/<vendor>/<board>/<revision>/test/` only when requested. For UNO named

@@ -54,14 +54,14 @@ def create(args: argparse.Namespace) -> int:
     root = Path(args.root).expanduser().resolve()
     board = boards.load(root, args.board, revision=args.revision)
     revision = args.revision or board['default_revision']
-    entry = f'example/app/{args.example}/CMakeLists.txt'
+    entry = f'board/{args.board}/example/{args.example}.cpp'
     if entry not in board['examples']:
         raise environment.EnvironmentError(
             f'Example {args.example} is not declared for {args.board}')
     destination = Path(args.destination).expanduser().absolute()
     if destination.exists() and any(destination.iterdir()):
         raise environment.EnvironmentError(f'Application directory is not empty: {destination}')
-    source = root / 'example' / 'app' / args.example
+    source = root / Path(entry).parent
     if not source.is_dir():
         raise environment.EnvironmentError(f'Example template missing: {source}')
     shutil.copytree(source, destination, dirs_exist_ok=True,

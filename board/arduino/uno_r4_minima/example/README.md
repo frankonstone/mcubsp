@@ -1,4 +1,4 @@
-# UNO R4 I/O examples
+# UNO R4 examples
 
 Configure this directory to build one example:
 
@@ -13,3 +13,6 @@ cmake --build build
 
 Choose `blink`, `serial_echo`, `spi_dma`, `tmp102`, or `w5100`. The repository
 board build also exposes these through its `examples` target.
+The project imports mcuhw with `find_package(mcuhw CONFIG REQUIRED)`. Set
+`MCUHW_SOURCE_DIR` to the checkout or installed `share/mcuhw` directory, or
+provide an installed package through `CMAKE_PREFIX_PATH`.

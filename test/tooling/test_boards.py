@@ -42,7 +42,7 @@ class SelectionTests(unittest.TestCase):
 
     def test_incompatible_host_compiler(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw board host ") as directory:
-            output = run("cmake", "-S", ROOT / "example/app/blink",
+            output = run("cmake", "-S", ROOT / "board/arduino/uno_r4_minima/example",
                          "-B", directory, "-G", "Ninja",
                          f"-DMCUHW_SOURCE_DIR={ROOT}",
                          "-DMCUHW_BOARD=arduino/uno_r4_minima", success=False)
@@ -52,11 +52,12 @@ class SelectionTests(unittest.TestCase):
         for board in ("st/nucleo_h753zi", "waveshare/esp32p4_nano"):
             for example in ("blink", "tmp102"):
                 with self.subTest(board=board, example=example), tempfile.TemporaryDirectory() as directory:
-                    output = run("cmake", "-S", ROOT / "example/app" / example,
-                                 "-B", directory, "-G", "Ninja",
+                    output = run("cmake", "-S", ROOT / "board/arduino/uno_r4_minima/example",
+                         "-B", directory, "-G", "Ninja",
                                  f"-DMCUHW_SOURCE_DIR={ROOT}", f"-DMCUHW_BOARD={board}",
+                                 f"-DMCUHW_IO_EXAMPLE={example}",
                                  success=False)
-                    self.assertIn("currently supports only arduino/uno_r4_minima", output)
+                    self.assertIn("requires arduino/uno_r4_minima", " ".join(output.split()))
 
     def test_supplied_startup_rejects_custom_linker_script(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw startup ownership ") as directory:
@@ -166,9 +167,10 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
                 with tempfile.TemporaryDirectory(prefix="mcuhw external app ") as directory:
                     base = Path(directory)
                     source, build = base / "source", base / "build"
-                    shutil.copytree(ROOT / "example/app" / example, source)
+                    shutil.copytree(ROOT / "board/arduino/uno_r4_minima/example", source)
                     run("cmake", "-S", source, "-B", build, "-G", "Ninja",
                         f"-DMCUHW_SOURCE_DIR={ROOT}", f"-DMCUHW_BOARD={board}",
+                        f"-DMCUHW_IO_EXAMPLE={example}",
                         f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake")
                     run("cmake", "--build", build)
                     self.assertTrue((build / "firmware.elf").is_file())
@@ -191,7 +193,7 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
             checkout = base / "checkout"
             checkout.mkdir()
             for name in ("include", "cmake", "board", "device",
-                         "example", "tool", "doc", "test"):
+                         "tool", "doc", "test"):
                 shutil.copytree(ROOT / name, checkout / name,
                                 ignore=shutil.ignore_patterns("build", "__pycache__",
                                                               "_vendor", "_generated"))
@@ -208,7 +210,7 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
             shutil.rmtree(package_build)
             bundle = relocated / "share/mcuhw"
             application = base / "application"
-            shutil.copytree(bundle / "example/app/blink", application)
+            shutil.copytree(bundle / "board/arduino/uno_r4_minima/example", application)
             build = base / "firmware build"
             run("cmake", "-S", application, "-B", build, "-G", "Ninja",
                 f"-DMCUHW_SOURCE_DIR={bundle}", "-DMCUHW_BOARD=arduino/uno_r4_minima",

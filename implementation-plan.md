@@ -36,11 +36,10 @@ include/mcuhw/
   board/                package selection, board identity and connector/pin aliases
   execution/            later portable execution contract and bare-metal policy
   io/                   application facade, board profiles, storage and ownership
-board/<vendor>/<board>/  local board settings, startup/build bindings, tests and docs
+board/<vendor>/<board>/  local board settings, startup/build bindings, examples, tests and docs
 device/<vendor>/<part>/  local device documentation, focused tests, examples and docs
 src/                    non-template behavior where useful
 adapters/mcuos/          phase E only
-example/               metadata examples first; bare-metal firmware after the gate
 test/                 description contracts, then driver models and hardware procedures
 doc/                   manuals, provenance and coverage manifests, design decisions
 cmake/                 native and architecture/toolchain configurations

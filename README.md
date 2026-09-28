@@ -145,9 +145,8 @@ Setup imports the pinned installed tools (or an explicitly configured archive
 cache). It reports missing prerequisites before building. The
 [first-build guide](doc/getting-started/building.md) includes installation,
 offline use, direct CMake commands and separately requested flashing. Complete
-[Blink](example/app/blink/README.md) and
-[TMP102](example/app/tmp102/README.md) projects currently target the Arduino
-UNO R4 Minima.
+[Blink and TMP102](board/arduino/uno_r4_minima/example/README.md) are among the
+UNO R4 Minima examples.
 See [attached devices](doc/getting-started/components.md) for chip support.
 
 For application code, start with the [modern C++ I/O guide](doc/getting-started/io.md).
@@ -273,7 +272,7 @@ bool set_led(bool enabled) {
 }
 ```
 
-The [examples guide](doc/example/README.md) provides reader-facing UART, I2C,
+The [examples guide](board/arduino/uno_r4_minima/doc/example/README.md) provides reader-facing UART, I2C,
 SPI, ADC, DMA, PWM, and W5100 Ethernet examples with the code, wiring,
 lifecycle rules, and troubleshooting hints together on each page.
 
@@ -313,12 +312,10 @@ cmake --build --preset arm-cortex-m4 --target test.backend test.device
 ```
 
 For the UNO R4 Minima, `firmware` builds Blink by default; set
-`-DMCUHW_EXAMPLE=tmp102` to change the application. `examples` builds all
-declared application and I/O examples,
-with `example.app.blink` and `example.app.tmp102` available individually. UNO
-also exposes `example.io.blink`, `example.io.serial_echo`, `example.io.spi_dma`,
-`example.io.tmp102` and `example.io.w5100`. Other boards currently expose no
-application examples. `test.board` builds the board's physical-test firmware in a separate child build.
+`-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds all five
+examples. Build one with `example.blink`, `example.serial_echo`,
+`example.spi_dma`, `example.tmp102`, or `example.w5100`. Other boards currently
+expose no examples. `test.board` builds the board's physical-test firmware in a separate child build.
 `test.backend`, `test.device`, `test.core`, `test.driver`, `test.io`, `test.mcu`
 and `test.compile` build and run focused host suites; `tests` selects all groups. Running or
 flashing these images remains an explicit hardware procedure.

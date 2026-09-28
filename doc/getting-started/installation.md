@@ -53,8 +53,9 @@ their relative paths:
   share/mcuhw/
     include/mcuhw/      Public headers
     cmake/              Board/toolchain and firmware helpers
-    board/ device/      Component definitions and local documentation
-    example/ tool/    Complete applications and optional frontend
+    board/              Board definitions, local examples and documentation
+    device/             Device definitions and documentation
+    tool/               Optional frontend
 ```
 
 `find_package` exposes `MCUHW_ROOT` as `<prefix>/share/mcuhw`. Imported targets

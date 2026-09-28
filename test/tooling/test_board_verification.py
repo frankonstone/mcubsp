@@ -23,14 +23,14 @@ class BoardVerificationTests(unittest.TestCase):
     def test_board_actions_use_local_build_settings(self):
         actions = board_actions(ROOT, ["arduino/uno_r4_minima"])
         self.assertEqual({action["example"] for action in actions},
-                         {"example/app/blink", "example/app/tmp102"})
+                         {f"board/arduino/uno_r4_minima/example/{name}" for name in ("blink", "serial_echo", "spi_dma", "tmp102", "w5100")})
         self.assertEqual({action["revision"] for action in actions}, {"r4"})
         self.assertEqual(matrices(ROOT, ["waveshare/esp32p4_nano"])["esp-idf"]["include"], [])
 
     def test_missing_tool_fails_instead_of_skipping_cross_build(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(verify.subprocess, "run", side_effect=FileNotFoundError("cmake missing")):
-                status = verify.main(["--board", "arduino/uno_r4_minima", "--example", "example/app/blink",
+                status = verify.main(["--board", "arduino/uno_r4_minima", "--example", "board/arduino/uno_r4_minima/example/blink",
                                       "--build", directory])
             self.assertEqual(status, 1)
             result = json.loads((Path(directory) / "artifact/cross-build.json").read_text())
@@ -40,7 +40,7 @@ class BoardVerificationTests(unittest.TestCase):
     def test_success_requires_firmware_artifact(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(verify.subprocess, "run"):
-                status = verify.main(["--board", "arduino/uno_r4_minima", "--example", "example/app/blink",
+                status = verify.main(["--board", "arduino/uno_r4_minima", "--example", "board/arduino/uno_r4_minima/example/blink",
                                       "--build", directory])
             self.assertEqual(status, 1)
             self.assertEqual(json.loads((Path(directory) / "artifact/cross-build.json").read_text())["state"], "failed")
@@ -53,7 +53,7 @@ class BoardVerificationTests(unittest.TestCase):
             report.write_text(json.dumps({'state': 'passed'}))
             (artifacts / 'firmware.identity.json').write_text('old passing identity')
             with patch.object(verify.subprocess, 'run') as run:
-                status = verify.main(['--board', 'missing/board', '--example', 'example/app/blink',
+                status = verify.main(['--board', 'missing/board', '--example', 'board/arduino/uno_r4_minima/example/blink',
                                       '--build', directory])
             self.assertEqual(status, 1)
             run.assert_not_called()
@@ -65,7 +65,7 @@ class BoardVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             (Path(directory) / 'firmware.elf').write_bytes(b'old unrelated image')
             with patch.object(verify.subprocess, 'run'):
-                status = verify.main(['--board', 'arduino/uno_r4_minima', '--example', 'example/app/blink',
+                status = verify.main(['--board', 'arduino/uno_r4_minima', '--example', 'board/arduino/uno_r4_minima/example/blink',
                                       '--build', directory])
             self.assertEqual(status, 1)
             result = json.loads((Path(directory) / 'artifact/cross-build.json').read_text())
@@ -86,9 +86,9 @@ class BoardVerificationTests(unittest.TestCase):
                     patch.object(verify.environment, 'inspect_tool', side_effect=ValueError('unexpected SDK revision')), \
                     patch.object(verify, 'board_actions', return_value=[{
                         'board': 'waveshare/esp32p4_nano', 'revision': 'development-v1.0',
-                        'example': 'example/app/blink', 'environment': 'esp-idf', 'key': 'fixture'}]), \
+                        'example': 'board/arduino/uno_r4_minima/example/blink', 'environment': 'esp-idf', 'key': 'fixture'}]), \
                     patch.object(verify.subprocess, 'run') as run:
-                status = verify.main(['--board', 'waveshare/esp32p4_nano', '--example', 'example/app/blink',
+                status = verify.main(['--board', 'waveshare/esp32p4_nano', '--example', 'board/arduino/uno_r4_minima/example/blink',
                                       '--build', directory])
             self.assertEqual(status, 1)
             run.assert_not_called()
@@ -102,7 +102,7 @@ class BoardVerificationTests(unittest.TestCase):
                 'schema_version': 1, 'board': 'arduino/uno_r4_minima', 'revision': 'r4',
                 'startup': 'supplied'}))
             with patch.object(verify.subprocess, 'run'):
-                status = verify.main(['--board', 'arduino/uno_r4_minima', '--example', 'example/app/blink',
+                status = verify.main(['--board', 'arduino/uno_r4_minima', '--example', 'board/arduino/uno_r4_minima/example/blink',
                                       '--build', directory])
             self.assertEqual(status, 1)
             result = json.loads((Path(directory) / 'artifact/cross-build.json').read_text())

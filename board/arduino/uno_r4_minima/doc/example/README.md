@@ -6,7 +6,7 @@ to each other instead of sending the reader to a test implementation.
 
 The peripheral call is only one part of a firmware application. Before using
 UART, I2C, SPI, ADC, DMA, or PWM period events, read
-[Integrating mcuhw into a bare-metal application](../concept/application-integration.md).
+[Integrating mcuhw into a bare-metal application](../../../../../doc/concept/application-integration.md).
 That chapter contains the concrete execution policy and shows how startup,
 `main()`, static backend objects, the vector table, IRQ dispatch, deadlines,
 buffers, and transfer handles fit together.

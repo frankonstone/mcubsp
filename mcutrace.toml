@@ -4,7 +4,7 @@ requirements = ["requirements.md"]
 plans = ["implementation-plan.md"]
 sources = [
   "include/mcuhw/**/*.hpp",
-  "example/**/*.cpp",
+  "board/*/*/example/**/*.cpp",
   "board/*/*/bsp/**/*.?pp",
   "board/*/*/test/**/*.?pp",
   "board/*/*/bsp/*.S",

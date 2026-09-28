@@ -45,10 +45,9 @@ cmake --build --preset arm-cortex-m4 --target test.backend test.device
 
 | Target | Behavior |
 | --- | --- |
-| `firmware` | Selected UNO R4 application, Blink by default; override `MCUHW_EXAMPLE` |
-| `examples` | UNO R4 application and I/O examples, as separate images |
-| `example.app.blink`, `example.app.tmp102` | Individual UNO R4 example builds |
-| `example.io.blink`, `example.io.serial_echo`, `example.io.spi_dma`, `example.io.tmp102`, `example.io.w5100` | Standalone I/O firmware for the UNO board binding |
+| `firmware` | Selected UNO R4 example, Blink by default; override `MCUHW_EXAMPLE` |
+| `examples` | All five UNO R4 examples |
+| `example.blink`, `example.serial_echo`, `example.spi_dma`, `example.tmp102`, `example.w5100` | Individual UNO R4 example builds |
 | `test.board` | Configure and build the board's instrumented physical-test images |
 | `test.backend`, `test.device` | Build and run backend or device host suites |
 | `test.core`, `test.driver`, `test.io`, `test.mcu`, `test.compile` | Build and run focused host suites and compile contracts |
@@ -183,7 +182,7 @@ Run a board action locally with its toolchain on `PATH`:
 
 ```sh
 python3 tool/verify-boards.py --board arduino/uno_r4_minima --revision r4 \
-  --example example/app/blink --build build/verify-uno-blink
+  --example board/arduino/uno_r4_minima/example/blink --build build/verify-uno-blink
 ```
 
 The action writes `artifact/cross-build.json` and requires the linked image
