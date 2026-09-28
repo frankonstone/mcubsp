@@ -59,7 +59,7 @@ def main(argv=None):
             result['tools']['riscv-gcc'] = environment.inspect_tool('riscv-gcc', lock['tools']['riscv-gcc'], Path(compiler))
         configure = [args.cmake, "-S", str(root / Path(args.example).parent), "-B", str(build), "-G", "Ninja",
                      f"-DMCUHW_SOURCE_DIR={root}", f"-DMCUHW_BOARD={args.board}",
-                     f"-DMCUHW_IO_EXAMPLE={Path(args.example).name}",
+                     f"-DMCUHW_EXAMPLE={Path(args.example).name}",
                      f"-DMCUHW_BOARD_REVISION={revision}", "-DMCUHW_STARTUP=supplied",
                      f"-DCMAKE_TOOLCHAIN_FILE={root}/cmake/McuhwToolchain.cmake",
                      f"-DPython3_EXECUTABLE={sys.executable}", f"-DPYTHON={sys.executable}"]

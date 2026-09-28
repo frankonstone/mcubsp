@@ -55,9 +55,9 @@ class SelectionTests(unittest.TestCase):
                     output = run("cmake", "-S", ROOT / "board/arduino/uno_r4_minima/example",
                          "-B", directory, "-G", "Ninja",
                                  f"-DMCUHW_SOURCE_DIR={ROOT}", f"-DMCUHW_BOARD={board}",
-                                 f"-DMCUHW_IO_EXAMPLE={example}",
+                                 f"-DMCUHW_EXAMPLE={example}",
                                  success=False)
-                    self.assertIn("requires arduino/uno_r4_minima", " ".join(output.split()))
+                    self.assertIn("require arduino/uno_r4_minima", " ".join(output.split()))
 
     def test_supplied_startup_rejects_custom_linker_script(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw startup ownership ") as directory:
@@ -170,7 +170,7 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
                     shutil.copytree(ROOT / "board/arduino/uno_r4_minima/example", source)
                     run("cmake", "-S", source, "-B", build, "-G", "Ninja",
                         f"-DMCUHW_SOURCE_DIR={ROOT}", f"-DMCUHW_BOARD={board}",
-                        f"-DMCUHW_IO_EXAMPLE={example}",
+                        f"-DMCUHW_EXAMPLE={example}",
                         f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake")
                     run("cmake", "--build", build)
                     self.assertTrue((build / "firmware.elf").is_file())

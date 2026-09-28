@@ -176,7 +176,7 @@ class FocusedTargets(unittest.TestCase):
             run("cmake", "-S", ROOT / "board/arduino/uno_r4_minima/example", "-B", build, "-G", "Ninja",
                 f"-DMCUHW_SOURCE_DIR={ROOT}",
                 f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake",
-                "-DMCUHW_BOARD=arduino/uno_r4_minima", "-DMCUHW_IO_EXAMPLE=tmp102",
+                "-DMCUHW_BOARD=arduino/uno_r4_minima", "-DMCUHW_EXAMPLE=tmp102",
                 "-DMCUHW_INSTALL=OFF")
             run("cmake", "--build", build)
             self.assertTrue((build / "firmware.elf").is_file())

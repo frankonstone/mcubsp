@@ -37,7 +37,7 @@ def preset_document(project: Path, config: dict, root: Path, state: dict) -> dic
         "MCUHW_SOURCE_DIR": str(root), "MCUHW_ROOT": str(root),
         "MCUHW_BOARD": config["board"], "MCUHW_BOARD_REVISION": config["revision"],
         "MCUHW_STARTUP": config["startup"],
-        "MCUHW_IO_EXAMPLE": config["example"],
+        "MCUHW_EXAMPLE": config["example"],
         "CMAKE_MAKE_PROGRAM": tools["ninja"]["path"],
         "Python3_EXECUTABLE": state["frontend_python"]["path"],
         "MCUHW_ARTIFACT_POINTER": str(project / ".mcuhw/last-build.json"),

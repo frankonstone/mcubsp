@@ -7,7 +7,7 @@ cmake -S . -B build -G Ninja \
   -DMCUHW_SOURCE_DIR=/path/to/mcuhw \
   -DCMAKE_TOOLCHAIN_FILE=/path/to/mcuhw/cmake/McuhwToolchain.cmake \
   -DMCUHW_BOARD=arduino/uno_r4_minima \
-  -DMCUHW_IO_EXAMPLE=blink
+  -DMCUHW_EXAMPLE=blink
 cmake --build build
 ```
 
@@ -16,3 +16,8 @@ board build also exposes these through its `examples` target.
 The project imports mcuhw with `find_package(mcuhw CONFIG REQUIRED)`. Set
 `MCUHW_SOURCE_DIR` to the checkout or installed `share/mcuhw` directory, or
 provide an installed package through `CMAKE_PREFIX_PATH`.
+
+The `tmp102` example reads I2C address `0x48` and lights the built-in LED
+above 25 °C. Connect SDA to A4 and SCL to A5 with a common ground. Power the
+sensor from 3.3 V and use pull-ups and level shifting appropriate to its
+supply; tie ADD0 to ground for address `0x48`.

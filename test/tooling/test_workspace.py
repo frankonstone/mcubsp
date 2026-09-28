@@ -106,8 +106,7 @@ class ActiveBoardWorkspace(unittest.TestCase):
             path = root / "board/fixture/other/board.cmake"
             path.parent.mkdir(parents=True)
             path.write_text('include("${MCUHW_ROOT}/board/arduino/uno_r4_minima/board.cmake")\n'
-                            'set(MCUHW_BOARD_EXAMPLES "")\n'
-                            'set(MCUHW_BOARD_IO_EXAMPLES "")\n')
+                            'set(MCUHW_BOARD_EXAMPLES "")\n')
             query(build)
             selected = "arduino/uno_r4_minima;fixture/other"
             self.configure(build, selected, root)
@@ -136,8 +135,7 @@ class ActiveBoardWorkspace(unittest.TestCase):
             entry = root / "board/fixture/alternate/board.cmake"
             entry.parent.mkdir(parents=True)
             entry.write_text('include("${MCUHW_ROOT}/board/arduino/uno_r4_minima/board.cmake")\n'
-                             'set(MCUHW_BOARD_EXAMPLES "")\n'
-                             'set(MCUHW_BOARD_IO_EXAMPLES "")\n')
+                             'set(MCUHW_BOARD_EXAMPLES "")\n')
             query(build)
             run("cmake", "--preset", "arm-cortex-m4", "-B", build,
                 "-DMCUHW_BOARD=arduino/uno_r4_minima", cwd=root)

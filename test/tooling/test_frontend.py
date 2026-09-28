@@ -62,7 +62,7 @@ class FrontendTests(unittest.TestCase):
     def test_new_external_application_and_portable_argument_planning(self):
         project = self.new()
         self.setup_project(project)
-        self.assertTrue((project / 'main.cpp').is_file())
+        self.assertTrue((project / 'blink.cpp').is_file())
         self.assertTrue((project / 'CMakeLists.txt').is_file())
         config = environment.read_json(project / 'mcuhw.json')
         self.assertEqual(config['revision'], 'r4')
@@ -72,6 +72,7 @@ class FrontendTests(unittest.TestCase):
         self.assertEqual(str(project.resolve()), plan['cwd'])
         self.assertEqual(plan['preset']['cacheVariables']['MCUHW_STARTUP'], 'supplied')
         self.assertEqual(plan['preset']['cacheVariables']['MCUHW_BOARD'], 'arduino/uno_r4_minima')
+        self.assertEqual(plan['preset']['cacheVariables']['MCUHW_EXAMPLE'], 'blink')
         self.assertEqual(plan['commands'][0][1:], ['--preset', 'mcuhw'])
         self.assertEqual(plan['commands'][1][1:], ['--build', '--preset', 'mcuhw'])
         # A dry-run neither creates the build directory nor invokes CMake.

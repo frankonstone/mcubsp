@@ -132,7 +132,8 @@ def doctor(args: argparse.Namespace) -> int:
 def build_commands(project: Path, config: dict, root: Path, state: dict) -> tuple[Path, list[list[str]]]:
     preset = workflow.selected_preset(project)
     selected = preset['cacheVariables']
-    for field, variable in [('board', 'MCUHW_BOARD'), ('revision', 'MCUHW_BOARD_REVISION'), ('startup', 'MCUHW_STARTUP')]:
+    for field, variable in [('board', 'MCUHW_BOARD'), ('revision', 'MCUHW_BOARD_REVISION'),
+                            ('startup', 'MCUHW_STARTUP'), ('example', 'MCUHW_EXAMPLE')]:
         if selected[variable] != config[field]:
             raise environment.EnvironmentError('Application selection changed; run setup to update the shared CMake preset')
     cmake = state['tools']['cmake']['path']
@@ -198,7 +199,7 @@ def parser() -> argparse.ArgumentParser:
     item.add_argument('destination')
     item.add_argument('--board', required=True)
     item.add_argument('--revision')
-    item.add_argument('--example', choices=('blink', 'tmp102'), default='blink')
+    item.add_argument('--example', choices=('blink', 'serial_echo', 'spi_dma', 'tmp102', 'w5100'), default='blink')
     item.add_argument('--startup', choices=('supplied', 'external'), default='supplied')
     item.add_argument('--root', default=str(ROOT))
     item.set_defaults(function=create)
