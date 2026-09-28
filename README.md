@@ -63,7 +63,7 @@ The main source layers are:
 | `include/mcuhw/integration/` | Optional integration boundaries such as MCUIP network devices |
 | `board/<vendor>/<name>/` | Local board build rules, runner configuration and procedures |
 | `mcu/`, `ip/`, `device/` | Component-owned documentation and fixtures |
-| `tests/` | Native behavioral tests, compile checks, and compile-fail cases |
+| `test/` | Native behavioral tests, compile checks, and compile-fail cases |
 | `doc/` | Design notes, source manifests, board procedures, and acceptance records |
 
 ## Current support
@@ -136,17 +136,17 @@ hardware tests.
 Create a complete external application:
 
 ```sh
-python3 tools/mcuhw.py new ../my-blink --board arduino/uno_r4_minima --example blink
-python3 tools/mcuhw.py setup --project ../my-blink
-python3 tools/mcuhw.py build --project ../my-blink
+python3 tool/mcuhw.py new ../my-blink --board arduino/uno_r4_minima --example blink
+python3 tool/mcuhw.py setup --project ../my-blink
+python3 tool/mcuhw.py build --project ../my-blink
 ```
 
 Setup imports the pinned installed tools (or an explicitly configured archive
 cache). It reports missing prerequisites before building. The
 [first-build guide](doc/getting-started/building.md) includes installation,
 offline use, direct CMake commands and separately requested flashing. Complete
-[Blink](examples/apps/blink/README.md) and
-[TMP102](examples/apps/tmp102/README.md) projects currently target the Arduino
+[Blink](example/app/blink/README.md) and
+[TMP102](example/app/tmp102/README.md) projects currently target the Arduino
 UNO R4 Minima.
 See [attached devices](doc/getting-started/components.md) for chip support.
 
@@ -168,8 +168,8 @@ board facade.
 For focused native verification, with `mcutest` in its default sibling location:
 
 ```sh
-python3 tools/verify.py --build build/verification --suites all
-python3 tools/verify.py --build build/tmp102-tests --suites device:ti/tmp102
+python3 tool/verify.py --build build/verification --suites all
+python3 tool/verify.py --build build/tmp102-tests --suites device:ti/tmp102
 ```
 
 Enable architecture probes, independent header checks and optional MCUIP
@@ -177,7 +177,7 @@ contracts explicitly, using the configured development checkouts:
 
 ```sh
 cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
-python3 tools/verify.py --build build/host --existing
+python3 tool/verify.py --build build/host --existing
 ```
 
 The native suite exercises metadata, solvers, ownership, register ordering,
@@ -273,12 +273,12 @@ bool set_led(bool enabled) {
 }
 ```
 
-The [examples guide](doc/examples/README.md) provides reader-facing UART, I2C,
+The [examples guide](doc/example/README.md) provides reader-facing UART, I2C,
 SPI, ADC, DMA, PWM, and W5100 Ethernet examples with the code, wiring,
 lifecycle rules, and troubleshooting hints together on each page.
 
 For interrupt-driven peripherals, first read the
-[bare-metal application integration guide](doc/concepts/application-integration.md).
+[bare-metal application integration guide](doc/concept/application-integration.md).
 It provides the application-level context: a concrete execution policy, static
 backend lifetime, `main()`, deadline creation, interrupt handlers, buffer
 ownership, and safe shutdown order.
@@ -331,8 +331,8 @@ explicit board selection. An empty board selection exposes no board targets.
 Unselected board entries are not loaded.
 
 Firmware is written under `build/<preset>/application/`, additional examples
-under `build/<preset>/examples/`, and tests under
-`build/<preset>/boards/<vendor>/<board>/<revision>/tests/`. Test dependencies
+under `build/<preset>/example/`, and tests under
+`build/<preset>/board/<vendor>/<board>/<revision>/test/`. Test dependencies
 are resolved only when their test group is built. Global compiler flags are forwarded
 to the child test configuration. See [focused targets and presets](doc/development/verification.md#targets-and-presets).
 
@@ -360,25 +360,25 @@ matching runner and follow its wiring, debugger, and recovery notes.
 ```sh
 cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
 cmake --build build/uno-r4-minima --target board-tests -j4
-./tools/run-uno-r4-minima-tests.sh startup-gpio
+./tool/run-uno-r4-minima-tests.sh startup-gpio
 ```
 
 Additional runner selections cover GPIO loopback, PWM, UART, I2C, SPI, ADC,
 DMAC, W5100 Ethernet, metrics, and link recovery. See the
-[UNO R4 Minima guide](board/arduino/uno_r4_minima/docs/README.md),
+[UNO R4 Minima guide](board/arduino/uno_r4_minima/doc/README.md),
 [RA4M1 acceptance record](doc/acceptance/ra4m1-release.md), and
-[W5100 Ethernet guide](board/arduino/uno_r4_minima/docs/ethernet-w5100.md).
+[W5100 Ethernet guide](board/arduino/uno_r4_minima/doc/ethernet-w5100.md).
 
 ### NUCLEO-H753ZI
 
 ```sh
 cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi
 cmake --build build/nucleo-h753zi --target board-tests -j4
-./tools/run-nucleo-h753zi-smoke.sh
-./tools/run-nucleo-h753zi-native.sh
+./tool/run-nucleo-h753zi-smoke.sh
+./tool/run-nucleo-h753zi-native.sh
 ```
 
-See the [NUCLEO-H753ZI guide](board/st/nucleo_h753zi/docs/README.md) for
+See the [NUCLEO-H753ZI guide](board/st/nucleo_h753zi/doc/README.md) for
 ST-LINK, VCP, Ethernet jumper, and physical-evidence details.
 
 ### ESP32-P4-NANO
@@ -387,14 +387,14 @@ The generic compile probe uses `esp32p4-riscv` with `MCUHW_BUILD_PROBES=ON`. The
 separate ESP-IDF build:
 
 ```sh
-idf.py -C board/waveshare/esp32p4_nano/tests/firmware set-target esp32p4
-idf.py -C board/waveshare/esp32p4_nano/tests/firmware build
-./tools/run-esp32p4-nano-smoke.sh /dev/cu.usbmodemXXXXXXXXXXXX
+idf.py -C board/waveshare/esp32p4_nano/test/firmware set-target esp32p4
+idf.py -C board/waveshare/esp32p4_nano/test/firmware build
+./tool/run-esp32p4-nano-smoke.sh /dev/cu.usbmodemXXXXXXXXXXXX
 ```
 
 This runner replaces selected flash regions. Read the recovery and silicon-
 revision notes in
-[ESP32-P4-NANO guide](board/waveshare/esp32p4_nano/docs/README.md) first.
+[ESP32-P4-NANO guide](board/waveshare/esp32p4_nano/doc/README.md) first.
 
 ## Verification philosophy
 

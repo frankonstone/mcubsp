@@ -1,6 +1,6 @@
 # Build a selected-board application
 
-The optional `tools/mcuhw.py` frontend creates an ordinary external CMake
+The optional `tool/mcuhw.py` frontend creates an ordinary external CMake
 application and selects one board, revision, startup owner and toolchain. Use
 Python 3.10 or newer. The commands below use `python`; use `python3` on hosts
 where that is the Python 3 command, or `py -3` on Windows.
@@ -13,12 +13,12 @@ For a board-independent application, see [installation](installation.md) and
 Run these commands from the mcuhw checkout or installed `share/mcuhw` directory:
 
 ```sh
-python tools/mcuhw.py new ../my-blink --board arduino/uno_r4_minima
+python tool/mcuhw.py new ../my-blink --board arduino/uno_r4_minima
 ```
 
-`new` copies [Blink](../../examples/apps/blink/README.md) into an external
+`new` copies [Blink](../../example/app/blink/README.md) into an external
 directory. Choose `--example tmp102` for a complete
-[TMP102 application](../../examples/apps/tmp102/README.md), and read its
+[TMP102 application](../../example/app/tmp102/README.md), and read its
 wiring instructions before connecting hardware. The selected revision is
 written explicitly into `mcuhw.json`; `--revision` selects another revision
 supported by that board. An unknown board or revision fails before creation.
@@ -36,7 +36,7 @@ does not establish production-silicon or physical TMP102 acceptance. See each bo
 
 ## Import installed prerequisites explicitly
 
-Install the versions in [the tool lock](../../tools/toolchains.lock.json)
+Install the versions in [the tool lock](../../tool/toolchains.lock.json)
 using the tool vendors' distribution mechanisms, then import those installed
 tools. ARM builds need CMake, Ninja and the complete Arm GNU compiler installation,
 including its matching C++23 libstdc++ headers and binutils. Debuggers are only
@@ -51,16 +51,16 @@ or unpack the complete distribution, and add its executable directory to
 you; the frontend checks and records what was actually imported.
 
 ```sh
-python tools/mcuhw.py setup --project ../my-blink --offline
-python tools/mcuhw.py doctor --project ../my-blink
-python tools/mcuhw.py build --project ../my-blink
+python tool/mcuhw.py setup --project ../my-blink --offline
+python tool/mcuhw.py doctor --project ../my-blink
+python tool/mcuhw.py build --project ../my-blink
 ```
 
 Setup imports tools from `PATH` unless overridden. Paths containing spaces are
 supported; quote the complete `NAME=PATH` argument:
 
 ```sh
-python tools/mcuhw.py setup --project ../my-blink --offline --tool "arm-gcc=/opt/Arm Toolchain/bin/arm-none-eabi-g++"
+python tool/mcuhw.py setup --project ../my-blink --offline --tool "arm-gcc=/opt/Arm Toolchain/bin/arm-none-eabi-g++"
 ```
 
 On Windows the equivalent override is, for example,
@@ -124,7 +124,7 @@ For ESP board verification, use the complete ESP-IDF v6.1 installation at commit
 and `IDF_TOOLS_PATH` from that installation before configuring the
 `esp32p4-riscv` preset with `MCUHW_BOARD=waveshare/esp32p4_nano`.
 The current packaged Blink and TMP102 applications target the UNO board;
-ESP board fixtures remain under its local `tests/` directory.
+ESP board fixtures remain under its local `test/` directory.
 
 The [ESP-IDF v6.1 setup instructions](https://github.com/espressif/esp-idf/tree/v6.1#setting-up-esp-idf)
 provide the platform prerequisites and installer entry points: `install.sh` on
@@ -161,9 +161,9 @@ paths escaping the extraction root are rejected. Import an existing install
 for vendor bundles requiring symbolic links. Local `file://` archives work too.
 
 ```sh
-python tools/mcuhw.py setup --project ../my-blink --lock team-toolchains.lock.json --cache ../tool-cache
-python tools/mcuhw.py setup --project ../my-blink --offline --cache ../tool-cache
-python tools/mcuhw.py build --project ../my-blink
+python tool/mcuhw.py setup --project ../my-blink --lock team-toolchains.lock.json --cache ../tool-cache
+python tool/mcuhw.py setup --project ../my-blink --offline --cache ../tool-cache
+python tool/mcuhw.py build --project ../my-blink
 ```
 
 Only explicit `setup` can fetch an archive. Downloaded bytes are checked before
@@ -183,10 +183,10 @@ Compilation never flashes. Import the debugger for the requested operation,
 inspect its command, then run the same command without `--dry-run`:
 
 ```sh
-python tools/mcuhw.py setup --project ../my-blink --operation flash --offline
-python tools/mcuhw.py doctor --project ../my-blink --operation flash
-python tools/mcuhw.py flash --project ../my-blink --probe 123456789 --dry-run
-python tools/mcuhw.py flash --project ../my-blink --probe 123456789
+python tool/mcuhw.py setup --project ../my-blink --operation flash --offline
+python tool/mcuhw.py doctor --project ../my-blink --operation flash
+python tool/mcuhw.py flash --project ../my-blink --probe 123456789 --dry-run
+python tool/mcuhw.py flash --project ../my-blink --probe 123456789
 ```
 
 Replace `123456789` with the selected physical probe's serial number. UNO uses
@@ -203,7 +203,7 @@ also requires a completed image. To select another completed CMake build,
 provide its exact record (or a directory containing a single record):
 
 ```sh
-python tools/mcuhw.py flash --project ../my-blink --build /path/to/build/firmware.build.json --probe 123456789 --dry-run
+python tool/mcuhw.py flash --project ../my-blink --build /path/to/build/firmware.build.json --probe 123456789 --dry-run
 ```
 
 For ESP, the SDK Python environment already imported for the build supplies
@@ -218,8 +218,8 @@ boot policy, preserved regions and recovery. A flash dry-run prints structured
 argument arrays and any proposed command-file contents; it sends nothing to a
 probe or serial device and writes no runner files.
 
-Physical acceptance fixtures live under each board's `tests/` directory. The
-existing `tools/run-*.sh` commands remain compatibility wrappers. Their board
+Physical acceptance fixtures live under each board's `test/` directory. The
+existing `tool/run-*.sh` commands remain compatibility wrappers. Their board
 runner, tool resolution and artifact locations use the same shared host helpers
 as application flashing; fixture-specific observation and evidence parsing stay
 with the board. Set `MCUHW_PROBE_SERIAL` for J-Link/ST-LINK fixtures, and pass the
@@ -253,11 +253,11 @@ On the UNO R4 Minima, `firmware` builds Blink by default; set
 `-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds its application
 and I/O examples separately; `example.app.blink` and
 `example.app.tmp102` allow individual builds. Firmware appears in
-`build/<preset>/application/`; other examples appear under `examples/`.
+`build/<preset>/application/`; other examples appear under `example/`.
 The other boards currently have no declared application examples; selecting
 them still exposes their available test targets.
 `test.board` configures a separate instrumented build under
-`boards/<vendor>/<board>/<revision>/tests/` only when requested. For UNO named
+`board/<vendor>/<board>/<revision>/test/` only when requested. For UNO named
 runners, set `MCUHW_BUILD_DIR` to this child build. Nucleo runners accept its
 ELF path explicitly. The native groups `test.backend`, `test.device`, `test.core`, `test.driver`,
 `test.io`, `test.mcu` and `test.compile` build and run host checks. `tests`
@@ -312,7 +312,7 @@ diagnostics, cache misses, checksum failures, offline reuse and each flash
 adapter without touching hardware:
 
 ```sh
-python -m unittest discover -s tests/tooling -p test_frontend.py -v
+python -m unittest discover -s test/tooling -p test_frontend.py -v
 ```
 
 `doctor --operation build` checks only build prerequisites. `doctor --operation

@@ -152,7 +152,7 @@ The driver should not contain MCU addresses.
 
 ### 3. Capabilities
 
-Prefer concepts/capabilities over a "largest common denominator" HAL.
+Prefer concept/capabilities over a "largest common denominator" HAL.
 
 Examples:
 
@@ -670,8 +670,8 @@ mcuhw/
 │       ├── adc.hpp
 │       └── dma.hpp
 │
-├── examples/
-├── tests/
+├── example/
+├── test/
 └── CMakeLists.txt
 ```
 

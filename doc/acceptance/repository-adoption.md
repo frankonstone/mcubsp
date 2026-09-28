@@ -17,7 +17,7 @@ Tools: CMake 4.4.0, Ninja 1.12.1, tooling Python 3.14.7, Arm GNU
 15.2.Rel1 / GCC 15.2.1, and Espressif GCC 15.2.0
 (`esp-15.2.0_20251204`). ESP-IDF v6.1 is pinned to
 `fff9895c82d744c7237be8847347bdd1b07c6643` and uses its Python 3.12.2
-environment. The [setup lock](../../tools/toolchains.lock.json) and generated
+environment. The [setup lock](../../tool/toolchains.lock.json) and generated
 environment reports record exact installations, checksums and overrides.
 
 | Executed check | Result and scope |
@@ -33,8 +33,8 @@ environment reports record exact installations, checksums and overrides.
 | Traceability | REQ-0047 through REQ-0052 validate without diagnostics; imported results are actual producer outputs |
 
 The current local aggregate evidence is
-[`mcutest-native.json`](../../build/host/artifacts/mcutest-native.json) and
-[`mcutest-tooling.json`](../../build/host/artifacts/mcutest-tooling.json).
+[`mcutest-native.json`](../../build/host/artifact/mcutest-native.json) and
+[`mcutest-tooling.json`](../../build/host/artifact/mcutest-tooling.json).
 Detailed board/provenance reports and frontend command observations are under
 `build/adoption/`; these generated files are ignored by Git and are recreated by
 the documented checks. The committed record summarizes the observed run rather

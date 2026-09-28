@@ -1,5 +1,5 @@
 # @req REQ-0049 REQ-0052
-set(board_test_directory "${CMAKE_CURRENT_LIST_DIR}/tests")
+set(board_test_directory "${CMAKE_CURRENT_LIST_DIR}/test")
 # Board composition is explicit and opt-in: ordinary architecture probes do
 # not acquire startup files, linker ownership, or a board dependency.
 # @req REQ-0022 REQ-0031 REQ-0036 REQ-0037 REQ-0038
@@ -109,7 +109,7 @@ function(mcuhw_add_uno_r4_minima_test target source build_id)
     if(enable_coverage)
         target_compile_options(${target} PRIVATE
             -include
-            "${MCUHW_ROOT}/tests/support/mcucov_compat.hpp"
+            "${MCUHW_ROOT}/test/support/mcucov_compat.hpp"
         )
     endif()
     if(enable_coverage)

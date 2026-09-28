@@ -15,23 +15,23 @@ native build.
 
 ## Concepts
 
-- [Architecture and layer boundaries](concepts/architecture.md)
-- [Bare-metal application integration](concepts/application-integration.md)
-- [Register and metadata model](concepts/register-model.md)
-- [Execution and transfers](concepts/execution-and-transfers.md)
+- [Architecture and layer boundaries](concept/architecture.md)
+- [Bare-metal application integration](concept/application-integration.md)
+- [Register and metadata model](concept/register-model.md)
+- [Execution and transfers](concept/execution-and-transfers.md)
 
 ## Examples
 
-The [examples index](examples/README.md) orders the examples from GPIO through
+The [examples index](example/README.md) orders the examples from GPIO through
 asynchronous peripheral and network use. Each page contains its code, wiring,
 lifecycle, and bring-up guidance directly in the documentation.
 
 ## Boards
 
-- [Arduino UNO R4 Minima](../board/arduino/uno_r4_minima/docs/README.md)
-  - [W5100 Ethernet](../board/arduino/uno_r4_minima/docs/ethernet-w5100.md)
-- [NUCLEO-H753ZI](../board/st/nucleo_h753zi/docs/README.md)
-- [ESP32-P4-NANO](../board/waveshare/esp32p4_nano/docs/README.md)
+- [Arduino UNO R4 Minima](../board/arduino/uno_r4_minima/doc/README.md)
+  - [W5100 Ethernet](../board/arduino/uno_r4_minima/doc/ethernet-w5100.md)
+- [NUCLEO-H753ZI](../board/st/nucleo_h753zi/doc/README.md)
+- [ESP32-P4-NANO](../board/waveshare/esp32p4_nano/doc/README.md)
 
 ## Development
 
@@ -41,13 +41,13 @@ lifecycle, and bring-up guidance directly in the documentation.
 - [Adding a microcontroller](development/adding-an-mcu.md)
 - [Focused tests, CI and scaling checks](development/verification.md)
 - [Description coverage](development/coverage.md)
-- [Peripheral implementation notes](development/peripheral-notes/)
+- [Peripheral implementation notes](development/peripheral-note/)
 
 ## Reference and acceptance
 
 - [MCU source baseline](reference/source-baseline.md)
 - [Pinned source manifest](reference/source-manifest.json)
-- [MCU description reviews](reference/mcu-reviews/)
+- [MCU description reviews](reference/mcu-review/)
 - [Three-MCU description gate](acceptance/description-gate.md)
 - [RA4M1 release acceptance](acceptance/ra4m1-release.md)
 - [Repository adoption and scale qualification](acceptance/repository-adoption.md)
@@ -61,7 +61,7 @@ Git. Their identities and checksums remain tracked in
 generated copies can be recreated with:
 
 ```sh
-python3 tools/convert_manuals.py
+python3 tool/convert_manuals.py
 ```
 
 Do not derive register values or pin mappings from extracted text without

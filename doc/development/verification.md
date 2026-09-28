@@ -8,7 +8,7 @@ not evidence that those hosted jobs have run: the initial implementation was
 exercised locally on macOS, while hosted Linux and Windows qualification remains
 pending until their own recorded jobs succeed.
 
-The [test-group guide](../../tests/README.md) describes source directories,
+The [test-group guide](../../test/README.md) describes source directories,
 CMake folders and CTest category labels.
 
 ## Targets and presets
@@ -59,9 +59,9 @@ architectures and undeclared firmware applications fail during configuration.
 Boards without declared examples expose test targets only.
 Unselected board entries are not loaded. Test dependencies are resolved only when
 `test.board` is built, so application builds need no mcutest, MCUIP or coverage setup.
-Firmware and additional examples live in `application/` and `examples/` beneath
+Firmware and additional examples live in `application/` and `example/` beneath
 the architecture build directory. The child test build lives in
-`boards/<vendor>/<board>/<revision>/tests/` and inherits global compiler settings.
+`board/<vendor>/<board>/<revision>/test/` and inherits global compiler settings.
 Physical-test images are built without running or flashing them; use the
 documented hardware runners. Native groups run CTest after building.
 For UNO runners, point `MCUHW_BUILD_DIR` at the child test build. Nucleo runners
@@ -73,7 +73,7 @@ SDK project and build directory. `test.board` builds the existing instrumented S
 project.
 
 Host groups use `MCUHW_NATIVE_CXX_COMPILER` and `MCUHW_NATIVE_CXX_FLAGS` in
-separate builds under `native-tests/<group>/`; cross-architecture flags stay in
+separate builds under `native-test/<group>/`; cross-architecture flags stay in
 the board firmware builds. Set `MCUHW_MCUTEST_SOURCE_DIR` for a non-default
 mcutest checkout. Each group resolves dependencies only when selected.
 
@@ -106,7 +106,7 @@ cmake --build build/arm-checks --target check-headers check-compile
 object library, with unity builds and precompiled headers disabled. Each native
 suite remains selectable in Test Explorer and has its own result artifact.
 Target folders group board tasks and verification suites in supporting IDEs.
-Use `tools/verify.py --build build/host --existing` to refresh the merged native
+Use `tool/verify.py --build build/host --existing` to refresh the merged native
 artifact after explicitly configuring that directory for native verification.
 
 ### Historical target counts
@@ -118,7 +118,7 @@ The measurement is recorded in `build/targets-selected-counts.json`.
 
 | Configuration | Project targets |
 | --- | ---: |
-| Architecture workspace with one current board active | 5 (two examples, board examples/test groups, workspace examples group) |
+| Architecture workspace with one current board active | 5 (two examples, board example/test groups, workspace examples group) |
 | Each of the three board application presets | 1 (`firmware`) |
 | `component`, selecting `device:ti/tmp102` | 2 (suite executable and aggregate) |
 | `native` | 16 |
@@ -152,7 +152,7 @@ at exact commit `532327858ead93140535b539cf65b35eb96fdf01` and passes its path
 explicitly. No other sibling checkout is required for these checks.
 
 ```sh
-python tools/verify.py --build build/verification-tmp102 \
+python tool/verify.py --build build/verification-tmp102 \
   --suites 'device:ti/tmp102;io;compile' \
   --mcutest /path/to/pinned/mcutest --compiler g++-15 --tooling
 ```
@@ -160,8 +160,8 @@ python tools/verify.py --build build/verification-tmp102 \
 Use an isolated build directory when changing compiler/toolchain configurations.
 `verify.py` configures the named native suites, builds, runs CTest, and merges only
 result files declared by the selected CTest registry. Old results from another
-selection cannot enter its `artifacts/mcutest-native.json`. The tooling suite
-writes its own `artifacts/mcutest-tooling.json`, preserving skipped cases as skipped.
+selection cannot enter its `artifact/mcutest-native.json`. The tooling suite
+writes its own `artifact/mcutest-tooling.json`, preserving skipped cases as skipped.
 These reports establish software execution; they never create physical evidence.
 
 Suite names are `core`, `drivers`, `io`, `descriptions`, `compile`, and local
@@ -173,7 +173,7 @@ separate firmware verification.
 ## Hosted verification
 
 Without dependency metadata, CI runs every native suite and each board's declared
-application for every supported revision. `tools/ci-select.py` reads board build
+application for every supported revision. `tool/ci-select.py` reads board build
 settings from local `board.cmake` files and emits the full matrix. ARM jobs use the
 checksum-pinned Arm GNU toolchain; ESP jobs use the pinned ESP-IDF environment.
 Missing required tools fail the cross-build. Build results establish software
@@ -182,11 +182,11 @@ execution only; physical acceptance requires a separate fixture.
 Run a board action locally with its toolchain on `PATH`:
 
 ```sh
-python3 tools/verify-boards.py --board arduino/uno_r4_minima --revision r4 \
-  --example examples/apps/blink --build build/verify-uno-blink
+python3 tool/verify-boards.py --board arduino/uno_r4_minima --revision r4 \
+  --example example/app/blink --build build/verify-uno-blink
 ```
 
-The action writes `artifacts/cross-build.json` and requires the linked image
+The action writes `artifact/cross-build.json` and requires the linked image
 before reporting success.
 
 ## Hosted matrix and reproducibility limits

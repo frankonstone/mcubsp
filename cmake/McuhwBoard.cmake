@@ -14,10 +14,10 @@ macro(mcuhw_load_board)
     # Read only architecture facts, never a toolchain file after project(). An
     # existing BSP retains its own compiler, system and try-compile settings.
     if(NOT MCUHW_BOARD_ARCHITECTURE MATCHES "^[a-z0-9][a-z0-9_-]*$" OR
-            NOT EXISTS "${MCUHW_ROOT}/cmake/architectures/${MCUHW_BOARD_ARCHITECTURE}.cmake")
+            NOT EXISTS "${MCUHW_ROOT}/cmake/architecture/${MCUHW_BOARD_ARCHITECTURE}.cmake")
         message(FATAL_ERROR "Missing architecture definition for ${MCUHW_BOARD_ARCHITECTURE}.")
     endif()
-    include("${MCUHW_ROOT}/cmake/architectures/${MCUHW_BOARD_ARCHITECTURE}.cmake")
+    include("${MCUHW_ROOT}/cmake/architecture/${MCUHW_BOARD_ARCHITECTURE}.cmake")
     execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -dumpmachine
         OUTPUT_VARIABLE _mcuhw_compiler_target OUTPUT_STRIP_TRAILING_WHITESPACE
         RESULT_VARIABLE _mcuhw_compiler_result)

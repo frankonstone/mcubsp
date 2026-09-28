@@ -10,10 +10,10 @@ if(MCUHW_BUILD_IO_COST_REPORT)
     find_program(MCUHW_IO_COST_SIZE arm-none-eabi-size REQUIRED)
     add_custom_target(mcuhw_io_cost_report
         COMMAND "${Python3_EXECUTABLE}"
-            "${CMAKE_SOURCE_DIR}/tools/report-io-cost.py"
+            "${CMAKE_SOURCE_DIR}/tool/report-io-cost.py"
             --compiler "${MCUHW_IO_COST_CXX}"
             --size-tool "${MCUHW_IO_COST_SIZE}"
-            --output-dir "${CMAKE_BINARY_DIR}/artifacts/io-cost"
+            --output-dir "${CMAKE_BINARY_DIR}/artifact/io-cost"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         COMMENT "Building fresh paired RA4M1 driver/io facade size probes"
         VERBATIM)

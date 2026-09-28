@@ -2,12 +2,12 @@
 
 
 The local `board.cmake` owns build selection. Public wiring remains in
-`include/mcuhw/board/arduino_uno_r4_minima.hpp` and the application profile in `include/mcuhw/io/boards/uno_r4_minima.hpp`.
+`include/mcuhw/board/arduino_uno_r4_minima.hpp` and the application profile in `include/mcuhw/io/board/uno_r4_minima.hpp`.
 The shared MCU description is `renesas/ra4m1`; no register description is copied here.
 
-See [the board wiring, startup, physical procedures and observation limits](docs/README.md)
+See [the board wiring, startup, physical procedures and observation limits](doc/README.md)
 and [the board contribution guide](../../../doc/development/adding-a-board.md).
-Select this board with `python3 tools/mcuhw.py new ../blink --board arduino/uno_r4_minima`.
+Select this board with `python3 tool/mcuhw.py new ../blink --board arduino/uno_r4_minima`.
 Flashing is a separate command and requires the probe/port and recovery details
 in the linked board procedure.
 Set `MCUHW_PROBE_SERIAL` to the intended J-Link/ST-LINK probe before using

@@ -28,8 +28,8 @@ exposes its register protocol and the SPI transport that connects it to `io`.
 
 The optional `mcuhw::device` CMake target depends on the core library; use
 `mcuhw::io` for board composition. The linked UNO examples
-[TMP102](../../examples/io/tmp102.cpp) and
-[W5100](../../examples/io/w5100.cpp) are included with
+[TMP102](../../example/io/tmp102.cpp) and
+[W5100](../../example/io/w5100.cpp) are included with
 `MCUHW_BUILD_IO_EXAMPLES=ON`. Their builds and host simulations do not establish
 physical acceptance of these new device compositions.
 
@@ -39,7 +39,7 @@ Include the desired device and board explicitly. For example:
 
 ```cpp
 #include <mcuhw/io.hpp>
-#include <mcuhw/io/boards/uno_r4_minima.hpp>
+#include <mcuhw/io/board/uno_r4_minima.hpp>
 #include <mcuhw/device/sensor/tmp102.hpp>
 
 namespace io = mcuhw::io;

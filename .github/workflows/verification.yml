@@ -41,7 +41,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: >-
-          python tools/ci-select.py --event "$EVENT_NAME" --base "$BASE_SHA"
+          python tool/ci-select.py --event "$EVENT_NAME" --base "$BASE_SHA"
           --output build/selection.json --github-output "$GITHUB_OUTPUT"
       - name: Preserve selection and reasons
         if: always()
@@ -116,34 +116,34 @@ jobs:
       - name: Record exact host tools and dependency
         shell: ${{ matrix.shell }}
         run: |
-          mkdir -p build/verification/artifacts
-          python -c 'import json, platform, subprocess; from pathlib import Path; cmd=lambda *a: subprocess.check_output(a,text=True).strip(); data={"host":platform.platform(),"python":platform.python_version(),"compiler":cmd("${{ matrix.cxx }}","--version"),"compiler_target":cmd("${{ matrix.cxx }}","-dumpmachine"),"cmake":cmd("cmake","--version"),"ninja":cmd("ninja","--version"),"mcutest":cmd("git","-C","_ci/mcutest","rev-parse","HEAD")}; Path("build/verification/artifacts/host-tools.json").write_text(json.dumps(data,indent=2)+"\n")'
+          mkdir -p build/verification/artifact
+          python -c 'import json, platform, subprocess; from pathlib import Path; cmd=lambda *a: subprocess.check_output(a,text=True).strip(); data={"host":platform.platform(),"python":platform.python_version(),"compiler":cmd("${{ matrix.cxx }}","--version"),"compiler_target":cmd("${{ matrix.cxx }}","-dumpmachine"),"cmake":cmd("cmake","--version"),"ninja":cmd("ninja","--version"),"mcutest":cmd("git","-C","_ci/mcutest","rev-parse","HEAD")}; Path("build/verification/artifact/host-tools.json").write_text(json.dumps(data,indent=2)+"\n")'
       - name: Run selected native suites and complete tooling checks
         if: needs.selection.outputs.run_native == 'true'
         shell: ${{ matrix.shell }}
         run: >-
-          python tools/verify.py --build build/verification --suites "$MCUHW_CI_SUITES"
+          python tool/verify.py --build build/verification --suites "$MCUHW_CI_SUITES"
           --mcutest _ci/mcutest --compiler "$CXX" --tooling --jobs 2
       - name: Run tooling for an empty native diff
         if: needs.selection.outputs.run_native != 'true'
         shell: ${{ matrix.shell }}
         run: >-
-          python tests/tooling/run_tests.py
-          --output build/verification/artifacts/mcutest-tooling.json
+          python test/tooling/run_tests.py
+          --output build/verification/artifact/mcutest-tooling.json
       - name: Check every public header on complete runs
         if: github.event_name != 'pull_request'
         shell: ${{ matrix.shell }}
         run: |
           cmake -S . -B build/headers -G Ninja -DCMAKE_CXX_COMPILER="$CXX" -DMCUHW_CHECK_HEADERS=ON -DMCUHW_INSTALL=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
           cmake --build build/headers --parallel 2
-          cmake -E copy build/headers/compile_commands.json build/verification/artifacts/header-compile-commands.json
+          cmake -E copy build/headers/compile_commands.json build/verification/artifact/header-compile-commands.json
       - name: Upload scoped verification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: verification-${{ matrix.os }}
           path: |
-            build/verification/artifacts/
+            build/verification/artifact/
             build/verification/Testing/Temporary/LastTest.log
           if-no-files-found: warn
           retention-days: 30
@@ -177,14 +177,14 @@ jobs:
           REVISION: ${{ matrix.revision }}
           EXAMPLE: ${{ matrix.example }}
         run: >-
-          python3 tools/verify-boards.py --board "$BOARD" --revision "$REVISION"
+          python3 tool/verify-boards.py --board "$BOARD" --revision "$REVISION"
           --example "$EXAMPLE" --build build/firmware --jobs 2
       - name: Preserve cross-build result
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cross-build-${{ matrix.key }}
-          path: build/firmware/artifacts/
+          path: build/firmware/artifact/
           if-no-files-found: warn
 
   esp-firmware:
@@ -207,7 +207,7 @@ jobs:
           EXAMPLE: ${{ matrix.example }}
         run: >-
           docker run --rm -v "$PWD:/project" -w /project
-          espressif/idf:v6.1@sha256:81893c71bb5e570088901f21def8684c25cd2a9020281bd01b843a7655edb18c python tools/verify-boards.py
+          espressif/idf:v6.1@sha256:81893c71bb5e570088901f21def8684c25cd2a9020281bd01b843a7655edb18c python tool/verify-boards.py
           --board "$BOARD" --revision "$REVISION" --example "$EXAMPLE"
           --build build/firmware --jobs 2
       - name: Preserve cross-build result
@@ -215,5 +215,5 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cross-build-${{ matrix.key }}
-          path: build/firmware/artifacts/
+          path: build/firmware/artifact/
           if-no-files-found: warn

@@ -4,7 +4,7 @@ Baseline reviewed 12 September 2026 for `PLN-0001`. This document fixes the
 description scope; it does not claim that any description or driver exists.
 Local-file identities and SHA-256 values are in
 [source-manifest.json](source-manifest.json). Searchable copies of the local
-manuals are indexed in [the generated manual index](../_generated/manuals/README.md).
+manuals are indexed in [the generated manual index](../_generated/manual/README.md).
 
 ## Selection rules
 

@@ -1,7 +1,7 @@
 build
 doc/_vendor/
 doc/_generated/
-outputs
+output
 tmp
 *.pyc
 __pycache__/

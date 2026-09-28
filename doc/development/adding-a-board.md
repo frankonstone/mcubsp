@@ -6,14 +6,14 @@ supported revision, architecture, toolchain, C++ profile, examples, runner and
 startup files. Board IDs are the directory's `<vendor>/<name>` path.
 
 Add the public pin aliases under `include/mcuhw/board/` and the application
-profile under `include/mcuhw/io/boards/`. Keep register facts in the MCU
+profile under `include/mcuhw/io/board/`. Keep register facts in the MCU
 headers and controller sequencing in the reusable backend. Put startup sources
-in `bsp/`, physical fixtures in `tests/`, and wiring and recovery procedures in
-`docs/`.
+in `bsp/`, physical fixtures in `test/`, and wiring and recovery procedures in
+`doc/`.
 
-`MCUHW_BOARD_EXAMPLES` lists complete `examples/.../CMakeLists.txt` projects.
+`MCUHW_BOARD_EXAMPLES` lists complete `example/.../CMakeLists.txt` projects.
 Each project creates the requested `MCUHW_FIRMWARE_TARGET`. A board may also
-set `MCUHW_BOARD_IO_EXAMPLES` to source names from `examples/io/`. Add
+set `MCUHW_BOARD_IO_EXAMPLES` to source names from `example/io/`. Add
 `tests.cmake` for a root style instrumented test build, or set
 `MCUHW_BOARD_TEST_PROJECT` for a standalone SDK test project.
 

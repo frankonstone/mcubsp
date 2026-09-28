@@ -4,7 +4,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/McuhwCache.cmake")
 # Cross-board menus expose host suites without resolving host-test dependencies
 # until a group is built. Each group owns a native compiler/cache and evidence.
 function(_mcuhw_board_native_group group suites)
-    set(binary "${CMAKE_BINARY_DIR}/native-tests/${group}")
+    set(binary "${CMAKE_BINARY_DIR}/native-test/${group}")
     set(MCUHW_BOARD "")
     set(MCUHW_BOARD_TESTS "")
     set(MCUHW_BOARD_REVISION "")

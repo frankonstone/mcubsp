@@ -13,13 +13,13 @@ configure a new system clock tree.
 
 ## First program
 
-The [UNO blink example](../../examples/io/blink.cpp) uses the repository's
+The [UNO blink example](../../example/io/blink.cpp) uses the repository's
 UNO startup and checks that its clock initialization succeeded:
 
 ```cpp
 #include <chrono>
 #include <mcuhw/io.hpp>
-#include <mcuhw/io/boards/uno_r4_minima.hpp>
+#include <mcuhw/io/board/uno_r4_minima.hpp>
 
 namespace io = mcuhw::io;
 using namespace std::chrono_literals;
@@ -88,7 +88,7 @@ if (received) io::require(hw.serial.write(byte, 100ms));
 The default serial format is 8N1. Reads request a finite buffer; they do not
 provide an Arduino-style background receive queue. `println()` writes its
 text and CRLF with one overall deadline. The [serial echo
-example](../../examples/io/serial_echo.cpp) handles idle read timeouts.
+example](../../example/io/serial_echo.cpp) handles idle read timeouts.
 On UNO this port is SCI2 on D0/D1; it is not USB CDC.
 
 ```cpp
@@ -174,7 +174,7 @@ io::require(rx_dma.release());
 io::require(tx_dma.release());
 ```
 
-The complete [SPI DMA example](../../examples/io/spi_dma.cpp) includes
+The complete [SPI DMA example](../../example/io/spi_dma.cpp) includes
 initialization and wiring. Its buffers reside in RAM. The backend validates
 DMA reachability and transfer constraints; requesting DMA does not silently
 fall back to CPU transfer. SPI completion includes both DMA transfers and
@@ -282,7 +282,7 @@ waits; register storage alone does not simulate a peripheral's completion.
 For firmware, `make_board<Profile>(policy, frequency)` uses direct MMIO.
 Initialize a borrowed policy yourself before calling `begin()`. Its required
 surface is described in [execution and
-transfers](../concepts/execution-and-transfers.md).
+transfers](../concept/execution-and-transfers.md).
 
 ## Build examples and measure cost
 
@@ -300,7 +300,7 @@ application's startup composition.
 Generate fresh paired Cortex-M4 driver/facade size probes with:
 
 ```sh
-python3 tools/report-io-cost.py
+python3 tool/report-io-cost.py
 ```
 
 The script writes `build/io-cost/report.md` and `report.json`, with compiler

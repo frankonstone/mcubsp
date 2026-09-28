@@ -5,7 +5,7 @@
   "note": "Identifies the locally supplied document baseline; does not certify latest vendor revisions, completeness, or implementation correctness.",
   "documents": [
     {
-      "path": "doc/_vendor/manuals/r01uh0887ej0110-ra4m1.pdf",
+      "path": "doc/_vendor/manual/r01uh0887ej0110-ra4m1.pdf",
       "document_id": "R01UH0887EJ0110",
       "title": "Renesas RA4M1 hardware manual",
       "revision": "1.10",
@@ -18,7 +18,7 @@
       "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles all 48 chapters in the complete source-unit inventory; typed driver-facing metadata covers the initial resource/peripheral slice. No separate device errata was available, so the accepted gate is Rev.1.10-scoped and makes no silicon-wide claim."
     },
     {
-      "path": "doc/_vendor/manuals/esp32-p4_technical_reference_manual_en.pdf",
+      "path": "doc/_vendor/manual/esp32-p4_technical_reference_manual_en.pdf",
       "document_id": "ESP32-P4 TRM",
       "title": "ESP32-P4 technical reference manual",
       "revision": "pre-release v0.7",
@@ -31,7 +31,7 @@
       "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles all 66 published chapters in the complete source-unit inventory. PLN-0015 supplies typed initial resource/peripheral metadata. I3C register content is unavailable and is explicitly excluded by D09 rather than represented by a placeholder."
     },
     {
-      "path": "doc/_vendor/manuals/pm0253-stm32f7-series-and-stm32h7-series-cortexm7-processor-programming-manual-stmicroelectronics.pdf",
+      "path": "doc/_vendor/manual/pm0253-stm32f7-series-and-stm32h7-series-cortexm7-processor-programming-manual-stmicroelectronics.pdf",
       "document_id": "PM0253",
       "title": "STM32F7/H7 Cortex-M7 processor programming manual",
       "revision": "6",
@@ -44,7 +44,7 @@
       "check_scope": "PDF opens; page count and first/last-page text checked. Cortex-M7 cache, FPU and MPU properties remain a core-only supplement; PLN-0013 accounts the complete processor-source relationship without using PM0253 for peripheral definitions."
     },
     {
-      "path": "doc/_vendor/manuals/rm0433-stm32h742-stm32h743753-and-stm32h750-value-line-advanced-armbased-32bit-mcus-stmicroelectronics.pdf",
+      "path": "doc/_vendor/manual/rm0433-stm32h742-stm32h743753-and-stm32h750-value-line-advanced-armbased-32bit-mcus-stmicroelectronics.pdf",
       "document_id": "RM0433",
       "title": "STM32H742/743/753/750 reference manual",
       "revision": "8",
@@ -57,7 +57,7 @@
       "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles RM0433 chapters 2-61 in the complete source-unit inventory; PLN-0014 supplies typed initial resource/peripheral metadata. The correction overlay and per-engine narrative replace defective Table 3 routes."
     },
     {
-      "path": "doc/_vendor/manuals/stm32h753xi.pdf",
+      "path": "doc/_vendor/manual/stm32h753xi.pdf",
       "document_id": "DS12117",
       "title": "STM32H753xI datasheet",
       "revision": "10",
@@ -70,7 +70,7 @@
       "check_scope": "PDF opens; page count and first/last-page text checked. PLN-0013 reconciles the complete xI identity/package source unit; typed package membership and initial alternate-function routes remain the driver-facing slice."
     },
     {
-      "path": "doc/_vendor/manuals/es0392-stm32h742xig-stm32h743xig-stm32h750xb-stm32h753xi-device-errata-stmicroelectronics.pdf",
+      "path": "doc/_vendor/manual/es0392-stm32h742xig-stm32h743xig-stm32h750xb-stm32h753xi-device-errata-stmicroelectronics.pdf",
       "document_id": "ES0392",
       "title": "STM32H742/743/750/753 device errata",
       "revision": "15",

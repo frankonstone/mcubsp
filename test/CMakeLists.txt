@@ -1,0 +1,33 @@
+# Test orchestration. Each group owns its sources and registration rules.
+# @req REQ-0035 REQ-0038 REQ-0052
+if(MCUHW_BUILD_TESTS)
+    set(MCUHW_TEST_SUITES "all" CACHE STRING "Native suites: all, core, drivers, io, descriptions, compile, backend, device, mcu, or kind:vendor/id")
+    if(NOT "all" IN_LIST MCUHW_TEST_SUITES)
+        foreach(suite IN LISTS MCUHW_TEST_SUITES)
+            if(NOT suite MATCHES "^(core|drivers|io|descriptions|compile|backend|device|mcu)$" AND
+                    NOT suite MATCHES "^(mcu|device|ip):[a-z0-9][a-z0-9_-]*/[a-z0-9][a-z0-9_.-]*$")
+                message(FATAL_ERROR "Unknown native suite ${suite}")
+            endif()
+        endforeach()
+    endif()
+    set(MCUHW_TEST_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(MCUHW_TEST_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    set(MCUHW_TEST_ARTIFACT_DIR "${CMAKE_CURRENT_BINARY_DIR}/../artifact/native")
+    include(support/NativeSuites.cmake)
+    add_custom_target(native-tests)
+    set_target_properties(native-tests PROPERTIES FOLDER "Tests")
+
+    add_subdirectory(core)
+    add_subdirectory(driver)
+    add_subdirectory(backend)
+    add_subdirectory(device)
+    add_subdirectory(io)
+    add_subdirectory(mcu)
+    if("all" IN_LIST MCUHW_TEST_SUITES OR "compile" IN_LIST MCUHW_TEST_SUITES)
+        add_subdirectory(compile)
+    endif()
+endif()
+
+if(MCUHW_BUILD_TOOLING_TESTS)
+    add_subdirectory(tooling)
+endif()

@@ -4,9 +4,9 @@ requirements = ["requirements.md"]
 plans = ["implementation-plan.md"]
 sources = [
   "include/mcuhw/**/*.hpp",
-  "examples/**/*.cpp",
+  "example/**/*.cpp",
   "board/*/*/bsp/**/*.?pp",
-  "board/*/*/tests/**/*.?pp",
+  "board/*/*/test/**/*.?pp",
   "board/*/*/bsp/*.S",
 ]
 build_files = [
@@ -14,62 +14,62 @@ build_files = [
   "cmake/**/*.cmake",
   "board/*/*/*.cmake",
   "board/**/CMakeLists.txt",
-  "board/*/*/tests/*.sh",
+  "board/*/*/test/*.sh",
   "board/**/*.ld",
-  "tools/*",
-  "tools/mcuhwlib/**/*.py",
+  "tool/*",
+  "tool/mcuhwlib/**/*.py",
 ]
 
 [[artifacts]]
-path = "build/host/artifacts/mcutest-native.json"
+path = "build/host/artifact/mcutest-native.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/host/artifacts/mcutest-tooling.json"
+path = "build/host/artifact/mcutest-tooling.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcutest-hardware.json"
+path = "build/uno-r4-minima/artifact/mcutest-hardware.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_all_tests.mcucov.json"
+path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_all_tests.mcucov.json"
 importer = "mcucov"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_mcuip_tests.json"
+path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_mcuip_tests.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_metrics.json"
+path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_metrics.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_metrics_fast6.json"
+path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_metrics_fast6.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_metrics_fast12.json"
+path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_metrics_fast12.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_ethernet_link_recovery.json"
+path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_link_recovery.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/nucleo-h753zi/artifacts/mcuhw_nucleo_h753zi_native_peripherals.json"
+path = "build/nucleo-h753zi/artifact/mcuhw_nucleo_h753zi_native_peripherals.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/nucleo-h753zi/artifacts/mcuhw_nucleo_h753zi_native_peripherals.mcucov.json"
+path = "build/nucleo-h753zi/artifact/mcuhw_nucleo_h753zi_native_peripherals.mcucov.json"
 importer = "mcucov"
 
 [[artifacts]]
-path = "board/waveshare/esp32p4_nano/tests/firmware/build/artifacts/esp32p4_native_smoke.mcutest.json"
+path = "board/waveshare/esp32p4_nano/test/firmware/build/artifact/esp32p4_native_smoke.mcutest.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "board/waveshare/esp32p4_nano/tests/firmware/build/artifacts/esp32p4_native_smoke.trace.mcucov.json"
+path = "board/waveshare/esp32p4_nano/test/firmware/build/artifact/esp32p4_native_smoke.trace.mcucov.json"
 importer = "mcucov"
 
 [validation]

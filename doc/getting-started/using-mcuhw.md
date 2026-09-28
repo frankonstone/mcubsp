@@ -43,10 +43,10 @@ Runtime operations return `std::expected` or a fixed-storage transfer handle;
 the caller must consume, cancel, or wait for every started transfer.
 
 Before using an interrupt-driven backend, read
-[Integrating mcuhw into a bare-metal application](../concepts/application-integration.md).
+[Integrating mcuhw into a bare-metal application](../concept/application-integration.md).
 It shows the relationship between startup, `main()`, the execution policy,
 global backend lifetime, IRQ dispatch, deadlines, and transfer consumption.
 
-Then continue with the [examples index](../examples/README.md). The consumer
+Then continue with the [examples index](../example/README.md). The consumer
 configuration and GPIO example are also shown in the repository
 [README](../../README.md#installation-and-use-from-another-project).

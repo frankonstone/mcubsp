@@ -28,18 +28,18 @@ ownership and interrupt sequencing remain in the RA4M1 backends.
 
 The authoritative artifacts are generated from the current working tree:
 
-- `build/host/artifacts/mcutest.json`: 174 host cases, zero failures.
-- `build/uno-r4-minima/artifacts/mcutest-hardware.json`: 17 passing physical
+- `build/host/artifact/mcutest.json`: 174 host cases, zero failures.
+- `build/uno-r4-minima/artifact/mcutest-hardware.json`: 17 passing physical
   cases across all nine UNO runs, including the optimized metrics image.
-- `build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_all_tests.mcucov.json`:
+- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_all_tests.mcucov.json`:
   MCUCOV build `0x4d485701`; 155/238 functions, 1,059/1,680 statements,
   1,205/1,865 lines, 359/814 branches and 45/598 MC/DC conditions. Its 134
   skipped constructs contain 36 warnings and zero errors.
-- `build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_release_metrics.json`:
+- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_release_metrics.json`:
   three passing physical cases from the non-instrumented `-Os` image.
-- `build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_resources.json`:
+- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_resources.json`:
   section sizes, RAM headroom and SHA-256 identities for every UNO image.
-- `build/uno-r4-minima/artifacts/mcuhw_uno_r4_minima_resources.source-identity.txt`:
+- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_resources.source-identity.txt`:
   exact content hashes whose manifest hash is recorded by the resource report.
 
 The optimized metrics image measured at 48 MHz:
@@ -89,10 +89,10 @@ the stack. The runner uses J-Link SWD at 4 MHz, resolves the RTT control block
 from the ELF, flashes with SEGGER Commander and captures channel 0:
 
 ```sh
-./tools/run-uno-r4-minima-tests.sh release-metrics
-./tools/run-uno-r4-minima-tests.sh aggregate
-./tools/run-uno-r4-minima-tests.sh all
-./tools/report-uno-r4-minima-resources.sh
+./tool/run-uno-r4-minima-tests.sh release-metrics
+./tool/run-uno-r4-minima-tests.sh aggregate
+./tool/run-uno-r4-minima-tests.sh all
+./tool/report-uno-r4-minima-resources.sh
 ```
 
 `aggregate` rebuilds the combined mcutest and MCUCOV reports from existing

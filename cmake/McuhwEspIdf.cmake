@@ -55,18 +55,18 @@ function(mcuhw_add_idf_firmware target)
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.build.json")
     ExternalProject_Add_Step(${target} identity
         DEPENDEES install ALWAYS TRUE
-        COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tools/mcuhwlib/provenance.py"
+        COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tool/mcuhwlib/provenance.py"
             --root "${MCUHW_ROOT}" --build "${sdk_binary}" --target "${target}.elf"
             --ninja "${MCUHW_IDF_NINJA}"
             --extra "${MCUHW_BOARD_ENTRY}"
             --extra "${sdk_source}/sdkconfig"
             --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.identity.json"
-        COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tools/mcuhwlib/provenance.py"
+        COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tool/mcuhwlib/provenance.py"
             --root "${MCUHW_ROOT}" --build "${sdk_binary}/bootloader" --target bootloader.elf
             --ninja "${MCUHW_IDF_NINJA}"
             --extra "${MCUHW_BOARD_ENTRY}" --extra "${sdk_source}/sdkconfig"
             --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.bootloader.identity.json"
-        COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tools/mcuhwlib/provenance.py"
+        COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tool/mcuhwlib/provenance.py"
             --root "${MCUHW_ROOT}" --build "${sdk_binary}"
             --flash-manifest "${sdk_binary}/flasher_args.json"
             --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.flash.identity.json"

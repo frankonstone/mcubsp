@@ -10,7 +10,7 @@ Revised baseline, 26 September 2026. Implements [requirements.md](requirements.m
 | B: three complete descriptions | Reviewed block-sized increments across all three, followed by remaining documented blocks | All three declared baselines pass the common description and coverage gate, before any backend/driver implementation |
 | C: completed bare-metal foundation | Preserve completed RA4M1 startup, GPIO, execution, transfer, timer and basic-PWM work | Stable driver-facing baseline; existing evidence remains valid |
 | D: bare-metal target completion | Finish driver implementations and accept each target from scoped native, cross-build and directly connected physical procedures | Evidence identifies what was observed and does not imply unmeasured electrical or complete-board claims |
-| D2: repository adoption and scale | Immediately after PLN-0026, deliver independent packaging, local board settings, selected-board builds, reproducible setup and full verification | Clean external applications build through one workflow; adding unrelated boards/devices does not expand their build work |
+| D2: repository adoption and scale | Immediately after PLN-0026, deliver independent packaging, local board settings, selected-board builds, reproducible setup and full verification | Clean external applications build through one workflow; adding unrelated board/devices does not expand their build work |
 | E: MCUOS | Optional adapter using `../mcuos`, tested natively and then on an executable MCUOS hardware target | RTOS portability demonstrated independently of earlier bare-metal releases |
 
 Motor PWM and other extensions remain later milestones. MCUOS source, API readiness and hardware ports are not prerequisites for phases A–D or D2. Target work may be verified with host models, cross-builds, debug access, built-in board features, documented bridges/direct wiring, connected devices, native connectors with ordinary peers, or internal known-answer tests. Claims stay limited to the behavior those paths independently observe.
@@ -40,8 +40,8 @@ board/<vendor>/<board>/  local board settings, startup/build bindings, tests and
 device/<vendor>/<part>/  local device documentation, focused tests, examples and docs
 src/                    non-template behavior where useful
 adapters/mcuos/          phase E only
-examples/               metadata examples first; bare-metal firmware after the gate
-tests/                 description contracts, then driver models and hardware procedures
+example/               metadata examples first; bare-metal firmware after the gate
+test/                 description contracts, then driver models and hardware procedures
 doc/                   manuals, provenance and coverage manifests, design decisions
 cmake/                 native and architecture/toolchain configurations
 ```
@@ -62,7 +62,7 @@ Prerequisite: none. D01–D08 are recorded, including the revised ordering.
 
 - Inventory RA4M1, STM32H753 and ESP32-P4 documented blocks, part/package variants and source revisions. Create separate description and driver-support columns and explicit source-gap states. Prioritize the same resource and initial-peripheral categories across all three.
 - Review the now-local STM32H753 RM0433 Rev.8, DS12117 Rev.10 and ES0392 Rev.15. Their identity/readability checks and all six supplied PDF checksums are recorded in [the source manifest](doc/reference/source-manifest.json). Pin applicable RA4M1 corrections and the ESP32-P4 source/silicon baseline; resolve published updates and preliminary gaps before claiming definitions.
-- Use the generated [Markdown manual index](doc/_generated/manuals/README.md) for section lookup and text search; follow its exact PDF-page links to verify register tables, diagrams and ambiguous extraction. The conversion records source/output hashes and preserves all 9,192 page locations; it does not replace the detailed source audit.
+- Use the generated [Markdown manual index](doc/_generated/manual/README.md) for section lookup and text search; follow its exact PDF-page links to verify register tables, diagrams and ambiguous extraction. The conversion records source/output hashes and preserves all 9,192 page locations; it does not replace the detailed source audit.
 - Record checksums, section/table provenance, supported package scope and known exclusions. Ask for important scope decisions if a source is unavailable or the selected variants materially change the work; never invent register data.
 - Keep MCU family data separate from board choices. UNO is the initial physical driver target, but later STM32/ESP boards are not required to inspect or compile descriptions.
 
@@ -515,7 +515,7 @@ The three `-Os` images use 37,220/35,840/35,844 bytes of flash respectively and
 peer replies, triggered a bounded W5100 socket reopen, and then returned to
 successful ICMP traffic with zero SPI transport errors. The complete procedure,
 source identities and benchmark comparison are published in
-`doc/boards/arduino-uno-r4-minima/ethernet-w5100.md`. PLN-0024 is complete.
+`doc/board/arduino-uno-r4-minima/ethernet-w5100.md`. PLN-0024 is complete.
 
 Exit: the W5100 driver and MCUIP adapter pass native behavior tests, Cortex-M4
 build/link checks and the physical local-network procedure on the UNO R4
@@ -570,7 +570,7 @@ floating A0/PA3 within the 14-bit range. The test also enabled the Cortex-M7
 D-cache, cleaned a 64-byte aligned AXI-SRAM DMA1 source, and independently read
 back `0xCACE0000..3` through SWD. No board jumper or solder bridge was changed.
 
-`doc/boards/nucleo-h753zi/README.md` records the board/source identity, received
+`doc/board/nucleo-h753zi/README.md` records the board/source identity, received
 configuration, commands, resource model, observation limits and non-claims.
 PWM waveform measurement, controlled/calibrated ADC levels, real I2C/SPI
 targets, peripheral-DMA traffic and supervised fault/electrical cases were not
@@ -640,11 +640,11 @@ increment remains single-core foreground polling.
 The UNO, NUCLEO and ESP32-P4-NANO profiles retain their existing fixed clock and
 silicon assumptions. Native tests cover ownership, rollback, completion,
 timeouts, cancellation and ISR rejection, with JSON evidence in
-`build/host/artifacts/mcutest-io.json`. Positive/negative compile cases and all
+`build/host/artifact/mcutest-io.json`. Positive/negative compile cases and all
 public headers build for the three architectures. UNO blink, serial echo and
 SPI DMA examples link with the existing standalone startup. The
 [application guide](doc/getting-started/io.md) documents API use and limitations.
-`tools/report-io-cost.py` produces paired linked probes, source hashes and
+`tool/report-io-cost.py` produces paired linked probes, source hashes and
 flash/static-RAM/individual-stack-frame reports in `build/io-cost/`.
 
 Exit scope: implemented and checked at the host/build level. No physical

@@ -2,17 +2,17 @@
 get_property(_mcuhw_targets_before_probes DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
 # @req REQ-0002 REQ-0015 REQ-0016 REQ-0017 REQ-0018 REQ-0019 REQ-0035 REQ-0038 REQ-0040 REQ-0041
 add_library(mcuhw_arch_probe OBJECT
-    tests/compile/all_descriptions_probe.cpp
-    tests/compile/arch_probe.cpp
-    tests/compile/cxx23_features.cpp
-    tests/compile/execution_probe.cpp
-    tests/compile/io_example.cpp
-    tests/compile/io_devices_example.cpp
-    tests/compile/uart_i2c_example.cpp
-    tests/compile/spi_adc_example.cpp
-    tests/compile/dmac_example.cpp
-    tests/compile/esp32p4_metadata_probe.cpp
-    tests/compile/stm32h753_metadata_probe.cpp
+    test/compile/all_descriptions_probe.cpp
+    test/compile/arch_probe.cpp
+    test/compile/cxx23_features.cpp
+    test/compile/execution_probe.cpp
+    test/compile/io_example.cpp
+    test/compile/io_devices_example.cpp
+    test/compile/uart_i2c_example.cpp
+    test/compile/spi_adc_example.cpp
+    test/compile/dmac_example.cpp
+    test/compile/esp32p4_metadata_probe.cpp
+    test/compile/stm32h753_metadata_probe.cpp
 )
 target_link_libraries(mcuhw_arch_probe PRIVATE mcuhw::mcuhw)
 target_compile_definitions(mcuhw_arch_probe PRIVATE
@@ -29,9 +29,9 @@ if(MCUHW_BUILD_MCUIP_CONTRACTS)
         message(FATAL_ERROR "MCUIP contract checks requested; set MCUHW_MCUIP_SOURCE_DIR")
     endif()
     add_library(mcuhw_mcuip_contract_probe OBJECT
-        tests/compile/stm32h753_mcuip_contract.cpp
-        tests/compile/esp32p4_mcuip_contract.cpp
-        tests/compile/uno_r4_minima_w5100_mcuip_contract.cpp)
+        test/compile/stm32h753_mcuip_contract.cpp
+        test/compile/esp32p4_mcuip_contract.cpp
+        test/compile/uno_r4_minima_w5100_mcuip_contract.cpp)
     target_link_libraries(mcuhw_mcuip_contract_probe PRIVATE mcuhw::mcuhw)
     target_include_directories(mcuhw_mcuip_contract_probe PRIVATE
         "${MCUHW_MCUIP_SOURCE_DIR}/include")
@@ -39,7 +39,7 @@ if(MCUHW_BUILD_MCUIP_CONTRACTS)
 endif()
 
 # @req REQ-0009 REQ-0038
-add_library(mcuhw_barrier_probe OBJECT tests/compile/barrier_probe.cpp)
+add_library(mcuhw_barrier_probe OBJECT test/compile/barrier_probe.cpp)
 target_link_libraries(mcuhw_barrier_probe PRIVATE mcuhw::mcuhw)
 mcuhw_apply_restricted_runtime(mcuhw_barrier_probe)
 if(CMAKE_CROSSCOMPILING)
@@ -57,7 +57,7 @@ endif()
 
 if(MCUHW_ARCH STREQUAL "cortex-m4")
     add_library(mcuhw_ra4m1_gpio_codegen OBJECT
-        tests/compile/ra4m1_gpio_codegen_probe.cpp)
+        test/compile/ra4m1_gpio_codegen_probe.cpp)
     target_link_libraries(mcuhw_ra4m1_gpio_codegen PRIVATE mcuhw::mcuhw)
     mcuhw_apply_restricted_runtime(mcuhw_ra4m1_gpio_codegen)
     target_compile_options(mcuhw_ra4m1_gpio_codegen PRIVATE -Os)

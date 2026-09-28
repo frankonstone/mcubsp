@@ -19,7 +19,7 @@ function(mcuhw_add_firmware_identity target)
         endif()
     endforeach()
     add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND "${Python3_EXECUTABLE}" "${root}/tools/mcuhwlib/provenance.py"
+        COMMAND "${Python3_EXECUTABLE}" "${root}/tool/mcuhwlib/provenance.py"
             --root "${root}" --build "${CMAKE_BINARY_DIR}"
             --target "$<PATH:RELATIVE_PATH,$<TARGET_FILE:${target}>,${CMAKE_BINARY_DIR}>"
             --ninja "${CMAKE_MAKE_PROGRAM}"
@@ -44,7 +44,7 @@ function(mcuhw_embedded_source_identity output)
         list(APPEND args "--flag=${flag}")
     endforeach()
     execute_process(COMMAND "${Python3_EXECUTABLE}"
-        "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../tools/mcuhwlib/provenance.py"
+        "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../tool/mcuhwlib/provenance.py"
         --root "${mcuhw_SOURCE_DIR}" --compiler "${CMAKE_CXX_COMPILER}"
         --output "${CMAKE_CURRENT_BINARY_DIR}/${output}.identity.json" ${args}
         RESULT_VARIABLE result OUTPUT_VARIABLE value ERROR_VARIABLE error
@@ -67,7 +67,7 @@ endfunction()
 function(mcuhw_firmware_artifact_command output artifact startup)
     cmake_parse_arguments(ARG "" "SDK_BUILD;OUTPUT" "" ${ARGN})
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
-    set(command "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../tools/mcuhwlib/workflow.py" record
+    set(command "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../tool/mcuhwlib/workflow.py" record
         --build "${CMAKE_CURRENT_BINARY_DIR}" --board "${MCUHW_BOARD}"
         --revision "${MCUHW_BOARD_REVISION}" --startup "${startup}"
         --root "${MCUHW_ROOT}" --artifact "${artifact}")

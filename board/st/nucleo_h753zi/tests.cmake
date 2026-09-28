@@ -1,5 +1,5 @@
 # @req REQ-0049 REQ-0052
-set(board_test_directory "${CMAKE_CURRENT_LIST_DIR}/tests")
+set(board_test_directory "${CMAKE_CURRENT_LIST_DIR}/test")
 # The first STM32H753 runtime slice deliberately has no dependency on the
 # unfinished cross-target fixture. It proves reset/startup, the reset HSI,
 # GPIO clocking and the built-in PE1 LED through the common GPIO driver.
@@ -84,7 +84,7 @@ target_compile_definitions(mcuhw_nucleo_h753zi_early_init_coverage PRIVATE
 )
 target_compile_options(mcuhw_nucleo_h753zi_early_init_coverage PRIVATE
     -include
-    "${MCUHW_ROOT}/tests/support/mcucov_compat.hpp"
+    "${MCUHW_ROOT}/test/support/mcucov_compat.hpp"
 )
 mcucov_instrument_target(
     mcuhw_nucleo_h753zi_early_init_coverage
@@ -142,11 +142,11 @@ target_compile_definitions(mcuhw_nucleo_h753zi_ethernet PRIVATE
 )
 target_compile_options(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
     -include
-    "${MCUHW_ROOT}/tests/support/mcucov_compat.hpp"
+    "${MCUHW_ROOT}/test/support/mcucov_compat.hpp"
 )
 target_compile_options(mcuhw_nucleo_h753zi_ethernet PRIVATE
     -include
-    "${MCUHW_ROOT}/tests/support/mcucov_compat.hpp"
+    "${MCUHW_ROOT}/test/support/mcucov_compat.hpp"
 )
 mcucov_instrument_target(
     mcuhw_nucleo_h753zi_native_peripherals
@@ -172,7 +172,7 @@ mcucov_instrument_target(
 function(mcuhw_add_stm32h753_coverage_manifest_probe name definition)
     set(target "mcuhw_nucleo_h753zi_${name}_coverage_manifest")
     add_library(${target} OBJECT
-        tests/compile/stm32h753_backend_coverage_probe.cpp)
+        test/compile/stm32h753_backend_coverage_probe.cpp)
     target_link_libraries(${target} PRIVATE mcuhw::mcuhw)
     target_compile_features(${target} PRIVATE cxx_std_23)
     target_compile_definitions(${target} PRIVATE
@@ -182,7 +182,7 @@ function(mcuhw_add_stm32h753_coverage_manifest_probe name definition)
     )
     mcuhw_apply_firmware_runtime(${target} HOSTED NO_OPTIMIZE)
     target_compile_options(${target} PRIVATE ${MCUHW_RESTRICTED_COMPILE_OPTIONS}
-        -include "${MCUHW_ROOT}/tests/support/mcucov_compat.hpp")
+        -include "${MCUHW_ROOT}/test/support/mcucov_compat.hpp")
     add_dependencies(mcuhw_nucleo_h753zi_native_peripherals ${target})
     if(name STREQUAL "ethernet")
         add_dependencies(mcuhw_nucleo_h753zi_ethernet ${target})
