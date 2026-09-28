@@ -2,7 +2,7 @@
 
 mcuhw provides C++23 header-only interfaces. Applications can consume a source
 checkout, a versioned CMake package, or the public headers directly. Ordinary
-library use needs no board selection, catalog generation, Python frontend,
+library use needs no board selection or the Python frontend,
 test framework or sibling checkout.
 
 ## Use a source checkout
@@ -44,7 +44,7 @@ Configure the application with `-DCMAKE_PREFIX_PATH=/path/to/install`. The
 package exports `mcuhw::mcuhw`, `mcuhw::io` and `mcuhw::device`; version matching
 uses the same minor release. It can be relocated as one installation prefix.
 
-The layout is deliberately mirrored so manifests and board resources keep
+The layout is deliberately mirrored so board settings and resources keep
 their relative paths:
 
 ```text
@@ -75,7 +75,7 @@ Tests, architecture probes, complete header checks, hardware test images and
 coverage are explicit workflows. A native contributor can enable
 `MCUHW_BUILD_TESTS=ON` and provide `MCUHW_MCUTEST_SOURCE_DIR` for mcutest; a
 library consumer does not need it. `MCUHW_BUILD_TOOLING_TESTS=ON` enables the
-Python packaging/catalog/workflow checks. `MCUHW_BUILD_PROBES=ON`,
+Python packaging and workflow checks. `MCUHW_BUILD_PROBES=ON`,
 `MCUHW_CHECK_HEADERS=ON` and `MCUHW_WRITE_TOOLCHAIN_REPORT=ON` enable their
 corresponding maintainer checks.
 

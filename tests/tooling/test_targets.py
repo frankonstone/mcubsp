@@ -34,9 +34,10 @@ def targets(build):
 
 
 def board_targets(board):
-    result = {"firmware", "examples", "tests", "example.app.blink", "example.app.tmp102"}
+    result = {"tests"}
     result.update(f"test.{group}" for group in ("board", "core", "driver", "io", "backend", "device", "mcu", "compile"))
     if board == "arduino/uno_r4_minima":
+        result.update(("firmware", "examples", "example.app.blink", "example.app.tmp102"))
         result.update(f"example.io.{name}" for name in ("blink", "serial_echo", "spi_dma", "tmp102", "w5100"))
     return result
 
@@ -74,7 +75,7 @@ target_precompile_headers(check-headers PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/inc
             self.assertFalse(any("Unity/" in c["file"] or "cmake_pch" in c["file"] for c in commands))
             (headers / "b.hpp").write_text('#pragma once\n#include <mcuhw/a.hpp>\ninline Known value() { return {}; }\n')
             run("cmake", "--build", build, "--target", "check-headers")
-            # Catalog/header growth creates new compiler jobs, not new targets.
+            # Board/header growth creates new compiler jobs, not new targets.
             (headers / "c.hpp").write_text("#pragma once\nstruct Another {};\n")
             run("cmake", "--build", build, "--target", "check-headers")
             self.assertEqual(list(targets(build)), ["check-headers"])
@@ -105,41 +106,47 @@ class FocusedTargets(unittest.TestCase):
             self.assertGreater(report["summary"]["tests"], 0)
             self.assertEqual(report["summary"]["failures"], 0)
 
-    def test_shipped_presets_select_only_architecture_and_global_compile_settings(self):
+    def test_shipped_presets_default_to_uno_only_for_cortex_m4(self):
         run("cmake", "--list-presets=all")
         presets = json.loads((ROOT / "CMakePresets.json").read_text())
         self.assertEqual({p["name"] for p in presets["configurePresets"] if not p.get("hidden")},
                          {"native", "arm-cortex-m4", "arm-cortex-m7", "esp32p4-riscv"})
-        for preset in presets["configurePresets"]:
-            for variable in preset.get("cacheVariables", {}):
-                self.assertTrue(variable.startswith("CMAKE_") or variable == "MCUHW_ARCH", variable)
+        configurations = {preset["name"]: preset for preset in presets["configurePresets"]}
+        self.assertEqual(configurations["base"]["cacheVariables"]["MCUHW_BOARD"],
+                         "arduino/uno_r4_minima")
+        self.assertNotIn("MCUHW_BOARD", configurations["arm-cortex-m4"].get("cacheVariables", {}))
+        for name in ("native", "arm-cortex-m7", "esp32p4-riscv"):
+            self.assertIsNone(configurations[name]["cacheVariables"]["MCUHW_BOARD"])
         for preset in presets["buildPresets"]:
             self.assertNotIn("targets", preset)
 
     @unittest.skipUnless(shutil.which("arm-none-eabi-g++"), "Arm GNU compiler unavailable")
     def test_board_define_exposes_tasks_and_firmware_provenance(self):
         for preset, board, example in (("arm-cortex-m4", "arduino/uno_r4_minima", "blink"),
-                                       ("arm-cortex-m7", "st/nucleo_h753zi", "tmp102")):
+                                       ("arm-cortex-m7", "st/nucleo_h753zi", "")):
             with self.subTest(board=board), tempfile.TemporaryDirectory(prefix="mcuhw board tasks ") as directory:
                 build = Path(directory)
                 query(build)
-                output = run("cmake", "--preset", preset, "-B", build, f"-DMCUHW_BOARD={board}",
+                board_arg = [] if preset == "arm-cortex-m4" else [f"-DMCUHW_BOARD={board}"]
+                output = run("cmake", "--preset", preset, "-B", build, *board_arg,
                     f"-DMCUHW_EXAMPLE={example}", "-DCMAKE_CXX_FLAGS=-DMCUHW_GLOBAL_FLAG=1",
                     "-DMCUHW_MCUTEST_SOURCE_DIR=/missing", "-DMCUHW_MCUIP_SOURCE_DIR=/missing")
                 self.assertIn(f"Selected board: {board}@", output)
                 self.assertEqual(set(targets(build)), board_targets(board))
                 cache = (build / "CMakeCache.txt").read_text()
                 self.assertIn(f"MCUHW_BOARD:STRING={board}", cache)
-                run("cmake", "--build", build, "--target", "firmware", "examples")
-                self.assertTrue((build / "application/firmware.elf").is_file())
-                identity = json.loads((build / "application/firmware.identity.json").read_text())
-                self.assertEqual(identity["target"], "application/firmware.elf")
-                paths = {p["path"] for p in identity["files"]}
-                self.assertIn(f"source:examples/apps/{example}/main.cpp", paths)
-                self.assertFalse(any("mcutest" in p or "header-checks" in p for p in paths))
-                commands = json.loads((build / "compile_commands.json").read_text())
-                self.assertTrue(all("-DMCUHW_GLOBAL_FLAG=1" in c["command"] for c in commands if c["file"].endswith(".cpp")))
-                # Reapplying the architecture preset retains the board and app.
+                if example:
+                    run("cmake", "--build", build, "--target", "firmware", "examples")
+                    self.assertTrue((build / "application/firmware.elf").is_file())
+                    self.assertFalse(list(build.rglob("selected_board.hpp")))
+                    identity = json.loads((build / "application/firmware.identity.json").read_text())
+                    self.assertEqual(identity["target"], "application/firmware.elf")
+                    paths = {p["path"] for p in identity["files"]}
+                    self.assertIn(f"source:examples/apps/{example}/main.cpp", paths)
+                    self.assertFalse(any("mcutest" in p or "header-checks" in p for p in paths))
+                    commands = json.loads((build / "compile_commands.json").read_text())
+                    self.assertTrue(all("-DMCUHW_GLOBAL_FLAG=1" in c["command"] for c in commands if c["file"].endswith(".cpp")))
+                # Reapplying the preset retains the selected board and app.
                 run("cmake", "--preset", preset, "-B", build)
                 self.assertEqual(set(targets(build)), board_targets(board))
                 failure = run("cmake", "--build", build, "--target", "test.board", success=False)
@@ -161,6 +168,19 @@ class FocusedTargets(unittest.TestCase):
                 output = run("cmake", "--preset", "arm-cortex-m4", "-B", directory,
                              f"-DMCUHW_BOARD={board}", f"-DMCUHW_EXAMPLE={example}", success=False)
                 self.assertIn(message, output)
+
+    @unittest.skipUnless(shutil.which("arm-none-eabi-g++"), "Arm GNU compiler unavailable")
+    def test_io_examples_configure_standalone(self):
+        with tempfile.TemporaryDirectory(prefix="mcuhw standalone io ") as directory:
+            build = Path(directory)
+            run("cmake", "-S", ROOT / "examples/io", "-B", build, "-G", "Ninja",
+                f"-DMCUHW_SOURCE_DIR={ROOT}",
+                f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake",
+                "-DMCUHW_BOARD=arduino/uno_r4_minima", "-DMCUHW_IO_EXAMPLE=tmp102",
+                "-DMCUHW_INSTALL=OFF")
+            run("cmake", "--build", build)
+            self.assertTrue((build / "firmware.elf").is_file())
+            self.assertFalse(list(build.rglob("selected_board.hpp")))
 
     @unittest.skipUnless(shutil.which("arm-none-eabi-g++"), "Arm GNU compiler unavailable")
     def test_board_menu_native_categories_run_with_a_host_compiler(self):

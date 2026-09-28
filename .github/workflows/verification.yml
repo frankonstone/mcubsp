@@ -35,7 +35,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.12.10'
-      - name: Select affected native suites and board builds
+      - name: Select full native and board verification
         id: select
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -43,8 +43,6 @@ jobs:
         run: >-
           python tools/ci-select.py --event "$EVENT_NAME" --base "$BASE_SHA"
           --output build/selection.json --github-output "$GITHUB_OUTPUT"
-      - name: Validate the complete catalog
-        run: python tools/catalog.py validate
       - name: Preserve selection and reasons
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -120,12 +118,6 @@ jobs:
         run: |
           mkdir -p build/verification/artifacts
           python -c 'import json, platform, subprocess; from pathlib import Path; cmd=lambda *a: subprocess.check_output(a,text=True).strip(); data={"host":platform.platform(),"python":platform.python_version(),"compiler":cmd("${{ matrix.cxx }}","--version"),"compiler_target":cmd("${{ matrix.cxx }}","-dumpmachine"),"cmake":cmd("cmake","--version"),"ninja":cmd("ninja","--version"),"mcutest":cmd("git","-C","_ci/mcutest","rev-parse","HEAD")}; Path("build/verification/artifacts/host-tools.json").write_text(json.dumps(data,indent=2)+"\n")'
-      - name: Validate and generate catalog artifacts
-        shell: ${{ matrix.shell }}
-        run: |
-          python tools/catalog.py validate
-          python tools/catalog.py index --output build/verification/artifacts/catalog.json
-          python tools/catalog.py docs --output build/verification/artifacts/catalog.md
       - name: Run selected native suites and complete tooling checks
         if: needs.selection.outputs.run_native == 'true'
         shell: ${{ matrix.shell }}
@@ -145,11 +137,6 @@ jobs:
           cmake -S . -B build/headers -G Ninja -DCMAKE_CXX_COMPILER="$CXX" -DMCUHW_CHECK_HEADERS=ON -DMCUHW_INSTALL=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
           cmake --build build/headers --parallel 2
           cmake -E copy build/headers/compile_commands.json build/verification/artifacts/header-compile-commands.json
-      - name: Measure native consumer isolation with 300 boards and 3000 devices
-        shell: ${{ matrix.shell }}
-        run: >-
-          python tools/check-scale.py --mode host-device --compiler "$CXX"
-          --output build/verification/artifacts/scaling.json
       - name: Upload scoped verification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

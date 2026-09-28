@@ -1,6 +1,5 @@
 """Selected-board configuration and real linked external applications."""
 # @req REQ-0049
-import os
 import json
 from pathlib import Path
 import shutil
@@ -48,6 +47,16 @@ class SelectionTests(unittest.TestCase):
                          f"-DMCUHW_SOURCE_DIR={ROOT}",
                          "-DMCUHW_BOARD=arduino/uno_r4_minima", success=False)
             self.assertIn("Incompatible compiler", output)
+
+    def test_stock_examples_reject_unlisted_boards(self):
+        for board in ("st/nucleo_h753zi", "waveshare/esp32p4_nano"):
+            for example in ("blink", "tmp102"):
+                with self.subTest(board=board, example=example), tempfile.TemporaryDirectory() as directory:
+                    output = run("cmake", "-S", ROOT / "examples/apps" / example,
+                                 "-B", directory, "-G", "Ninja",
+                                 f"-DMCUHW_SOURCE_DIR={ROOT}", f"-DMCUHW_BOARD={board}",
+                                 success=False)
+                    self.assertIn("currently supports only arduino/uno_r4_minima", output)
 
     def test_supplied_startup_rejects_custom_linker_script(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw startup ownership ") as directory:
@@ -106,9 +115,17 @@ mcuhw_add_firmware(firmware SOURCES main.cpp STARTUP supplied)
                     self.assertRegex(symbols, r"[0-9a-f]+ T Reset_Handler")
                     self.assertIn("__isr_vector", symbols)
 
-    def test_board_manifest_must_match_selected_architecture(self):
+    def test_board_entry_must_match_selected_architecture(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw wrong architecture ") as directory:
-            output = run("cmake", "-S", ROOT / "examples/apps/blink", "-B", directory,
+            source = Path(directory) / "source"
+            source.mkdir()
+            (source / "main.cpp").write_text('int main() { return 0; }\n')
+            (source / "CMakeLists.txt").write_text('''cmake_minimum_required(VERSION 3.25)
+project(wrong_architecture LANGUAGES CXX)
+add_subdirectory("${MCUHW_SOURCE_DIR}" mcuhw)
+mcuhw_add_firmware(firmware SOURCES main.cpp STARTUP external)
+''')
+            output = run("cmake", "-S", source, "-B", Path(directory) / "build",
                          "-G", "Ninja", f"-DMCUHW_SOURCE_DIR={ROOT}",
                          "-DMCUHW_BOARD=st/nucleo_h753zi",
                          f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/toolchain-arm-cortex-m4.cmake",
@@ -142,39 +159,38 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
             output = run(*arguments, "-DMCUHW_ARCH=cortex-m7", success=False)
             self.assertIn("requires architecture 'cortex-m4'", " ".join(output.split()))
 
-    def test_external_blink_and_tmp102_all_arm_boards(self):
-        for board in ("arduino/uno_r4_minima", "st/nucleo_h753zi"):
-            for example in ("blink", "tmp102"):
-                with self.subTest(board=board, example=example):
-                    with tempfile.TemporaryDirectory(prefix="mcuhw external app ") as directory:
-                        base = Path(directory)
-                        source, build = base / "source", base / "build"
-                        shutil.copytree(ROOT / "examples/apps" / example, source)
-                        run("cmake", "-S", source, "-B", build, "-G", "Ninja",
-                            f"-DMCUHW_SOURCE_DIR={ROOT}", f"-DMCUHW_BOARD={board}",
-                            f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake")
-                        run("cmake", "--build", build)
-                        self.assertTrue((build / "firmware.elf").is_file())
-                        self.assertTrue((build / "firmware.bin").is_file())
-                        report = json.loads((build / "firmware.identity.json").read_text())
-                        paths = {entry["path"] for entry in report["files"]}
-                        self.assertIn(f"source:board/{board}/component.json", paths)
-                        sensor = "source:include/mcuhw/device/sensor/tmp102.hpp"
-                        self.assertEqual(sensor in paths, example == "tmp102")
-                        self.assertTrue(report["toolchains"].get("CXX"))
-                        ninja = (build / "build.ninja").read_text()
-                        unrelated = "nucleo_h753zi" if "arduino" in board else "uno_r4_minima"
-                        self.assertNotIn(f"board/{unrelated}/startup.S", ninja)
-                        self.assertNotIn("mcutest", ninja)
-                        self.assertNotIn("header-checks", ninja)
-                        self.assertNotIn("architecture_probes", ninja)
+    def test_external_blink_and_tmp102_on_uno(self):
+        board = "arduino/uno_r4_minima"
+        for example in ("blink", "tmp102"):
+            with self.subTest(example=example):
+                with tempfile.TemporaryDirectory(prefix="mcuhw external app ") as directory:
+                    base = Path(directory)
+                    source, build = base / "source", base / "build"
+                    shutil.copytree(ROOT / "examples/apps" / example, source)
+                    run("cmake", "-S", source, "-B", build, "-G", "Ninja",
+                        f"-DMCUHW_SOURCE_DIR={ROOT}", f"-DMCUHW_BOARD={board}",
+                        f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake")
+                    run("cmake", "--build", build)
+                    self.assertTrue((build / "firmware.elf").is_file())
+                    self.assertTrue((build / "firmware.bin").is_file())
+                    report = json.loads((build / "firmware.identity.json").read_text())
+                    paths = {entry["path"] for entry in report["files"]}
+                    self.assertIn(f"source:board/{board}/board.cmake", paths)
+                    sensor = "source:include/mcuhw/device/sensor/tmp102.hpp"
+                    self.assertEqual(sensor in paths, example == "tmp102")
+                    self.assertTrue(report["toolchains"].get("CXX"))
+                    ninja = (build / "build.ninja").read_text()
+                    self.assertNotIn("board/nucleo_h753zi/startup.S", ninja)
+                    self.assertNotIn("mcutest", ninja)
+                    self.assertNotIn("header-checks", ninja)
+                    self.assertNotIn("architecture_probes", ninja)
 
     def test_firmware_from_relocated_installed_bundle_without_source(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw installed board ") as directory:
             base = Path(directory)
             checkout = base / "checkout"
             checkout.mkdir()
-            for name in ("include", "cmake", "board", "device", "mcu", "ip", "catalog",
+            for name in ("include", "cmake", "board", "device", "mcu", "ip",
                          "examples", "tools", "doc", "tests"):
                 shutil.copytree(ROOT / name, checkout / name,
                                 ignore=shutil.ignore_patterns("build", "__pycache__",
@@ -235,7 +251,15 @@ target_link_options(firmware PRIVATE -nostdlib)
 
     def test_reject_reusing_build_directory_for_another_board(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw selection ") as directory:
-            arguments = ("cmake", "-S", ROOT / "examples/apps/blink", "-B", directory,
+            source = Path(directory) / "source"
+            source.mkdir()
+            (source / "main.cpp").write_text('int main() { return 0; }\n')
+            (source / "CMakeLists.txt").write_text('''cmake_minimum_required(VERSION 3.25)
+project(board_selection LANGUAGES CXX)
+add_subdirectory("${MCUHW_SOURCE_DIR}" mcuhw)
+mcuhw_add_firmware(firmware SOURCES main.cpp STARTUP external)
+''')
+            arguments = ("cmake", "-S", source, "-B", Path(directory) / "build",
                          "-G", "Ninja", f"-DMCUHW_SOURCE_DIR={ROOT}",
                          f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake")
             run(*arguments, "-DMCUHW_BOARD=arduino/uno_r4_minima")
@@ -243,15 +267,14 @@ target_link_options(firmware PRIVATE -nostdlib)
                          "-DMCUHW_BOARD_REVISION=mb1364-rev-e", success=False)
             self.assertIn("separate build directory", " ".join(output.split()))
 
-    def test_manifest_change_reconfigures_selected_board(self):
-        with tempfile.TemporaryDirectory(prefix="mcuhw manifest rebuild ") as directory:
+    def test_board_entry_change_reconfigures_selected_board(self):
+        with tempfile.TemporaryDirectory(prefix="mcuhw board rebuild ") as directory:
             base = Path(directory)
             resources = base / "resources"
             board = resources / "board/arduino/uno_r4_minima"
             board.mkdir(parents=True)
+            shutil.copy2(ROOT / "board/arduino/uno_r4_minima/board.cmake", board / "board.cmake")
             (resources / "cmake").mkdir()
-            for filename in ("component.json", "board.cmake"):
-                shutil.copy2(ROOT / "board/arduino/uno_r4_minima" / filename, board / filename)
             shutil.copy2(ROOT / "cmake/toolchain-arm-cortex-m4.cmake", resources / "cmake")
             shutil.copytree(ROOT / "cmake/architectures", resources / "cmake/architectures")
             shutil.copytree(ROOT / "include", resources / "include")
@@ -260,7 +283,7 @@ target_link_options(firmware PRIVATE -nostdlib)
             (source / "main.cpp").write_text('int main() { for (;;) __asm__("wfi"); }\n')
             (source / "CMakeLists.txt").write_text('''
 cmake_minimum_required(VERSION 3.25)
-project(manifest_rebuild LANGUAGES CXX)
+project(board_entry_rebuild LANGUAGES CXX)
 add_subdirectory("${MCUHW_SOURCE_DIR}" mcuhw)
 mcuhw_add_firmware(firmware SOURCES main.cpp STARTUP external)
 target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
@@ -271,53 +294,10 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
                 "-DMCUHW_BOARD=arduino/uno_r4_minima",
                 f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake")
             run("cmake", "--build", build)
-            (board / "changed.cmake").write_text(
-                'message(FATAL_ERROR "Selected manifest change was reconfigured")\n')
-            manifest = board / "component.json"
-            data = json.loads(manifest.read_text())
-            data["build"]["entry"] = "board/arduino/uno_r4_minima/changed.cmake"
-            manifest.write_text(json.dumps(data))
-            output = run("cmake", "--build", build, success=False)
-            self.assertIn("Selected manifest change was reconfigured", output)
-
-
-@unittest.skipUnless(os.environ.get("MCUHW_TEST_ESP_IDF"),
-                     "Set MCUHW_TEST_ESP_IDF to the pinned ESP-IDF SDK for SDK cross-builds")
-class EspApplicationTests(unittest.TestCase):
-    requirements = ('REQ-0049',)
-    requirements = ("REQ-0049", "REQ-0052")
-    def test_external_blink_and_tmp102(self):
-        for example in ("blink", "tmp102"):
-            with self.subTest(example=example):
-                with tempfile.TemporaryDirectory(prefix="mcuhw esp app ") as directory:
-                    base = Path(directory)
-                    source, build = base / "source", base / "build"
-                    shutil.copytree(ROOT / "examples/apps" / example, source)
-                    command = ["cmake", "-S", source, "-B", build, "-G", "Ninja",
-                               f"-DMCUHW_SOURCE_DIR={ROOT}",
-                               "-DMCUHW_BOARD=waveshare/esp32p4_nano",
-                               f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake",
-                               f"-DMCUHW_IDF_PATH={os.environ['MCUHW_TEST_ESP_IDF']}"]
-                    if os.environ.get("MCUHW_TEST_IDF_PYTHON"):
-                        command.append(f"-DPYTHON={os.environ['MCUHW_TEST_IDF_PYTHON']}")
-                    run(*command)
-                    run("cmake", "--build", build)
-                    self.assertTrue((build / "firmware.elf").is_file())
-                    self.assertTrue((build / "firmware.bin").is_file())
-                    self.assertTrue((build / "esp-idf-build/flasher_args.json").is_file())
-                    report = json.loads((build / "firmware.identity.json").read_text())
-                    self.assertTrue(report["toolchains"].get("CXX"))
-                    boot_report = json.loads((build / "firmware.bootloader.identity.json").read_text())
-                    self.assertTrue(boot_report["toolchains"].get("CXX"))
-                    self.assertTrue(any(entry["path"].endswith("bootloader_start.cpp")
-                                        for entry in boot_report["files"]))
-                    flash_report = json.loads((build / "firmware.flash.identity.json").read_text())
-                    self.assertEqual(flash_report["scope"], "flash-bundle")
-                    self.assertEqual(flash_report["image_count"], 3)
-                    ninja = (build / "esp-idf-build/build.ninja").read_text()
-                    self.assertNotIn("mcutest", ninja)
-                    self.assertNotIn("mcucov", ninja)
-                    self.assertNotIn("board/uno_r4_minima", ninja)
+            with (board / "board.cmake").open('a') as output:
+                output.write('message(FATAL_ERROR "Selected board entry change was reconfigured")\n')
+            result = run("cmake", "--build", build, success=False)
+            self.assertIn("Selected board entry change was reconfigured", result)
 
 
 if __name__ == "__main__":

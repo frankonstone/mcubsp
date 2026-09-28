@@ -1,7 +1,7 @@
 # Build and verification
 
-For application builds, use the [first-build guide](building.md). Presets select
-only architecture/toolchain and global compiler settings. Enable verification
+For application builds, use the [first-build guide](building.md). The Cortex-M4
+preset also selects the UNO R4 Minima board. Enable verification
 with explicit CMake cache options, then choose the targets to build. Probes
 compile only; they do not link startup code, an RTOS, or a board SDK.
 Install the [development dependencies](installation.md) before enabling optional
@@ -42,8 +42,7 @@ selection into `build/host/artifacts/mcutest-native.json` for mcutrace; it delet
 previous selected results before running, so stale artifacts are not reused.
 Tooling tests write `build/host/artifacts/mcutest-tooling.json`. Direct CTest
 invocation remains supported but does not refresh the merged native artifact.
-See [verification and CI](../development/verification.md) for affected checks,
-scale measurements and evidence scope.
+See [verification and CI](../development/verification.md) for hosted checks and evidence scope.
 Each cross build writes `barrier-report.txt` after disassembling the barrier
 probe and checking the architecture's required instructions.
 The `mcuhw.fixture_failure` CTest entry uses `WILL_FAIL` so a deliberately

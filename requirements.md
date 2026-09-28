@@ -544,8 +544,7 @@ Provide distinct application, component-contributor and full-maintainer build
 workflows (D18). Applications shall consume the existing `mcuhw::mcuhw`,
 `mcuhw::io` and `mcuhw::device` interfaces from a source checkout or a versioned,
 relocatable CMake package. Direct header consumption shall remain supported;
-ordinary consumption shall require neither catalog generation nor a board
-selection for board-independent code.
+ordinary consumption shall require no board selection for board-independent code.
 
 Embedded CMake use shall default to library interfaces only. Tests, architecture
 probes, all-header checks, coverage and hardware-test images shall be explicit
@@ -562,32 +561,17 @@ Plain header inclusion works independently. Installed interfaces contain no
 developer-specific paths, and an explicit maintainer configuration still enables
 the existing verification workflows.
 
-## REQ-0048 Local hardware catalog and reusable component identities
+## REQ-0048 Local board ownership and reusable hardware implementations
 @depends(REQ-0003, REQ-0005, REQ-0010, REQ-0038, REQ-0046)
 
-Organize boards and devices as locally owned components in one repository,
-retaining stable public C++ entry points. A versioned, schema-validated catalog
-shall distinguish peripheral IP implementations, MCU family/part/package/silicon
-variants, board revisions and external chips. Use stable vendor-qualified IDs
-and explicit references to shared implementations rather than copying a backend
-or chip driver per board or variant.
+Boards own their build settings, startup, wiring, fixtures and procedures under
+`board/<vendor>/<name>/`. Public C++ headers remain authoritative for MCU facts,
+register definitions, pin mappings and constraints. Reusable device protocols
+retain narrow transport contracts. Board selection reads only the chosen local
+`board.cmake` entry; a separate hardware catalog is deferred.
 
-Local manifests shall identify component kind, revision scope, source/header and
-build entry points, dependencies and required capabilities, examples, maintained
-documentation, ownership and evidence references. C++ remains authoritative for
-register definitions, typed pin mappings and compile-time constraints; catalog
-summaries shall be checked against their source rather than becoming a second
-independently authored hardware description. Board composition owns wiring;
-external-device protocols retain narrow transport contracts. The catalog shall
-not introduce runtime registration or mandatory code generation.
-
-Acceptance: all three existing boards and TMP102, W5100 and ES8311 have entries
-with their actual support scope. Validation rejects unsupported schema versions,
-duplicate IDs, missing references, dependency cycles and invalid revision or
-capability selections. Adding a component that reuses existing infrastructure
-requires only its local files and public implementation, without handwritten
-central board/device lists; any global index is reproducibly derived. Shared
-implementation and board-specific configuration are demonstrably separate.
+Acceptance: each supported board selects its local rules and revision, and public
+MCU, backend and device code remains reusable across boards.
 
 ## REQ-0049 Selected-board application builds and explicit startup
 @depends(REQ-0031, REQ-0045, REQ-0047, REQ-0048)
@@ -604,10 +588,10 @@ Repository workspaces shall select an architecture through a configure preset
 and an explicit, persistent active-board list through CMake cache settings or a
 local user preset. Only those boards shall contribute task groups such as
 `<board>.examples` and `<board>.tests`; individual example images remain
-independently buildable. Resolve examples from each selected board's manifest,
+independently buildable. Resolve examples from each selected board's local build entry,
 reject incompatible architecture/revision selections, and isolate generated
 configuration and artifacts per board/revision/example. Changing the active set
-shall remove inactive targets on reconfiguration. Unselected catalog growth
+shall remove inactive targets on reconfiguration. Unselected board growth
 shall not enlarge the workspace target list or configure test dependencies.
 
 Applications shall explicitly choose supplied board startup or their existing
@@ -653,59 +637,29 @@ Flash-command selection is
 tested independently, and physical runner claims name the host, hardware and
 observation actually exercised under REQ-0036.
 
-## REQ-0051 Searchable support catalog and component contribution workflow
+## REQ-0051 Component contribution documentation
 @depends(REQ-0036, REQ-0039, REQ-0048, REQ-0049, REQ-0050)
 
-Generate searchable board/device listings and support tables from component
-manifests and referenced evidence. Expose identity/revision, category, buses and
-required capabilities, toolchain/runner availability, examples, wiring and
-limitations. Keep described capabilities, implemented functionality, host-test,
-cross-build and physical verification states distinct; compatibility shall not
-imply that every board/device combination has been tested. Missing, failed and
-stale evidence shall retain their own states.
+Maintain focused board, device and MCU contribution guides. Board and device
+READMEs document supported scope, wiring, limitations and tested procedures.
+Examples are complete applications with explicit prerequisites. Public API
+changes require documented migration guidance.
 
-Provide separate application quick starts and contributor guides/templates for
-an existing-MCU board, an external chip and a new MCU/backend. Each component
-shall own its focused tests and narrative documentation; generated indexes
-shall remove repeated manual registration across docs, builds and CI. Version
-and compatibility guidance shall identify public API/catalog changes and any
-required migration. Examples shall be complete, compilable applications with
-explicit prerequisites and wiring rather than unbuildable fragments alone.
+Acceptance: a contributor can add local hardware support and verify its build,
+focused tests and physical evidence without generated support listings.
 
-Acceptance: users can find I2C temperature devices, boards exposing Ethernet,
-available flash methods and physically verified features for an exact revision.
-Each result leads to matching build commands and scoped evidence. Following
-the board/device templates adds a working local component without central
-handwritten lists. Documentation generation is reproducible, validates its
-references and examples, and excludes synthetic scalability fixtures from
-published support claims.
-
-## REQ-0052 Dependency-scoped verification, provenance and scale
+## REQ-0052 Full verification and selected-source provenance
 @depends(REQ-0035, REQ-0036, REQ-0037, REQ-0039, REQ-0047, REQ-0048, REQ-0049)
 
-Separate core, MCU/backend, board-integration and attached-device test suites
-with independently selectable runs and evidence artifacts. Changes shall select
-affected components and transitive dependents; changes to shared infrastructure,
-deleted inputs or uncertain impact shall trigger a conservative broader check.
-Retain explicit exhaustive, shardable catalog validation for scheduled/release
-runs and representative mixed-MCU/header checks. Device protocol tests and bus
-backend tests shall be reusable; a board-by-device Cartesian product shall not
-be the default test strategy or a substitute for scoped physical acceptance.
+Keep core, MCU/backend, board and device tests independently selectable. Until a
+dependency catalog exists, CI runs every native suite and every declared board
+application for each supported revision. A board-by-device Cartesian product is
+not a substitute for scoped physical acceptance.
 
-Application configuration and compilation shall operate on the selected
-dependency closure without scanning/hashing every device implementation or
-creating unrelated validation targets. Firmware identity shall cover actual
-transitive selected sources, generated configuration, dependencies, toolchain
-and flags. Record whole-repository revision separately; unrelated component
-changes shall not alter the selected firmware identity. Preserve source and
-evidence traceability when moving or splitting existing build/test rules.
+Firmware identity covers actual selected sources, generated configuration,
+toolchain and flags. Whole-repository revision is recorded separately; unrelated
+additions do not change selected firmware identity. Scheduled and release runs
+include public-header and mixed-MCU checks.
 
-Acceptance: synthetic fixtures representing at least 300 boards and 3,000
-devices exercise discovery, validation and selection without claiming real
-hardware support. Record configuration, discovery and selected-build timings,
-target/source counts and identity inputs on a named host/toolchain. Growing the
-unselected catalog leaves the selected target/source/hash set unchanged. A
-device change selects its tests and dependents; a shared or deleted dependency
-selects broader checks. Scheduled/release validation covers the full declared
-catalog. Selected-source/configuration changes alter firmware identity, while
-unrelated additions do not; all evidence claims retain their observation scope.
+Acceptance: selected-source changes alter firmware identity, unrelated additions
+do not, and all evidence claims retain their observation scope.

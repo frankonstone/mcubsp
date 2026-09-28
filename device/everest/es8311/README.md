@@ -1,6 +1,5 @@
 # Everest ES8311
 
-Catalog identity: `device:everest/es8311@48khz-16bit`.
 
 The initial physical composition is the on-board ESP32-P4-NANO codec. The linked board procedure specifies I2C address 0x18, GPIO wiring, clocks, microphone and amplifier sequencing. Other boards must supply and verify their own wiring.
 
@@ -12,7 +11,7 @@ Focused test sources:
 
 - `tests/backend/esp32p4/test_i2s.cpp`
 
-See [catalog contribution and validation](../../../doc/development/catalog.md) for checks.
+See [the device contribution guide](../../../doc/development/adding-a-device.md) for checks.
 
 ## Limits
 

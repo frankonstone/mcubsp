@@ -42,7 +42,7 @@ class ProvenanceTests(unittest.TestCase):
         (self.source / "unrelated.cpp").write_text('int unrelated() { return 17; }\n')
         (self.source / "unrelated.hpp").write_text('#error not part of selected target\n')
         (self.source / "linker-input.txt").write_text('link configuration version 1\n')
-        (self.source / "component.json").write_text(json.dumps({"revision": "r1"}))
+        (self.source / "settings.txt").write_text(json.dumps({"revision": "r1"}))
         (self.source / "CMakeLists.txt").write_text('''
 cmake_minimum_required(VERSION 3.25)
 project(selected_provenance LANGUAGES CXX)
@@ -62,7 +62,7 @@ add_library(unrelated STATIC EXCLUDE_FROM_ALL unrelated.cpp)
 
     def report(self):
         return identity(self.source, self.build, "selected.elf",
-                        extra=(self.source / "component.json",))
+                        extra=(self.source / "settings.txt",))
 
     def test_selected_transitive_headers_are_recorded(self):
         self.configure_and_build()
@@ -85,7 +85,7 @@ add_library(unrelated STATIC EXCLUDE_FROM_ALL unrelated.cpp)
         before = self.report()
         directory = self.source / "device/vendor/new_sensor"
         directory.mkdir(parents=True)
-        (directory / "component.json").write_text('{"kind":"device"}\n')
+        (directory / "settings.txt").write_text('{"kind":"device"}\n')
         (directory / "driver.hpp").write_text('#error unrelated new device\n')
         (self.source / "unrelated.cpp").write_text('int unrelated() { return 1000; }\n')
         self.configure_and_build()
@@ -156,7 +156,7 @@ target_sources(selected PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/prebuilt.o")
         run("cmake", "--build", self.build, "--target", "selected")
         linked = self.report()["identity"]
         self.assertNotEqual(before, linked)
-        (self.source / "component.json").write_text(json.dumps({"revision": "r2"}))
+        (self.source / "settings.txt").write_text(json.dumps({"revision": "r2"}))
         self.assertNotEqual(linked, self.report()["identity"])
 
     def test_application_configuration_invalidates_identity(self):

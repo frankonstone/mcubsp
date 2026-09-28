@@ -6,6 +6,9 @@ This record covers the implementation working tree based on repository revision
 records its actual selected file hashes, commands and toolchain identity; the
 base Git revision alone does not identify the uncommitted implementation.
 
+This is a historical qualification record. Its catalog and scale measurements
+describe the 2026-09-26 implementation; those facilities have since been removed.
+
 ## Executed environment and results
 
 The measured host is the local macOS development machine, Darwin 25.6.0,

@@ -7,10 +7,9 @@ using namespace std::chrono_literals;
 constexpr io::board_config configuration{.serial = false};
 static io::board<io::boards::uno_r4_minima, configuration> hw;
 
-extern "C" std::uint32_t mcuhw_uno_clock_status;
 
 int main() {
-    if (mcuhw_uno_clock_status != 0U) __builtin_trap();
+    if (!hw.startup_ok()) __builtin_trap();
     io::require(hw.begin());
     auto led = io::require(hw.output(hw.pins.led_builtin));
     for (;;) {

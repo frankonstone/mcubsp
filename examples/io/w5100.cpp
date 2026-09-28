@@ -11,13 +11,12 @@ using namespace std::chrono_literals;
 constexpr io::board_config configuration{.serial = true, .spi = true};
 static io::board<io::boards::uno_r4_minima, configuration> hw;
 static std::array<std::byte, 1536> receive;
-extern "C" std::uint32_t mcuhw_uno_clock_status;
 
 // Ethernet Shield R3: D10 W5100 CS; D4 SD CS must remain high.
 // Reports received raw Ethernet frames on D0/D1 serial. To process IPv4, give
 // this same device to the MCUIP composition described in the components guide.
 int main() {
-    if (mcuhw_uno_clock_status != 0U) __builtin_trap();
+    if (!hw.startup_ok()) __builtin_trap();
     io::require(hw.begin());
     io::require(hw.serial.begin());
     auto sd_select = io::require(hw.output(hw.pins.d4, true));

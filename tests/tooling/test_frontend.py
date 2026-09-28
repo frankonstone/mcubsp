@@ -21,7 +21,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools'))
 import mcuhw
-from mcuhwlib import catalog, environment, runners, workflow
+from mcuhwlib import boards, environment, runners, workflow
 
 
 class FrontendTests(unittest.TestCase):
@@ -85,6 +85,10 @@ class FrontendTests(unittest.TestCase):
         result = self.cli('new', str(self.directory / 'other'), '--board', 'unknown/board')
         self.assertEqual(result[0], 2)
         self.assertFalse((self.directory / 'other').exists())
+        result = self.cli('new', str(self.directory / 'nucleo'), '--board', 'st/nucleo_h753zi')
+        self.assertEqual(result[0], 2)
+        self.assertIn('not declared', result[2])
+        self.assertFalse((self.directory / 'nucleo').exists())
 
     def test_no_setup_diagnostic_and_changed_lock(self):
         project = self.new()
@@ -212,10 +216,6 @@ class FrontendTests(unittest.TestCase):
             with self.assertRaisesRegex(environment.EnvironmentError, 'matching libstdc'):
                 environment.check_cpp_library(Path(sys.executable))
 
-    def test_discovery_filters_and_json(self):
-        result = self.cli('search', 'boards', 'UNO', '--json')
-        self.assertEqual(result[0], 0, result)
-        self.assertEqual([row['id'] for row in json.loads(result[1])], ['arduino/uno_r4_minima'])
 
 
 class ArchiveTests(unittest.TestCase):
@@ -340,7 +340,7 @@ class RunnerTests(unittest.TestCase):
         self.temporary.cleanup()
 
     def board(self, identifier):
-        return catalog.load(ROOT, 'board', identifier)
+        return boards.load(ROOT, identifier)
 
     def test_probe_required_and_jlink_paths_quoted(self):
         board = self.board('arduino/uno_r4_minima')

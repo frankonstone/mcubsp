@@ -62,7 +62,7 @@ class PackagingTests(unittest.TestCase):
         # proves the consumer cannot quietly fall back to the original source.
         checkout = self.work / "checkout"
         checkout.mkdir()
-        for name in ("include", "cmake", "board", "device", "mcu", "ip", "catalog", "examples", "tools", "doc", "tests"):
+        for name in ("include", "cmake", "board", "device", "mcu", "ip", "examples", "tools", "doc", "tests"):
             if (ROOT / name).exists():
                 shutil.copytree(ROOT / name, checkout / name,
                                 ignore=shutil.ignore_patterns("build", "__pycache__", "_vendor", "_generated"))

@@ -20,6 +20,7 @@ namespace mcuhw::io::boards {
 // silicon revision or CPU clock requires a corresponding board composition.
 struct esp32p4_nano {
     using target_identity = esp32p4_nano;
+    [[nodiscard]] static constexpr bool startup_ok() noexcept { return true; }
     struct pins_type {
         static constexpr auto rx = mcuhw::board::esp32p4_nano::uart0_rx;
         static constexpr auto tx = mcuhw::board::esp32p4_nano::uart0_tx;

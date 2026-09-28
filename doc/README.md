@@ -39,14 +39,12 @@ lifecycle, and bring-up guidance directly in the documentation.
 - [Adding a board](development/adding-a-board.md)
 - [Adding an external device](development/adding-a-device.md)
 - [Adding a microcontroller](development/adding-an-mcu.md)
-- [Catalog schema, contribution and compatibility](development/catalog.md)
 - [Focused tests, CI and scaling checks](development/verification.md)
 - [Description coverage](development/coverage.md)
 - [Peripheral implementation notes](development/peripheral-notes/)
 
 ## Reference and acceptance
 
-- [Generated searchable hardware catalog](reference/catalog.md)
 - [MCU source baseline](reference/source-baseline.md)
 - [Pinned source manifest](reference/source-manifest.json)
 - [MCU description reviews](reference/mcu-reviews/)

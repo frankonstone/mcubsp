@@ -26,10 +26,9 @@ using namespace std::chrono_literals;
 
 constexpr io::board_config configuration{.serial = false};
 static io::board<io::boards::uno_r4_minima, configuration> hw;
-extern "C" std::uint32_t mcuhw_uno_clock_status;
 
 int main() {
-    if (mcuhw_uno_clock_status != 0U) __builtin_trap();
+    if (!hw.startup_ok()) __builtin_trap();
     io::require(hw.begin());
     auto led = io::require(hw.output(hw.pins.led_builtin));
     for (;;) {
@@ -242,6 +241,10 @@ bookkeeping and require application responsibility for its invariants.
 UNO assumes the repository startup's 48 MHz ICLK/PCLKA and 24 MHz PCLKB.
 NUCLEO assumes 64 MHz HSI SYSCLK/HCLK/PCLK. Their default policies enable
 DWT cycle counting without resetting its count.
+With supplied startup, `hw.startup_ok()` reports the profile's startup status;
+call it before `hw.begin()`. A custom profile implements
+`static bool startup_ok() noexcept`; an external BSP owns its own startup
+checks.
 
 The P4 profile matches the existing NANO development board with v1.0 silicon,
 HP CPU0 only, and a fixed 360 MHz CPU clock. UART/SPI/I2C use 40 MHz sources.

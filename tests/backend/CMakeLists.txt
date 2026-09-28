@@ -1,2 +1,6 @@
-# Backend sources are owned by IP component manifests.
-mcuhw_component_suites(ip backend)
+foreach(pair IN ITEMS "esp32p4;espressif/esp32p4_native" "ra4m1;renesas/ra4m1_native" "stm32h753;st/stm32h753_native")
+    list(GET pair 0 directory)
+    list(GET pair 1 identifier)
+    file(GLOB sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${directory}/*.cpp")
+    mcuhw_native_suite("ip:${identifier}" ${sources})
+endforeach()

@@ -13,7 +13,7 @@ import shutil
 import subprocess
 import sys
 
-from mcuhwlib import catalog, environment, runners
+from mcuhwlib import boards, environment, runners
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -37,7 +37,7 @@ def resolve_tool(name: str, command: str, override: str | None = None) -> str:
 
 
 def flash_plan(args) -> dict:
-    board = catalog.load(ROOT, 'board', args.board, revision=args.revision)
+    board = boards.load(ROOT, args.board, revision=args.revision)
     board['selected_revision'] = args.revision or board['default_revision']
     runner = board['build']['runner']
     spec = environment.load_lock(ROOT / 'tools/toolchains.lock.json')['tools'][runner['tool']]
@@ -78,7 +78,7 @@ def main(argv=None):
         elif args.operation == 'artifact-dir':
             print(args.elf.resolve().parent / 'artifacts')
         elif args.operation == 'runner-field':
-            print(catalog.load(ROOT, 'board', args.board)['build']['runner'][args.field])
+            print(boards.load(ROOT, args.board)['build']['runner'][args.field])
         else:
             plan = flash_plan(args)
             if args.dry_run:

@@ -61,9 +61,8 @@ The main source layers are:
 | `include/mcuhw/board/` | Board identities, package selection, and connector/pin aliases |
 | `include/mcuhw/execution/` | Bare-metal and test execution policies |
 | `include/mcuhw/integration/` | Optional integration boundaries such as MCUIP network devices |
-| `board/<vendor>/<name>/` | Local board manifest, build rules and runner configuration |
-| `mcu/`, `ip/`, `device/` | Local component manifests referring to shared public implementations |
-| `catalog/` | Versioned schema and contribution templates; indexes are generated |
+| `board/<vendor>/<name>/` | Local board build rules, runner configuration and procedures |
+| `mcu/`, `ip/`, `device/` | Component-owned documentation and fixtures |
 | `tests/` | Native behavioral tests, compile checks, and compile-fail cases |
 | `doc/` | Design notes, source manifests, board procedures, and acceptance records |
 
@@ -86,7 +85,7 @@ boundaries.
 
 For an ordinary application, a C++23 compiler and the public headers suffice.
 CMake consumers additionally need CMake 3.25 or newer. Library consumption
-requires no sibling projects, catalog generation or board selection. Complete
+requires no sibling projects or board selection. Complete
 board applications use CMake, Ninja and the selected cross compiler; flashing
 tools are required only when flashing. See the
 [first-build guide](doc/getting-started/building.md) for pinned setup, SDK and
@@ -134,10 +133,9 @@ hardware tests.
 
 ## Quick start
 
-Discover a board and create a complete external application:
+Create a complete external application:
 
 ```sh
-python3 tools/mcuhw.py list boards
 python3 tools/mcuhw.py new ../my-blink --board arduino/uno_r4_minima --example blink
 python3 tools/mcuhw.py setup --project ../my-blink
 python3 tools/mcuhw.py build --project ../my-blink
@@ -148,9 +146,9 @@ cache). It reports missing prerequisites before building. The
 [first-build guide](doc/getting-started/building.md) includes installation,
 offline use, direct CMake commands and separately requested flashing. Complete
 [Blink](examples/apps/blink/README.md) and
-[TMP102](examples/apps/tmp102/README.md) projects support all three boards.
-Search the [generated catalog](doc/reference/catalog.md) or use
-`python3 tools/mcuhw.py search --category temperature` for attached devices.
+[TMP102](examples/apps/tmp102/README.md) projects currently target the Arduino
+UNO R4 Minima.
+See [attached devices](doc/getting-started/components.md) for chip support.
 
 For application code, start with the [modern C++ I/O guide](doc/getting-started/io.md).
 The optional `mcuhw::io`
@@ -292,8 +290,10 @@ implicit cancellation.
 
 ## Build presets
 
-Presets select only the toolchain/architecture and global compiler settings.
-They do not select boards, applications, tests or build targets.
+The `arm-cortex-m4` preset selects the toolchain and the Arduino UNO R4 Minima
+board by default. Other presets select only their toolchain/architecture and
+global compiler settings. Presets do not select applications, tests or build
+targets.
 
 | Preset | Architecture |
 | --- | --- |
@@ -302,21 +302,23 @@ They do not select boards, applications, tests or build targets.
 | `arm-cortex-m7` | ARM Cortex-M7 |
 | `esp32p4-riscv` | ESP32-P4 RISC-V |
 
-Select a board with the visible `MCUHW_BOARD` STRING cache setting:
+The UNO board targets are available after configuring the preset:
 
 ```sh
-cmake --preset arm-cortex-m4 -DMCUHW_BOARD=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4
 cmake --build --preset arm-cortex-m4 --target firmware
 cmake --build --preset arm-cortex-m4 --target examples
 cmake --build --preset arm-cortex-m4 --target test.board
 cmake --build --preset arm-cortex-m4 --target test.backend test.device
 ```
 
-`firmware` builds Blink by default; set `-DMCUHW_EXAMPLE=tmp102` to change the
-application. `examples` builds all application and I/O examples supported by the selected board,
+For the UNO R4 Minima, `firmware` builds Blink by default; set
+`-DMCUHW_EXAMPLE=tmp102` to change the application. `examples` builds all
+declared application and I/O examples,
 with `example.app.blink` and `example.app.tmp102` available individually. UNO
 also exposes `example.io.blink`, `example.io.serial_echo`, `example.io.spi_dma`,
-`example.io.tmp102` and `example.io.w5100`. `test.board` builds the board's physical-test firmware in a separate child build.
+`example.io.tmp102` and `example.io.w5100`. Other boards currently expose no
+application examples. `test.board` builds the board's physical-test firmware in a separate child build.
 `test.backend`, `test.device`, `test.core`, `test.driver`, `test.io`, `test.mcu`
 and `test.compile` build and run focused host suites; `tests` selects all groups. Running or
 flashing these images remains an explicit hardware procedure.
@@ -324,8 +326,9 @@ flashing these images remains an explicit hardware procedure.
 `MCUHW_BOARD`, `MCUHW_BOARD_REVISION` and `MCUHW_EXAMPLE` are visible in the CMake
 cache and editable through CMake Tools. Reconfigure after editing them. The
 configure log displays the resolved board, revision and architecture. Reapplying
-a preset preserves these settings. An empty board selection exposes no board
-targets. Unselected board manifests are not scanned.
+the Cortex-M4 preset selects the UNO board again; the other presets preserve an
+explicit board selection. An empty board selection exposes no board targets.
+Unselected board entries are not loaded.
 
 Firmware is written under `build/<preset>/application/`, additional examples
 under `build/<preset>/examples/`, and tests under
@@ -429,21 +432,20 @@ already exist.
 4. **Bind existing backends.** Form compile-time bindings from the selected
    peripheral instances and board pins. Invalid routes must fail at compile
    time rather than silently selecting another pin or mode.
-5. **Add a local manifest and build entry.** Copy the
-   [board template](catalog/templates/board.json), reference the shared MCU/IP
-   and toolchain, and configure a reusable runner. The common selection interface
-   loads local rules without a root CMake branch or handwritten preset.
+5. **Add a local build entry.** Configure the board's `board.cmake` with its
+   revision, architecture, profile, toolchain, examples and runner settings.
+   The common selection interface loads it from the board directory.
 6. **Verify in layers.** Compile the board binding on the host where possible,
    cross-build every public header and the linked image, then run board-native
    and directly connected tests. Document what was not electrically observed.
 7. **Update traceability.** Add or update requirements and a plan item before
    claiming new support. Tag implementation and tests with the applicable
    requirement IDs, register evidence artifacts in `mcutrace.toml`, and update
-   the component's evidence references and documentation; regenerate the catalog.
+   the board's evidence references and documentation.
 
 Follow the [board](doc/development/adding-a-board.md),
 [external-device](doc/development/adding-a-device.md), and
-[catalog](doc/development/catalog.md) guides for complete local workflows.
+[MCU/backend](doc/development/adding-an-mcu.md) guides for complete local workflows.
 
 ### Add a new microcontroller
 

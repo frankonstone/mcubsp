@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import sys
 
-from mcuhwlib import catalog, environment, workflow
+from mcuhwlib import boards, environment, workflow
 from mcuhwlib.verification import board_actions
 
 
@@ -36,7 +36,7 @@ def main(argv=None):
                          'firmware.bootloader.identity.json', 'firmware.flash.identity.json'):
             (report.parent / filename).unlink(missing_ok=True)
         environment.write_json(report, result)
-        board = catalog.load(root, "board", args.board, args.revision)
+        board = boards.load(root, args.board, args.revision)
         revision = args.revision or board["default_revision"]
         selected = [item for item in board_actions(root, [args.board])
                     if item["revision"] == revision and item["example"] == args.example]

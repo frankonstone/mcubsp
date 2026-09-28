@@ -10,7 +10,6 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
-from mcuhwlib.impact import impact
 from mcuhwlib.verification import board_actions, matrices
 
 spec = importlib.util.spec_from_file_location("verify_boards", ROOT / "tools/verify-boards.py")
@@ -21,37 +20,12 @@ spec.loader.exec_module(verify)
 class BoardVerificationTests(unittest.TestCase):
     requirements = ("REQ-0048", "REQ-0052")
 
-    def test_codec_change_selects_codec_and_its_mounted_board(self):
-        selected = impact(ROOT, ["tests/device/test_es8311.cpp"])
-        self.assertEqual(selected["mode"], "affected")
-        self.assertEqual(selected["boards"], ["waveshare/esp32p4_nano"])
-        self.assertIn("device:everest/es8311", selected["suites"])
-        actions = matrices(ROOT, selected["boards"])
-        self.assertEqual(actions["arm-gcc"]["include"], [])
-        self.assertEqual(len(actions["esp-idf"]["include"]), 2)
-
-    def test_new_local_board_and_revision_need_no_ci_registry(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            (root / "catalog").mkdir()
-            shutil.copy(ROOT / "catalog/schema.json", root / "catalog/schema.json")
-            value = json.loads((ROOT / "board/arduino/uno_r4_minima/component.json").read_text())
-            value.update(id="fixture/local", revisions=["v1", "v2"], default_revision="v1", evidence=[])
-            value["examples"] = ["examples/new-app/CMakeLists.txt"]
-            path = root / "board/fixture/local/component.json"
-            path.parent.mkdir(parents=True)
-            path.write_text(json.dumps(value))
-            actions = board_actions(root, ["fixture/local"])
-            self.assertEqual([a["revision"] for a in actions], ["v1", "v2"])
-            self.assertEqual({a["example"] for a in actions}, {"examples/new-app"})
-            self.assertEqual(len({a["key"] for a in actions}), 2)
-
-    def test_ra_controller_tests_have_one_backend_owner(self):
-        selected = impact(ROOT, ["tests/backend/ra4m1/test_uart.cpp"])
-        self.assertEqual(selected["mode"], "affected")
-        self.assertEqual(selected["boards"], ["arduino/uno_r4_minima"])
-        self.assertIn("ip:renesas/ra4m1_native", selected["suites"])
-        self.assertNotIn("ip:espressif/esp32p4_native", selected["suites"])
+    def test_board_actions_use_local_build_settings(self):
+        actions = board_actions(ROOT, ["arduino/uno_r4_minima"])
+        self.assertEqual({action["example"] for action in actions},
+                         {"examples/apps/blink", "examples/apps/tmp102"})
+        self.assertEqual({action["revision"] for action in actions}, {"r4"})
+        self.assertEqual(matrices(ROOT, ["waveshare/esp32p4_nano"])["esp-idf"]["include"], [])
 
     def test_missing_tool_fails_instead_of_skipping_cross_build(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -84,7 +58,7 @@ class BoardVerificationTests(unittest.TestCase):
             self.assertEqual(status, 1)
             run.assert_not_called()
             self.assertEqual(json.loads(report.read_text())['state'], 'failed')
-            self.assertIn('unknown board', json.loads(report.read_text())['error'])
+            self.assertIn('Unknown mcuhw board', json.loads(report.read_text())['error'])
             self.assertFalse((artifacts / 'firmware.identity.json').exists())
 
     def test_bare_stale_elf_cannot_be_reported_as_a_successful_action(self):
@@ -99,17 +73,20 @@ class BoardVerificationTests(unittest.TestCase):
             self.assertIn('No completed build record', result['error'])
 
     def test_declared_non_project_example_cannot_silently_disappear(self):
-        from mcuhwlib import catalog
-        board = catalog.load(ROOT, 'board', 'arduino/uno_r4_minima')
+        from mcuhwlib import boards
+        board = boards.load(ROOT, 'arduino/uno_r4_minima')
         board['examples'] = ['examples/fragment.cpp']
-        with patch('mcuhwlib.verification.catalog.load', return_value=board):
-            with self.assertRaisesRegex(catalog.CatalogError, 'must name an examples'):
+        with patch('mcuhwlib.verification.board_settings.load', return_value=board):
+            with self.assertRaisesRegex(ValueError, 'must name an examples'):
                 board_actions(ROOT, [board['id']])
 
     def test_esp_sdk_must_match_lock_before_any_build_command(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.dict(verify.os.environ, {'IDF_PATH': '/fixture/sdk'}), \
                     patch.object(verify.environment, 'inspect_tool', side_effect=ValueError('unexpected SDK revision')), \
+                    patch.object(verify, 'board_actions', return_value=[{
+                        'board': 'waveshare/esp32p4_nano', 'revision': 'development-v1.0',
+                        'example': 'examples/apps/blink', 'environment': 'esp-idf', 'key': 'fixture'}]), \
                     patch.object(verify.subprocess, 'run') as run:
                 status = verify.main(['--board', 'waveshare/esp32p4_nano', '--example', 'examples/apps/blink',
                                       '--build', directory])

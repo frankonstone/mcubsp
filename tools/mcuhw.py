@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 
-from mcuhwlib import catalog, environment, runners, workflow
+from mcuhwlib import boards, environment, runners, workflow
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -20,7 +20,7 @@ def project_context(args: argparse.Namespace) -> tuple[Path, dict, Path, dict]:
     root = Path(config['mcuhw_root']).expanduser()
     if not root.is_absolute():
         root = (project / root).resolve()
-    board = catalog.load(root, 'board', config['board'], revision=config['revision'])
+    board = boards.load(root, config['board'], revision=config['revision'])
     board['selected_revision'] = config['revision']
     return project, config, root, board
 
@@ -52,8 +52,12 @@ def _build_dir(project: Path, config: dict, state: dict) -> Path:
 
 def create(args: argparse.Namespace) -> int:
     root = Path(args.root).expanduser().resolve()
-    board = catalog.load(root, 'board', args.board, revision=args.revision)
+    board = boards.load(root, args.board, revision=args.revision)
     revision = args.revision or board['default_revision']
+    entry = f'examples/apps/{args.example}/CMakeLists.txt'
+    if entry not in board['examples']:
+        raise environment.EnvironmentError(
+            f'Example {args.example} is not declared for {args.board}')
     destination = Path(args.destination).expanduser().absolute()
     if destination.exists() and any(destination.iterdir()):
         raise environment.EnvironmentError(f'Application directory is not empty: {destination}')
@@ -187,31 +191,9 @@ def flash(args: argparse.Namespace) -> int:
     return 0
 
 
-def listing(args: argparse.Namespace) -> int:
-    kinds = {'boards': 'board', 'devices': 'device', 'mcus': 'mcu', 'ips': 'ip', 'all': None}
-    rows = catalog.search(Path(args.root).expanduser().resolve(), query=args.query,
-                          kind=kinds[args.kind], category=args.category, capability=args.capability,
-                          revision=args.revision, runner=args.runner, stage=args.stage, state=args.state)
-    if args.json:
-        print(json.dumps(rows, indent=2, sort_keys=True))
-    else:
-        for row in rows:
-            print(f'{row["kind"]:6} {row["id"]:38} {row.get("summary", row.get("name", ""))}')
-    return 0
-
-
 def parser() -> argparse.ArgumentParser:
     main = argparse.ArgumentParser(description=__doc__)
     sub = main.add_subparsers(dest='command', required=True)
-    for command in ('list', 'search'):
-        item = sub.add_parser(command, help='Discover locally registered components')
-        item.add_argument('kind', choices=('boards', 'devices', 'mcus', 'ips', 'all'), nargs='?', default='all')
-        item.add_argument('query', nargs='?', default='')
-        item.add_argument('--root', default=str(ROOT))
-        item.add_argument('--json', action='store_true')
-        for name in ('category', 'capability', 'revision', 'runner', 'stage', 'state'):
-            item.add_argument('--' + name)
-        item.set_defaults(function=listing)
     item = sub.add_parser('new', help='Create a complete external CMake application')
     item.add_argument('destination')
     item.add_argument('--board', required=True)

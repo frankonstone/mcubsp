@@ -8,14 +8,11 @@ where that is the Python 3 command, or `py -3` on Windows.
 For a board-independent application, see [installation](installation.md) and
 [library use](using-mcuhw.md). It does not need board discovery or this frontend.
 
-## Discover and create
+## Create an application
 
 Run these commands from the mcuhw checkout or installed `share/mcuhw` directory:
 
 ```sh
-python tools/mcuhw.py list boards
-python tools/mcuhw.py search devices temperature
-python tools/mcuhw.py list boards --capability i2c --json
 python tools/mcuhw.py new ../my-blink --board arduino/uno_r4_minima
 ```
 
@@ -24,7 +21,7 @@ directory. Choose `--example tmp102` for a complete
 [TMP102 application](../../examples/apps/tmp102/README.md), and read its
 wiring instructions before connecting hardware. The selected revision is
 written explicitly into `mcuhw.json`; `--revision` selects another revision
-declared by that board. An unknown board or revision fails before creation.
+supported by that board. An unknown board or revision fails before creation.
 Existing nonempty directories are never overwritten.
 
 | Board | Selected binding revision | Toolchain | Supplied startup |
@@ -35,8 +32,7 @@ Existing nonempty directories are never overwritten.
 
 The UNO `r4` name identifies the supported binding, not an audited PCB revision.
 The ESP binding is scoped to the observed development silicon; build success
-does not establish production-silicon or physical TMP102 acceptance. The
-[generated catalog](../reference/catalog.md) preserves each evidence scope.
+does not establish production-silicon or physical TMP102 acceptance. See each board procedure for its evidence scope.
 
 ## Import installed prerequisites explicitly
 
@@ -122,28 +118,13 @@ adjacent `firmware.identity.json` report.
 
 ## ESP32-P4 SDK setup
 
-Use a complete ESP-IDF v6.1 installation at commit
-`fff9895c82d744c7237be8847347bdd1b07c6643`, including its pinned submodules,
-`esp-15.2.0_20251204` RISC-V compiler and installed Python environment. Run the
-SDK's host-specific installation workflow first, then import the paths it
-created. For example, with the example installation paths below replaced by
-your own:
-
-```sh
-python tools/mcuhw.py new ../p4-blink --board waveshare/esp32p4_nano
-python tools/mcuhw.py setup --project ../p4-blink --offline --tool "esp-idf=/sdk/esp-idf" --tool "riscv-gcc=/sdk/tools/riscv32-esp-elf/bin/riscv32-esp-elf-g++" --tool "idf-python=/sdk/python/venv/bin/python" --tool "idf-tools=/sdk/tools"
-python tools/mcuhw.py doctor --project ../p4-blink
-python tools/mcuhw.py build --project ../p4-blink
-```
-
-On Windows, use the SDK environment's `Scripts/python.exe`. `idf-tools` must
-contain `espidf.constraints.v6.1.txt`; setup checks its locked SHA-256. The
-frontend supplies the recorded `IDF_PATH`, `IDF_TOOLS_PATH`, Python interpreter
-and compiler to CMake, and doctor runs the SDK's dependency checker without
-installing or upgrading packages. Build includes only the selected board's SDK
-project; it does not require mcucov, mcutest, an adjacent checkout or a connected
-device. The SDK may warn about missing optional ROM GDB symbols when
-`ESP_ROM_ELF_DIR` is absent; that does not require debugger installation to build.
+For ESP board verification, use the complete ESP-IDF v6.1 installation at commit
+`fff9895c82d744c7237be8847347bdd1b07c6643`, its pinned submodules,
+`esp-15.2.0_20251204` RISC-V compiler and Python environment. Set `IDF_PATH`
+and `IDF_TOOLS_PATH` from that installation before configuring the
+`esp32p4-riscv` preset with `MCUHW_BOARD=waveshare/esp32p4_nano`.
+The current packaged Blink and TMP102 applications target the UNO board;
+ESP board fixtures remain under its local `tests/` directory.
 
 The [ESP-IDF v6.1 setup instructions](https://github.com/espressif/esp-idf/tree/v6.1#setting-up-esp-idf)
 provide the platform prerequisites and installer entry points: `install.sh` on
@@ -213,7 +194,7 @@ J-Link with `R7FA4M1AB`, SWD and 4 MHz; NUCLEO uses OpenOCD with ST-LINK and
 `stm32h7x.cfg`. Flashing checks that ELF load segments fit the board's declared
 application flash regions. The UNO application region starts at `0x4000` to
 preserve its DFU bootloader. Reusable adapters read these settings from the
-board manifest; they do not choose a connected probe implicitly.
+board entry; they do not choose a connected probe implicitly.
 
 Flash reads the last completed artifact record; changing a compiler or importing
 a debugger does not redirect it to an unbuilt output directory. The record must
@@ -226,17 +207,13 @@ python tools/mcuhw.py flash --project ../my-blink --build /path/to/build/firmwar
 ```
 
 For ESP, the SDK Python environment already imported for the build supplies
-esptool. Select the serial port explicitly (`COM4` on Windows, for example):
-
-```sh
-python tools/mcuhw.py flash --project ../p4-blink --port /dev/ttyACM0 --dry-run
-python tools/mcuhw.py flash --project ../p4-blink --port /dev/ttyACM0
-```
+esptool. For a completed custom ESP application, select its serial port
+explicitly when using the shared runner.
 
 The runner reads the generated SDK `flasher_args.json`, verifies its chip and
 flash regions, and flashes the bootloader at `0x2000`, partition table at
 `0x8000` and application at `0x10000`. Existing contents in those regions are
-replaced. See each board's [catalog documentation](../reference/catalog.md) for
+replaced. See each board's local README and procedure for
 boot policy, preserved regions and recovery. A flash dry-run prints structured
 argument arrays and any proposed command-file contents; it sends nothing to a
 probe or serial device and writes no runner files.
@@ -255,27 +232,30 @@ workspace's test build instead of the legacy preset directory.
 
 ## Board targets in the repository
 
-Select the architecture with a preset, then set the visible `MCUHW_BOARD` cache
-variable for the board you are working on:
+The Cortex-M4 preset selects the UNO R4 Minima board. For other boards, set the
+visible `MCUHW_BOARD` cache variable:
 
 ```sh
-cmake --preset arm-cortex-m4 -DMCUHW_BOARD=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4
 cmake --build --preset arm-cortex-m4 --target firmware
 cmake --build --preset arm-cortex-m4 --target examples
 cmake --build --preset arm-cortex-m4 --target test.board
 cmake --build --preset arm-cortex-m4 --target test.backend test.device
 ```
 
-Presets select only architecture/toolchain and global compiler settings. Edit
-`MCUHW_BOARD` in CMake Tools or pass a new `-D` value, then reconfigure. The
-selection persists when reapplying the preset and is printed in configure
+Edit `MCUHW_BOARD` in CMake Tools or pass a new `-D` value, then reconfigure.
+Reapplying the Cortex-M4 preset restores the UNO board; the other presets
+preserve explicit selections. The selected board is printed in configure
 output. Use `arm-cortex-m7` with `st/nucleo_h753zi` or `esp32p4-riscv` with
 `waveshare/esp32p4_nano`. Supply the ESP SDK paths described below.
 
-`firmware` builds Blink by default; set `-DMCUHW_EXAMPLE=tmp102` to select TMP102.
-`examples` builds every supported application and I/O example separately; `example.app.blink` and
+On the UNO R4 Minima, `firmware` builds Blink by default; set
+`-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds its application
+and I/O examples separately; `example.app.blink` and
 `example.app.tmp102` allow individual builds. Firmware appears in
 `build/<preset>/application/`; other examples appear under `examples/`.
+The other boards currently have no declared application examples; selecting
+them still exposes their available test targets.
 `test.board` configures a separate instrumented build under
 `boards/<vendor>/<board>/<revision>/tests/` only when requested. For UNO named
 runners, set `MCUHW_BUILD_DIR` to this child build. Nucleo runners accept its

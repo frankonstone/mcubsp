@@ -1,14 +1,13 @@
 # Waveshare ESP32-P4-NANO
 
-Catalog identity: `board:waveshare/esp32p4_nano@development-v1.0`.
 
-The local manifest owns discovery and build selection. Public wiring remains in
+The local `board.cmake` owns build selection. Public wiring remains in
 `include/mcuhw/board/esp32p4_nano.hpp` and the application profile in `include/mcuhw/io/boards/esp32p4_nano.hpp`.
 The shared MCU description is `espressif/esp32p4`; no register description is copied here.
 
 See [the board wiring, startup, physical procedures and observation limits](docs/README.md)
-and [the component workflow](../../../doc/development/catalog.md).
-Select this board with `python3 tools/mcuhw.py new blink --board waveshare/esp32p4_nano`.
+and [the board contribution guide](../../../doc/development/adding-a-board.md).
+Select this board with `cmake --preset esp32p4-riscv -DMCUHW_BOARD=waveshare/esp32p4_nano` for board verification.
 Flashing is a separate command and requires the probe/port and recovery details
 in the linked board procedure.
 Physical fixture scripts require an explicit serial port, supplied as their port

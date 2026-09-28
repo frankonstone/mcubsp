@@ -1,7 +1,7 @@
 include_guard(GLOBAL)
 
 # A post-build evidence artifact uses Ninja's actual selected edges and compiler
-# dependency records. It never scans the catalog or unselected implementations.
+# dependency records. It never scans unselected implementations.
 # @req REQ-0052
 function(mcuhw_add_firmware_identity target)
     if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
@@ -10,7 +10,7 @@ function(mcuhw_add_firmware_identity target)
     endif()
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
     get_filename_component(root "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/.." ABSOLUTE)
-    set(extras "${MCUHW_BOARD_MANIFEST}" "${MCUHW_BOARD_ENTRY}" ${MCUHW_FIRMWARE_EXTRA_INPUTS})
+    set(extras "${MCUHW_BOARD_ENTRY}" ${MCUHW_FIRMWARE_EXTRA_INPUTS})
     set(extra_args "")
     foreach(extra IN LISTS extras)
         if(extra)

@@ -16,7 +16,8 @@ class ActiveBoardWorkspace(unittest.TestCase):
     requirements = ("REQ-0047", "REQ-0048", "REQ-0049", "REQ-0052")
 
     def configure(self, build, selection=None, root=ROOT, success=True, *extra):
-        args = ["cmake", "--preset", "arm-cortex-m4", "-B", build, "-DMCUHW_WORKSPACE=ON"]
+        args = ["cmake", "--preset", "arm-cortex-m4", "-B", build,
+                "-DMCUHW_WORKSPACE=ON", "-DMCUHW_BOARD="]
         if selection is not None:
             args.append(f"-DMCUHW_ACTIVE_BOARDS={selection}")
         return run(*args, *extra, cwd=root, success=success)
@@ -75,7 +76,8 @@ class ActiveBoardWorkspace(unittest.TestCase):
                 "version": 6,
                 "configurePresets": [{"name": "my-m4", "inherits": "arm-cortex-m4",
                     "binaryDir": "${sourceDir}/build/my-m4",
-                    "cacheVariables": {"MCUHW_WORKSPACE": "ON", "MCUHW_ACTIVE_BOARDS": "arduino/uno_r4_minima"}}],
+                    "cacheVariables": {"MCUHW_WORKSPACE": "ON", "MCUHW_BOARD": "",
+                                       "MCUHW_ACTIVE_BOARDS": "arduino/uno_r4_minima"}}],
                 "buildPresets": [{"name": "my-m4", "inherits": "arm-cortex-m4", "configurePreset": "my-m4"}],
             }))
             build = root / "build/my-m4"
@@ -100,49 +102,41 @@ class ActiveBoardWorkspace(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="mcuhw workspace growth ") as directory:
             root, build = Path(directory) / "source", Path(directory) / "build"
             self.copy_workspace(root)
-            original = json.loads((root / "board/arduino/uno_r4_minima/component.json").read_text())
-            # A synthetic second board reuses an existing platform, has its own
-            # identity and only one example. It makes no hardware support claim.
-            second = {**original, "id": "fixture/other", "examples": ["examples/apps/blink/CMakeLists.txt"], "evidence": []}
-            path = root / "board/fixture/other/component.json"
+            path = root / "board/fixture/other/board.cmake"
             path.parent.mkdir(parents=True)
-            path.write_text(json.dumps(second))
+            path.write_text('include("${MCUHW_ROOT}/board/arduino/uno_r4_minima/board.cmake")\n'
+                            'set(MCUHW_BOARD_EXAMPLES "")\n'
+                            'set(MCUHW_BOARD_IO_EXAMPLES "")\n')
             query(build)
             selected = "arduino/uno_r4_minima;fixture/other"
             self.configure(build, selected, root)
             before = set(targets(build))
-            self.assertIn("fixture.other.examples.blink", before)
-            self.assertNotIn("fixture.other.examples.tmp102", before)
+            self.assertFalse(any(name.startswith("fixture.other.examples") for name in before))
             run("cmake", "--build", build, "--target", "examples")
-            for board, revision, prefix in [("arduino/uno_r4_minima", "r4", "arduino.uno_r4_minima"),
-                                            ("fixture/other", "r4", "fixture.other")]:
-                output = build / f"boards/{board}/{revision}/examples/blink/{prefix}.examples.blink.identity.json"
-                report = json.loads(output.read_text())
-                manifests = {p["path"] for p in report["files"] if p["path"].endswith("component.json")}
-                self.assertEqual(manifests, {f"source:board/{board}/component.json"})
+            output = build / "boards/arduino/uno_r4_minima/r4/examples/blink/arduino.uno_r4_minima.examples.blink.identity.json"
+            report = json.loads(output.read_text())
+            entries = {p["path"] for p in report["files"] if p["path"].endswith("board.cmake")}
+            self.assertEqual(entries, {"source:board/arduino/uno_r4_minima/board.cmake"})
             commands = (build / "compile_commands.json").read_text()
             for index in range(100):
-                path = root / f"board/unselected/board_{index}/component.json"
+                path = root / f"board/unselected/board_{index}/board.cmake"
                 path.parent.mkdir(parents=True)
                 path.write_text("not even parsed by a focused workspace")
             self.configure(build, selected, root)
             self.assertEqual(set(targets(build)), before)
             self.assertEqual((build / "compile_commands.json").read_text(), commands)
             self.configure(build, "fixture/other", root)
-            self.assertEqual(set(targets(build)), {"examples", "fixture.other.examples", "fixture.other.examples.blink"})
+            self.assertEqual(set(targets(build)), {"examples"})
 
-    def test_single_board_cache_switch_replaces_examples_without_a_board_preset(self):
+    def test_single_board_cache_switch_and_preset_restores_uno(self):
         with tempfile.TemporaryDirectory(prefix="mcuhw board cache switch ") as directory:
             root, build = Path(directory) / "source", Path(directory) / "build"
             self.copy_workspace(root)
-            manifest = json.loads((root / "board/arduino/uno_r4_minima/component.json").read_text())
-            manifest.update(id="fixture/alternate", examples=["examples/apps/blink/CMakeLists.txt"], evidence=[])
-            manifest["build"]["entry"] = "board/fixture/alternate/board.cmake"
-            entry = root / manifest["build"]["entry"]
+            entry = root / "board/fixture/alternate/board.cmake"
             entry.parent.mkdir(parents=True)
             entry.write_text('include("${MCUHW_ROOT}/board/arduino/uno_r4_minima/board.cmake")\n'
+                             'set(MCUHW_BOARD_EXAMPLES "")\n'
                              'set(MCUHW_BOARD_IO_EXAMPLES "")\n')
-            (entry.parent / "component.json").write_text(json.dumps(manifest))
             query(build)
             run("cmake", "--preset", "arm-cortex-m4", "-B", build,
                 "-DMCUHW_BOARD=arduino/uno_r4_minima", cwd=root)
@@ -151,13 +145,10 @@ class ActiveBoardWorkspace(unittest.TestCase):
             run("cmake", "--preset", "arm-cortex-m4", "-B", build,
                 "-DMCUHW_BOARD=fixture/alternate", cwd=root)
             model = targets(build)
-            self.assertIn("example.app.blink", model)
             self.assertIn("test.backend", model)
-            self.assertNotIn("example.app.tmp102", model)
+            self.assertNotIn("examples", model)
+            self.assertNotIn("firmware", model)
             self.assertFalse(any(name.startswith("example.io.") for name in model))
-            run("cmake", "--build", build, "--target", "example.app.blink", cwd=root)
-            report = json.loads((build / "application/firmware.identity.json").read_text())
-            manifests = {f["path"] for f in report["files"] if f["path"].endswith("component.json")}
-            self.assertEqual(manifests, {"source:board/fixture/alternate/component.json"})
             run("cmake", "--preset", "arm-cortex-m4", "-B", build, cwd=root)
-            self.assertEqual(set(targets(build)), set(model))
+            self.assertIn("example.io.blink", targets(build))
+            self.assertIn("example.app.tmp102", targets(build))

@@ -13,12 +13,21 @@
 #include <mcuhw/board/nucleo_h753zi.hpp>
 #include <mcuhw/io/detail/target_time.hpp>
 
+#ifndef MCUHW_EXTERNAL_STARTUP
+extern "C" volatile std::uint32_t mcuhw_nucleo_clock_status;
+#endif
+
 namespace mcuhw::io::boards {
 
 // Matches board/st/nucleo_h753zi/bsp/early_init.cpp: HSI SYSCLK/HCLK/PCLK at
 // 64 MHz. Applications with another clock tree supply corresponding traits.
 struct nucleo_h753zi {
     using target_identity = nucleo_h753zi;
+#ifdef MCUHW_EXTERNAL_STARTUP
+    [[nodiscard]] static constexpr bool startup_ok() noexcept { return true; }
+#else
+    [[nodiscard]] static bool startup_ok() noexcept { return mcuhw_nucleo_clock_status == 0U; }
+#endif
     struct pins_type {
         static constexpr auto led_builtin = mcuhw::board::nucleo_h753zi::user_led_yellow;
         static constexpr auto rx = mcuhw::board::nucleo_h753zi::stlink_vcp_rx;

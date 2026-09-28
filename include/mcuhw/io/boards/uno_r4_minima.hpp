@@ -14,12 +14,21 @@
 #include <mcuhw/board/arduino_uno_r4_minima.hpp>
 #include <mcuhw/io/detail/target_time.hpp>
 
+#ifndef MCUHW_EXTERNAL_STARTUP
+extern "C" std::uint32_t mcuhw_uno_clock_status;
+#endif
+
 namespace mcuhw::io::boards {
 
 // Matches board/arduino/uno_r4_minima/bsp/early_init.cpp: ICLK/PCLKA 48 MHz,
 // PCLKB 24 MHz. Startup, vectors and interrupt routing remain application-owned.
 struct uno_r4_minima {
     using target_identity = uno_r4_minima;
+#ifdef MCUHW_EXTERNAL_STARTUP
+    [[nodiscard]] static constexpr bool startup_ok() noexcept { return true; }
+#else
+    [[nodiscard]] static bool startup_ok() noexcept { return mcuhw_uno_clock_status == 0U; }
+#endif
     struct pins_type {
         static constexpr auto d0 = mcuhw::board::arduino_uno_r4_minima::d0_rx;
         static constexpr auto d1 = mcuhw::board::arduino_uno_r4_minima::d1_tx;

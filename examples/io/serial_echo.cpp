@@ -6,12 +6,11 @@
 namespace io = mcuhw::io;
 using namespace std::chrono_literals;
 static io::board<io::boards::uno_r4_minima> hw;
-extern "C" std::uint32_t mcuhw_uno_clock_status;
 
 // UART on D0/D1, 115200 8N1. Use a voltage-compatible UART peer and common GND.
 // This is not a USB-CDC Serial implementation.
 int main() {
-    if (mcuhw_uno_clock_status != 0U) __builtin_trap();
+    if (!hw.startup_ok()) __builtin_trap();
     io::require(hw.begin());
     io::require(hw.serial.begin(115200));
     io::require(hw.serial.println("mcuhw::io ready"));

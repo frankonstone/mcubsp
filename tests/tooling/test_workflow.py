@@ -23,7 +23,7 @@ from mcuhwlib import environment, runners, workflow
 class HardwareWorkflowTests(unittest.TestCase):
     requirements = ('REQ-0049', 'REQ-0050')
 
-    def test_flash_region_numbers_follow_catalog_decimal_and_hex_semantics(self):
+    def test_flash_region_numbers_follow_decimal_and_hex_semantics(self):
         self.assertEqual(runners._regions({'flash_regions': [{'start': '0008', 'size': '0X10'}]}),
                          [(8, 16)])
 

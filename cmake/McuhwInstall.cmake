@@ -11,9 +11,9 @@ write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/mcuhwConfigVersion
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcuhwConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/mcuhwConfigVersion.cmake"
     DESTINATION "${mcuhw_package_dir}")
-# Preserve one relocatable layout for manifests, headers, startup and tools.
+# Preserve one relocatable layout for headers, startup and tools.
 # No build products, private references, vendor SDK or development dependencies.
-install(DIRECTORY include cmake board device mcu ip catalog examples tools doc tests
+install(DIRECTORY include cmake board device mcu ip examples tools doc tests
     DESTINATION share/mcuhw
     PATTERN build EXCLUDE PATTERN __pycache__ EXCLUDE
     PATTERN _vendor EXCLUDE PATTERN _generated EXCLUDE

@@ -1,2 +1,6 @@
-# Device component manifests own protocol and transport tests.
-mcuhw_component_suites(device device)
+foreach(pair IN ITEMS "es8311;everest/es8311" "tmp102;ti/tmp102" "w5100;wiznet/w5100")
+    list(GET pair 0 chip)
+    list(GET pair 1 identifier)
+    file(GLOB sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/test_${chip}*.cpp")
+    mcuhw_native_suite("device:${identifier}" ${sources})
+endforeach()

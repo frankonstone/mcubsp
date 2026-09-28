@@ -6,7 +6,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/McuhwEspIdfEnvironment.cmake")
 # ESP-IDF owns its platform image, cache/libc initialization and bootloader build.
 # Keep its build explicit and isolated, with no test/coverage dependencies.
 # @req REQ-0049
-function(mcuhw_add_idf_firmware target profile_directory)
+function(mcuhw_add_idf_firmware target)
     mcuhw_idf_environment(sdk_environment)
     set(sdk_source "${CMAKE_CURRENT_BINARY_DIR}/${target}-idf-project")
     set(sdk_binary "${CMAKE_CURRENT_BINARY_DIR}/esp-idf-build")
@@ -27,7 +27,7 @@ function(mcuhw_add_idf_firmware target profile_directory)
     file(CONFIGURE OUTPUT "${sdk_source}/CMakeLists.txt" CONTENT
         "cmake_minimum_required(VERSION 3.24)\ninclude([==[${MCUHW_IDF_PATH}/tools/cmake/project.cmake]==])\nidf_build_set_property(MINIMAL_BUILD ON)\nproject(${target})\n" @ONLY)
     file(CONFIGURE OUTPUT "${sdk_source}/main/CMakeLists.txt" CONTENT
-        "idf_component_register(SRCS ${sources}\n    [==[${MCUHW_BOARD_IDF_START}]==]\n    INCLUDE_DIRS [==[${MCUHW_ROOT}/include]==] [==[${profile_directory}]==]\n    REQUIRES esp_hw_support esp_mm esp_rom esp_system)\ntarget_compile_features(\${COMPONENT_LIB} PRIVATE cxx_std_23)\ntarget_compile_options(\${COMPONENT_LIB} PRIVATE -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit)\ntarget_compile_definitions(\${COMPONENT_LIB} PRIVATE main=mcuhw_application_main)\ntarget_link_options(\${COMPONENT_LIB} INTERFACE -Wl,--wrap=esp_startup_start_app)\n" @ONLY)
+        "idf_component_register(SRCS ${sources}\n    [==[${MCUHW_BOARD_IDF_START}]==]\n    INCLUDE_DIRS [==[${MCUHW_ROOT}/include]==]\n    REQUIRES esp_hw_support esp_mm esp_rom esp_system)\ntarget_compile_features(\${COMPONENT_LIB} PRIVATE cxx_std_23)\ntarget_compile_options(\${COMPONENT_LIB} PRIVATE -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit)\ntarget_compile_definitions(\${COMPONENT_LIB} PRIVATE main=mcuhw_application_main)\ntarget_link_options(\${COMPONENT_LIB} INTERFACE -Wl,--wrap=esp_startup_start_app)\n" @ONLY)
     find_program(MCUHW_IDF_NINJA ninja REQUIRED)
     mcuhw_prepare_sdk_flags(forward "${sdk_source}/parent-flags.cmake")
     list(APPEND forward CMAKE_BUILD_TYPE CMAKE_EXPORT_COMPILE_COMMANDS)
@@ -58,13 +58,13 @@ function(mcuhw_add_idf_firmware target profile_directory)
         COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tools/mcuhwlib/provenance.py"
             --root "${MCUHW_ROOT}" --build "${sdk_binary}" --target "${target}.elf"
             --ninja "${MCUHW_IDF_NINJA}"
-            --extra "${MCUHW_BOARD_MANIFEST}" --extra "${MCUHW_BOARD_ENTRY}"
+            --extra "${MCUHW_BOARD_ENTRY}"
             --extra "${sdk_source}/sdkconfig"
             --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.identity.json"
         COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tools/mcuhwlib/provenance.py"
             --root "${MCUHW_ROOT}" --build "${sdk_binary}/bootloader" --target bootloader.elf
             --ninja "${MCUHW_IDF_NINJA}"
-            --extra "${MCUHW_BOARD_MANIFEST}" --extra "${sdk_source}/sdkconfig"
+            --extra "${MCUHW_BOARD_ENTRY}" --extra "${sdk_source}/sdkconfig"
             --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.bootloader.identity.json"
         COMMAND "${Python3_EXECUTABLE}" "${MCUHW_ROOT}/tools/mcuhwlib/provenance.py"
             --root "${MCUHW_ROOT}" --build "${sdk_binary}"

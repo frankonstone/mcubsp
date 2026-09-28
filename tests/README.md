@@ -1,14 +1,8 @@
 # Test groups
 
-Tests are grouped by the layer they exercise. Component manifests retain
-ownership of backend, device and MCU sources; CMake suite names and executable
-names remain stable when files move.
-
-`tests/CMakeLists.txt` connects the core, driver, backend, device, IO, MCU,
-compile and tooling groups with `add_subdirectory`. Each group has its own
-`CMakeLists.txt`; shared native registration helpers live in
-`support/NativeSuites.cmake`. Per-MCU directories use the component manifests
-instead of duplicating their source lists in additional CMake files.
+Tests are grouped by the layer they exercise. Each group registers its source
+directory through its own `CMakeLists.txt`; shared native registration helpers
+live in `support/NativeSuites.cmake`. Suite names remain stable when sources move.
 
 | Directory | Scope | Selectable board-menu target |
 | --- | --- | --- |
@@ -20,7 +14,7 @@ instead of duplicating their source lists in additional CMake files.
 | `mcu/<mcu>/`, `mcu/` | MCU descriptions and shared description contracts | `test.mcu` |
 | `compile/` | Positive/negative compile cases and architecture probes | `test.compile` |
 | `support/` | Shared runner, fixtures and source-backed examples | Used by the suites |
-| `tooling/` | Catalog, packaging, workflow and verification tooling | `MCUHW_BUILD_TOOLING_TESTS=ON` |
+| `tooling/` | Packaging, workflow and verification tooling | `MCUHW_BUILD_TOOLING_TESTS=ON` |
 | `io_cost/` | Paired driver/facade resource probes | `mcuhw_io_cost_report` |
 
 With `MCUHW_BOARD` selected, the `test.*` native groups build and run in

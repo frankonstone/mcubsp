@@ -112,6 +112,7 @@ public:
         return {};
     }
     [[nodiscard]] bool started() const noexcept { return context_.started(); }
+    [[nodiscard]] bool startup_ok() const noexcept { return Board::startup_ok(); }
 
     [[nodiscard]] result<digital_pin<context_type>> output(
         core::pin_id pin, bool initial_high = false) noexcept {

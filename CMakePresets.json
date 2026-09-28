@@ -12,7 +12,8 @@
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "MCUHW_BOARD": "arduino/uno_r4_minima"
       }
     },
     {
@@ -21,7 +22,8 @@
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/native",
       "cacheVariables": {
-        "MCUHW_ARCH": "native"
+        "MCUHW_ARCH": "native",
+        "MCUHW_BOARD": null
       }
     },
     {
@@ -36,14 +38,20 @@
       "displayName": "ARM Cortex-M7",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/arm-cortex-m7",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake"
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake",
+      "cacheVariables": {
+        "MCUHW_BOARD": null
+      }
     },
     {
       "name": "esp32p4-riscv",
       "displayName": "ESP32-P4 RISC-V",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/esp32p4-riscv",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-esp32p4.cmake"
+      "toolchainFile": "${sourceDir}/cmake/toolchain-esp32p4.cmake",
+      "cacheVariables": {
+        "MCUHW_BOARD": null
+      }
     }
   ],
   "buildPresets": [

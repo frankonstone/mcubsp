@@ -1,4 +1,18 @@
 cmake_minimum_required(VERSION 3.25)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    project(mcuhw_io_example LANGUAGES CXX ASM)
+    if(MCUHW_SOURCE_DIR AND EXISTS "${MCUHW_SOURCE_DIR}/CMakeLists.txt")
+        add_subdirectory("${MCUHW_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/mcuhw-library")
+    elseif(MCUHW_SOURCE_DIR)
+        find_package(mcuhw CONFIG REQUIRED
+            PATHS "${MCUHW_SOURCE_DIR}/../../lib/cmake/mcuhw" NO_DEFAULT_PATH)
+    else()
+        find_package(mcuhw CONFIG REQUIRED)
+    endif()
+    set(MCUHW_IO_EXAMPLE blink CACHE STRING "I/O example source name")
+    set(MCUHW_FIRMWARE_TARGET firmware)
+    mcuhw_load_board()
+endif()
 # These examples use UNO connector names and the RA4M1 clock-status contract.
 if(NOT MCUHW_BOARD_PROFILE STREQUAL "mcuhw::io::boards::uno_r4_minima")
     message(FATAL_ERROR "The examples/io firmware requires arduino/uno_r4_minima")
