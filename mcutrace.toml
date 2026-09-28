@@ -37,31 +37,31 @@ path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_all_tests.mcucov.json"
 importer = "mcucov"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_mcuip_tests.json"
+path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_mcuip.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_metrics.json"
+path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_metrics.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_metrics_fast6.json"
+path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_metrics_fast6.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_metrics_fast12.json"
+path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_metrics_fast12.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_ethernet_link_recovery.json"
+path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_link_recovery.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/nucleo-h753zi/artifact/mcuhw_nucleo_h753zi_native_peripherals.json"
+path = "build/nucleo-h753zi/artifact/st.nucleo_h753zi.test.native_peripherals.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/nucleo-h753zi/artifact/mcuhw_nucleo_h753zi_native_peripherals.mcucov.json"
+path = "build/nucleo-h753zi/artifact/st.nucleo_h753zi.test.native_peripherals.mcucov.json"
 importer = "mcucov"
 
 [[artifacts]]

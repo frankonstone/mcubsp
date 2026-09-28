@@ -47,7 +47,7 @@ cmake --build --preset arm-cortex-m4 --target test.backend test.device
 | --- | --- |
 | `firmware` | Selected UNO R4 example, Blink by default; override `MCUHW_EXAMPLE` |
 | `examples` | All five UNO R4 examples |
-| `example.blink`, `example.serial_echo`, `example.spi_dma`, `example.tmp102`, `example.w5100` | Individual UNO R4 example builds |
+| `arduino.uno_r4_minima.example.blink`, `arduino.uno_r4_minima.example.serial_echo`, `arduino.uno_r4_minima.example.spi_dma`, `arduino.uno_r4_minima.example.tmp102`, `arduino.uno_r4_minima.example.w5100` | Individual UNO R4 example builds |
 | `test.board` | Configure and build the board's instrumented physical-test images |
 | `test.backend`, `test.device` | Build and run backend or device host suites |
 | `test.core`, `test.driver`, `test.io`, `test.mcu`, `test.compile` | Build and run focused host suites and compile contracts |

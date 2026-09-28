@@ -44,7 +44,7 @@ file(CHMOD "${MCUHW_MCUCOV_INSTRUMENTER_ADAPTER}"
 set_target_properties(mcucov::mcucov-instrument PROPERTIES
     IMPORTED_LOCATION_RELEASE "${MCUHW_MCUCOV_INSTRUMENTER_ADAPTER}")
 
-add_library(mcuhw_esp32p4_board_tests OBJECT
+add_library(waveshare.esp32p4_nano.test.board_support OBJECT
     "${MCUHW_ESP32P4_TEST_DIR}/gpio.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/i2c.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/audio.cpp"
@@ -53,14 +53,14 @@ add_library(mcuhw_esp32p4_board_tests OBJECT
     "${MCUHW_ESP32P4_TEST_DIR}/wifi_sdio.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/spi.cpp"
     "${MCUHW_ESP32P4_TEST_DIR}/uart.cpp")
-target_include_directories(mcuhw_esp32p4_board_tests PRIVATE
+target_include_directories(waveshare.esp32p4_nano.test.board_support PRIVATE
     "${MCUHW_ROOT}/include"
     "${MCUHW_ESP32P4_TEST_DIR}"
     "${MCUHW_MCUTEST_INCLUDE_DIR}")
 idf_component_get_property(MCUHW_ESP_MM_LIB esp_mm COMPONENT_LIB)
-target_link_libraries(mcuhw_esp32p4_board_tests PRIVATE ${MCUHW_ESP_MM_LIB})
+target_link_libraries(waveshare.esp32p4_nano.test.board_support PRIVATE ${MCUHW_ESP_MM_LIB})
 
-foreach(target ${COMPONENT_LIB} mcuhw_esp32p4_board_tests)
+foreach(target ${COMPONENT_LIB} waveshare.esp32p4_nano.test.board_support)
     target_compile_features(${target} PRIVATE cxx_std_23)
     target_compile_options(${target} PRIVATE
         -Wall
@@ -75,18 +75,18 @@ foreach(target ${COMPONENT_LIB} mcuhw_esp32p4_board_tests)
         MCUCOV_BYTE_PER_PROBE=1
         MCUCOV_COMPACT_RUNTIME=1)
 endforeach()
-target_compile_options(mcuhw_esp32p4_board_tests PRIVATE
+target_compile_options(waveshare.esp32p4_nano.test.board_support PRIVATE
     -include "${MCUHW_ROOT}/test/support/mcucov_compat.hpp")
 
 mcucov_instrument_target(
-    mcuhw_esp32p4_board_tests
+    waveshare.esp32p4_nano.test.board_support
     PROFILE FULL
     BUILD_ID 0x4d48500d
     SOURCE_ROOT "${MCUHW_ROOT}"
     OUTPUT_DIR "${CMAKE_BINARY_DIR}/mcucov/esp32p4_native_smoke"
 )
 target_sources(${COMPONENT_LIB} PRIVATE
-    $<TARGET_OBJECTS:mcuhw_esp32p4_board_tests>)
+    $<TARGET_OBJECTS:waveshare.esp32p4_nano.test.board_support>)
 target_link_libraries(${COMPONENT_LIB} PRIVATE mcucov::runtime)
 mcucov_configure_target(${COMPONENT_LIB} BUILD_ID 0x4d48500d)
 

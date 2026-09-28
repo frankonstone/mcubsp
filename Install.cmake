@@ -3,7 +3,7 @@ include(CMakePackageConfigHelpers)
 set(mcuhw_package_dir "lib/cmake/mcuhw")
 install(TARGETS mcuhw mcuhw_io mcuhw_device EXPORT mcuhwTargets)
 install(EXPORT mcuhwTargets NAMESPACE mcuhw:: DESTINATION "${mcuhw_package_dir}")
-configure_package_config_file("${CMAKE_CURRENT_LIST_DIR}/mcuhwConfig.cmake.in"
+configure_package_config_file("${CMAKE_CURRENT_LIST_DIR}/cmake/mcuhwConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/mcuhwConfig.cmake"
     INSTALL_DESTINATION "${mcuhw_package_dir}")
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/mcuhwConfigVersion.cmake"

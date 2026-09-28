@@ -290,7 +290,7 @@ The optional UNO examples use the existing Arm startup and linker image:
 
 ```sh
 cmake --preset arm-cortex-m4 -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_IO_EXAMPLES=ON
-cmake --build --preset arm-cortex-m4 --target mcuhw_io_blink mcuhw_io_serial_echo mcuhw_io_spi_dma mcuhw_io_tmp102 mcuhw_io_w5100
+cmake --build --preset arm-cortex-m4 --target arduino.uno_r4_minima.example.blink arduino.uno_r4_minima.example.serial_echo arduino.uno_r4_minima.example.spi_dma arduino.uno_r4_minima.example.tmp102 arduino.uno_r4_minima.example.w5100
 ```
 
 For application CMake targets, use

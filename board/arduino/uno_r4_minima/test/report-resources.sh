@@ -14,8 +14,9 @@ identity_temporary=$(mktemp "${TMPDIR:-/tmp}/mcuhw-source-identity.XXXXXX")
 identity_output=${output%.json}.source-identity.txt
 trap 'rm -f "$temporary" "$identity_temporary"' EXIT INT TERM
 
-for path in CMakeLists.txt CMakePresets.json cmake include \
-            board/arduino/uno_r4_minima tests tools; do
+for path in CMakeLists.txt CMakePresets.json Install.cmake cmake include \
+            board/arduino/uno_r4_minima board/Support.cmake board/Selection.cmake \
+            board/Identity.cmake board/architecture test tool; do
     if [ -d "$project_dir/$path" ]; then
         find "$project_dir/$path" -type f -print
     elif [ -f "$project_dir/$path" ]; then
@@ -39,12 +40,7 @@ first=true
         "$(basename -- "$identity_output")"
     printf '"images":['
     for suite in startup_gpio gpio_loopback pwm uart i2c spi adc dmac release_metrics; do
-        elf="$build_dir/mcuhw_uno_r4_minima_${suite}"
-        case "$suite" in
-            release_metrics) ;;
-            *) elf="${elf}_tests" ;;
-        esac
-        elf="${elf}.elf"
+        elf="$build_dir/arduino.uno_r4_minima.test.${suite}.elf"
         [ -f "$elf" ] || {
             echo "missing ELF: $elf" >&2
             exit 2

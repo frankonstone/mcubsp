@@ -29,4 +29,4 @@ endif()
 
 set(CMAKE_CXX_COMPILER "${MCUHW_ESP32P4_CXX_COMPILER}")
 set(MCUHW_ARCH "esp32p4-riscv" CACHE STRING "Architecture probed by this build" FORCE)
-include("${CMAKE_CURRENT_LIST_DIR}/architecture/esp32p4-riscv.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../board/architecture/esp32p4-riscv.cmake")

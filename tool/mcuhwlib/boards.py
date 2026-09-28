@@ -16,7 +16,7 @@ def load(root, identifier, revision=None):
         result = _run_cmake([
             "cmake", f"-DMCUHW_ROOT={root}", f"-DMCUHW_BOARD={identifier}",
             f"-DMCUHW_BOARD_INFO_OUTPUT={output}", "-P",
-            str(root / "cmake/McuhwBoardInfo.cmake")], capture_output=True, text=True)
+            str(root / "board/BoardInfo.cmake")], capture_output=True, text=True)
         if result.returncode:
             raise ValueError(result.stderr.strip())
         board = json.loads(output.read_text())

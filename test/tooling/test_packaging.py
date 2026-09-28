@@ -66,7 +66,7 @@ class PackagingTests(unittest.TestCase):
             if (ROOT / name).exists():
                 shutil.copytree(ROOT / name, checkout / name,
                                 ignore=shutil.ignore_patterns("build", "__pycache__", "_vendor", "_generated"))
-        for name in ("CMakeLists.txt", "README.md", "requirements.md", "implementation-plan.md"):
+        for name in ("CMakeLists.txt", "Install.cmake", "README.md", "requirements.md", "implementation-plan.md"):
             shutil.copy2(ROOT / name, checkout / name)
         sdk_project = checkout / "board/waveshare/esp32p4_nano/test/firmware"
         (sdk_project / "sdkconfig").write_text("# Local generated configuration\n")

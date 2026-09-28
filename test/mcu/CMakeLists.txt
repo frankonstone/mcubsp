@@ -1,10 +1,24 @@
-# Per-MCU test sources stay local; shared description contracts have one suite.
-foreach(pair IN ITEMS "esp32p4;espressif/esp32p4" "ra4m1;renesas/ra4m1" "stm32h753;st/stm32h753")
-    list(GET pair 0 directory)
-    list(GET pair 1 identifier)
-    file(GLOB sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${directory}/*.cpp")
-    mcuhw_native_suite("mcu:${identifier}" ${sources})
-endforeach()
-mcuhw_native_suite(descriptions
-    test_description_suite.cpp
-    test_three_description_gate.cpp)
+if("all" IN_LIST MCUHW_TEST_SUITES OR "mcu" IN_LIST MCUHW_TEST_SUITES OR "mcu:espressif/esp32p4" IN_LIST MCUHW_TEST_SUITES)
+    add_executable(mcuhw.test.mcu.esp32p4
+        esp32p4/test_description.cpp "${MCUHW_TEST_SOURCE_DIR}/support/main.cpp")
+    mcuhw_configure_native_suite(mcuhw.test.mcu.esp32p4 mcu:espressif/esp32p4)
+endif()
+
+if("all" IN_LIST MCUHW_TEST_SUITES OR "mcu" IN_LIST MCUHW_TEST_SUITES OR "mcu:renesas/ra4m1" IN_LIST MCUHW_TEST_SUITES)
+    add_executable(mcuhw.test.mcu.ra4m1
+        ra4m1/test_description.cpp "${MCUHW_TEST_SOURCE_DIR}/support/main.cpp")
+    mcuhw_configure_native_suite(mcuhw.test.mcu.ra4m1 mcu:renesas/ra4m1)
+endif()
+
+if("all" IN_LIST MCUHW_TEST_SUITES OR "mcu" IN_LIST MCUHW_TEST_SUITES OR "mcu:st/stm32h753" IN_LIST MCUHW_TEST_SUITES)
+    add_executable(mcuhw.test.mcu.stm32h753
+        stm32h753/test_description.cpp "${MCUHW_TEST_SOURCE_DIR}/support/main.cpp")
+    mcuhw_configure_native_suite(mcuhw.test.mcu.stm32h753 mcu:st/stm32h753)
+endif()
+
+if("all" IN_LIST MCUHW_TEST_SUITES OR "descriptions" IN_LIST MCUHW_TEST_SUITES)
+    add_executable(mcuhw.test.descriptions
+        test_description_suite.cpp
+        test_three_description_gate.cpp "${MCUHW_TEST_SOURCE_DIR}/support/main.cpp")
+    mcuhw_configure_native_suite(mcuhw.test.descriptions descriptions)
+endif()

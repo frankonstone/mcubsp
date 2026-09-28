@@ -3,7 +3,7 @@ set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
 . "$project_dir/tool/hardware-common.sh"
-elf=${1:-"$project_dir/build/nucleo-h753zi/mcuhw_nucleo_h753zi_ethernet.elf"}
+elf=${1:-"$project_dir/build/nucleo-h753zi/st.nucleo_h753zi.test.ethernet.elf"}
 build_dir=$(dirname -- "$elf")
 nm=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_NM)
 
@@ -41,10 +41,10 @@ ping_log="$run_dir/ping.log"
 evidence_raw="$run_dir/evidence-buffer.bin"
 coverage_raw="$run_dir/coverage-buffer.bin"
 artifact_dir="$(hardware artifact-dir --elf "$elf")"
-evidence_file="$artifact_dir/mcuhw_nucleo_h753zi_ethernet.json"
-coverage_capture="$artifact_dir/mcuhw_nucleo_h753zi_ethernet.mcuv"
-coverage_report="$artifact_dir/mcuhw_nucleo_h753zi_ethernet.mcucov.json"
-coverage_html="$artifact_dir/mcuhw_nucleo_h753zi_ethernet.mcucov.html"
+evidence_file="$artifact_dir/st.nucleo_h753zi.test.ethernet.json"
+coverage_capture="$artifact_dir/st.nucleo_h753zi.test.ethernet.mcuv"
+coverage_report="$artifact_dir/st.nucleo_h753zi.test.ethernet.mcucov.json"
+coverage_html="$artifact_dir/st.nucleo_h753zi.test.ethernet.mcucov.html"
 coverage_lcov="$artifact_dir/ethernet-coverage.lcov"
 manifest_dir="$run_dir/manifests"
 
@@ -132,7 +132,7 @@ mv "$coverage_capture.tmp" "$coverage_capture"
 find "$build_dir/mcucov" -type f -name '*.mcucov.json' \
     | while IFS= read -r manifest; do
         case "$manifest" in
-            */mcuhw_nucleo_h753zi_ethernet/*|*/mcuhw_nucleo_h753zi_early_init_coverage/*|*/mcuhw_nucleo_h753zi_ethernet_coverage_manifest/*)
+            */st.nucleo_h753zi.test.ethernet/*|*/st.nucleo_h753zi.early_init_coverage/*|*/st.nucleo_h753zi.test.ethernet_coverage_manifest/*)
                 cp "$manifest" "$manifest_dir/$(basename "$(dirname "$manifest")").json"
                 ;;
         esac

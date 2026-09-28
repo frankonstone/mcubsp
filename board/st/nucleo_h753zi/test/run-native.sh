@@ -3,7 +3,7 @@ set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
 . "$project_dir/tool/hardware-common.sh"
-elf=${1:-"$project_dir/build/nucleo-h753zi/mcuhw_nucleo_h753zi_native_peripherals.elf"}
+elf=${1:-"$project_dir/build/nucleo-h753zi/st.nucleo_h753zi.test.native_peripherals.elf"}
 build_dir=$(dirname -- "$elf")
 nm=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_NM)
 
@@ -38,10 +38,10 @@ log="$run_dir/openocd.log"
 evidence_raw="$run_dir/evidence-buffer.bin"
 coverage_raw="$run_dir/coverage-buffer.bin"
 evidence_dir="$(hardware artifact-dir --elf "$elf")"
-evidence_file="$evidence_dir/mcuhw_nucleo_h753zi_native_peripherals.json"
-coverage_capture="$evidence_dir/mcuhw_nucleo_h753zi_native_peripherals.mcuv"
-coverage_report="$evidence_dir/mcuhw_nucleo_h753zi_native_peripherals.mcucov.json"
-coverage_html="$evidence_dir/mcuhw_nucleo_h753zi_native_peripherals.mcucov.html"
+evidence_file="$evidence_dir/st.nucleo_h753zi.test.native_peripherals.json"
+coverage_capture="$evidence_dir/st.nucleo_h753zi.test.native_peripherals.mcuv"
+coverage_report="$evidence_dir/st.nucleo_h753zi.test.native_peripherals.mcucov.json"
+coverage_html="$evidence_dir/st.nucleo_h753zi.test.native_peripherals.mcucov.html"
 coverage_lcov="$evidence_dir/coverage.lcov"
 coverage_manifest_filtered_dir="$run_dir/nucleo-target-manifests"
 
@@ -101,7 +101,7 @@ dd if="$coverage_raw" of="$coverage_capture.tmp" bs=1 count="$coverage_size" 2>/
 mv "$coverage_capture.tmp" "$coverage_capture"
 
 coverage_manifest=$(find \
-    "$build_dir/mcucov/mcuhw_nucleo_h753zi_native_peripherals" \
+    "$build_dir/mcucov/st.nucleo_h753zi.test.native_peripherals" \
     -maxdepth 1 -type f -name 'native_peripherals-*.mcucov.json' \
     | sort | sed -n '1p')
 [ -n "$coverage_manifest" ] || { echo "mcucov manifest not found" >&2; exit 2; }
@@ -113,9 +113,9 @@ import json, pathlib, sys
 root = pathlib.Path(sys.argv[1])
 output = pathlib.Path(sys.argv[2])
 output.mkdir(parents=True, exist_ok=True)
-for path in root.glob("mcuhw_nucleo_h753zi_*/*.mcucov.json"):
-    if not (path.parent.name in ("mcuhw_nucleo_h753zi_native_peripherals",
-                                "mcuhw_nucleo_h753zi_early_init_coverage")
+for path in root.glob("st.nucleo_h753zi.*/*.mcucov.json"):
+    if not (path.parent.name in ("st.nucleo_h753zi.test.native_peripherals",
+                                "st.nucleo_h753zi.early_init_coverage")
             or path.parent.name.endswith("_coverage_manifest")):
         continue
     with path.open(encoding="utf-8") as source:

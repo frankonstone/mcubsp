@@ -109,10 +109,10 @@ mcuhw_add_firmware(firmware SOURCES main.cpp STARTUP supplied)
                 f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/toolchain-arm-cortex-m4.cmake",
                 "-DMCUHW_BUILD_IO_EXAMPLES=ON", "-DMCUHW_INSTALL=OFF")
             examples = ["blink", "serial_echo", "spi_dma", "tmp102", "w5100"]
-            run("cmake", "--build", build, "--target", *[f"mcuhw_io_{name}" for name in examples])
+            run("cmake", "--build", build, "--target", *[f"arduino.uno_r4_minima.example.{name}" for name in examples])
             for example in examples:
                 with self.subTest(example=example):
-                    symbols = run("arm-none-eabi-nm", build / f"mcuhw_io_{example}.elf")
+                    symbols = run("arm-none-eabi-nm", build / f"application/arduino.uno_r4_minima.example.{example}.elf")
                     self.assertRegex(symbols, r"[0-9a-f]+ T Reset_Handler")
                     self.assertIn("__isr_vector", symbols)
 
@@ -173,9 +173,9 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
                         f"-DMCUHW_EXAMPLE={example}",
                         f"-DCMAKE_TOOLCHAIN_FILE={ROOT}/cmake/McuhwToolchain.cmake")
                     run("cmake", "--build", build)
-                    self.assertTrue((build / "firmware.elf").is_file())
-                    self.assertTrue((build / "firmware.bin").is_file())
-                    report = json.loads((build / "firmware.identity.json").read_text())
+                    self.assertTrue((build / f"arduino.uno_r4_minima.example.{example}.elf").is_file())
+                    self.assertTrue((build / f"arduino.uno_r4_minima.example.{example}.bin").is_file())
+                    report = json.loads((build / f"arduino.uno_r4_minima.example.{example}.identity.json").read_text())
                     paths = {entry["path"] for entry in report["files"]}
                     self.assertIn(f"source:board/{board}/board.cmake", paths)
                     sensor = "source:include/mcuhw/device/sensor/tmp102.hpp"
@@ -197,7 +197,7 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
                 shutil.copytree(ROOT / name, checkout / name,
                                 ignore=shutil.ignore_patterns("build", "__pycache__",
                                                               "_vendor", "_generated"))
-            for name in ("CMakeLists.txt", "README.md", "requirements.md", "implementation-plan.md"):
+            for name in ("CMakeLists.txt", "Install.cmake", "README.md", "requirements.md", "implementation-plan.md"):
                 shutil.copy2(ROOT / name, checkout / name)
             package_build = base / "package build"
             prefix = base / "prefix"
@@ -216,7 +216,7 @@ target_link_options(firmware PRIVATE -nostdlib -Wl,--entry=main)
                 f"-DMCUHW_SOURCE_DIR={bundle}", "-DMCUHW_BOARD=arduino/uno_r4_minima",
                 f"-DCMAKE_TOOLCHAIN_FILE={bundle}/cmake/McuhwToolchain.cmake")
             run("cmake", "--build", build)
-            self.assertTrue((build / "firmware.elf").is_file())
+            self.assertTrue((build / "arduino.uno_r4_minima.example.blink.elf").is_file())
             ninja = (build / "build.ninja").read_text()
             self.assertNotIn(str(ROOT), ninja)
             self.assertNotIn(str(checkout), ninja)
@@ -278,7 +278,7 @@ mcuhw_add_firmware(firmware SOURCES main.cpp STARTUP external)
             shutil.copy2(ROOT / "board/arduino/uno_r4_minima/board.cmake", board / "board.cmake")
             (resources / "cmake").mkdir()
             shutil.copy2(ROOT / "cmake/toolchain-arm-cortex-m4.cmake", resources / "cmake")
-            shutil.copytree(ROOT / "cmake/architecture", resources / "cmake/architecture")
+            shutil.copytree(ROOT / "board/architecture", resources / "board/architecture")
             shutil.copytree(ROOT / "include", resources / "include")
             source = base / "application"
             source.mkdir()

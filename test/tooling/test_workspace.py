@@ -30,7 +30,7 @@ class ActiveBoardWorkspace(unittest.TestCase):
             model = targets(build)
             self.assertEqual(set(model), {"examples", "arduino.uno_r4_minima.examples",
                 "arduino.uno_r4_minima.tests"} |
-                {f"arduino.uno_r4_minima.examples.{name}" for name in
+                {f"arduino.uno_r4_minima.example.{name}" for name in
                  ("blink", "serial_echo", "spi_dma", "tmp102", "w5100")})
             self.configure(build)  # Applying the shared preset must not reset the list.
             self.assertEqual(set(targets(build)), set(model))
@@ -56,14 +56,14 @@ class ActiveBoardWorkspace(unittest.TestCase):
                            "-DMCUHW_MCUTEST_SOURCE_DIR=/missing-mcutest",
                            "-DMCUHW_MCUIP_SOURCE_DIR=/missing-mcuip")
             board = build / "board/arduino/uno_r4_minima/r4"
-            prefix = "arduino.uno_r4_minima.examples"
+            prefix = "arduino.uno_r4_minima.example"
             run("cmake", "--build", build, "--target", prefix + ".blink")
-            self.assertTrue((board / f"example/blink/{prefix}.blink.elf").is_file())
-            self.assertFalse((board / f"example/tmp102/{prefix}.tmp102.elf").exists())
-            run("cmake", "--build", build, "--target", prefix)
-            self.assertTrue((board / f"example/tmp102/{prefix}.tmp102.elf").is_file())
+            self.assertTrue((board / f"example/{prefix}.blink.elf").is_file())
+            self.assertFalse((board / f"example/{prefix}.tmp102.elf").exists())
+            run("cmake", "--build", build, "--target", "arduino.uno_r4_minima.examples")
+            self.assertTrue((board / f"example/{prefix}.tmp102.elf").is_file())
             for example in ("blink", "tmp102"):
-                report = json.loads((board / f"example/{example}/{prefix}.{example}.identity.json").read_text())
+                report = json.loads((board / f"example/{prefix}.{example}.identity.json").read_text())
                 self.assertIn(f"source:board/arduino/uno_r4_minima/example/{example}.cpp", {p["path"] for p in report["files"]})
             self.assertFalse((board / "test/CMakeCache.txt").exists())
             output = run("cmake", "--build", build, "--target", "arduino.uno_r4_minima.tests", success=False)
@@ -93,10 +93,10 @@ class ActiveBoardWorkspace(unittest.TestCase):
     @staticmethod
     def copy_workspace(root):
         root.mkdir(parents=True)
-        for name in ("include", "cmake", "board", "tool"):
+        for name in ("include", "cmake", "board", "tool", "test"):
             shutil.copytree(ROOT / name, root / name,
                             ignore=shutil.ignore_patterns("build", "__pycache__"))
-        for name in ("CMakeLists.txt", "CMakePresets.json"):
+        for name in ("CMakeLists.txt", "CMakePresets.json", "Install.cmake"):
             shutil.copy2(ROOT / name, root / name)
 
     def test_two_active_boards_and_hundred_unselected_boards_do_not_leak(self):
@@ -113,7 +113,7 @@ class ActiveBoardWorkspace(unittest.TestCase):
             before = set(targets(build))
             self.assertFalse(any(name.startswith("fixture.other.examples") for name in before))
             run("cmake", "--build", build, "--target", "examples")
-            output = build / "board/arduino/uno_r4_minima/r4/example/blink/arduino.uno_r4_minima.examples.blink.identity.json"
+            output = build / "board/arduino/uno_r4_minima/r4/example/arduino.uno_r4_minima.example.blink.identity.json"
             report = json.loads(output.read_text())
             entries = {p["path"] for p in report["files"] if p["path"].endswith("board.cmake")}
             self.assertEqual(entries, {"source:board/arduino/uno_r4_minima/board.cmake"})
@@ -139,15 +139,15 @@ class ActiveBoardWorkspace(unittest.TestCase):
             query(build)
             run("cmake", "--preset", "arm-cortex-m4", "-B", build,
                 "-DMCUHW_BOARD=arduino/uno_r4_minima", cwd=root)
-            self.assertIn("example.blink", targets(build))
-            self.assertIn("example.tmp102", targets(build))
+            self.assertIn("arduino.uno_r4_minima.example.blink", targets(build))
+            self.assertIn("arduino.uno_r4_minima.example.tmp102", targets(build))
             run("cmake", "--preset", "arm-cortex-m4", "-B", build,
                 "-DMCUHW_BOARD=fixture/alternate", cwd=root)
             model = targets(build)
             self.assertIn("test.backend", model)
             self.assertNotIn("examples", model)
             self.assertNotIn("firmware", model)
-            self.assertFalse(any(name.startswith("example.") for name in model))
+            self.assertFalse(any(name.startswith("arduino.uno_r4_minima.example.") for name in model))
             run("cmake", "--preset", "arm-cortex-m4", "-B", build, cwd=root)
-            self.assertIn("example.blink", targets(build))
-            self.assertIn("example.tmp102", targets(build))
+            self.assertIn("arduino.uno_r4_minima.example.blink", targets(build))
+            self.assertIn("arduino.uno_r4_minima.example.tmp102", targets(build))

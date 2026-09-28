@@ -1,6 +1,6 @@
 # Pass this before project(): -DCMAKE_TOOLCHAIN_FILE=<root>/cmake/McuhwToolchain.cmake
 # @req REQ-0049
-include("${CMAKE_CURRENT_LIST_DIR}/McuhwSelection.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../board/Selection.cmake")
 mcuhw_resolve_board()
 include("${MCUHW_BOARD_TOOLCHAIN}")
 get_filename_component(_mcuhw_selected_compiler "${CMAKE_CXX_COMPILER}" REALPATH)

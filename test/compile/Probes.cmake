@@ -49,7 +49,7 @@ if(CMAKE_CROSSCOMPILING)
             -DOBJECT_FILE=$<TARGET_OBJECTS:mcuhw_barrier_probe>
             -DARCH=${MCUHW_ARCH}
             -DREPORT=${CMAKE_CURRENT_BINARY_DIR}/barrier-report.txt
-            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/VerifyBarrierInstructions.cmake"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/test/compile/VerifyBarrierInstructions.cmake"
         DEPENDS mcuhw_barrier_probe
         VERBATIM
     )
@@ -67,7 +67,7 @@ if(MCUHW_ARCH STREQUAL "cortex-m4")
             -DOBJDUMP=${CMAKE_OBJDUMP}
             -DOBJECT_FILE=$<TARGET_OBJECTS:mcuhw_ra4m1_gpio_codegen>
             -DREPORT=${CMAKE_CURRENT_BINARY_DIR}/gpio-codegen-report.txt
-            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/GenerateGpioCodegenReport.cmake"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/test/compile/GenerateGpioCodegenReport.cmake"
         DEPENDS mcuhw_ra4m1_gpio_codegen
         VERBATIM
     )

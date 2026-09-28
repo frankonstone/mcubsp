@@ -1,16 +1,16 @@
 # Positive/negative compiler contracts and the all-description object gate.
 function(mcuhw_add_compile_case name source expect_success)
     add_test(
-        NAME "compile.${name}"
+        NAME "mcuhw.test.compile.${name}"
         COMMAND "${CMAKE_COMMAND}"
             -DCXX_COMPILER=${CMAKE_CXX_COMPILER}
             "-DCOMPILE_OPTIONS=${MCUHW_RESTRICTED_COMPILE_OPTIONS}"
             -DINCLUDE_DIR=${mcuhw_SOURCE_DIR}/include
             -DSOURCE=${CMAKE_CURRENT_SOURCE_DIR}/${source}
             -DEXPECT_SUCCESS=${expect_success}
-            -P "${mcuhw_SOURCE_DIR}/cmake/CompileCase.cmake"
+            -P "${mcuhw_SOURCE_DIR}/test/compile/CompileCase.cmake"
     )
-    set_tests_properties("compile.${name}" PROPERTIES LABELS "compile")
+    set_tests_properties("mcuhw.test.compile.${name}" PROPERTIES LABELS "compile")
 endfunction()
 
 mcuhw_add_compile_case(cxx23 cxx23_features.cpp TRUE)

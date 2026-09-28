@@ -35,7 +35,7 @@ The authoritative artifacts are generated from the current working tree:
   MCUCOV build `0x4d485701`; 155/238 functions, 1,059/1,680 statements,
   1,205/1,865 lines, 359/814 branches and 45/598 MC/DC conditions. Its 134
   skipped constructs contain 36 warnings and zero errors.
-- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_release_metrics.json`:
+- `build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.release_metrics.json`:
   three passing physical cases from the non-instrumented `-Os` image.
 - `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_resources.json`:
   section sizes, RAM headroom and SHA-256 identities for every UNO image.

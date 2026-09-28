@@ -1,7 +1,7 @@
 include_guard(GLOBAL)
 include(ExternalProject)
-include("${CMAKE_CURRENT_LIST_DIR}/McuhwCache.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/McuhwEspIdfEnvironment.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/Cache.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/EspIdfEnvironment.cmake")
 
 # ESP-IDF owns its platform image, cache/libc initialization and bootloader build.
 # Keep its build explicit and isolated, with no test/coverage dependencies.

@@ -77,13 +77,12 @@ function(mcuhw_add_uno_r4_minima_test target source build_id)
     if(ARGC GREATER 3 AND ARGV3 STREQUAL "NO_COVERAGE")
         set(enable_coverage FALSE)
     endif()
-    set(platform_target "${target}_platform")
+    set(platform_target "${target}.platform")
     set(options "")
     if(enable_coverage)
         list(APPEND options NO_OPTIMIZE)
     endif()
-    mcuhw_add_board_platform(${platform_target} ${options})
-    add_executable(${target} "${source}")
+    mcuhw_configure_board_platform(${platform_target} ${options})
     mcuhw_configure_board_firmware(${target} STARTUP supplied
         PLATFORM_TARGETS ${platform_target} HOSTED HEX ${options})
     target_link_libraries(${target} PRIVATE mcujson::mcujson)
@@ -127,72 +126,102 @@ function(mcuhw_add_uno_r4_minima_test target source build_id)
     )
 endfunction()
 
+# Every physical-test image has an explicit executable and source.
+add_library(arduino.uno_r4_minima.test.startup_gpio.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.startup_gpio "${board_test_directory}/startup_gpio.cpp")
+add_library(arduino.uno_r4_minima.test.gpio_loopback.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.gpio_loopback "${board_test_directory}/gpio_loopback.cpp")
+add_library(arduino.uno_r4_minima.test.pwm.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.pwm "${board_test_directory}/pwm.cpp")
+add_library(arduino.uno_r4_minima.test.uart.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.uart "${board_test_directory}/uart.cpp")
+add_library(arduino.uno_r4_minima.test.i2c.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.i2c "${board_test_directory}/i2c.cpp")
+add_library(arduino.uno_r4_minima.test.spi.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.spi "${board_test_directory}/spi.cpp")
+add_library(arduino.uno_r4_minima.test.adc.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.adc "${board_test_directory}/adc.cpp")
+add_library(arduino.uno_r4_minima.test.dmac.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.dmac "${board_test_directory}/dmac.cpp")
+add_library(arduino.uno_r4_minima.test.ethernet_mcuip.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.ethernet_mcuip "${board_test_directory}/ethernet_mcuip.cpp")
+add_library(arduino.uno_r4_minima.test.ethernet_metrics.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.ethernet_metrics "${board_test_directory}/ethernet_mcuip.cpp")
+add_library(arduino.uno_r4_minima.test.ethernet_metrics_fast6.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.ethernet_metrics_fast6 "${board_test_directory}/ethernet_mcuip.cpp")
+add_library(arduino.uno_r4_minima.test.ethernet_metrics_fast12.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.ethernet_metrics_fast12 "${board_test_directory}/ethernet_mcuip.cpp")
+add_library(arduino.uno_r4_minima.test.ethernet_link_recovery.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.ethernet_link_recovery "${board_test_directory}/ethernet_mcuip.cpp")
+add_library(arduino.uno_r4_minima.test.release_metrics.platform OBJECT ${MCUHW_BOARD_STARTUP})
+add_executable(arduino.uno_r4_minima.test.release_metrics "${board_test_directory}/release_metrics.cpp")
+
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_startup_gpio_tests
+    arduino.uno_r4_minima.test.startup_gpio
     "${board_test_directory}/startup_gpio.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_gpio_loopback_tests
+    arduino.uno_r4_minima.test.gpio_loopback
     "${board_test_directory}/gpio_loopback.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_pwm_tests
+    arduino.uno_r4_minima.test.pwm
     "${board_test_directory}/pwm.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_uart_tests
+    arduino.uno_r4_minima.test.uart
     "${board_test_directory}/uart.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_i2c_tests
+    arduino.uno_r4_minima.test.i2c
     "${board_test_directory}/i2c.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_spi_tests
+    arduino.uno_r4_minima.test.spi
     "${board_test_directory}/spi.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_adc_tests
+    arduino.uno_r4_minima.test.adc
     "${board_test_directory}/adc.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_dmac_tests
+    arduino.uno_r4_minima.test.dmac
     "${board_test_directory}/dmac.cpp"
     0x4d485701)
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_ethernet_mcuip_tests
+    arduino.uno_r4_minima.test.ethernet_mcuip
     "${board_test_directory}/ethernet_mcuip.cpp"
     0x4d485702)
-target_link_libraries(mcuhw_uno_r4_minima_ethernet_mcuip_tests PRIVATE
+target_link_libraries(arduino.uno_r4_minima.test.ethernet_mcuip PRIVATE
     mcuip::mcuip)
 target_compile_definitions(
-    mcuhw_uno_r4_minima_ethernet_mcuip_tests PRIVATE
+    arduino.uno_r4_minima.test.ethernet_mcuip PRIVATE
     MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
     MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
 )
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_ethernet_metrics
+    arduino.uno_r4_minima.test.ethernet_metrics
     "${board_test_directory}/ethernet_mcuip.cpp"
     0
     NO_COVERAGE)
-target_link_libraries(mcuhw_uno_r4_minima_ethernet_metrics PRIVATE
+target_link_libraries(arduino.uno_r4_minima.test.ethernet_metrics PRIVATE
     mcuip::mcuip)
 target_compile_definitions(
-    mcuhw_uno_r4_minima_ethernet_metrics PRIVATE
+    arduino.uno_r4_minima.test.ethernet_metrics PRIVATE
     MCUHW_ETHERNET_METRICS=1
     MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
     MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
 )
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_ethernet_metrics_fast6
+    arduino.uno_r4_minima.test.ethernet_metrics_fast6
     "${board_test_directory}/ethernet_mcuip.cpp"
     0
     NO_COVERAGE)
 target_link_libraries(
-    mcuhw_uno_r4_minima_ethernet_metrics_fast6 PRIVATE
+    arduino.uno_r4_minima.test.ethernet_metrics_fast6 PRIVATE
     mcuip::mcuip)
 target_compile_definitions(
-    mcuhw_uno_r4_minima_ethernet_metrics_fast6 PRIVATE
+    arduino.uno_r4_minima.test.ethernet_metrics_fast6 PRIVATE
     MCUHW_ETHERNET_METRICS=1
     MCUHW_ETHERNET_FAST_SPI=1
     MCUHW_ETHERNET_SPI_HZ=6000000
@@ -200,15 +229,15 @@ target_compile_definitions(
     MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
 )
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_ethernet_metrics_fast12
+    arduino.uno_r4_minima.test.ethernet_metrics_fast12
     "${board_test_directory}/ethernet_mcuip.cpp"
     0
     NO_COVERAGE)
 target_link_libraries(
-    mcuhw_uno_r4_minima_ethernet_metrics_fast12 PRIVATE
+    arduino.uno_r4_minima.test.ethernet_metrics_fast12 PRIVATE
     mcuip::mcuip)
 target_compile_definitions(
-    mcuhw_uno_r4_minima_ethernet_metrics_fast12 PRIVATE
+    arduino.uno_r4_minima.test.ethernet_metrics_fast12 PRIVATE
     MCUHW_ETHERNET_METRICS=1
     MCUHW_ETHERNET_FAST_SPI=1
     MCUHW_ETHERNET_SPI_HZ=12000000
@@ -216,21 +245,21 @@ target_compile_definitions(
     MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
 )
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_ethernet_link_recovery
+    arduino.uno_r4_minima.test.ethernet_link_recovery
     "${board_test_directory}/ethernet_mcuip.cpp"
     0
     NO_COVERAGE)
 target_link_libraries(
-    mcuhw_uno_r4_minima_ethernet_link_recovery PRIVATE
+    arduino.uno_r4_minima.test.ethernet_link_recovery PRIVATE
     mcuip::mcuip)
 target_compile_definitions(
-    mcuhw_uno_r4_minima_ethernet_link_recovery PRIVATE
+    arduino.uno_r4_minima.test.ethernet_link_recovery PRIVATE
     MCUHW_ETHERNET_LINK_RECOVERY=1
     MCUHW_SOURCE_ID="${MCUHW_UNO_SOURCE_ID}"
     MCUHW_MCUIP_SOURCE_ID="${MCUHW_UNO_MCUIP_SOURCE_ID}"
 )
 mcuhw_add_uno_r4_minima_test(
-    mcuhw_uno_r4_minima_release_metrics
+    arduino.uno_r4_minima.test.release_metrics
     "${board_test_directory}/release_metrics.cpp"
     0
     NO_COVERAGE)

@@ -250,9 +250,9 @@ output. Use `arm-cortex-m7` with `st/nucleo_h753zi` or `esp32p4-riscv` with
 
 On the UNO R4 Minima, `firmware` builds Blink by default; set
 `-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds all five
-examples; `example.blink`, `example.serial_echo`, `example.spi_dma`,
-`example.tmp102`, and `example.w5100` allow individual builds. Firmware appears in
-`build/<preset>/application/`; other examples appear under `example/`.
+examples; `arduino.uno_r4_minima.example.blink`, `arduino.uno_r4_minima.example.serial_echo`,
+`arduino.uno_r4_minima.example.spi_dma`, `arduino.uno_r4_minima.example.tmp102`,
+and `arduino.uno_r4_minima.example.w5100` allow individual builds. All five executables appear in `build/<preset>/application/` with names matching their CMake targets.
 The other boards currently have no declared examples; selecting
 them still exposes their available test targets.
 `test.board` configures a separate instrumented build under
@@ -285,7 +285,7 @@ exact equivalent configure/build argument arrays for your recorded environment.
 
 An existing BSP/RTOS application chooses `MCUHW_STARTUP=external` and supplies
 its own startup sources, linker script and reset/clock services through the
-documented [firmware helper](../../cmake/McuhwBoard.cmake). In this mode mcuhw
+documented [firmware helper](../../board/Support.cmake). In this mode mcuhw
 does not add its board vectors or reset owner. `new --startup external` records
 that choice; the generated application must then be adapted to provide its BSP
 before it can link. Use a separate build directory when switching startup.

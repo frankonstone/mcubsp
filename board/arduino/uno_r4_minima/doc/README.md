@@ -111,7 +111,7 @@ buffered 75% update. The expected ideal values are `2400`, `600`, and `1800`;
 the edge-polling overhead is included in the observed values. All five board
 tests passed, including start, buffered update, and stopped-low behavior.
 The runner stores each live result independently at
-`build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_<suite>_tests.json`, so
+`build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.<suite>.json`, so
 running one fixture cannot overwrite another fixture's evidence. Add a suite's
 artifact to `mcutrace.toml` only after that standalone image has actually run;
 missing configured artifact paths are configuration errors, not placeholder

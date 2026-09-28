@@ -158,16 +158,22 @@ def build(args: argparse.Namespace) -> int:
         subprocess.run(command, check=True, env=env, cwd=project)
     # CMake also writes this record for IDE/direct builds. Keep a fallback for
     # projects created against an older build helper during migration.
-    manifest = directory / 'firmware.build.json'
+    target = config['board'].replace('/', '.') + '.example.' + config['example']
+    manifest = directory / f'{target}.build.json'
+    if not manifest.is_file():
+        manifest = directory / 'firmware.build.json'
     if manifest.is_file():
-        workflow.load_build(project, config, str(manifest))
-        environment.write_json(project / '.mcuhw/last-build.json', {'schema_version': 1, 'manifest': str(manifest)})
+        record = workflow.load_build(project, config, str(manifest))
+        environment.write_json(project / '.mcuhw/last-build.json',
+                               {'schema_version': 1, 'manifest': str(manifest)})
+        artifact = Path(record['artifacts']['elf'])
     else:
+        artifact = directory / f'{target}.elf'
         workflow.record_build(directory, board=config['board'], revision=config['revision'],
-            startup=config['startup'], root=root, artifact=directory / 'firmware.elf',
+            startup=config['startup'], root=root, artifact=artifact,
             sdk_build=directory / 'esp-idf-build' if (directory / 'esp-idf-build/flasher_args.json').is_file() else None,
             pointer=project / '.mcuhw/last-build.json')
-    print(f'Built {directory / "firmware.elf"}')
+    print(f'Built {artifact}')
     return 0
 
 

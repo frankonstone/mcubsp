@@ -12,8 +12,9 @@ in `bsp/`, physical fixtures in `test/`, and wiring and recovery procedures in
 `doc/`.
 
 `MCUHW_BOARD_EXAMPLES` lists `board/<vendor>/<name>/example/<name>.cpp` sources.
-The board's `example/CMakeLists.txt` creates the requested
-`MCUHW_FIRMWARE_TARGET`. Add
+The board's `example/CMakeLists.txt` declares each executable explicitly as
+`<vendor>.<board>.example.<name>` and uses that name for its output file. Add
+the board to the explicit workspace target list in `board/Workspace.cmake`. Add
 `tests.cmake` for a root style instrumented test build, or set
 `MCUHW_BOARD_TEST_PROJECT` for a standalone SDK test project.
 

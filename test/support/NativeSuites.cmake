@@ -2,7 +2,7 @@ include_guard(GLOBAL)
 # Shared native harness and source-directory suite registration.
 # @req REQ-0035 REQ-0038 REQ-0052
 
-function(mcuhw_native_suite name)
+function(mcuhw_configure_native_suite target name)
     set(group "${name}")
     if(name MATCHES "^ip:")
         set(group backend)
@@ -14,27 +14,10 @@ function(mcuhw_native_suite name)
     if(NOT "all" IN_LIST MCUHW_TEST_SUITES AND
             NOT "${name}" IN_LIST MCUHW_TEST_SUITES AND
             NOT "${group}" IN_LIST MCUHW_TEST_SUITES)
+        set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
         return()
     endif()
     string(MAKE_C_IDENTIFIER "${name}" identifier)
-    set(target "mcuhw_test_${identifier}")
-    # Every translation unit has one executable owner. Shared contracts belong
-    # in a dedicated integration suite instead of selection-dependent deduplication.
-    set(unique_sources "")
-    foreach(source IN LISTS ARGN)
-        get_filename_component(absolute "${source}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-        string(SHA256 key "${absolute}")
-        get_property(owner GLOBAL PROPERTY "mcuhw_test_owner_${key}")
-        if(owner)
-            message(FATAL_ERROR "Native test ${source} belongs to both ${owner} and ${name}; give it one suite owner.")
-        endif()
-        set_property(GLOBAL PROPERTY "mcuhw_test_owner_${key}" "${name}")
-        list(APPEND unique_sources "${absolute}")
-    endforeach()
-    if(NOT unique_sources)
-        return()
-    endif()
-    add_executable(${target} ${unique_sources} "${MCUHW_TEST_SOURCE_DIR}/support/main.cpp")
     add_dependencies(native-tests ${target})
     set(group "${name}")
     if(name MATCHES "^(ip|device|mcu):(.+)$")
@@ -58,9 +41,9 @@ function(mcuhw_native_suite name)
     endif()
     mcuhw_apply_restricted_runtime(${target})
     mcutest_configure_target(${target} MAX_TESTS 256 SOURCE_LOCATION ON)
-    add_test(NAME "mcuhw.${name}" COMMAND "${CMAKE_COMMAND}"
+    add_test(NAME "${target}" COMMAND "${CMAKE_COMMAND}"
         -DTEST_PROGRAM=$<TARGET_FILE:${target}>
         -DOUTPUT_FILE=${MCUHW_TEST_ARTIFACT_DIR}/${identifier}.json
-        -P "${mcuhw_SOURCE_DIR}/cmake/CaptureMcutest.cmake")
-    set_tests_properties("mcuhw.${name}" PROPERTIES LABELS "native;${category};${name}")
+        -P "${mcuhw_SOURCE_DIR}/test/support/CaptureMcutest.cmake")
+    set_tests_properties("${target}" PROPERTIES LABELS "native;${category};${name}")
 endfunction()

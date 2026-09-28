@@ -46,7 +46,7 @@ Build and run the Ethernet/MCUIP image after connecting CN14 to an ordinary
 Ethernet peer and assigning that peer an address in `192.168.75.0/24`:
 
 ```sh
-cmake --build build/nucleo-h753zi --target mcuhw_nucleo_h753zi_ethernet
+cmake --build build/nucleo-h753zi --target st.nucleo_h753zi.test.ethernet
 ./tool/run-nucleo-h753zi-ethernet.sh
 ```
 
@@ -96,9 +96,9 @@ TIM/PWM, USART, I2C, SPI and ADC modules: 96/171 functions, 512/1062 statements,
 constant-evaluated or unsupported constructs are explicitly reported as not
 instrumented. The reproducible artifacts are written to:
 
-- `build/nucleo-h753zi/artifact/mcuhw_nucleo_h753zi_native_peripherals.json`;
-- `build/nucleo-h753zi/artifact/mcuhw_nucleo_h753zi_native_peripherals.mcucov.json`;
-- `build/nucleo-h753zi/artifact/mcuhw_nucleo_h753zi_native_peripherals.mcucov.html`;
+- `build/nucleo-h753zi/artifact/st.nucleo_h753zi.test.native_peripherals.json`;
+- `build/nucleo-h753zi/artifact/st.nucleo_h753zi.test.native_peripherals.mcucov.json`;
+- `build/nucleo-h753zi/artifact/st.nucleo_h753zi.test.native_peripherals.mcucov.html`;
 - `build/nucleo-h753zi/artifact/coverage.lcov`.
 
 The `mcucov Coverage` VS Code extension loads the LCOV report into the native

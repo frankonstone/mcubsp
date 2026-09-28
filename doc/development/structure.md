@@ -6,7 +6,7 @@ Public headers keep their existing paths. A board directory also contains BSP
 sources, optional `tests.cmake` or SDK test project, and wiring and recovery
 procedures. Native test sources live under `test/` by MCU, backend or device.
 
-`cmake/McuhwBoard.cmake` owns the shared firmware recipe. Architecture files own
+`board/Support.cmake` owns the shared firmware recipe. `board/architecture/` owns
 compiler and ABI settings. The board entry owns startup and memory layout.
 Device protocols stay reusable across boards and take explicit transport handles.
 

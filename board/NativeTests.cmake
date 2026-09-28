@@ -1,5 +1,5 @@
 include_guard(GLOBAL)
-include("${CMAKE_CURRENT_LIST_DIR}/McuhwCache.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/Cache.cmake")
 
 # Cross-board menus expose host suites without resolving host-test dependencies
 # until a group is built. Each group owns a native compiler/cache and evidence.

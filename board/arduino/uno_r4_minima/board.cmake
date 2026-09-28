@@ -14,9 +14,11 @@ set(MCUHW_BOARD_TOOLCHAIN "cmake/toolchain-arm-cortex-m4.cmake")
 set(MCUHW_BOARD_PROFILE_HEADER "include/mcuhw/io/board/uno_r4_minima.hpp")
 set(MCUHW_BOARD_PROFILE_TYPE "mcuhw::io::boards::uno_r4_minima")
 set(MCUHW_BOARD_TOOLS "cmake;ninja;arm-gcc")
-set(MCUHW_BOARD_EXAMPLES "")
-foreach(example IN ITEMS blink serial_echo spi_dma tmp102 w5100)
-    list(APPEND MCUHW_BOARD_EXAMPLES "board/arduino/uno_r4_minima/example/${example}.cpp")
-endforeach()
+set(MCUHW_BOARD_EXAMPLES
+    board/arduino/uno_r4_minima/example/blink.cpp
+    board/arduino/uno_r4_minima/example/serial_echo.cpp
+    board/arduino/uno_r4_minima/example/spi_dma.cpp
+    board/arduino/uno_r4_minima/example/tmp102.cpp
+    board/arduino/uno_r4_minima/example/w5100.cpp)
 set(MCUHW_BOARD_TEST_PROJECT "")
 set(MCUHW_BOARD_RUNNER [=[{"type":"jlink","tool":"jlink","device":"R7FA4M1AB","interface":"SWD","speed_khz":4000,"artifact":"firmware.elf","flash_regions":[{"start":"0x4000","size":"0x3c000"}],"recovery_doc":"board/arduino/uno_r4_minima/doc/README.md"}]=])

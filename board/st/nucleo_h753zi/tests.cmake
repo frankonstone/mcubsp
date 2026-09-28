@@ -72,67 +72,69 @@ endif()
 find_package(mcucov CONFIG REQUIRED)
 
 find_program(MCUHW_ARM_SIZE arm-none-eabi-size REQUIRED)
-mcuhw_add_board_platform(mcuhw_nucleo_h753zi_platform NO_OPTIMIZE
-    EXCLUDE_SOURCES "${MCUHW_BOARD_EARLY_INIT}")
-mcuhw_add_board_platform(mcuhw_nucleo_h753zi_early_init_coverage NO_OPTIMIZE
-    SOURCES "${MCUHW_BOARD_EARLY_INIT}")
-target_compile_options(mcuhw_nucleo_h753zi_platform PRIVATE ${MCUHW_RESTRICTED_COMPILE_OPTIONS})
-target_compile_options(mcuhw_nucleo_h753zi_early_init_coverage PRIVATE ${MCUHW_RESTRICTED_COMPILE_OPTIONS})
-target_compile_definitions(mcuhw_nucleo_h753zi_early_init_coverage PRIVATE
+set(nucleo_platform_sources ${MCUHW_BOARD_STARTUP})
+list(REMOVE_ITEM nucleo_platform_sources "${MCUHW_BOARD_EARLY_INIT}")
+add_library(st.nucleo_h753zi.platform OBJECT ${nucleo_platform_sources})
+mcuhw_configure_board_platform(st.nucleo_h753zi.platform NO_OPTIMIZE)
+add_library(st.nucleo_h753zi.early_init_coverage OBJECT "${MCUHW_BOARD_EARLY_INIT}")
+mcuhw_configure_board_platform(st.nucleo_h753zi.early_init_coverage NO_OPTIMIZE)
+target_compile_options(st.nucleo_h753zi.platform PRIVATE ${MCUHW_RESTRICTED_COMPILE_OPTIONS})
+target_compile_options(st.nucleo_h753zi.early_init_coverage PRIVATE ${MCUHW_RESTRICTED_COMPILE_OPTIONS})
+target_compile_definitions(st.nucleo_h753zi.early_init_coverage PRIVATE
     MCUCOV_BYTE_PER_PROBE=1
     MCUCOV_COMPACT_RUNTIME=1
 )
-target_compile_options(mcuhw_nucleo_h753zi_early_init_coverage PRIVATE
+target_compile_options(st.nucleo_h753zi.early_init_coverage PRIVATE
     -include
     "${MCUHW_ROOT}/test/support/mcucov_compat.hpp"
 )
 mcucov_instrument_target(
-    mcuhw_nucleo_h753zi_early_init_coverage
+    st.nucleo_h753zi.early_init_coverage
     PROFILE FULL
     BUILD_ID 0x4d487501
     SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
     OUTPUT_DIR
-        "${CMAKE_CURRENT_BINARY_DIR}/mcucov/mcuhw_nucleo_h753zi_early_init_coverage"
+        "${CMAKE_CURRENT_BINARY_DIR}/mcucov/st.nucleo_h753zi.early_init_coverage"
 )
-add_executable(mcuhw_nucleo_h753zi_startup_gpio_smoke
+add_executable(st.nucleo_h753zi.test.startup_gpio_smoke
     "${board_test_directory}/startup_gpio.cpp"
 )
-add_executable(mcuhw_nucleo_h753zi_native_peripherals
+add_executable(st.nucleo_h753zi.test.native_peripherals
     "${board_test_directory}/native_peripherals.cpp"
 )
-add_executable(mcuhw_nucleo_h753zi_ethernet
+add_executable(st.nucleo_h753zi.test.ethernet
     "${board_test_directory}/ethernet_mcuip.cpp"
 )
-foreach(target IN ITEMS mcuhw_nucleo_h753zi_startup_gpio_smoke
-        mcuhw_nucleo_h753zi_native_peripherals mcuhw_nucleo_h753zi_ethernet)
+foreach(target IN ITEMS st.nucleo_h753zi.test.startup_gpio_smoke
+        st.nucleo_h753zi.test.native_peripherals st.nucleo_h753zi.test.ethernet)
     set(options "")
-    if(NOT target STREQUAL "mcuhw_nucleo_h753zi_startup_gpio_smoke")
+    if(NOT target STREQUAL "st.nucleo_h753zi.test.startup_gpio_smoke")
         list(APPEND options HOSTED)
     endif()
     mcuhw_configure_board_firmware(${target} STARTUP supplied NO_OPTIMIZE HEX
-        PLATFORM_TARGETS mcuhw_nucleo_h753zi_platform
-            mcuhw_nucleo_h753zi_early_init_coverage ${options})
+        PLATFORM_TARGETS st.nucleo_h753zi.platform
+            st.nucleo_h753zi.early_init_coverage ${options})
     target_compile_options(${target} PRIVATE ${MCUHW_RESTRICTED_COMPILE_OPTIONS})
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${MCUHW_ARM_SIZE}" -A "$<TARGET_FILE:${target}>" VERBATIM)
 endforeach()
-target_link_libraries(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+target_link_libraries(st.nucleo_h753zi.test.native_peripherals PRIVATE
     mcujson::mcujson)
-target_link_libraries(mcuhw_nucleo_h753zi_ethernet PRIVATE
+target_link_libraries(st.nucleo_h753zi.test.ethernet PRIVATE
     mcujson::mcujson mcuip::mcuip)
-target_include_directories(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+target_include_directories(st.nucleo_h753zi.test.native_peripherals PRIVATE
     "${MCUHW_MCUTEST_SOURCE_DIR}/include"
 )
-target_include_directories(mcuhw_nucleo_h753zi_ethernet PRIVATE
+target_include_directories(st.nucleo_h753zi.test.ethernet PRIVATE
     "${MCUHW_MCUTEST_SOURCE_DIR}/include"
 )
-target_compile_definitions(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+target_compile_definitions(st.nucleo_h753zi.test.native_peripherals PRIVATE
     MCUTEST_MAX_TESTS=8
     MCUTEST_SOURCE_LOCATION=1
     MCUCOV_BYTE_PER_PROBE=1
     MCUCOV_COMPACT_RUNTIME=1
 )
-target_compile_definitions(mcuhw_nucleo_h753zi_ethernet PRIVATE
+target_compile_definitions(st.nucleo_h753zi.test.ethernet PRIVATE
     MCUTEST_MAX_TESTS=3
     MCUTEST_SOURCE_LOCATION=1
     MCUCOV_BYTE_PER_PROBE=1
@@ -140,29 +142,29 @@ target_compile_definitions(mcuhw_nucleo_h753zi_ethernet PRIVATE
     MCUHW_SOURCE_ID="${MCUHW_SOURCE_ID}"
     MCUHW_MCUIP_SOURCE_ID="${MCUHW_MCUIP_SOURCE_ID}"
 )
-target_compile_options(mcuhw_nucleo_h753zi_native_peripherals PRIVATE
+target_compile_options(st.nucleo_h753zi.test.native_peripherals PRIVATE
     -include
     "${MCUHW_ROOT}/test/support/mcucov_compat.hpp"
 )
-target_compile_options(mcuhw_nucleo_h753zi_ethernet PRIVATE
+target_compile_options(st.nucleo_h753zi.test.ethernet PRIVATE
     -include
     "${MCUHW_ROOT}/test/support/mcucov_compat.hpp"
 )
 mcucov_instrument_target(
-    mcuhw_nucleo_h753zi_native_peripherals
+    st.nucleo_h753zi.test.native_peripherals
     PROFILE FULL
     BUILD_ID 0x4d487501
     SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
     OUTPUT_DIR
-        "${CMAKE_CURRENT_BINARY_DIR}/mcucov/mcuhw_nucleo_h753zi_native_peripherals"
+        "${CMAKE_CURRENT_BINARY_DIR}/mcucov/st.nucleo_h753zi.test.native_peripherals"
 )
 mcucov_instrument_target(
-    mcuhw_nucleo_h753zi_ethernet
+    st.nucleo_h753zi.test.ethernet
     PROFILE FULL
     BUILD_ID 0x4d487502
     SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}"
     OUTPUT_DIR
-        "${CMAKE_CURRENT_BINARY_DIR}/mcucov/mcuhw_nucleo_h753zi_ethernet"
+        "${CMAKE_CURRENT_BINARY_DIR}/mcucov/st.nucleo_h753zi.test.ethernet"
 )
 
 # The instrumented board translation unit can embed more modules than one
@@ -170,9 +172,7 @@ mcucov_instrument_target(
 # identical source manifests for the remaining STM32 backend headers; they
 # are not linked into the firmware.
 function(mcuhw_add_stm32h753_coverage_manifest_probe name definition)
-    set(target "mcuhw_nucleo_h753zi_${name}_coverage_manifest")
-    add_library(${target} OBJECT
-        test/compile/stm32h753_backend_coverage_probe.cpp)
+    set(target "st.nucleo_h753zi.${name}.coverage_manifest")
     target_link_libraries(${target} PRIVATE mcuhw::mcuhw)
     target_compile_features(${target} PRIVATE cxx_std_23)
     target_compile_definitions(${target} PRIVATE
@@ -183,9 +183,9 @@ function(mcuhw_add_stm32h753_coverage_manifest_probe name definition)
     mcuhw_apply_firmware_runtime(${target} HOSTED NO_OPTIMIZE)
     target_compile_options(${target} PRIVATE ${MCUHW_RESTRICTED_COMPILE_OPTIONS}
         -include "${MCUHW_ROOT}/test/support/mcucov_compat.hpp")
-    add_dependencies(mcuhw_nucleo_h753zi_native_peripherals ${target})
+    add_dependencies(st.nucleo_h753zi.test.native_peripherals ${target})
     if(name STREQUAL "ethernet")
-        add_dependencies(mcuhw_nucleo_h753zi_ethernet ${target})
+        add_dependencies(st.nucleo_h753zi.test.ethernet ${target})
     endif()
     mcucov_instrument_target(
         ${target}
@@ -195,6 +195,19 @@ function(mcuhw_add_stm32h753_coverage_manifest_probe name definition)
         OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/mcucov/${target}"
     )
 endfunction()
+
+add_library(st.nucleo_h753zi.i2c.coverage_manifest OBJECT
+    test/compile/stm32h753_backend_coverage_probe.cpp)
+add_library(st.nucleo_h753zi.memory.coverage_manifest OBJECT
+    test/compile/stm32h753_backend_coverage_probe.cpp)
+add_library(st.nucleo_h753zi.spi.coverage_manifest OBJECT
+    test/compile/stm32h753_backend_coverage_probe.cpp)
+add_library(st.nucleo_h753zi.timer.coverage_manifest OBJECT
+    test/compile/stm32h753_backend_coverage_probe.cpp)
+add_library(st.nucleo_h753zi.usart.coverage_manifest OBJECT
+    test/compile/stm32h753_backend_coverage_probe.cpp)
+add_library(st.nucleo_h753zi.ethernet.coverage_manifest OBJECT
+    test/compile/stm32h753_backend_coverage_probe.cpp)
 
 mcuhw_add_stm32h753_coverage_manifest_probe(
     i2c MCUHW_COVERAGE_PROBE_I2C)

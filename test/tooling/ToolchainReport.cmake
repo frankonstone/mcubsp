@@ -5,7 +5,7 @@ function(mcuhw_write_toolchain_report output_path)
     execute_process(
         COMMAND "${CMAKE_CXX_COMPILER}" ${MCUHW_ARCH_COMPILE_OPTIONS}
                 -std=c++23 -dM -E
-                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stdlib_probe.cpp"
+                "${CMAKE_CURRENT_SOURCE_DIR}/test/tooling/stdlib_probe.cpp"
         RESULT_VARIABLE preprocess_result
         OUTPUT_VARIABLE predefined_macros
         ERROR_VARIABLE preprocess_error

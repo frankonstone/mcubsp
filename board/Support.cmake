@@ -1,6 +1,6 @@
 include_guard(GLOBAL)
-include("${CMAKE_CURRENT_LIST_DIR}/McuhwSelection.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/McuhwIdentity.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/Selection.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/Identity.cmake")
 
 # Board entries own BSP-specific sources, startup policy and profile selection;
 # architecture definitions own compiler/ABI options.
@@ -13,10 +13,10 @@ macro(mcuhw_load_board)
     # Read only architecture facts, never a toolchain file after project(). An
     # existing BSP retains its own compiler, system and try-compile settings.
     if(NOT MCUHW_BOARD_ARCHITECTURE MATCHES "^[a-z0-9][a-z0-9_-]*$" OR
-            NOT EXISTS "${MCUHW_ROOT}/cmake/architecture/${MCUHW_BOARD_ARCHITECTURE}.cmake")
+            NOT EXISTS "${MCUHW_ROOT}/board/architecture/${MCUHW_BOARD_ARCHITECTURE}.cmake")
         message(FATAL_ERROR "Missing architecture definition for ${MCUHW_BOARD_ARCHITECTURE}.")
     endif()
-    include("${MCUHW_ROOT}/cmake/architecture/${MCUHW_BOARD_ARCHITECTURE}.cmake")
+    include("${MCUHW_ROOT}/board/architecture/${MCUHW_BOARD_ARCHITECTURE}.cmake")
     execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -dumpmachine
         OUTPUT_VARIABLE _mcuhw_compiler_target OUTPUT_STRIP_TRAILING_WHITESPACE
         RESULT_VARIABLE _mcuhw_compiler_result)
@@ -65,6 +65,15 @@ function(_mcuhw_add_board_platform target)
     endif()
     list(REMOVE_ITEM ARG_SOURCES ${ARG_EXCLUDE_SOURCES})
     add_library(${target} OBJECT ${ARG_SOURCES})
+    if(ARG_NO_OPTIMIZE)
+        mcuhw_configure_board_platform(${target} NO_OPTIMIZE)
+    else()
+        mcuhw_configure_board_platform(${target})
+    endif()
+endfunction()
+
+function(mcuhw_configure_board_platform target)
+    cmake_parse_arguments(ARG "NO_OPTIMIZE" "" "" ${ARGN})
     target_link_libraries(${target} PRIVATE mcuhw::mcuhw)
     set(options "")
     if(ARG_NO_OPTIMIZE)
@@ -139,7 +148,7 @@ function(_mcuhw_add_firmware target)
         if(ARG_LIBRARIES OR ARG_LINKER_SCRIPT)
             message(FATAL_ERROR "ESP-IDF supplied startup owns its SDK link. Use an external BSP project for custom LIBRARIES or LINKER_SCRIPT.")
         endif()
-        include("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/McuhwEspIdf.cmake")
+        include("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/EspIdf.cmake")
         mcuhw_add_idf_firmware(${target} ${ARG_SOURCES})
         return()
     endif()

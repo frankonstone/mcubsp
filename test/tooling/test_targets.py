@@ -38,7 +38,7 @@ def board_targets(board):
     result.update(f"test.{group}" for group in ("board", "core", "driver", "io", "backend", "device", "mcu", "compile"))
     if board == "arduino/uno_r4_minima":
         result.update(("firmware", "examples"))
-        result.update(f"example.{name}" for name in ("blink", "serial_echo", "spi_dma", "tmp102", "w5100"))
+        result.update(f"arduino.uno_r4_minima.example.{name}" for name in ("blink", "serial_echo", "spi_dma", "tmp102", "w5100"))
     return result
 
 
@@ -60,7 +60,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(mcuhw INTERFACE)
 add_library(mcuhw::mcuhw ALIAS mcuhw)
 target_include_directories(mcuhw INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-include("${MCUHW_SOURCE_DIR}/cmake/McuhwProjectOptions.cmake")
+include("${MCUHW_SOURCE_DIR}/test/support/ProjectOptions.cmake")
 mcuhw_add_header_self_containment_checks(check-headers ROOT "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_precompile_headers(check-headers PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/mcuhw/a.hpp")
 ''')
@@ -99,7 +99,7 @@ class FocusedTargets(unittest.TestCase):
                 "-DMCUHW_BUILD_TESTS=ON", "-DMCUHW_BUILD_PROBES=OFF", "-DMCUHW_CHECK_HEADERS=OFF",
                 "-DMCUHW_TEST_SUITES=device:ti/tmp102", f"-DMCUHW_MCUTEST_SOURCE_DIR={mcutest}")
             model = targets(build)
-            self.assertEqual(set(model), {"native-tests", "mcuhw_test_device_ti_tmp102"})
+            self.assertEqual(set(model), {"native-tests", "mcuhw.test.device.tmp102"})
             run("cmake", "--build", build, "--target", "native-tests")
             run("ctest", "--test-dir", build, "--output-on-failure")
             report = json.loads((build / "artifact/native/device_ti_tmp102.json").read_text())
@@ -137,10 +137,10 @@ class FocusedTargets(unittest.TestCase):
                 self.assertIn(f"MCUHW_BOARD:STRING={board}", cache)
                 if example:
                     run("cmake", "--build", build, "--target", "firmware", "examples")
-                    self.assertTrue((build / "application/firmware.elf").is_file())
+                    self.assertTrue((build / "application/arduino.uno_r4_minima.example.blink.elf").is_file())
                     self.assertFalse(list(build.rglob("selected_board.hpp")))
-                    identity = json.loads((build / "application/firmware.identity.json").read_text())
-                    self.assertEqual(identity["target"], "application/firmware.elf")
+                    identity = json.loads((build / "application/arduino.uno_r4_minima.example.blink.identity.json").read_text())
+                    self.assertEqual(identity["target"], "application/arduino.uno_r4_minima.example.blink.elf")
                     paths = {p["path"] for p in identity["files"]}
                     self.assertIn(f"source:board/arduino/uno_r4_minima/example/{example}.cpp", paths)
                     self.assertFalse(any("mcutest" in p or "header-checks" in p for p in paths))
@@ -179,7 +179,7 @@ class FocusedTargets(unittest.TestCase):
                 "-DMCUHW_BOARD=arduino/uno_r4_minima", "-DMCUHW_EXAMPLE=tmp102",
                 "-DMCUHW_INSTALL=OFF")
             run("cmake", "--build", build)
-            self.assertTrue((build / "firmware.elf").is_file())
+            self.assertTrue((build / "arduino.uno_r4_minima.example.tmp102.elf").is_file())
             self.assertFalse(list(build.rglob("selected_board.hpp")))
 
     @unittest.skipUnless(shutil.which("arm-none-eabi-g++"), "Arm GNU compiler unavailable")
@@ -199,8 +199,8 @@ class FocusedTargets(unittest.TestCase):
             query(device_build)
             run("cmake", "--build", build, "--target", "test.device")
             model = targets(device_build)
-            self.assertTrue(any("device_ti_tmp102" in name for name in model))
-            self.assertFalse(any("ip_" in name or "mcu_" in name for name in model))
+            self.assertTrue(any("device.tmp102" in name for name in model))
+            self.assertFalse(any("backend." in name or "mcu." in name for name in model))
             reports = list((device_build / "artifact/native").glob("*.json"))
             self.assertTrue(reports)
             for report in reports:
@@ -210,8 +210,8 @@ class FocusedTargets(unittest.TestCase):
             query(backend_build)
             run("cmake", "--build", build, "--target", "test.backend")
             self.assertEqual(set(targets(backend_build)), {"native-tests",
-                "mcuhw_test_ip_renesas_ra4m1_native", "mcuhw_test_ip_st_stm32h753_native",
-                "mcuhw_test_ip_espressif_esp32p4_native"})
+                "mcuhw.test.backend.ra4m1", "mcuhw.test.backend.stm32h753",
+                "mcuhw.test.backend.esp32p4"})
             commands = json.loads((backend_build / "compile_commands.json").read_text())
             self.assertTrue(all("arm-none-eabi" not in c["command"] for c in commands))
             self.assertFalse(next((build / "board").rglob("tests-cache.cmake")).parent.joinpath("test/CMakeCache.txt").exists())

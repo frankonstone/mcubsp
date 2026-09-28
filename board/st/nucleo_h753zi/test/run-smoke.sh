@@ -3,7 +3,7 @@ set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
 . "$project_dir/tool/hardware-common.sh"
-elf=${1:-"$project_dir/build/nucleo-h753zi/mcuhw_nucleo_h753zi_startup_gpio_smoke.elf"}
+elf=${1:-"$project_dir/build/nucleo-h753zi/st.nucleo_h753zi.test.startup_gpio_smoke.elf"}
 build_dir=$(dirname -- "$elf")
 nm=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_NM)
 
