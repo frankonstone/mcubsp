@@ -1,4 +1,4 @@
-# mcuhw requirements
+# mcubsp requirements
 
 Requirements baseline, 26 September 2026. Derived from [proposal.md](proposal.md), the supplied manuals, the local MCUOS and MCUIP projects, and the user's decisions below. All eighteen scope decisions are recorded. The first RA4M1 release is accepted using the connected UNO R4 Minima with direct-wired GPIO/PWM/UART, Grove I2C, Ethernet-shield SPI/DMAC and potentiometer ADC evidence. Subsequent decisions add UNO Ethernet through that shield, a modern C++ application interface, reusable attached devices, and repository/build workflows for broad adoption at hundreds of boards and thousands of devices. NUCLEO-H753ZI remains the STM32 carrier and MCUIP is the selected TCP/IP stack. This document specifies intended behavior; it does not claim implementation or verification. Detailed integration choices and measured resource budgets remain implementation milestones. The proposal's code snippets are illustrative API sketches, not verified register definitions or compilable specifications.
 
@@ -18,10 +18,10 @@ Requirements baseline, 26 September 2026. Derived from [proposal.md](proposal.md
 | D10 | Develop a reusable KiCad cross-target test-fixture family. | Superseded by D14; no longer required |
 | D11 | Use the proposed Rev-A component families as a fixture schematic baseline. | Superseded by D14; no longer required |
 | D12 | Classify target work by its observation hardware and defer fixture-dependent electrical cases. Direct wiring, attached devices, native connectors, ordinary peers and internal known-answer tests remain valid only for the behavior they observe. | Revised by D14 |
-| D13 | Use the sibling `../mcuip` project as the TCP/IP stack for mcuhw Ethernet targets and keep the MAC/MDIO/PHY/DMA boundary compatible with its public target contracts. MCUIP replaces lwIP; no lwIP dependency or compatibility layer is required. | Accepted by user |
+| D13 | Use the sibling `../mcuip` project as the TCP/IP stack for mcubsp Ethernet targets and keep the MAC/MDIO/PHY/DMA boundary compatible with its public target contracts. MCUIP replaces lwIP; no lwIP dependency or compatibility layer is required. | Accepted by user |
 | D14 | Retire the cross-target fixture requirement. For the first RA4M1 release, accept representative physical evidence from the connected UNO R4 Minima: direct GPIO/PWM/UART wiring, the Grove I2C device, W5100 Ethernet-shield SPI/DMAC traffic and a potentiometer ADC input. Do not claim unmeasured electrical properties, fault injection or complete-board coverage. Other targets use their own board-native/directly connected acceptance evidence when their releases are claimed. | Accepted by user, 22 September 2026 |
 | D15 | Add Ethernet connectivity on Arduino UNO R4 Minima through the connected Arduino Ethernet Shield R3 and its WIZnet W5100. Use the existing RA4M1 SPI/DMAC foundation, expose a fixed-storage raw-frame device to MCUIP, and prove real traffic on the local network. Treat this as a follow-on milestone; it does not reopen PLN-0011. | Accepted by user, 22 September 2026 |
-| D16 | Add `mcuhw::io` in this repository as a modern C++ application interface with familiar board/pin/peripheral operations, explicit DMA access, replaceable execution, shared ownership and compile-time storage selection. Implement the bare-metal foundation now. Camera, RTOS and network integration are future extensions, and Arduino sketch compatibility is outside this increment. Measure actual RAM/flash cost against the existing driver layer. | Accepted by user, 26 September 2026 |
+| D16 | Add `mcubsp::io` in this repository as a modern C++ application interface with familiar board/pin/peripheral operations, explicit DMA access, replaceable execution, shared ownership and compile-time storage selection. Implement the bare-metal foundation now. Camera, RTOS and network integration are future extensions, and Arduino sketch compatibility is outside this increment. Measure actual RAM/flash cost against the existing driver layer. | Accepted by user, 26 September 2026 |
 | D17 | Introduce reusable attached-device drivers with shared I2C address and SPI chip-select handles supplied by `io`. Keep chip protocols independent of board composition, preserve checked fast transfers, and supply TMP102 and W5100 components plus generic MCUIP integration. Use explicit storage, ownership, deadlines and bounded polling; RTOS concurrency remains a later stage. | Accepted by user, 26 September 2026 |
 | D18 | Make ease of use, building and contribution a first-class adoption requirement for hundreds of boards and thousands of devices. Keep one modular repository, independently consumable CMake/header interfaces, locally defined hardware components, selected-board builds, reproducible setup, searchable support information and dependency-scoped verification. Schedule the repository adoption work immediately after PLN-0026, before deferred MCUOS integration; preserve existing hardware and evidence boundaries. | Accepted for requirements and planning by user, 26 September 2026 |
 | D19 | Configure the architecture once and expose board task groups only for a configurable active-board set. Persist the local selection, keep examples as separate firmware images beneath an aggregate, and isolate board/revision artifacts and optional test dependencies. | Accepted by user, 26 September 2026 |
@@ -54,7 +54,7 @@ The RA4M1 manual, section 22.1, tables 22.1–22.2 (pages 392–393), describes 
 
 For the later RTOS stage, the selected dependency is the sibling [MCUOS project](../mcuos/README.md). No MCUOS adapter, native RTOS test, source checkout or executable hardware port is required to complete descriptions or bare-metal drivers. The inspected [application facade](../mcuos/include/mcuos/rtos/rtos.hpp) provides `System::now()`, `wait_notification_until()`, task notification, bounded queues, mutexes, and an `IsrContext` with nonblocking notification/queue operations. Its time types use 64-bit nanoseconds. Task code should consume this facade; scheduler transitions and split-phase kernel waits belong inside MCUOS and its target integration.
 
-The [port contracts](../mcuos/doc/port-contracts.md) and [wait/interrupt rules](../mcuos/doc/waits-and-interrupts.md) define saved interrupt-mask restoration, a kernel-callable interrupt ceiling, and scheduling deferred until interrupt return. These rules constrain the mcuhw adapter and target composition.
+The [port contracts](../mcuos/doc/port-contracts.md) and [wait/interrupt rules](../mcuos/doc/waits-and-interrupts.md) define saved interrupt-mask restoration, a kernel-callable interrupt ceiling, and scheduling deferred until interrupt return. These rules constrain the mcubsp adapter and target composition.
 
 The current source tree contains native execution, while the README identifies Cortex-M execution as next target work. A Cortex-M compile preset is not an executable RA4M1 RTOS port. Within the later MCUOS stage, native adapter tests precede hardware RTOS acceptance, which additionally requires context switching, physical interrupt delivery, monotonic clock/alarm, and boot integration for RA4M1. This remains an explicit dependency on MCUOS target work.
 
@@ -67,7 +67,7 @@ which replaces lwIP. Its current public target boundary defines
 `mcuip::NetworkDevice`, `mcuip::DescriptorProtection`,
 `mcuip::HardwareDescription`, fixed receive/transmit rings and explicit
 completion ownership. The NUCLEO-H753ZI is also MCUIP's first specified physical
-Ethernet target. Keep the protocol-neutral mcuhw MAC/MDIO/PHY/DMA implementation
+Ethernet target. Keep the protocol-neutral mcubsp MAC/MDIO/PHY/DMA implementation
 separate from the MCUIP adapter, bind against the actual sibling headers, and
 record a source-content identity and configuration because `../mcuip` currently
 has no Git revision available.
@@ -76,7 +76,7 @@ has no Git revision available.
 
 ## REQ-0001 Description-first, bare-metal delivery sequence
 
-mcuhw shall first implement hardware descriptions for RA4M1, STM32H753 and ESP32-P4 and satisfy the common description-validation gate in REQ-0040. No functional driver or peripheral backend shall be implemented before that gate. Description work shall proceed in reviewed increments across all three MCUs, exposing differences before the common model is stabilized.
+mcubsp shall first implement hardware descriptions for RA4M1, STM32H753 and ESP32-P4 and satisfy the common description-validation gate in REQ-0040. No functional driver or peripheral backend shall be implemented before that gate. Description work shall proceed in reviewed increments across all three MCUs, exposing differences before the common model is stabilized.
 
 After that gate, implement and validate drivers on bare metal, with RA4M1 / Arduino UNO R4 Minima as the first physical target and STM32H753/ESP32-P4 following with the same functional interfaces. MCUOS integration shall follow the bare-metal driver milestones and shall not block them. A native test platform shall support each phase without physical hardware.
 
@@ -311,7 +311,7 @@ The MCUOS adapter shall use the public `mcuos::rtos` facade for task-level waits
 
 Completion transport shall use explicit bounded storage and ownership: a dedicated queue or an explicitly reserved task-notification facility with operation identity and readiness rechecking. It shall not consume unrelated application notifications. Notification saturation, queue exhaustion, mutex owner death, task-wait cancellation and target failures shall have explicit outcomes. Cancelling an MCUOS wait alone shall not count as cancelling/quiescing peripheral hardware. A mutex shall be released by its owning task, not by the completion ISR; interrupt-critical sections shall remain short and shall not span a transfer wait.
 
-Acceptance: first run actual MCUOS native tasks against simulated mcuhw peripherals, including completion-before-wait, simultaneous timeout/completion, stale wakeups, shared-bus contention and capacity exhaustion. Then execute the representative scenarios on UNO R4 Minima with an executable MCUOS RA4M1 target, using the same functional driver/backend sources as bare metal. The hardware RTOS claim remains outstanding until that target exists and passes; host tests and Cortex-M compilation do not satisfy it. Record exact source identity, kernel capacities, port/configuration identity and reserved resources.
+Acceptance: first run actual MCUOS native tasks against simulated mcubsp peripherals, including completion-before-wait, simultaneous timeout/completion, stale wakeups, shared-bus contention and capacity exhaustion. Then execute the representative scenarios on UNO R4 Minima with an executable MCUOS RA4M1 target, using the same functional driver/backend sources as bare metal. The hardware RTOS claim remains outstanding until that target exists and passes; host tests and Cortex-M compilation do not satisfy it. Record exact source identity, kernel capacities, port/configuration identity and reserved resources.
 
 ## REQ-0033 STM32H753 description and subsequent bare-metal port
 @depends(REQ-0003, REQ-0005)
@@ -398,7 +398,7 @@ Acceptance: RA4M1 bare-metal release acceptance is independent of MCUOS and uses
 ## REQ-0043 MCUIP-compatible Ethernet device boundary
 @depends(REQ-0002, REQ-0003, REQ-0009, REQ-0013, REQ-0015, REQ-0017, REQ-0018, REQ-0033)
 
-Every Ethernet backend delivered by mcuhw shall expose protocol-neutral,
+Every Ethernet backend delivered by mcubsp shall expose protocol-neutral,
 fixed-storage MAC, MDIO, PHY and DMA facilities plus a thin target adapter that
 can be composed with the sibling `../mcuip` project. The initial
 NUCLEO-H753ZI composition shall satisfy the actual public MCUIP
@@ -410,20 +410,20 @@ invalidate operations, publish/acquire barriers, ownership transitions and
 terminal completion without dynamic allocation.
 
 MCUIP owns packet storage policy and the Ethernet/ARP/IP transport protocols;
-mcuhw owns the target peripheral implementation and source-backed hardware
+mcubsp owns the target peripheral implementation and source-backed hardware
 description. Vendor types shall not cross into MCUIP's portable core. MCUIP
 shall be an explicit optional source dependency whose local default is the
-sibling path, not copied into mcuhw. lwIP is not a supported dependency or
+sibling path, not copied into mcubsp. lwIP is not a supported dependency or
 compatibility target. Integration evidence shall identify the exact MCUIP
 source content and build configuration used.
 
 Acceptance: compile-time probes reject incomplete target contracts; one Cortex-
-M7 firmware links the mcuhw Ethernet backend with `mcuip::mcuip` without lwIP,
+M7 firmware links the mcubsp Ethernet backend with `mcuip::mcuip` without lwIP,
 heap allocation, exceptions or RTTI; and the physical NUCLEO-H753ZI exchanges
 raw minimum/maximum-MTU frames plus at least one MCUIP-driven protocol path
 (ARP followed by ICMP echo or UDP) with an independent Ethernet peer. Exercise
 link down/up, descriptor exhaustion, completion ordering and cache maintenance
-with data cache enabled, and record both mcuhw and MCUIP source identities.
+with data cache enabled, and record both mcubsp and MCUIP source identities.
 
 ## REQ-0044 Arduino UNO R4 Minima W5100 Ethernet connectivity
 @depends(REQ-0002, REQ-0003, REQ-0009, REQ-0015, REQ-0017, REQ-0018, REQ-0019, REQ-0028, REQ-0030, REQ-0031, REQ-0035, REQ-0036, REQ-0037, REQ-0038, REQ-0041)
@@ -467,7 +467,7 @@ peer commands.
 ## REQ-0045 Modern C++ application interface
 @depends(REQ-0002, REQ-0014, REQ-0015, REQ-0018, REQ-0037, REQ-0038)
 
-Provide an optional `mcuhw::io` target and namespace in this repository (D16).
+Provide an optional `mcubsp::io` target and namespace in this repository (D16).
 Expose board objects, named pins, serial, I2C, SPI, analog input, PWM and explicit
 DMA selection using the existing drivers and backends. Construction shall be
 passive. Initialization and failures shall be explicit; convenience failure
@@ -511,7 +511,7 @@ retain their bus ownership until terminal completion. Pending and retained
 result handles shall prevent endpoint release and controller shutdown. No
 hidden heap or unbounded transaction queue is permitted.
 
-Place attached-chip protocols under `mcuhw/device/` with a narrow supplied
+Place attached-chip protocols under `mcubsp/device/` with a narrow supplied
 transport contract. Add a TMP102 sensor returning explicit signed temperature
 units without a board dependency; preserve its latest-sample semantics and
 existing hardware settings. Compose the W5100 with a checked SPI device handle,
@@ -541,22 +541,22 @@ previous hardware measurements remain scoped to the recorded implementations.
 @depends(REQ-0002, REQ-0003, REQ-0038)
 
 Provide distinct application, component-contributor and full-maintainer build
-workflows (D18). Applications shall consume the existing `mcuhw::mcuhw`,
-`mcuhw::io` and `mcuhw::device` interfaces from a source checkout or a versioned,
+workflows (D18). Applications shall consume the existing `mcubsp::mcubsp`,
+`mcubsp::io` and `mcubsp::device` interfaces from a source checkout or a versioned,
 relocatable CMake package. Direct header consumption shall remain supported;
 ordinary consumption shall require no board selection for board-independent code.
 
 Embedded CMake use shall default to library interfaces only. Tests, architecture
 probes, all-header checks, coverage and hardware-test images shall be explicit
-mcuhw options and shall not change the parent project's testing settings or
+mcubsp options and shall not change the parent project's testing settings or
 global compiler policy. Resolve test, coverage, network and RTOS dependencies
 only for requested features. Ordinary applications shall not require sibling
 checkouts, and unrelated checkout presence shall not change selected features.
 
 Acceptance: clean external consumers build through `add_subdirectory` and
-`find_package(mcuhw CONFIG REQUIRED)`, including after relocating the installed
+`find_package(mcubsp CONFIG REQUIRED)`, including after relocating the installed
 package and removing access to the original source/build trees. A parent with
-its own tests enabled retains them without creating mcuhw test/probe targets.
+its own tests enabled retains them without creating mcubsp test/probe targets.
 Plain header inclusion works independently. Installed interfaces contain no
 developer-specific paths, and an explicit maintainer configuration still enables
 the existing verification workflows.

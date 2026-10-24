@@ -4,7 +4,7 @@ PLN-0019 uses two separately linked images on HP CPU0:
 
 - a custom ESP-IDF v6.1 second-stage bootloader, containing only hardware/image
   initialization and a fixed policy that loads the factory partition; and
-- a factory application containing the `mcuhw` GPIO, UART, I2C, I2S/audio,
+- a factory application containing the `mcubsp` GPIO, UART, I2C, I2S/audio,
   SDMMC/SDIO, SPI and Ethernet backends, registered `mcutest` cases, UART
   result adapter and MCUCOV runtime.
 
@@ -64,10 +64,10 @@ the current MCUCOV host reader has a fixed JSON arena. The split does not alter
 module or probe identities; MCUCOV merges the directory when producing the
 report.
 
-The application emits `MCUHW_CONTEXT`, the normal `mcutest` result and
-summary, `MCUHW_COVERAGE_HEX`, and `MCUHW_RESULT`. Before starting the test
-runner it configures UART0 through the `mcuhw` backend and transmits the
-`MCUHW_UART` marker through the board's CH343 USB-to-UART bridge. The registered
+The application emits `MCUBSP_CONTEXT`, the normal `mcutest` result and
+summary, `MCUBSP_COVERAGE_HEX`, and `MCUBSP_RESULT`. Before starting the test
+runner it configures UART0 through the `mcubsp` backend and transmits the
+`MCUBSP_UART` marker through the board's CH343 USB-to-UART bridge. The registered
 test verifies initialization, clock/divider readback, transfer start and
 TX-done completion. This directly proves target TX; physical RX and injected
 line errors still require a loopback or fixture. Host tests cover RX, error,

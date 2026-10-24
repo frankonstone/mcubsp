@@ -5,21 +5,19 @@
 #include <span>
 #include <string_view>
 
-#if defined(MCUHW_BOARD_TEST_NO_COVERAGE)
-#define MCUCOV_NO_INSTRUMENT
-#else
+#if MCUBSP_COVERAGE
 #include <mcucov/mcucov.hpp>
 #include <mcucov/sinks/buffered.hpp>
 #endif
 #include <mcujson/mcujson.hpp>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/gpio.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/execution/bare_metal_policy.hpp>
-#include <mcuhw/testing/rtt_output.hpp>
+#include <mcubsp/backend/ra4m1/gpio.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/execution/bare_metal_policy.hpp>
+#include <mcubsp/testing/rtt_output.hpp>
 
-namespace mcuhw::board_test {
+namespace mcubsp::board_test {
 
 inline core::direct_mmio mmio;
 inline backend::ra4m1::gpio_backend gpio{mmio};
@@ -220,7 +218,7 @@ bool write_evidence_report(const evidence_metadata& metadata,
     if (!written) {
         return false;
     }
-    constexpr char prefix[] = "MCUHW_JSON:";
+    constexpr char prefix[] = "MCUBSP_JSON:";
     testing::rtt::write_blocking(prefix, sizeof(prefix) - 1U);
     testing::rtt::write_blocking(evidence_buffer, *written);
     constexpr char newline[] = "\n";
@@ -228,9 +226,15 @@ bool write_evidence_report(const evidence_metadata& metadata,
     return true;
 }
 
+#if MCUBSP_COVERAGE
 struct coverage_hex_sink {
-    bool MCUCOV_NO_INSTRUMENT write(const std::uint8_t* bytes,
-                                    std::size_t size) noexcept {
+#if defined(__MCUCOV_ANALYZER__)
+    [[clang::annotate("mcucov:no_instrument")]]
+#elif defined(__GNUC__)
+    [[gnu::no_instrument_function]]
+#endif
+    bool write(const std::uint8_t* bytes,
+               std::size_t size) noexcept {
         constexpr char hexadecimal[] = "0123456789abcdef";
         char encoded[128];
         std::size_t offset{};
@@ -250,11 +254,13 @@ struct coverage_hex_sink {
     }
 };
 
-#if defined(MCUHW_BOARD_TEST_NO_COVERAGE)
-inline bool dump_coverage() noexcept { return true; }
-#else
-inline bool MCUCOV_NO_INSTRUMENT dump_coverage() noexcept {
-    constexpr char prefix[] = "MCUHW_COVERAGE_HEX:";
+#if defined(__MCUCOV_ANALYZER__)
+[[clang::annotate("mcucov:no_instrument")]]
+#elif defined(__GNUC__)
+[[gnu::no_instrument_function]]
+#endif
+inline bool dump_coverage() noexcept {
+    constexpr char prefix[] = "MCUBSP_COVERAGE_HEX:";
     testing::rtt::write_blocking(prefix, sizeof(prefix) - 1U);
     coverage_hex_sink backend;
     mcucov::BufferedSink<coverage_hex_sink, 64> sink{backend};
@@ -263,6 +269,8 @@ inline bool MCUCOV_NO_INSTRUMENT dump_coverage() noexcept {
     testing::rtt::write_blocking(newline, 1U);
     return written;
 }
+#else
+inline bool dump_coverage() noexcept { return true; }
 #endif
 
 template<std::size_t MetadataSize>
@@ -283,8 +291,8 @@ template<typename DetailWriter>
         metadata, observations, static_cast<DetailWriter&&>(write_details));
     const bool coverage_written = !metadata.coverage_enabled || dump_coverage();
     const bool complete = passed && report_written && coverage_written;
-    constexpr char pass_result[] = "MCUHW_RESULT:PASS\n";
-    constexpr char fail_result[] = "MCUHW_RESULT:FAIL\n";
+    constexpr char pass_result[] = "MCUBSP_RESULT:PASS\n";
+    constexpr char fail_result[] = "MCUBSP_RESULT:FAIL\n";
     testing::rtt::write_blocking(
         complete ? pass_result : fail_result,
         complete ? sizeof(pass_result) - 1U : sizeof(fail_result) - 1U);
@@ -293,4 +301,4 @@ template<typename DetailWriter>
     }
 }
 
-} // namespace mcuhw::board_test
+} // namespace mcubsp::board_test

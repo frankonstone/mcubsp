@@ -1,6 +1,6 @@
 # Arduino UNO R4 Minima bare-metal board tests
 
-This is the first physical mcuhw composition. It uses the RA4M1 description,
+This is the first physical mcubsp composition. It uses the RA4M1 description,
 the RA-native clock/GPIO/GPT/SCI backends, the target-independent drivers,
 mcutest, and an RTT output channel. It has no Arduino core, FSP, MCUOS, heap,
 hosted startup, or external RTT source dependency. Each physical fixture is a
@@ -12,7 +12,7 @@ The selected part is `R7FA4M1AB3CFM#AA0`. ArduinoCore-renesas 1.6.0 identifies
 D13/`LED_BUILTIN` as P111 and configures the board for a 48 MHz HOCO. Its
 `variants/MINIMA/memory_regions.ld` starts the application at `0x00004000`.
 The shipped `dfu_minima.hex` occupies `0x00000000..0x00003087`; therefore the
-mcuhw linker owns `0x00004000..0x0003FFFF` and preserves the DFU bootloader.
+mcubsp linker owns `0x00004000..0x0003FFFF` and preserves the DFU bootloader.
 The `minima.upload.address=0x00010000` property in `boards.txt` is not used by
 that package's DFU upload command and is not the linked sketch address.
 
@@ -30,11 +30,10 @@ PCLKD at 48 MHz and PCLKB/FCLK at 24 MHz.
 
 ## Build and automatic execution
 
-Build the four ELF, BIN, HEX, and map sets plus the shared barrier and GPIO
-code-generation reports:
+Build the four ELF, BIN, HEX, and map sets:
 
 ```sh
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
 cmake --build build/uno-r4-minima --target board-tests
 ```
 
@@ -47,7 +46,7 @@ GND, SWDIO, SWCLK, and RESET. Do not connect competing power sources. Then run:
 
 The script programs the ELF's application sectors, resets through the retained
 bootloader, captures mcutest output with J-Link RTT, and returns success only
-after `MCUHW_RESULT:PASS`. Its log identifies the board, firmware plan,
+after `MCUBSP_RESULT:PASS`. Its log identifies the board, firmware plan,
 toolchain, clock frequencies, and debug interface. The runner accepts
 `startup-gpio`, `gpio-loopback`, `pwm`, `uart`, `all`, or an explicit ELF path.
 Each suite writes a distinct JSON artifact named after its executable.
@@ -124,11 +123,6 @@ The standalone PWM capture observed `2426` CPU cycles per period, `584` high
 cycles at 25% duty, and `1842` high cycles at 75% duty. The expected ideal
 values remain `2400`, `600`, and `1800`; all measurements passed the declared
 5% tolerance and stop drove the observed pin low.
-
-At `-Os`, `gpio-codegen-report.txt` records 20 bytes for the direct P111 POSR
-write plus DMB baseline and 60 bytes for the checked functional-driver call.
-No zero-overhead claim is made: the latter deliberately validates initialization,
-direction, package bounds, and ownership before issuing the same atomic write.
 
 Host traces and cross-linking remain software evidence. Captured RTT results
 verify only the image and physical wiring named by that artifact. Running a

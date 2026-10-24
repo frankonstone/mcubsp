@@ -10,17 +10,17 @@
 #include <mcutest/assert.hpp>
 #include <mcutest/core.hpp>
 
-#include <mcuhw/backend/esp32p4/gpio.hpp>
-#include <mcuhw/backend/esp32p4/sdmmc.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/driver/sdio.hpp>
+#include <mcubsp/backend/esp32p4/gpio.hpp>
+#include <mcubsp/backend/esp32p4/sdmmc.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/driver/sdio.hpp>
 
-extern "C" void mcuhw_esp32p4_wifi_sdio_test_link_anchor() noexcept {}
+extern "C" void mcubsp_esp32p4_wifi_sdio_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 class delay_policy {
@@ -66,7 +66,7 @@ TEST(esp32p4_wifi_sdio, enumerates_onboard_c5_and_enables_function_one,
     const auto initialized = device.initialize();
     if (!initialized) {
         esp_rom_printf(
-            "MCUHW_WIFI_SDIO_ERROR code=%u host_stage=%u command=%u "
+            "MCUBSP_WIFI_SDIO_ERROR code=%u host_stage=%u command=%u "
             "rintsts=0x%08lx idsts=0x%08lx\n",
             static_cast<unsigned>(initialized.error()),
             static_cast<unsigned>(host.last_initialization_stage()),
@@ -81,7 +81,7 @@ TEST(esp32p4_wifi_sdio, enumerates_onboard_c5_and_enables_function_one,
     }
 
     esp_rom_printf(
-        "MCUHW_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 "
+        "MCUBSP_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 "
         "d2=16 d3=17 clk=18 cmd=19 enable_gpio=54 functions=%u "
         "rca=0x%04x cccr=0x%02x cis=0x%05lx manf=0x%04x "
         "card=0x%04x function1=ready transport=identity_only\n",
@@ -101,4 +101,4 @@ TEST(esp32p4_wifi_sdio, enumerates_onboard_c5_and_enables_function_one,
     ASSERT_TRUE(enable.release().has_value());
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

@@ -1,6 +1,6 @@
 include_guard(GLOBAL)
 
-set(MCUHW_RESTRICTED_COMPILE_OPTIONS
+set(MCUBSP_RESTRICTED_COMPILE_OPTIONS
     -Wall
     -Wextra
     -Wpedantic
@@ -12,24 +12,24 @@ set(MCUHW_RESTRICTED_COMPILE_OPTIONS
 )
 
 # @req REQ-0002
-function(mcuhw_apply_restricted_runtime target)
+function(mcubsp_apply_restricted_runtime target)
     target_compile_features(${target} PRIVATE cxx_std_23)
     target_compile_options(${target} PRIVATE
-        ${MCUHW_RESTRICTED_COMPILE_OPTIONS}
-        ${MCUHW_ARCH_COMPILE_OPTIONS}
+        ${MCUBSP_RESTRICTED_COMPILE_OPTIONS}
+        ${MCUBSP_ARCH_COMPILE_OPTIONS}
         "$<$<BOOL:${CMAKE_CROSSCOMPILING}>:-ffreestanding>"
     )
 endfunction()
 
 # One selectable target, with one independent translation unit per public header.
 # @req REQ-0003 REQ-0038 REQ-0047 REQ-0052
-function(mcuhw_add_header_self_containment_checks target)
+function(mcubsp_add_header_self_containment_checks target)
     cmake_parse_arguments(ARG "" "ROOT" "" ${ARGN})
     if(NOT ARG_ROOT)
-        message(FATAL_ERROR "mcuhw_add_header_self_containment_checks requires ROOT")
+        message(FATAL_ERROR "mcubsp_add_header_self_containment_checks requires ROOT")
     endif()
 
-    file(GLOB_RECURSE headers CONFIGURE_DEPENDS "${ARG_ROOT}/mcuhw/*.hpp")
+    file(GLOB_RECURSE headers CONFIGURE_DEPENDS "${ARG_ROOT}/mcubsp/*.hpp")
     set(sources "")
     foreach(header IN LISTS headers)
         file(RELATIVE_PATH relative_header "${ARG_ROOT}" "${header}")
@@ -41,8 +41,8 @@ function(mcuhw_add_header_self_containment_checks target)
         list(APPEND sources "${generated_source}")
     endforeach()
     add_library(${target} OBJECT ${sources})
-    target_link_libraries(${target} PRIVATE mcuhw::mcuhw)
-    mcuhw_apply_restricted_runtime(${target})
+    target_link_libraries(${target} PRIVATE mcubsp::mcubsp)
+    mcubsp_apply_restricted_runtime(${target})
     # Neither unity builds nor precompiled headers may mask missing includes.
     set_target_properties(${target} PROPERTIES UNITY_BUILD OFF
         DISABLE_PRECOMPILE_HEADERS ON FOLDER "Verification")

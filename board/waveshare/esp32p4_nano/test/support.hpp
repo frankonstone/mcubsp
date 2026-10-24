@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 
 struct run_result {
     std::size_t tests{};
@@ -13,4 +13,4 @@ struct run_result {
 
 [[nodiscard]] run_result run_tests_and_dump_coverage() noexcept;
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

@@ -2,11 +2,11 @@
 #include <array>
 #include <chrono>
 #include <utility>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/device/ethernet/w5100.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/device/ethernet/w5100.hpp>
 
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using namespace std::chrono_literals;
 constexpr io::board_config configuration{.serial = true, .spi = true};
 static io::board<io::boards::uno_r4_minima, configuration> hw;
@@ -22,7 +22,7 @@ int main() {
     auto sd_select = io::require(hw.output(hw.pins.d4, true));
     io::require(hw.spi.begin());
     auto connection = io::require(hw.spi.device({.cs = hw.pins.d10, .frequency = 6'000'000U}));
-    mcuhw::device::w5100 ethernet{std::move(connection)};
+    mcubsp::device::w5100 ethernet{std::move(connection)};
     if (!ethernet.begin({.mac = {{0x02, 0x00, 0x00, 0x04, 0x51, 0x00}}})) __builtin_trap();
     if (!ethernet.arm_receive(0U, receive)) __builtin_trap();
     for (;;) {

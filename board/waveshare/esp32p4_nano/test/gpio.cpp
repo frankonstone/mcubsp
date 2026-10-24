@@ -11,15 +11,15 @@
 
 #include <mcucov/mcucov.h>
 
-#include <mcuhw/backend/esp32p4/gpio.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/mcu/esp32p4/pins.hpp>
+#include <mcubsp/backend/esp32p4/gpio.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/mcu/esp32p4/pins.hpp>
 
 extern "C" MCUCOV_NO_INSTRUMENT void
-mcuhw_esp32p4_gpio_test_link_anchor() noexcept {}
+mcubsp_esp32p4_gpio_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 constexpr core::pin_id smoke_pin{0, 2};
@@ -81,4 +81,4 @@ TEST(esp32p4_gpio, gpio2_initializes_toggles_and_releases,
                   >> 9U) & 0x1U) == 1U);
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

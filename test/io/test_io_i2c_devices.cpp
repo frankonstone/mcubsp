@@ -4,17 +4,17 @@
 #include <type_traits>
 #include <utility>
 #include <mcutest/mcutest.hpp>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/device/sensor/tmp102.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/device/sensor/tmp102.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using Board = io::boards::uno_r4_minima;
-using Policy = mcuhw::execution::fake_policy;
-using Mmio = mcuhw::testing::recording_mmio<0x80000, 4096>;
+using Policy = mcubsp::execution::fake_policy;
+using Mmio = mcubsp::testing::recording_mmio<0x80000, 4096>;
 using namespace std::chrono_literals;
 constexpr io::board_config i2c_only{.serial = false, .i2c = true};
 constexpr auto base = Board::i2c_binding::metadata.base;
@@ -192,8 +192,8 @@ TEST(io_i2c_device, tmp102_composes_with_claimed_address_and_real_repeated_start
     struct Arrival {
         Mmio& mmio;
         unsigned phase{};
-        static void advance(void* context, mcuhw::execution::fake_wait_stage stage) noexcept {
-            if (stage != mcuhw::execution::fake_wait_stage::after_prepare) return;
+        static void advance(void* context, mcubsp::execution::fake_wait_stage stage) noexcept {
+            if (stage != mcubsp::execution::fake_wait_stage::after_prepare) return;
             auto& self = *static_cast<Arrival*>(context);
             const auto enabled = self.mmio.read<std::uint8_t>(base + 7U);
             if (!enabled || *enabled == 0U) return; // terminal inspection is not a bus event
@@ -211,7 +211,7 @@ TEST(io_i2c_device, tmp102_composes_with_claimed_address_and_real_repeated_start
     } arrival{mmio};
     policy.set_wait_hook(&Arrival::advance, &arrival);
     {
-        mcuhw::device::tmp102 sensor{std::move(*acquired)};
+        mcubsp::device::tmp102 sensor{std::move(*acquired)};
         ASSERT_TRUE(sensor.begin(20ms));
         const auto reading = sensor.read(20ms);
         ASSERT_TRUE(reading);

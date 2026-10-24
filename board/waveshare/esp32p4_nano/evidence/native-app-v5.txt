@@ -35,7 +35,7 @@ mcutest JSON: 2353 bytes,
   sha256 7f0ea513708d7dac7c6f46f77e7506e4961c28fd85ac6841c8813b63462c54a9
 
 coverage: MCUCOV FULL profile, build id 0x4d485005, UART hex transport
-instrumented targets: board GPIO/I2C/UART tests and included mcuhw headers;
+instrumented targets: board GPIO/I2C/UART tests and included mcubsp headers;
   loader, application startup and coverage transport are harness code
 coverage frame: 3748 bytes,
   sha256 fa716b006a7475bbcf98c97cc04e3361bb6ff77ebd91cc101c5a89fc48af7ab5
@@ -50,14 +50,14 @@ target-filtered mcutrace coverage JSON: 346263 bytes,
 target-filtered summary: functions 50/84, statements 278/628, lines 326/658,
   branches 114/384, MC/DC conditions 9/283, invalid MC/DC decisions 0
 
-MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
-MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v5 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
-MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+MCUBSP_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUBSP_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v5 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
+MCUBSP_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
 esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
 esp32p4_i2c/i2c0_initializes_matrix_timing_and_idle_bus:PASS
 esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
 3 Tests, 0 Failures
-MCUHW_RESULT status=pass suite=esp32p4_native tests=3 failures=0 registry_overflow=0 coverage=captured
+MCUBSP_RESULT status=pass suite=esp32p4_native tests=3 failures=0 registry_overflow=0 coverage=captured
 
 Original second-stage bootloader backup (not stored in the repository):
 /private/tmp/esp32p4-nano-original-bootloader-20260920.bin

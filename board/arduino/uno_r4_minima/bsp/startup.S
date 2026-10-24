@@ -75,7 +75,7 @@ Reset_Handler:
     str r0, [r1], #4
     b 3b
 4:
-    bl mcuhw_uno_early_init
+    bl mcubsp_uno_early_init
 
     ldr r4, =__init_array_start
     ldr r5, =__init_array_end

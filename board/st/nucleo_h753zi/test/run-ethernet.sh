@@ -17,17 +17,17 @@ symbol_address() {
         '$3 == symbol { print "0x" $1; found = 1; exit } END { if (!found) exit 1 }'
 }
 
-status_address=$(symbol_address mcuhw_nucleo_ethernet_status)
-phy_id_address=$(symbol_address mcuhw_nucleo_ethernet_phy_id)
-phy_status_address=$(symbol_address mcuhw_nucleo_ethernet_phy_status)
-rx_address=$(symbol_address mcuhw_nucleo_ethernet_rx_frames)
-replies_address=$(symbol_address mcuhw_nucleo_ethernet_replies)
-rx_min_address=$(symbol_address mcuhw_nucleo_ethernet_rx_min)
-rx_max_address=$(symbol_address mcuhw_nucleo_ethernet_rx_max)
-link_transitions_address=$(symbol_address mcuhw_nucleo_ethernet_link_transitions)
-control_address=$(symbol_address mcuhw_nucleo_ethernet_evidence_control)
-evidence_address=$(symbol_address mcuhw_nucleo_ethernet_evidence_buffer)
-coverage_address=$(symbol_address mcuhw_nucleo_ethernet_coverage_buffer)
+status_address=$(symbol_address mcubsp_nucleo_ethernet_status)
+phy_id_address=$(symbol_address mcubsp_nucleo_ethernet_phy_id)
+phy_status_address=$(symbol_address mcubsp_nucleo_ethernet_phy_status)
+rx_address=$(symbol_address mcubsp_nucleo_ethernet_rx_frames)
+replies_address=$(symbol_address mcubsp_nucleo_ethernet_replies)
+rx_min_address=$(symbol_address mcubsp_nucleo_ethernet_rx_min)
+rx_max_address=$(symbol_address mcubsp_nucleo_ethernet_rx_max)
+link_transitions_address=$(symbol_address mcubsp_nucleo_ethernet_link_transitions)
+control_address=$(symbol_address mcubsp_nucleo_ethernet_evidence_control)
+evidence_address=$(symbol_address mcubsp_nucleo_ethernet_evidence_buffer)
+coverage_address=$(symbol_address mcubsp_nucleo_ethernet_coverage_buffer)
 control_complete_address=$(printf '0x%08x' $((control_address + 4)))
 evidence_size_address=$(printf '0x%08x' $((control_address + 8)))
 coverage_size_address=$(printf '0x%08x' $((control_address + 12)))
@@ -35,7 +35,7 @@ test_count_address=$(printf '0x%08x' $((control_address + 16)))
 failure_count_address=$(printf '0x%08x' $((control_address + 20)))
 build_id_address=$(printf '0x%08x' $((control_address + 24)))
 
-run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcuhw-nucleo-h753zi-ethernet.XXXXXX")
+run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcubsp-nucleo-h753zi-ethernet.XXXXXX")
 log="$run_dir/openocd.log"
 ping_log="$run_dir/ping.log"
 evidence_raw="$run_dir/evidence-buffer.bin"

@@ -1,9 +1,9 @@
 #include <array>
 #include <chrono>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
 
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using namespace std::chrono_literals;
 constexpr io::board_config configuration{
     .serial = false, .spi = true, .dma = io::channels<0, 1>,

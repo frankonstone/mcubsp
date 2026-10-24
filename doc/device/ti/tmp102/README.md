@@ -5,7 +5,7 @@ Wire SDA/SCL to the selected board profile, share ground, use compatible supply 
 
 ## Implementation and focused checks
 
-Public implementation: `include/mcuhw/device/sensor/tmp102.hpp`. Required transports: i2c.
+Public implementation: `include/mcubsp/device/sensor/tmp102.hpp`. Required transports: i2c.
 
 Focused test sources:
 

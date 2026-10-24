@@ -2,20 +2,20 @@ include_guard(GLOBAL)
 
 # Shared launch context for supplied-startup applications and physical fixtures.
 # Callers own source/build directories; this helper never downloads SDK tools.
-function(mcuhw_idf_environment output)
-    set(MCUHW_IDF_PATH "$ENV{IDF_PATH}" CACHE PATH "Pinned ESP-IDF SDK checkout")
-    set(MCUHW_IDF_TOOLS_PATH "$ENV{IDF_TOOLS_PATH}" CACHE PATH "ESP-IDF tool/cache root")
-    if(NOT EXISTS "${MCUHW_IDF_PATH}/tools/cmake/project.cmake")
-        message(FATAL_ERROR "${MCUHW_BOARD} requires MCUHW_IDF_PATH pointing to ESP-IDF. Run tool/mcuhw.py doctor for setup details.")
+function(mcubsp_idf_environment output)
+    set(MCUBSP_IDF_PATH "$ENV{IDF_PATH}")
+    set(MCUBSP_IDF_TOOLS_PATH "$ENV{IDF_TOOLS_PATH}")
+    if(NOT EXISTS "${MCUBSP_IDF_PATH}/tools/cmake/project.cmake")
+        message(FATAL_ERROR "${MCUBSP_BOARD} requires IDF_PATH pointing to ESP-IDF.")
     endif()
     if(NOT PYTHON)
         find_package(Python3 REQUIRED COMPONENTS Interpreter)
         set(PYTHON "${Python3_EXECUTABLE}")
     endif()
-    set(environment "${CMAKE_COMMAND}" -E env "IDF_PATH=${MCUHW_IDF_PATH}"
+    set(environment "${CMAKE_COMMAND}" -E env "IDF_PATH=${MCUBSP_IDF_PATH}"
         "IDF_COMPONENT_MANAGER=0")
-    if(MCUHW_IDF_TOOLS_PATH)
-        list(APPEND environment "IDF_TOOLS_PATH=${MCUHW_IDF_TOOLS_PATH}")
+    if(MCUBSP_IDF_TOOLS_PATH)
+        list(APPEND environment "IDF_TOOLS_PATH=${MCUBSP_IDF_TOOLS_PATH}")
     endif()
     get_filename_component(python_bin "${PYTHON}" DIRECTORY)
     get_filename_component(python_env "${python_bin}/.." ABSOLUTE)

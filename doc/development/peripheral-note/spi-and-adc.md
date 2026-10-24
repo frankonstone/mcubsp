@@ -24,7 +24,7 @@ loopback fixture connects D11 to D12; observe D10 and D13 with a logic analyzer
 to independently verify polarity, rate, and final-frame CS timing.
 
 ```sh
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
 cmake --build build/uno-r4-minima --target board-tests
 tool/run-uno-r4-minima-tests.sh spi
 ```

@@ -5,26 +5,26 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/sci_uart.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/driver/uart.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/backend/ra4m1/sci_uart.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/driver/uart.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
-using binding = mcuhw::backend::ra4m1::sci_uart_binding<
-    2, mcuhw::board::arduino_uno_r4_minima::d0_rx,
-    mcuhw::board::arduino_uno_r4_minima::d1_tx>;
-using mmio_type = mcuhw::testing::recording_mmio<0x60000, 256>;
-using execution_type = mcuhw::execution::fake_policy;
-using backend_type = mcuhw::backend::ra4m1::sci_uart_backend<
+using binding = mcubsp::backend::ra4m1::sci_uart_binding<
+    2, mcubsp::board::arduino_uno_r4_minima::d0_rx,
+    mcubsp::board::arduino_uno_r4_minima::d1_tx>;
+using mmio_type = mcubsp::testing::recording_mmio<0x60000, 256>;
+using execution_type = mcubsp::execution::fake_policy;
+using backend_type = mcubsp::backend::ra4m1::sci_uart_backend<
     binding, mmio_type, execution_type>;
 
 class fake_dma_backend {
 public:
-    using pool_type = mcuhw::core::operation_pool<
-        mcuhw::driver::dma_transfer_result, mcuhw::driver::dma_error, 1,
+    using pool_type = mcubsp::core::operation_pool<
+        mcubsp::driver::dma_transfer_result, mcubsp::driver::dma_error, 1,
         execution_type>;
     using transfer_type = typename pool_type::transfer_type;
     using start_result = std::expected<transfer_type,
@@ -33,7 +33,7 @@ public:
     explicit fake_dma_backend(execution_type& execution) : pool_(execution) {}
 
     [[nodiscard]] start_result peripheral(
-        mcuhw::driver::dma_peripheral_transfer request) noexcept {
+        mcubsp::driver::dma_peripheral_transfer request) noexcept {
         last_request = request;
         auto started = pool_.try_start({.quiesce = &quiesce, .context = this});
         if (started) operation_id_ = started->id();
@@ -54,39 +54,39 @@ public:
         if (!operation_id_) return false;
         const auto id = *operation_id_;
         operation_id_.reset();
-        return pool_.fail(id, mcuhw::driver::dma_error::transfer_escape);
+        return pool_.fail(id, mcubsp::driver::dma_error::transfer_escape);
     }
 
-    mcuhw::driver::dma_peripheral_transfer last_request{};
+    mcubsp::driver::dma_peripheral_transfer last_request{};
     std::size_t cancellations{};
 
 private:
-    [[nodiscard]] static mcuhw::core::quiesce_result quiesce(
-        void* context, mcuhw::core::operation_id id) noexcept {
+    [[nodiscard]] static mcubsp::core::quiesce_result quiesce(
+        void* context, mcubsp::core::operation_id id) noexcept {
         auto& self = *static_cast<fake_dma_backend*>(context);
         if (!self.operation_id_ || *self.operation_id_ != id) {
-            return mcuhw::core::quiesce_result::reusable;
+            return mcubsp::core::quiesce_result::reusable;
         }
         self.operation_id_.reset();
         ++self.cancellations;
-        return mcuhw::core::quiesce_result::reusable;
+        return mcubsp::core::quiesce_result::reusable;
     }
 
     pool_type pool_;
-    std::optional<mcuhw::core::operation_id> operation_id_{};
+    std::optional<mcubsp::core::operation_id> operation_id_{};
 };
 
-constexpr auto baud_115200 = mcuhw::backend::ra4m1::solve_uart_baud({
+constexpr auto baud_115200 = mcubsp::backend::ra4m1::solve_uart_baud({
     .clock_hz = 48'000'000U,
     .target_baud = 115'200U,
     .maximum_error_ppm = 2'000U,
 });
 static_assert(baud_115200.has_value());
 
-[[nodiscard]] bool has_write(std::span<const mcuhw::testing::mmio_operation> ops,
+[[nodiscard]] bool has_write(std::span<const mcubsp::testing::mmio_operation> ops,
                              std::uintptr_t address, std::uint64_t value) {
     for (const auto& operation : ops) {
-        if (operation.kind == mcuhw::testing::mmio_operation_kind::write
+        if (operation.kind == mcubsp::testing::mmio_operation_kind::write
             && operation.address == address && operation.value == value) {
             return true;
         }
@@ -94,10 +94,10 @@ static_assert(baud_115200.has_value());
     return false;
 }
 
-[[nodiscard]] bool has_read(std::span<const mcuhw::testing::mmio_operation> ops,
+[[nodiscard]] bool has_read(std::span<const mcubsp::testing::mmio_operation> ops,
                             std::uintptr_t address) {
     for (const auto& operation : ops) {
-        if (operation.kind == mcuhw::testing::mmio_operation_kind::read
+        if (operation.kind == mcubsp::testing::mmio_operation_kind::read
             && operation.address == address) {
             return true;
         }
@@ -110,15 +110,15 @@ TEST(uart_solver, reports_achieved_baud_and_rejects_bad_requests,
     ASSERT_TRUE(baud_115200.has_value());
     EXPECT_EQ(baud_115200->achieved_baud, 115'385U);
     EXPECT_TRUE(baud_115200->error_ppm <= 2'000U);
-    EXPECT_TRUE(mcuhw::backend::ra4m1::solve_uart_baud({0U, 115'200U, 10'000U})
+    EXPECT_TRUE(mcubsp::backend::ra4m1::solve_uart_baud({0U, 115'200U, 10'000U})
                     .error()
-                == mcuhw::driver::uart_error::invalid_clock);
-    EXPECT_TRUE(mcuhw::backend::ra4m1::solve_uart_baud({48'000'000U, 0U, 10'000U})
+                == mcubsp::driver::uart_error::invalid_clock);
+    EXPECT_TRUE(mcubsp::backend::ra4m1::solve_uart_baud({48'000'000U, 0U, 10'000U})
                     .error()
-                == mcuhw::driver::uart_error::invalid_baud);
-    EXPECT_TRUE(mcuhw::backend::ra4m1::solve_uart_baud({48'000'000U, 123'457U, 0U})
+                == mcubsp::driver::uart_error::invalid_baud);
+    EXPECT_TRUE(mcubsp::backend::ra4m1::solve_uart_baud({48'000'000U, 123'457U, 0U})
                     .error()
-                == mcuhw::driver::uart_error::unattainable_tolerance);
+                == mcubsp::driver::uart_error::unattainable_tolerance);
 }
 
 TEST(ra4m1_uart, configures_sci2_format_baud_and_real_d0_d1_routes,
@@ -127,9 +127,9 @@ TEST(ra4m1_uart, configures_sci2_format_baud_and_real_d0_d1_routes,
     execution_type execution;
     backend_type backend{mmio, execution};
     ASSERT_TRUE(backend.initialize(*baud_115200, {
-        .data_bits = mcuhw::driver::uart_data_bits::seven,
-        .parity = mcuhw::driver::uart_parity::odd,
-        .stop_bits = mcuhw::driver::uart_stop_bits::two,
+        .data_bits = mcubsp::driver::uart_data_bits::seven,
+        .parity = mcubsp::driver::uart_parity::odd,
+        .stop_bits = mcubsp::driver::uart_stop_bits::two,
     }).has_value());
     EXPECT_TRUE(has_write(mmio.operations(), 0x4007'0040U,
                           static_cast<std::uint8_t>(
@@ -211,9 +211,9 @@ TEST(ra4m1_uart, dma_rx_and_tx_use_sci2_events_and_tx_waits_for_tei,
     EXPECT_EQ(rx_dma.last_request.peripheral, 0x4007'0045U);
     EXPECT_EQ(tx_dma.last_request.peripheral, 0x4007'0043U);
     EXPECT_TRUE(rx_dma.last_request.direction
-                == mcuhw::driver::dma_peripheral_direction::peripheral_to_memory);
+                == mcubsp::driver::dma_peripheral_direction::peripheral_to_memory);
     EXPECT_TRUE(tx_dma.last_request.direction
-                == mcuhw::driver::dma_peripheral_direction::memory_to_peripheral);
+                == mcubsp::driver::dma_peripheral_direction::memory_to_peripheral);
 
     ASSERT_TRUE(rx_dma.complete());
     EXPECT_TRUE(backend.handle_dma_receive_completion());
@@ -251,15 +251,15 @@ TEST(ra4m1_uart, dma_failure_and_timeout_quiesce_requests,
     EXPECT_TRUE(backend.handle_dma_receive_completion());
     const auto failed = receive.take();
     ASSERT_FALSE(failed.has_value());
-    EXPECT_TRUE(failed.error().cause == mcuhw::driver::uart_error::dma);
+    EXPECT_TRUE(failed.error().cause == mcubsp::driver::uart_error::dma);
 
     auto tx_started = backend.transmit_dma(tx_data, tx_dma);
     ASSERT_TRUE(tx_started.has_value());
     auto transmit = std::move(*tx_started);
-    const auto waited = transmit.wait_until(mcuhw::execution::deadline{0U});
+    const auto waited = transmit.wait_until(mcubsp::execution::deadline{0U});
     ASSERT_FALSE(waited.has_value());
     EXPECT_TRUE(waited.error().kind
-                == mcuhw::core::transfer_error_kind::timeout);
+                == mcubsp::core::transfer_error_kind::timeout);
     EXPECT_EQ(tx_dma.cancellations, 1U);
     ASSERT_TRUE(backend.shutdown().has_value());
 }
@@ -311,16 +311,16 @@ TEST(ra4m1_uart, receive_errors_timeout_and_slot_reuse_are_explicit,
     EXPECT_TRUE(backend.handle_receive_error_interrupt());
     const auto error = errored.take();
     ASSERT_FALSE(error.has_value());
-    EXPECT_TRUE(error.error().cause == mcuhw::driver::uart_error::overrun);
+    EXPECT_TRUE(error.error().cause == mcubsp::driver::uart_error::overrun);
 
     auto timed_start = backend.receive(data);
     ASSERT_TRUE(timed_start.has_value());
     auto timed = std::move(*timed_start);
-    const auto waited = timed.wait_until(mcuhw::execution::deadline{0U});
+    const auto waited = timed.wait_until(mcubsp::execution::deadline{0U});
     ASSERT_FALSE(waited.has_value());
-    EXPECT_TRUE(waited.error().kind == mcuhw::core::transfer_error_kind::timeout);
+    EXPECT_TRUE(waited.error().kind == mcubsp::core::transfer_error_kind::timeout);
     EXPECT_TRUE(timed.take().error().kind
-                == mcuhw::core::transfer_error_kind::timeout);
+                == mcubsp::core::transfer_error_kind::timeout);
 
     auto reused_start = backend.receive(data);
     ASSERT_TRUE(reused_start.has_value());

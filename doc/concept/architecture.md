@@ -1,6 +1,6 @@
 # Architecture and layer boundaries
 
-`mcuhw` separates hardware facts, hardware sequencing, functional behavior,
+`mcubsp` separates hardware facts, hardware sequencing, functional behavior,
 and board wiring:
 
 ```text
@@ -15,25 +15,25 @@ MMIO policy ← MCU description
 
 ## Core
 
-`include/mcuhw/core` defines register metadata, typed units, MMIO contracts,
+`include/mcubsp/core` defines register metadata, typed units, MMIO contracts,
 fixed ownership, and transfer state. Core code contains no MCU addresses.
 
 ## MCU descriptions
 
-`include/mcuhw/mcu/<mcu>` records source-backed memory, clock, peripheral, pin,
+`include/mcubsp/mcu/<mcu>` records source-backed memory, clock, peripheral, pin,
 interrupt, DMA, and capability metadata. Descriptions do not start hardware or
 depend on a board.
 
 ## Backends and drivers
 
-`include/mcuhw/backend/<mcu>` implements native register sequencing for a
-peripheral family. `include/mcuhw/driver` provides functional APIs and external
+`include/mcubsp/backend/<mcu>` implements native register sequencing for a
+peripheral family. `include/mcubsp/driver` provides functional APIs and external
 device drivers. A common driver does not require unrelated MCUs to imitate one
 vendor's register layout.
 
 ## Boards and execution
 
-`include/mcuhw/board` maps exact board connectors and devices to MCU pins.
+`include/mcubsp/board` maps exact board connectors and devices to MCU pins.
 `board/<board>` owns startup, linker configuration, interrupt entry points, and
 physical tests. Execution policies bind critical sections, time, ISR context,
 progress, and notification without requiring an RTOS.

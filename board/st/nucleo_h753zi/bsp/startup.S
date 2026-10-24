@@ -72,7 +72,7 @@ Reset_Handler:
     str r0, [r1], #4
     b 5b
 6:
-    bl mcuhw_nucleo_early_init
+    bl mcubsp_nucleo_early_init
 
     ldr r4, =__init_array_start
     ldr r5, =__init_array_end

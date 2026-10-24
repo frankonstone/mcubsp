@@ -1,6 +1,0 @@
-@PACKAGE_INIT@
-# @req REQ-0047 REQ-0049
-include("${CMAKE_CURRENT_LIST_DIR}/mcuhwTargets.cmake")
-set(MCUHW_ROOT "${PACKAGE_PREFIX_DIR}/share/mcuhw")
-include("${MCUHW_ROOT}/board/Support.cmake")
-check_required_components(mcuhw)

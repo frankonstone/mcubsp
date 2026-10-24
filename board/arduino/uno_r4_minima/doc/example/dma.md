@@ -19,15 +19,15 @@ state that `main()` is waiting on.
 #include <array>
 #include <utility>
 
-#include <mcuhw/backend/ra4m1/dmac.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/dma.hpp>
+#include <mcubsp/backend/ra4m1/dmac.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/dma.hpp>
 
 void fill_source(std::array<std::uint32_t, 16>& source);
 void consume_copy(const std::array<std::uint32_t, 16>& destination);
 
 template<class Dma>
-int copy_words(Dma& dma, mcuhw::execution::deadline deadline) {
+int copy_words(Dma& dma, mcubsp::execution::deadline deadline) {
     alignas(4) std::array<std::uint32_t, 16> source{};
     alignas(4) std::array<std::uint32_t, 16> destination{};
     fill_source(source);
@@ -36,7 +36,7 @@ int copy_words(Dma& dma, mcuhw::execution::deadline deadline) {
         .source = reinterpret_cast<std::uintptr_t>(source.data()),
         .destination = reinterpret_cast<std::uintptr_t>(destination.data()),
         .count = source.size(),
-        .width = mcuhw::driver::dma_width::bits32,
+        .width = mcubsp::driver::dma_width::bits32,
     });
     if (!started) {
         return 2;
@@ -59,11 +59,11 @@ The surrounding application owns the channel and dispatches its transfer-end
 event:
 
 ```cpp
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 
-using dma_type = mcuhw::backend::ra4m1::dmac_channel_backend<
-    0, mcuhw::core::direct_mmio, application_execution_policy>;
+using dma_type = mcubsp::backend::ra4m1::dmac_channel_backend<
+    0, mcubsp::core::direct_mmio, application_execution_policy>;
 dma_type dma{mmio, execution};
 
 int main() {
@@ -74,7 +74,7 @@ int main() {
         return 1;
     }
     enable_dmac0_transfer_end_interrupt();
-    const auto deadline = mcuhw::execution::make_deadline(
+    const auto deadline = mcubsp::execution::make_deadline(
         execution.now(), 480'000U);
     const bool copied = deadline && copy_words(dma, *deadline) == 0;
     disable_dmac0_transfer_end_interrupt();

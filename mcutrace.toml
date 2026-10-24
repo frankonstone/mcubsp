@@ -3,7 +3,7 @@ root = "."
 requirements = ["requirements.md"]
 plans = ["implementation-plan.md"]
 sources = [
-  "include/mcuhw/**/*.hpp",
+  "include/mcubsp/**/*.hpp",
   "board/*/*/example/**/*.cpp",
   "board/*/*/bsp/**/*.?pp",
   "board/*/*/test/**/*.?pp",
@@ -17,7 +17,7 @@ build_files = [
   "board/*/*/test/*.sh",
   "board/**/*.ld",
   "tool/*",
-  "tool/mcuhwlib/**/*.py",
+  "tool/mcubsplib/**/*.py",
 ]
 
 [[artifacts]]
@@ -33,7 +33,7 @@ path = "build/uno-r4-minima/artifact/mcutest-hardware.json"
 importer = "mcutest"
 
 [[artifacts]]
-path = "build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_all_tests.mcucov.json"
+path = "build/uno-r4-minima/artifact/mcubsp_uno_r4_minima_all_tests.mcucov.json"
 importer = "mcucov"
 
 [[artifacts]]

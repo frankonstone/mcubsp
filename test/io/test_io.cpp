@@ -4,20 +4,20 @@
 #include <limits>
 #include <utility>
 #include <mcutest/mcutest.hpp>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 extern "C" {
-std::uint32_t mcuhw_uno_clock_status = 0U;
+std::uint32_t mcubsp_uno_clock_status = 0U;
 }
 
 namespace {
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using Board = io::boards::uno_r4_minima;
-using Policy = mcuhw::execution::fake_policy;
-using Mmio = mcuhw::testing::recording_mmio<0x80000, 4096>;
+using Policy = mcubsp::execution::fake_policy;
+using Mmio = mcubsp::testing::recording_mmio<0x80000, 4096>;
 using namespace std::chrono_literals;
 constexpr io::board_config gpio_only{.serial = false};
 constexpr io::board_config buses{.serial = true, .i2c = true, .spi = true, .dma = io::channels<0, 1>};
@@ -27,9 +27,9 @@ TEST(io, startup_ok_reports_the_board_startup_status, "REQ-0045") {
     Mmio mmio{0x4000'0000U};
     Policy policy;
     auto hw = io::make_board<Board, gpio_only>(policy, mmio, 1000U);
-    mcuhw_uno_clock_status = 1U;
+    mcubsp_uno_clock_status = 1U;
     EXPECT_FALSE(hw.startup_ok());
-    mcuhw_uno_clock_status = 0U;
+    mcubsp_uno_clock_status = 0U;
     EXPECT_TRUE(hw.startup_ok());
 }
 

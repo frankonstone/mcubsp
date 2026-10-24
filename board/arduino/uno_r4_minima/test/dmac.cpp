@@ -9,34 +9,34 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/dmac.hpp>
-#include <mcuhw/backend/ra4m1/spi.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/driver/gpio.hpp>
+#include <mcubsp/backend/ra4m1/dmac.hpp>
+#include <mcubsp/backend/ra4m1/spi.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/driver/gpio.hpp>
 
 #include "support.hpp"
 
 namespace {
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
-using dmac0_type = mcuhw::backend::ra4m1::dmac_channel_backend<
-    0, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
-using dmac1_type = mcuhw::backend::ra4m1::dmac_channel_backend<
-    1, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
-using spi_binding = mcuhw::backend::ra4m1::spi_binding<
+namespace board = mcubsp::board::arduino_uno_r4_minima;
+using dmac0_type = mcubsp::backend::ra4m1::dmac_channel_backend<
+    0, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
+using dmac1_type = mcubsp::backend::ra4m1::dmac_channel_backend<
+    1, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
+using spi_binding = mcubsp::backend::ra4m1::spi_binding<
     1, board::d12_miso, board::d11_mosi, board::d13_sck, board::d10_ssl>;
-using spi_type = mcuhw::backend::ra4m1::spi_master_backend<
-    spi_binding, mcuhw::core::direct_mmio,
-    mcuhw::board_test::execution_policy>;
+using spi_type = mcubsp::backend::ra4m1::spi_master_backend<
+    spi_binding, mcubsp::core::direct_mmio,
+    mcubsp::board_test::execution_policy>;
 
-mcuhw::board_test::execution_policy execution;
-dmac0_type dmac0{mcuhw::board_test::mmio, execution};
-dmac1_type dmac1{mcuhw::board_test::mmio, execution};
-spi_type spi{mcuhw::board_test::mmio, execution};
+mcubsp::board_test::execution_policy execution;
+dmac0_type dmac0{mcubsp::board_test::mmio, execution};
+dmac1_type dmac1{mcubsp::board_test::mmio, execution};
+spi_type spi{mcubsp::board_test::mmio, execution};
 
-constexpr mcuhw::core::pin_id sd_chip_select_pin{1U, 3U};
-mcuhw::driver::gpio_pin sd_chip_select{
-    mcuhw::board_test::gpio, sd_chip_select_pin};
+constexpr mcubsp::core::pin_id sd_chip_select_pin{1U, 3U};
+mcubsp::driver::gpio_pin sd_chip_select{
+    mcubsp::board_test::gpio, sd_chip_select_pin};
 bool sd_deselected{};
 
 constexpr std::array<std::uint32_t, 16> flash_source{
@@ -75,7 +75,7 @@ transfer_observation sram_copy{};
 bool initialized{};
 bool shutdown{};
 
-constexpr auto spi_timing = mcuhw::backend::ra4m1::solve_spi_timing(
+constexpr auto spi_timing = mcubsp::backend::ra4m1::solve_spi_timing(
     {48'000'000U, 1'000'000U, 0U});
 static_assert(spi_timing.has_value());
 constexpr std::uint8_t w5100_read = 0x0FU;
@@ -112,15 +112,15 @@ spi_dma_observation spi_dma{};
 
 void configure_interrupts() noexcept {
     constexpr std::array events{
-        mcuhw::mcu::ra4m1::event::dmac0_int,
-        mcuhw::mcu::ra4m1::event::dmac1_int,
-        mcuhw::mcu::ra4m1::event::spi1_idle,
-        mcuhw::mcu::ra4m1::event::spi1_error,
+        mcubsp::mcu::ra4m1::event::dmac0_int,
+        mcubsp::mcu::ra4m1::event::dmac1_int,
+        mcubsp::mcu::ra4m1::event::spi1_idle,
+        mcubsp::mcu::ra4m1::event::spi1_error,
     };
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E180U) = 0x0FU;
     for (std::uint32_t line = 0U; line < events.size(); ++line) {
         *reinterpret_cast<volatile std::uint32_t*>(0x4000'6300U + line * 4U)
-            = mcuhw::mcu::ra4m1::event_number(events[line]);
+            = mcubsp::mcu::ra4m1::event_number(events[line]);
         *reinterpret_cast<volatile std::uint8_t*>(0xE000'E400U + line)
             = 0x80U;
     }
@@ -129,21 +129,21 @@ void configure_interrupts() noexcept {
     __asm__ volatile("dsb sy\n\tisb sy\n\tcpsie i" ::: "memory");
 }
 
-[[nodiscard]] mcuhw::execution::deadline deadline_after(
+[[nodiscard]] mcubsp::execution::deadline deadline_after(
     std::uint32_t cycles) noexcept {
     return {static_cast<std::uint32_t>(
-        mcuhw::board_test::execution_hooks::now() + cycles)};
+        mcubsp::board_test::execution_hooks::now() + cycles)};
 }
 
 template<typename Source, typename Destination>
 [[nodiscard]] bool transfer_and_compare(
-    Source& source, Destination& destination, mcuhw::driver::dma_width width,
+    Source& source, Destination& destination, mcubsp::driver::dma_width width,
     transfer_observation& observation) noexcept {
     observation.source = reinterpret_cast<std::uintptr_t>(source.data());
     observation.destination =
         reinterpret_cast<std::uintptr_t>(destination.data());
     observation.units = static_cast<std::uint32_t>(source.size());
-    observation.width_bytes = static_cast<std::uint32_t>(mcuhw::driver::bytes(width));
+    observation.width_bytes = static_cast<std::uint32_t>(mcubsp::driver::bytes(width));
 
     auto started = dmac0.copy({
         .source = observation.source,
@@ -233,10 +233,10 @@ TEST(uno_dmac, flash_and_sram_known_answer_copies_complete_by_interrupt,
     initialized = dmac0.initialize().has_value();
     ASSERT_TRUE(initialized);
     ASSERT_TRUE(transfer_and_compare(
-        flash_source, flash_destination, mcuhw::driver::dma_width::bits32,
+        flash_source, flash_destination, mcubsp::driver::dma_width::bits32,
         flash_copy));
     ASSERT_TRUE(transfer_and_compare(
-        sram_source, sram_destination, mcuhw::driver::dma_width::bits8,
+        sram_source, sram_destination, mcubsp::driver::dma_width::bits8,
         sram_copy));
     ASSERT_EQ(transfer_end_interrupts, 2U);
     shutdown = dmac0.shutdown().has_value();
@@ -255,9 +255,9 @@ TEST(uno_dmac, spi1_w5100_full_duplex_dma_read_write_restore_and_idle,
     spi_dma.dmac0_initialized = dmac0.initialize().has_value();
     spi_dma.dmac1_initialized = dmac1.initialize().has_value();
     spi_dma.spi_initialized = spi.initialize(*spi_timing, {
-        .mode = mcuhw::driver::spi_mode::mode0,
-        .bit_order = mcuhw::driver::spi_bit_order::most_significant_first,
-        .frame_width = mcuhw::driver::spi_frame_width::bits8,
+        .mode = mcubsp::driver::spi_mode::mode0,
+        .bit_order = mcubsp::driver::spi_bit_order::most_significant_first,
+        .frame_width = mcubsp::driver::spi_frame_width::bits8,
     }).has_value();
     ASSERT_TRUE(spi_dma.dmac0_initialized);
     ASSERT_TRUE(spi_dma.dmac1_initialized);
@@ -300,13 +300,13 @@ TEST(uno_dmac, spi1_w5100_full_duplex_dma_read_write_restore_and_idle,
 }
 
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=dmac "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=dmac "
     "firmware=pln-0010 fixture=internal_memory_and_Ethernet_Shield_R3_W5100 "
     "channels=DMAC0,DMAC1 activation=software,SPI1_RXI,SPI1_TXI "
     "completion=DMAC0_INT,DMAC1_INT,SPI1_SPII "
     "widths=8,32 toolchain=arm-none-eabi-gcc-15.2.1 "
     "iclk_hz=48000000 interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "dmac",
     .firmware = "pln-0010",
     .fixture = "internal memory plus stacked Arduino Ethernet Shield R3 W5100; network cable attached; SD CS D4 high",
@@ -327,16 +327,16 @@ void write_observation(Writer& out, const transfer_observation& value) noexcept 
 } // namespace
 
 int main() {
-    mcuhw::board_test::start(metadata);
+    mcubsp::board_test::start(metadata);
     sd_deselected = sd_chip_select.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
-        .initial_level = mcuhw::driver::gpio_level::high,
-        .output_type = mcuhw::driver::gpio_output_type::push_pull,
-        .pull = mcuhw::driver::gpio_pull::none,
-        .drive = mcuhw::driver::gpio_drive::middle,
+        .direction = mcubsp::driver::gpio_direction::output,
+        .initial_level = mcubsp::driver::gpio_level::high,
+        .output_type = mcubsp::driver::gpio_output_type::push_pull,
+        .pull = mcubsp::driver::gpio_pull::none,
+        .drive = mcubsp::driver::gpio_drive::middle,
     }).has_value();
     configure_interrupts();
-    mcuhw::board_test::finish(evidence, [&](auto& observations) {
+    mcubsp::board_test::finish(evidence, [&](auto& observations) {
         observations("engine", "RA4M1 DMAC0 finite normal mode");
         observations("activation", "software request with continuous request select");
         observations("completion", "DMAC0_INT after DTIF with ACT clear");
@@ -373,24 +373,24 @@ extern "C" void IRQ0_Handler() noexcept {
     transfer_end_interrupts = transfer_end_interrupts + 1U;
     static_cast<void>(dmac0.handle_transfer_end_interrupt());
     static_cast<void>(spi.handle_dma_receive_completion());
-    mcuhw::board_test::clear_icu_line(0U);
+    mcubsp::board_test::clear_icu_line(0U);
 }
 
 extern "C" void IRQ1_Handler() noexcept {
     transmit_transfer_end_interrupts = transmit_transfer_end_interrupts + 1U;
     static_cast<void>(dmac1.handle_transfer_end_interrupt());
     static_cast<void>(spi.handle_dma_transmit_completion());
-    mcuhw::board_test::clear_icu_line(1U);
+    mcubsp::board_test::clear_icu_line(1U);
 }
 
 extern "C" void IRQ2_Handler() noexcept {
     spi_idle_interrupts = spi_idle_interrupts + 1U;
     static_cast<void>(spi.handle_idle_interrupt());
-    mcuhw::board_test::clear_icu_line(2U);
+    mcubsp::board_test::clear_icu_line(2U);
 }
 
 extern "C" void IRQ3_Handler() noexcept {
     spi_error_interrupts = spi_error_interrupts + 1U;
     static_cast<void>(spi.handle_error_interrupt());
-    mcuhw::board_test::clear_icu_line(3U);
+    mcubsp::board_test::clear_icu_line(3U);
 }

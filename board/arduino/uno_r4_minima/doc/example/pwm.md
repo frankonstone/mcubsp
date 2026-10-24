@@ -16,17 +16,17 @@ high-current LED directly from an MCU pin; use a suitable driver stage.
 ## Code
 
 ```cpp
-#include <mcuhw/backend/ra4m1/gpt.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/pwm.hpp>
+#include <mcubsp/backend/ra4m1/gpt.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/pwm.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
-using binding = mcuhw::backend::ra4m1::gpt_binding<
-    1, mcuhw::mcu::ra4m1::gpt_output::b, board::d3>;
+using binding = mcubsp::backend::ra4m1::gpt_binding<
+    1, mcubsp::mcu::ra4m1::gpt_output::b, board::d3>;
 
-constexpr auto timing = mcuhw::backend::ra4m1::solve_pwm_timing({
+constexpr auto timing = mcubsp::backend::ra4m1::solve_pwm_timing({
     .clock_hz = 48'000'000U,
     .target_hz = 20'000U,
     .maximum_error_ppm = 0U,
@@ -36,15 +36,15 @@ static_assert(timing.has_value());
 
 template<class ExecutionPolicy>
 int run_pwm(ExecutionPolicy& execution) {
-    mcuhw::core::direct_mmio mmio;
-    using backend_type = mcuhw::backend::ra4m1::gpt_pwm_backend<
-        binding, mcuhw::core::direct_mmio, ExecutionPolicy>;
+    mcubsp::core::direct_mmio mmio;
+    using backend_type = mcubsp::backend::ra4m1::gpt_pwm_backend<
+        binding, mcubsp::core::direct_mmio, ExecutionPolicy>;
 
     backend_type hardware{mmio, execution};
-    mcuhw::driver::pwm_channel pwm{hardware};
+    mcubsp::driver::pwm_channel pwm{hardware};
 
     if (!pwm.initialize(*timing,
-                        mcuhw::driver::pwm_duty::percent(25U))) {
+                        mcubsp::driver::pwm_duty::percent(25U))) {
         return 1;
     }
     if (!pwm.start()) {
@@ -53,7 +53,7 @@ int run_pwm(ExecutionPolicy& execution) {
 
     // The RA4M1 backend buffers an active-duty update. It takes effect at the
     // period boundary rather than truncating the current pulse.
-    if (!pwm.update_duty(mcuhw::driver::pwm_duty::percent(75U))) {
+    if (!pwm.update_duty(mcubsp::driver::pwm_duty::percent(75U))) {
         return 3;
     }
 

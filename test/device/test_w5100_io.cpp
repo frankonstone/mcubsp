@@ -9,14 +9,14 @@
 #include <utility>
 
 #include <mcutest/mcutest.hpp>
-#include <mcuhw/device/ethernet/w5100.hpp>
-#include <mcuhw/integration/mcuip/w5100.hpp>
+#include <mcubsp/device/ethernet/w5100.hpp>
+#include <mcubsp/integration/mcuip/w5100.hpp>
 
 namespace {
-namespace io = mcuhw::io;
-namespace reg = mcuhw::device::w5100_register;
-namespace ex = mcuhw::execution;
-using error = mcuhw::device::w5100_error;
+namespace io = mcubsp::io;
+namespace reg = mcubsp::device::w5100_register;
+namespace ex = mcubsp::execution;
+using error = mcubsp::device::w5100_error;
 using namespace std::chrono_literals;
 
 struct fake_chip {
@@ -29,7 +29,7 @@ struct fake_chip {
     std::size_t releases{};
     std::size_t payload_writes{};
     bool fail{};
-    mcuhw::driver::spi_configuration bus_config{};
+    mcubsp::driver::spi_configuration bus_config{};
     std::uint32_t frequency{6'000'000U};
 
     [[nodiscard]] io::result<std::size_t>
@@ -91,7 +91,7 @@ public:
     ~fake_spi_device() { if (chip_) ++chip_->releases; }
 
     [[nodiscard]] ex::tick now() const noexcept { return chip_->time; }
-    [[nodiscard]] mcuhw::driver::spi_configuration configuration() const noexcept {
+    [[nodiscard]] mcubsp::driver::spi_configuration configuration() const noexcept {
         return chip_->bus_config;
     }
     [[nodiscard]] std::uint32_t frequency() const noexcept { return chip_->frequency; }
@@ -115,8 +115,8 @@ public:
         return chip_->transfer(tx, rx, limit);
     }
 
-    [[nodiscard]] io::result<mcuhw::driver::spi_transfer_result>
-    transaction_until(std::span<const mcuhw::driver::spi_segment> segments,
+    [[nodiscard]] io::result<mcubsp::driver::spi_transfer_result>
+    transaction_until(std::span<const mcubsp::driver::spi_segment> segments,
                       ex::deadline limit) noexcept {
         if (segments.size() != 1U || segments[0].transmit.size() != 4U) {
             return std::unexpected(io::error{io::errc::invalid_operation});
@@ -134,32 +134,32 @@ public:
         for (std::size_t index = 0U; index < segment.receive.size(); ++index) {
             segment.receive[index] = rx[index];
         }
-        return mcuhw::driver::spi_transfer_result{.frames = *result};
+        return mcubsp::driver::spi_transfer_result{.frames = *result};
     }
 
 private:
     fake_chip* chip_;
 };
 
-constexpr mcuhw::device::w5100_configuration config{
+constexpr mcubsp::device::w5100_configuration config{
     .mac = {{0x02U, 0x11U, 0x22U, 0x33U, 0x44U, 0x55U}},
     .command_poll_limit = 4U,
     .stable_read_limit = 3U,
 };
 
-using immediate_device = mcuhw::device::w5100<fake_spi_device<true>>;
+using immediate_device = mcubsp::device::w5100<fake_spi_device<true>>;
 static_assert(!std::is_move_constructible_v<immediate_device>);
 static_assert(!std::is_copy_constructible_v<immediate_device>);
-#if defined(MCUHW_TEST_MCUIP_CONTRACTS)
-static_assert(mcuhw::integration::mcuip::w5100_valid_contract<fake_spi_device<true>>);
-static_assert(mcuhw::integration::mcuip::w5100_valid_contract<fake_spi_device<false>>);
+#if defined(MCUBSP_TEST_MCUIP_CONTRACTS)
+static_assert(mcubsp::integration::mcuip::w5100_valid_contract<fake_spi_device<true>>);
+static_assert(mcubsp::integration::mcuip::w5100_valid_contract<fake_spi_device<false>>);
 #endif
 
 TEST(w5100_io, owned_endpoint_initializes_and_uses_original_chip_framing,
      "REQ-0044", "REQ-0046") {
     fake_chip chip;
     {
-        mcuhw::device::w5100 ethernet{fake_spi_device<true>{chip}};
+        mcubsp::device::w5100 ethernet{fake_spi_device<true>{chip}};
         ASSERT_TRUE(ethernet.begin(config, 100ms).has_value());
         EXPECT_TRUE(ethernet.initialized());
         EXPECT_TRUE(chip.immediate_calls > 0U);
@@ -182,7 +182,7 @@ TEST(w5100_io, owned_endpoint_initializes_and_uses_original_chip_framing,
 TEST(w5100_io, initialization_deadline_is_shared_across_all_register_accesses,
      "REQ-0044", "REQ-0046") {
     fake_chip chip;
-    mcuhw::device::w5100 ethernet{fake_spi_device<true>{chip}};
+    mcubsp::device::w5100 ethernet{fake_spi_device<true>{chip}};
     const auto result = ethernet.begin(config, 5ms);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error() == error::timeout);
@@ -199,7 +199,7 @@ TEST(w5100_io, initialization_deadline_is_shared_across_all_register_accesses,
 TEST(w5100_io, fallback_endpoint_uses_checked_transactions_and_same_deadline,
      "REQ-0044", "REQ-0046") {
     fake_chip chip;
-    mcuhw::device::w5100 ethernet{fake_spi_device<false>{chip}};
+    mcubsp::device::w5100 ethernet{fake_spi_device<false>{chip}};
     ASSERT_TRUE(ethernet.initialize(config, 100ms).has_value());
     EXPECT_EQ(chip.immediate_calls, 0U);
     EXPECT_TRUE(chip.transactions > 0U);
@@ -216,7 +216,7 @@ TEST(w5100_io, fallback_endpoint_uses_checked_transactions_and_same_deadline,
 TEST(w5100_io, expired_and_invalid_deadlines_do_not_access_the_bus,
      "REQ-0044", "REQ-0046") {
     fake_chip chip;
-    mcuhw::device::w5100 ethernet{fake_spi_device<true>{chip}};
+    mcubsp::device::w5100 ethernet{fake_spi_device<true>{chip}};
     const auto invalid = ethernet.begin(config, -1ms);
     ASSERT_FALSE(invalid.has_value());
     EXPECT_TRUE(invalid.error() == error::invalid_argument);
@@ -236,19 +236,19 @@ TEST(w5100_io, expired_and_invalid_deadlines_do_not_access_the_bus,
 TEST(w5100_io, rejects_incompatible_spi_configuration_before_register_access,
      "REQ-0044", "REQ-0046") {
     fake_chip chip;
-    mcuhw::device::w5100 ethernet{fake_spi_device<false>{chip}};
-    chip.bus_config.frame_width = mcuhw::driver::spi_frame_width::bits16;
+    mcubsp::device::w5100 ethernet{fake_spi_device<false>{chip}};
+    chip.bus_config.frame_width = mcubsp::driver::spi_frame_width::bits16;
     const auto wide = ethernet.begin(config, 100ms);
     ASSERT_FALSE(wide.has_value());
     EXPECT_TRUE(wide.error() == error::invalid_argument);
     chip.bus_config = {};
-    chip.bus_config.mode = mcuhw::driver::spi_mode::mode3;
+    chip.bus_config.mode = mcubsp::driver::spi_mode::mode3;
     EXPECT_FALSE(ethernet.begin(config, 100ms).has_value());
     chip.bus_config = {};
-    chip.bus_config.bit_order = mcuhw::driver::spi_bit_order::least_significant_first;
+    chip.bus_config.bit_order = mcubsp::driver::spi_bit_order::least_significant_first;
     EXPECT_FALSE(ethernet.begin(config, 100ms).has_value());
     chip.bus_config = {};
-    chip.bus_config.chip_select = mcuhw::driver::spi_chip_select_polarity::active_high;
+    chip.bus_config.chip_select = mcubsp::driver::spi_chip_select_polarity::active_high;
     EXPECT_FALSE(ethernet.begin(config, 100ms).has_value());
     chip.bus_config = {};
     chip.frequency = 20'000'000U;
@@ -261,7 +261,7 @@ TEST(w5100_io, rejects_incompatible_spi_configuration_before_register_access,
 TEST(w5100_io, deadline_during_payload_copy_retains_progress_for_next_poll,
      "REQ-0044", "REQ-0046") {
     fake_chip chip;
-    mcuhw::device::w5100 ethernet{fake_spi_device<true>{chip}};
+    mcubsp::device::w5100 ethernet{fake_spi_device<true>{chip}};
     ASSERT_TRUE(ethernet.begin(config, 100ms).has_value());
     std::array<std::byte, 60U> frame{};
     ASSERT_TRUE(ethernet.start_transmit(0U, frame));

@@ -10,13 +10,13 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/device/ethernet/w5100_spi.hpp>
-#include <mcuhw/integration/mcuip/w5100.hpp>
+#include <mcubsp/device/ethernet/w5100_spi.hpp>
+#include <mcubsp/integration/mcuip/w5100.hpp>
 
 namespace {
 
-namespace reg = mcuhw::device::w5100_register;
-using error = mcuhw::device::w5100_error;
+namespace reg = mcubsp::device::w5100_register;
+using error = mcubsp::device::w5100_error;
 
 class fake_w5100_bus {
 public:
@@ -150,7 +150,7 @@ private:
 
 class fake_immediate_spi {
 public:
-    [[nodiscard]] std::expected<std::size_t, mcuhw::driver::spi_error>
+    [[nodiscard]] std::expected<std::size_t, mcubsp::driver::spi_error>
     transaction_immediate(std::span<const std::uint8_t> transmit,
                           std::span<std::uint8_t> receive,
                           std::uint32_t poll_limit) noexcept {
@@ -158,7 +158,7 @@ public:
         last_size = transmit.size();
         last_poll_limit = poll_limit;
         std::copy(transmit.begin(), transmit.end(), last_command.begin());
-        if (fail) return std::unexpected(mcuhw::driver::spi_error::timeout);
+        if (fail) return std::unexpected(mcubsp::driver::spi_error::timeout);
         if (!receive.empty()) {
             std::copy(transmit.begin(), transmit.end(), receive.begin());
             receive.back() = response;
@@ -174,14 +174,14 @@ public:
     bool fail{};
 };
 
-using device = mcuhw::device::w5100_macraw_device<fake_w5100_bus>;
-#if defined(MCUHW_TEST_MCUIP_CONTRACTS)
+using device = mcubsp::device::w5100_macraw_device<fake_w5100_bus>;
+#if defined(MCUBSP_TEST_MCUIP_CONTRACTS)
 static_assert(::mcuip::NetworkDevice<device>);
-static_assert(::mcuip::NetworkDevice<mcuhw::integration::mcuip::
+static_assert(::mcuip::NetworkDevice<mcubsp::integration::mcuip::
     w5100_macraw_network_device<fake_w5100_bus>>);
 #endif
 
-constexpr mcuhw::device::w5100_configuration configuration{
+constexpr mcubsp::device::w5100_configuration configuration{
     .mac = {{0x02U, 0x00U, 0x00U, 0x04U, 0x51U, 0x00U}},
     .command_poll_limit = 4U,
     .stable_read_limit = 3U,
@@ -217,7 +217,7 @@ TEST(w5100, reset_identity_macraw_and_fixed_memory_configuration,
 TEST(w5100, immediate_spi_transport_preserves_one_command_per_chip_select,
      "REQ-0028", "REQ-0044") {
     fake_immediate_spi spi;
-    mcuhw::device::w5100_spi_immediate_transport transport{spi, 77U};
+    mcubsp::device::w5100_spi_immediate_transport transport{spi, 77U};
     const auto value = transport.read(0x1234U);
     ASSERT_TRUE(value.has_value());
     EXPECT_EQ(*value, 0x5AU);
@@ -396,8 +396,8 @@ TEST(w5100, shared_poll_budget_resumes_both_directions_without_starvation,
     bus.set_u16(reg::socket0_tx_write_pointer, 0x1FFEU);
     ASSERT_TRUE(ethernet.arm_receive(0U, rx));
     ASSERT_TRUE(ethernet.start_transmit(0U, frame));
-    std::optional<mcuhw::device::w5100_receive_completion> received;
-    std::optional<mcuhw::device::w5100_transmit_completion> sent;
+    std::optional<mcubsp::device::w5100_receive_completion> received;
+    std::optional<mcubsp::device::w5100_transmit_completion> sent;
     for (unsigned poll = 0U; poll < 10U; ++poll) {
         const auto before = bus.payload_reads + bus.payload_writes;
         ethernet.poll();

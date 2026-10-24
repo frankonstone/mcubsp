@@ -8,10 +8,10 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/stm32h753/ethernet.hpp>
-#include <mcuhw/board/nucleo_h753zi.hpp>
-#include <mcuhw/integration/mcuip/stm32h753_ethernet.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/backend/stm32h753/ethernet.hpp>
+#include <mcubsp/board/nucleo_h753zi.hpp>
+#include <mcubsp/integration/mcuip/stm32h753_ethernet.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
@@ -34,16 +34,16 @@ struct fake_protection {
 class sparse_mmio {
 public:
     template<std::unsigned_integral Value>
-    [[nodiscard]] std::expected<Value, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<Value, mcubsp::core::mmio_error>
     read(std::uintptr_t address) noexcept {
         return static_cast<Value>(value(address));
     }
 
     template<std::unsigned_integral Value>
-    [[nodiscard]] std::expected<void, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<void, mcubsp::core::mmio_error>
     write(std::uintptr_t address, Value written) noexcept {
         auto stored = static_cast<std::uint32_t>(written);
-        constexpr auto ethernet = mcuhw::mcu::stm32h753::ethernet_base;
+        constexpr auto ethernet = mcubsp::mcu::stm32h753::ethernet_base;
         if ((address == ethernet + 0x1000U || address == ethernet + 0x0200U)
             && (stored & 1U) != 0U) stored &= ~1U;
         set(address, stored);
@@ -73,15 +73,15 @@ private:
     std::size_t count_{};
 };
 
-using dma_mmio = mcuhw::testing::recording_mmio<0x1200, 128>;
-using dma_device = mcuhw::backend::stm32h753::ethernet_dma_device<
+using dma_mmio = mcubsp::testing::recording_mmio<0x1200, 128>;
+using dma_device = mcubsp::backend::stm32h753::ethernet_dma_device<
     dma_mmio, fake_protection, 4U, 4U>;
 
 // Separate CPU cache and DMA RAM views, with writeback only for dirty 32-byte
 // lines. This catches lost completions that a coherent-memory fake cannot.
 class split_cache_protection {
 public:
-    using descriptor = mcuhw::backend::stm32h753::ethernet_descriptor;
+    using descriptor = mcubsp::backend::stm32h753::ethernet_descriptor;
     static constexpr std::size_t ring_size = sizeof(descriptor) * 4U;
 
     void attach(std::span<descriptor> rx, std::span<descriptor> tx) noexcept {
@@ -134,12 +134,12 @@ private:
 
 TEST(stm32h753_ethernet, rearming_a_slot_preserves_neighbor_dma_completions,
      "REQ-0013", "REQ-0043") {
-    dma_mmio mmio{mcuhw::mcu::stm32h753::ethernet_base};
+    dma_mmio mmio{mcubsp::mcu::stm32h753::ethernet_base};
     split_cache_protection cache;
-    mcuhw::backend::stm32h753::ethernet_dma_device<dma_mmio, split_cache_protection> device{mmio, cache};
+    mcubsp::backend::stm32h753::ethernet_dma_device<dma_mmio, split_cache_protection> device{mmio, cache};
     cache.attach(device.receive_descriptors(), device.transmit_descriptors());
     ASSERT_TRUE(device.initialize());
-    const auto control = mmio.read<std::uint32_t>(mcuhw::mcu::stm32h753::ethernet_base + 0x1100U);
+    const auto control = mmio.read<std::uint32_t>(mcubsp::mcu::stm32h753::ethernet_base + 0x1100U);
     ASSERT_TRUE(control.has_value());
     const auto hardware_stride = 16U + ((*control >> 18U) & 7U) * 4U;
     EXPECT_EQ(hardware_stride, sizeof(split_cache_protection::descriptor));
@@ -170,16 +170,16 @@ TEST(stm32h753_ethernet, rearming_a_slot_preserves_neighbor_dma_completions,
     EXPECT_TRUE(device.take_transmit(1U));
 }
 
-#if defined(MCUHW_TEST_MCUIP_CONTRACTS)
+#if defined(MCUBSP_TEST_MCUIP_CONTRACTS)
 static_assert(::mcuip::NetworkDevice<dma_device>);
 static_assert(::mcuip::DescriptorProtection<fake_protection>);
 static_assert(::mcuip::valid_hardware(
-    mcuhw::integration::mcuip::nucleo_h753zi_hardware));
+    mcubsp::integration::mcuip::nucleo_h753zi_hardware));
 #endif
 
 TEST(stm32h753_ethernet, fixed_rings_preserve_ownership_and_completion_order,
      "REQ-0002", "REQ-0009", "REQ-0013", "REQ-0043") {
-    dma_mmio mmio{mcuhw::mcu::stm32h753::ethernet_base};
+    dma_mmio mmio{mcubsp::mcu::stm32h753::ethernet_base};
     fake_protection protection;
     dma_device device{mmio, protection};
     ASSERT_TRUE(device.initialize());
@@ -228,7 +228,7 @@ TEST(stm32h753_ethernet, fixed_rings_preserve_ownership_and_completion_order,
 
 TEST(stm32h753_ethernet, rejects_short_receive_and_oversize_transmit,
      "REQ-0002", "REQ-0043") {
-    dma_mmio mmio{mcuhw::mcu::stm32h753::ethernet_base};
+    dma_mmio mmio{mcubsp::mcu::stm32h753::ethernet_base};
     fake_protection protection;
     dma_device device{mmio, protection};
     ASSERT_TRUE(device.initialize());
@@ -244,19 +244,19 @@ TEST(stm32h753_ethernet, rejects_short_receive_and_oversize_transmit,
 TEST(stm32h753_ethernet, sequences_rmii_gpio_mac_and_mdio,
      "REQ-0003", "REQ-0010", "REQ-0033", "REQ-0043") {
     sparse_mmio mmio;
-    mcuhw::backend::stm32h753::ethernet_rmii_mac<decltype(mmio), mcuhw::board::nucleo_h753zi::ethernet_binding> mac{mmio};
-    const mcuhw::backend::stm32h753::ethernet_mac_address address{
+    mcubsp::backend::stm32h753::ethernet_rmii_mac<decltype(mmio), mcubsp::board::nucleo_h753zi::ethernet_binding> mac{mmio};
+    const mcubsp::backend::stm32h753::ethernet_mac_address address{
         {0x02U, 0x00U, 0x00U, 0x75U, 0x30U, 0x01U}};
     EXPECT_TRUE(mac.initialize(address).has_value());
 
-    constexpr auto rcc = mcuhw::mcu::stm32h753::rcc_base;
-    constexpr auto ethernet = mcuhw::mcu::stm32h753::ethernet_base;
+    constexpr auto rcc = mcubsp::mcu::stm32h753::rcc_base;
+    constexpr auto ethernet = mcubsp::mcu::stm32h753::ethernet_base;
     EXPECT_EQ(mmio.value(rcc + 0xD8U) & (0x7U << 15U), 0x7U << 15U);
     EXPECT_EQ(mmio.value(rcc + 0xE0U) & 0x47U, 0x47U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::stm32h753::syscfg_base + 0x04U)
+    EXPECT_EQ(mmio.value(mcubsp::mcu::stm32h753::syscfg_base + 0x04U)
                   & (0x7U << 21U),
               0x4U << 21U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::stm32h753::gpio_base(0U) + 0x20U)
+    EXPECT_EQ(mmio.value(mcubsp::mcu::stm32h753::gpio_base(0U) + 0x20U)
                   & (0xFU << 4U),
               11U << 4U);
     EXPECT_EQ(mmio.value(ethernet + 0x0304U), 0x7500'0002U);
@@ -276,21 +276,21 @@ TEST(stm32h753_ethernet, sequences_rmii_gpio_mac_and_mdio,
 TEST(stm32h753_ethernet, rejects_multicast_station_address,
      "REQ-0002", "REQ-0043") {
     sparse_mmio mmio;
-    mcuhw::backend::stm32h753::ethernet_rmii_mac<decltype(mmio), mcuhw::board::nucleo_h753zi::ethernet_binding> mac{mmio};
-    const mcuhw::backend::stm32h753::ethernet_mac_address multicast{
+    mcubsp::backend::stm32h753::ethernet_rmii_mac<decltype(mmio), mcubsp::board::nucleo_h753zi::ethernet_binding> mac{mmio};
+    const mcubsp::backend::stm32h753::ethernet_mac_address multicast{
         {0x01U, 0U, 0U, 0U, 0U, 1U}};
     const auto initialized = mac.initialize(multicast);
     ASSERT_TRUE(!initialized.has_value());
     EXPECT_EQ(static_cast<unsigned>(initialized.error()),
               static_cast<unsigned>(
-                  mcuhw::backend::stm32h753::ethernet_error::invalid_argument));
+                  mcubsp::backend::stm32h753::ethernet_error::invalid_argument));
 }
 
 
 struct alternate_rmii_binding {
     static constexpr auto rmii_pins = [] {
-        auto pins = mcuhw::board::nucleo_h753zi::ethernet_binding::rmii_pins;
-        pins.back() = mcuhw::core::pin_id{6U, 14U};
+        auto pins = mcubsp::board::nucleo_h753zi::ethernet_binding::rmii_pins;
+        pins.back() = mcubsp::core::pin_id{6U, 14U};
         return pins;
     }();
 };
@@ -298,11 +298,11 @@ struct alternate_rmii_binding {
 TEST(stm32h753_ethernet, routes_pins_from_the_selected_board_binding,
      "REQ-0003", "REQ-0043") {
     sparse_mmio mmio;
-    mcuhw::backend::stm32h753::ethernet_rmii_mac<sparse_mmio, alternate_rmii_binding> mac{mmio};
+    mcubsp::backend::stm32h753::ethernet_rmii_mac<sparse_mmio, alternate_rmii_binding> mac{mmio};
     ASSERT_TRUE(mac.initialize({{0x02U, 0U, 0U, 0U, 0U, 1U}}).has_value());
-    EXPECT_EQ((mmio.value(mcuhw::mcu::stm32h753::gpio_base(6U) + 0x24U) >> 24U) & 0xFU, 11U);
-    EXPECT_EQ((mmio.value(mcuhw::mcu::stm32h753::gpio_base(1U) + 0x24U) >> 20U) & 0xFU, 0U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::stm32h753::rcc_base + 0xE0U) & 0x47U, 0x45U);
+    EXPECT_EQ((mmio.value(mcubsp::mcu::stm32h753::gpio_base(6U) + 0x24U) >> 24U) & 0xFU, 11U);
+    EXPECT_EQ((mmio.value(mcubsp::mcu::stm32h753::gpio_base(1U) + 0x24U) >> 20U) & 0xFU, 0U);
+    EXPECT_EQ(mmio.value(mcubsp::mcu::stm32h753::rcc_base + 0xE0U) & 0x47U, 0x45U);
 }
 
 } // namespace

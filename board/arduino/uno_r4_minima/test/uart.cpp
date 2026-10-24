@@ -4,27 +4,27 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/sci_uart.hpp>
-#include <mcuhw/backend/ra4m1/dmac.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/driver/uart.hpp>
+#include <mcubsp/backend/ra4m1/sci_uart.hpp>
+#include <mcubsp/backend/ra4m1/dmac.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/driver/uart.hpp>
 
 #include "support.hpp"
 
 namespace {
 
-using binding = mcuhw::backend::ra4m1::sci_uart_binding<
-    2, mcuhw::board::arduino_uno_r4_minima::d0_rx,
-    mcuhw::board::arduino_uno_r4_minima::d1_tx>;
-using backend_type = mcuhw::backend::ra4m1::sci_uart_backend<
-    binding, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
-using dmac1_type = mcuhw::backend::ra4m1::dmac_channel_backend<
-    1, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
+using binding = mcubsp::backend::ra4m1::sci_uart_binding<
+    2, mcubsp::board::arduino_uno_r4_minima::d0_rx,
+    mcubsp::board::arduino_uno_r4_minima::d1_tx>;
+using backend_type = mcubsp::backend::ra4m1::sci_uart_backend<
+    binding, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
+using dmac1_type = mcubsp::backend::ra4m1::dmac_channel_backend<
+    1, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
 
-mcuhw::board_test::execution_policy execution;
-backend_type backend{mcuhw::board_test::mmio, execution};
-dmac1_type transmit_dmac{mcuhw::board_test::mmio, execution};
-mcuhw::driver::uart uart{backend};
+mcubsp::board_test::execution_policy execution;
+backend_type backend{mcubsp::board_test::mmio, execution};
+dmac1_type transmit_dmac{mcubsp::board_test::mmio, execution};
+mcubsp::driver::uart uart{backend};
 bool initialized{};
 bool interrupt_shutdown{};
 constexpr std::array<std::uint8_t, 8> transmitted_bytes{
@@ -43,7 +43,7 @@ volatile std::uint32_t transmit_dma_interrupts{};
 volatile std::uint32_t dma_tei_interrupts{};
 volatile std::uint32_t dma_error_interrupts{};
 
-constexpr auto timing = mcuhw::backend::ra4m1::solve_uart_baud({
+constexpr auto timing = mcubsp::backend::ra4m1::solve_uart_baud({
     .clock_hz = 48'000'000U,
     .target_baud = 115'200U,
     .maximum_error_ppm = 2'000U,
@@ -52,17 +52,17 @@ static_assert(timing.has_value());
 
 void configure_interrupts(bool dma_mode) noexcept {
     const std::array events{
-        dma_mode ? mcuhw::mcu::ra4m1::event::dmac0_int
-                 : mcuhw::mcu::ra4m1::event::sci2_rxi,
-        dma_mode ? mcuhw::mcu::ra4m1::event::dmac1_int
-                 : mcuhw::mcu::ra4m1::event::sci2_txi,
-        mcuhw::mcu::ra4m1::event::sci2_tei,
-        mcuhw::mcu::ra4m1::event::sci2_eri,
+        dma_mode ? mcubsp::mcu::ra4m1::event::dmac0_int
+                 : mcubsp::mcu::ra4m1::event::sci2_rxi,
+        dma_mode ? mcubsp::mcu::ra4m1::event::dmac1_int
+                 : mcubsp::mcu::ra4m1::event::sci2_txi,
+        mcubsp::mcu::ra4m1::event::sci2_tei,
+        mcubsp::mcu::ra4m1::event::sci2_eri,
     };
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E180U) = 0x0FU;
     for (std::uint32_t line = 0U; line < events.size(); ++line) {
         *reinterpret_cast<volatile std::uint32_t*>(0x4000'6300U + line * 4U)
-            = mcuhw::mcu::ra4m1::event_number(events[line]);
+            = mcubsp::mcu::ra4m1::event_number(events[line]);
         *reinterpret_cast<volatile std::uint8_t*>(0xE000'E400U + line)
             = 0x80U;
     }
@@ -77,9 +77,9 @@ TEST(uno_uart, sci2_d1_irq_transmit_and_final_wire_completion,
     auto transmit_start = uart.transmit(transmitted_bytes);
     ASSERT_TRUE(transmit_start.has_value());
     auto transmit = std::move(*transmit_start);
-    const auto deadline = mcuhw::execution::deadline{
+    const auto deadline = mcubsp::execution::deadline{
         static_cast<std::uint32_t>(
-            mcuhw::board_test::execution_hooks::now() + 480'000U)};
+            mcubsp::board_test::execution_hooks::now() + 480'000U)};
     ASSERT_TRUE(transmit.wait_until(deadline).has_value());
     transmit_completed = transmit.take().has_value();
     ASSERT_TRUE(transmit_completed);
@@ -99,9 +99,9 @@ TEST(uno_uart, sci2_d1_dma_transmit_and_final_wire_completion,
         dma_transmitted_bytes, transmit_dmac);
     ASSERT_TRUE(transmit_start.has_value());
     auto transmit = std::move(*transmit_start);
-    const auto deadline = mcuhw::execution::deadline{
+    const auto deadline = mcubsp::execution::deadline{
         static_cast<std::uint32_t>(
-            mcuhw::board_test::execution_hooks::now() + 480'000U)};
+            mcubsp::board_test::execution_hooks::now() + 480'000U)};
     ASSERT_TRUE(transmit.wait_until(deadline).has_value());
     dma_transmit_completed = transmit.take().has_value();
     ASSERT_TRUE(dma_transmit_completed);
@@ -114,14 +114,14 @@ TEST(uno_uart, sci2_d1_dma_transmit_and_final_wire_completion,
 }
 
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=uart "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=uart "
     "firmware=pln-0010 fixture=D1_SCI2_TX_header_unloaded "
     "baud_target=115200 baud_achieved=115385 tolerance_ppm=2000 "
     "dma=DMAC1_TX activation=SCI2_TXI completion=DMAC1_INT,SCI2_TEI "
     "toolchain=arm-none-eabi-gcc-15.2.1 "
     "iclk_hz=48000000 pclka_hz=48000000 pclkb_hz=24000000 "
     "pclkd_hz=48000000 interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "uart",
     .firmware = "pln-0010",
     .fixture = "D1 SCI2 TX header; no receiver or electrical capture attached",
@@ -131,12 +131,12 @@ constexpr mcuhw::board_test::evidence_metadata evidence{
 } // namespace
 
 int main() {
-    mcuhw::board_test::start(metadata);
+    mcubsp::board_test::start(metadata);
     initialized = uart.initialize(*timing, {}).has_value();
     if (initialized) {
         configure_interrupts(false);
     }
-    mcuhw::board_test::finish(evidence, [&](auto& observations) {
+    mcubsp::board_test::finish(evidence, [&](auto& observations) {
         observations("initialized", initialized);
         observations("peripheral", "SCI2 interrupt-driven UART");
         observations("baud_target", 115'200U);
@@ -168,7 +168,7 @@ extern "C" void IRQ0_Handler() noexcept {
     } else {
         static_cast<void>(backend.handle_receive_interrupt());
     }
-    mcuhw::board_test::clear_icu_line(0U);
+    mcubsp::board_test::clear_icu_line(0U);
 }
 
 extern "C" void IRQ1_Handler() noexcept {
@@ -179,7 +179,7 @@ extern "C" void IRQ1_Handler() noexcept {
     } else {
         static_cast<void>(backend.handle_transmit_data_empty_interrupt());
     }
-    mcuhw::board_test::clear_icu_line(1U);
+    mcubsp::board_test::clear_icu_line(1U);
 }
 
 extern "C" void IRQ2_Handler() noexcept {
@@ -187,7 +187,7 @@ extern "C" void IRQ2_Handler() noexcept {
         dma_tei_interrupts = dma_tei_interrupts + 1U;
     }
     static_cast<void>(backend.handle_transmit_end_interrupt());
-    mcuhw::board_test::clear_icu_line(2U);
+    mcubsp::board_test::clear_icu_line(2U);
 }
 
 extern "C" void IRQ3_Handler() noexcept {
@@ -195,5 +195,5 @@ extern "C" void IRQ3_Handler() noexcept {
         dma_error_interrupts = dma_error_interrupts + 1U;
     }
     static_cast<void>(backend.handle_receive_error_interrupt());
-    mcuhw::board_test::clear_icu_line(3U);
+    mcubsp::board_test::clear_icu_line(3U);
 }

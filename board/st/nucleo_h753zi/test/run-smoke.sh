@@ -9,7 +9,7 @@ nm=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_N
 
 if [ ! -f "$elf" ]; then
     echo "missing firmware: $elf" >&2
-    echo "build it with: cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi && cmake --build build/nucleo-h753zi --target board-tests" >&2
+    echo "build it with: cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUBSP_BOARD_TESTS=st/nucleo_h753zi && cmake --build build/nucleo-h753zi --target board-tests" >&2
     exit 2
 fi
 
@@ -18,12 +18,12 @@ symbol_address() {
         '$3 == symbol { print "0x" $1; found = 1; exit } END { if (!found) exit 1 }'
 }
 
-status_address=$(symbol_address mcuhw_nucleo_smoke_status)
-clock_address=$(symbol_address mcuhw_nucleo_clock_status)
-vector_address=$(symbol_address mcuhw_nucleo_vector_table)
-moder_address=$(symbol_address mcuhw_nucleo_gpio_moder)
-odr_address=$(symbol_address mcuhw_nucleo_gpio_odr)
-run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcuhw-nucleo-h753zi.XXXXXX")
+status_address=$(symbol_address mcubsp_nucleo_smoke_status)
+clock_address=$(symbol_address mcubsp_nucleo_clock_status)
+vector_address=$(symbol_address mcubsp_nucleo_vector_table)
+moder_address=$(symbol_address mcubsp_nucleo_gpio_moder)
+odr_address=$(symbol_address mcubsp_nucleo_gpio_odr)
+run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcubsp-nucleo-h753zi.XXXXXX")
 log="$run_dir/openocd.log"
 
 if ! hardware flash --board st/nucleo_h753zi --elf "$elf" --tool-environment OPENOCD_EXE \

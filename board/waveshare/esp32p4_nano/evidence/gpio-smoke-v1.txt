@@ -19,7 +19,7 @@ test framework: mcutest registered TEST case, mcutest::Runner UART output
 observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
 tolerance: exact register bit equality
 coverage: MCUCOV FULL profile, build id 0x4d485001, UART hex transport
-instrumented target: board/esp32p4_nano/tests/gpio.cpp and included mcuhw headers;
+instrumented target: board/esp32p4_nano/tests/gpio.cpp and included mcubsp headers;
   bootloader startup and coverage transport are uninstrumented harness code
 coverage frame bytes: 628
 coverage frame sha256: 85e8bdb7e0c7b5578d35256ffd1521b1fcf587121eaaca5036f0e06a7f2d63a6
@@ -40,11 +40,11 @@ I (28) boot: efuse block revision: v0.3
 I (32) boot.esp32p4: SPI Speed      : 80MHz
 I (36) boot.esp32p4: SPI Mode       : DIO
 I (40) boot.esp32p4: SPI Flash Size : 2MB
-MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-gpio-smoke-v1 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=90 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
+MCUBSP_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-gpio-smoke-v1 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=90 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
 esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
 -----------------------
 1 Tests, 0 Failures
-MCUHW_RESULT status=pass suite=esp32p4_gpio tests=1 failures=0 registry_overflow=0 coverage=captured
+MCUBSP_RESULT status=pass suite=esp32p4_gpio tests=1 failures=0 registry_overflow=0 coverage=captured
 
 Original bootloader backup (not stored in the repository):
 /private/tmp/esp32p4-nano-original-bootloader-20260920.bin

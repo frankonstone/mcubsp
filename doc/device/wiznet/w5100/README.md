@@ -5,7 +5,7 @@ Use the linked UNO Ethernet Shield R3 wiring procedure. The device owns protocol
 
 ## Implementation and focused checks
 
-Public implementation: `include/mcuhw/device/ethernet/w5100.hpp`. Required transports: spi.
+Public implementation: `include/mcubsp/device/ethernet/w5100.hpp`. Required transports: spi.
 
 Focused test sources:
 

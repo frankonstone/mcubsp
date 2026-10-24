@@ -1,23 +1,23 @@
 #include <array>
 #include <chrono>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/io/board/nucleo_h753zi.hpp>
-#include <mcuhw/io/board/esp32p4_nano.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io/board/nucleo_h753zi.hpp>
+#include <mcubsp/io/board/esp32p4_nano.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
 namespace {
 using namespace std::chrono_literals;
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 struct inert_mmio {
-    template<class T> std::expected<T, mcuhw::core::mmio_error> read(std::uintptr_t) noexcept { return T{}; }
-    template<class T> std::expected<void, mcuhw::core::mmio_error> write(std::uintptr_t, T) noexcept { return {}; }
+    template<class T> std::expected<T, mcubsp::core::mmio_error> read(std::uintptr_t) noexcept { return T{}; }
+    template<class T> std::expected<void, mcubsp::core::mmio_error> write(std::uintptr_t, T) noexcept { return {}; }
 };
 template<class Board>
 int instantiate() {
     constexpr io::board_config config{.serial=true, .i2c=true, .spi=true};
     inert_mmio mmio;
-    mcuhw::execution::fake_policy policy;
+    mcubsp::execution::fake_policy policy;
     auto hw = io::make_board<Board, config>(policy, mmio, 1000U);
     if (!hw.begin()) return 1;
     if (!hw.serial.begin()) return 2;

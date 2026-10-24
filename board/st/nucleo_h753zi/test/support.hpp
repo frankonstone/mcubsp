@@ -11,7 +11,7 @@
 #include <mcujson/mcujson.hpp>
 #include <mcutest/mcutest.hpp>
 
-namespace mcuhw::board_test::nucleo_h753zi {
+namespace mcubsp::board_test::nucleo_h753zi {
 
 struct test_observation {
     mcutest::StringView name{};
@@ -181,4 +181,4 @@ capture_result capture(std::span<char> evidence_destination,
     };
 }
 
-} // namespace mcuhw::board_test::nucleo_h753zi
+} // namespace mcubsp::board_test::nucleo_h753zi

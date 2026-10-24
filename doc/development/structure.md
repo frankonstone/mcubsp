@@ -12,7 +12,7 @@ Device protocols stay reusable across boards and take explicit transport handles
 
 ## C++ source migration
 
-Generic timing requests and reports remain under `mcuhw::driver`. Register-bearing
+Generic timing requests and reports remain under `mcubsp::driver`. Register-bearing
 timing configurations now belong to their backend and cannot initialize a different
 vendor's controller. RA callers replace `driver::solve_uart_baud`,
 `driver::solve_i2c_timing`, `driver::solve_spi_timing` and
@@ -25,13 +25,13 @@ register fields are available only on the native type.
 Ethernet now takes a board binding explicitly:
 
 ```cpp
-using mac = mcuhw::backend::stm32h753::ethernet_rmii_mac<
-    mmio_type, mcuhw::board::nucleo_h753zi::ethernet_binding>;
+using mac = mcubsp::backend::stm32h753::ethernet_rmii_mac<
+    mmio_type, mcubsp::board::nucleo_h753zi::ethernet_binding>;
 ```
 
-ESP Ethernet similarly uses `mcuhw::board::esp32p4_nano::ethernet_binding`.
+ESP Ethernet similarly uses `mcubsp::board::esp32p4_nano::ethernet_binding`.
 ESP SDMMC requires a third template argument, such as
-`mcuhw::board::esp32p4_nano::sdmmc_slot0_binding` or
+`mcubsp::board::esp32p4_nano::sdmmc_slot0_binding` or
 `sdmmc_slot1_wifi_binding`. Another board supplies its own binding; controller
 code no longer selects the development board's pins implicitly.
 
@@ -43,7 +43,7 @@ confirms quiescence, preventing reuse of active DMA storage.
 
 ## One selected build for CLI and IDE
 
-Application setup writes the standard `mcuhw` configure/build preset and includes
+Application setup writes the standard `mcubsp` configure/build preset and includes
 it from `CMakeUserPresets.json`, preserving user presets. The frontend invokes
 those same presets. Successful firmware targets write per-target `*.build.json`
 records with the board, revision, startup selection and ELF digest. Flashing reads

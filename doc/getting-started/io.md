@@ -1,9 +1,9 @@
-# The `mcuhw::io` application interface
+# The `mcubsp::io` application interface
 
-`mcuhw::io` provides board objects, named pins, serial I/O, I2C, SPI, ADC,
+`mcubsp::io` provides board objects, named pins, serial I/O, I2C, SPI, ADC,
 PWM, and explicit DMA selection over the existing checked drivers. It uses
 C++23, fixed storage, and `std::expected` results. Include both the interface
-and your board profile, and link the `mcuhw::io` CMake target.
+and your board profile, and link the `mcubsp::io` CMake target.
 
 The current interface runs in one foreground context on one core. Hardware
 startup still supplies the clock tree, memory initialization, and vectors;
@@ -18,10 +18,10 @@ UNO startup and checks that its clock initialization succeeded:
 
 ```cpp
 #include <chrono>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
 
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using namespace std::chrono_literals;
 
 constexpr io::board_config configuration{.serial = false};
@@ -93,7 +93,7 @@ On UNO this port is SCI2 on D0/D1; it is not USB CDC.
 
 ```cpp
 io::require(hw.i2c.begin(100'000));
-auto address = mcuhw::driver::make_i2c_address(0x48);
+auto address = mcubsp::driver::make_i2c_address(0x48);
 if (!address) __builtin_trap();
 const std::array<std::uint8_t, 1> command{0x00};
 std::array<std::uint8_t, 2> reply{};
@@ -255,7 +255,7 @@ custom execution policy for the additional interrupt-threshold workaround.
 Changing these clocks or silicon assumptions requires a corresponding board
 composition. Each profile exposes `target_identity`; derived profiles inherit
 it so they cannot create two active facade owners for the same hardware.
-There are no camera, RTOS, or network adapters in `mcuhw::io` yet.
+There are no camera, RTOS, or network adapters in `mcubsp::io` yet.
 
 ## Supply execution and MMIO
 
@@ -264,11 +264,11 @@ policy. Always pass their actual tick frequency when it differs from the
 board's default. A host example uses the deterministic test policy:
 
 ```cpp
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
-mcuhw::execution::fake_policy policy;
-mcuhw::testing::recording_mmio<0x80000, 4096> mmio{0x4000'0000U};
+mcubsp::execution::fake_policy policy;
+mcubsp::testing::recording_mmio<0x80000, 4096> mmio{0x4000'0000U};
 constexpr io::board_config configuration{.serial = false};
 auto hw = io::make_board<io::boards::uno_r4_minima, configuration>(
     policy, mmio, 1000U); // One tick is one millisecond.
@@ -284,47 +284,15 @@ Initialize a borrowed policy yourself before calling `begin()`. Its required
 surface is described in [execution and
 transfers](../concept/execution-and-transfers.md).
 
-## Build examples and measure cost
+## Build examples
 
-The optional UNO examples use the existing Arm startup and linker image:
+The UNO examples use the existing Arm startup and linker image:
 
 ```sh
-cmake --preset arm-cortex-m4 -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_IO_EXAMPLES=ON
-cmake --build --preset arm-cortex-m4 --target arduino.uno_r4_minima.example.blink arduino.uno_r4_minima.example.serial_echo arduino.uno_r4_minima.example.spi_dma arduino.uno_r4_minima.example.tmp102 arduino.uno_r4_minima.example.w5100
+cmake --preset arduino-uno-r4-minima
+cmake --build --preset arduino-uno-r4-minima
 ```
 
 For application CMake targets, use
-`target_link_libraries(your_firmware PRIVATE mcuhw::io)` alongside the
+`target_link_libraries(your_firmware PRIVATE mcubsp::io)` alongside the
 application's startup composition.
-
-Generate fresh paired Cortex-M4 driver/facade size probes with:
-
-```sh
-python3 tool/report-io-cost.py
-```
-
-The script writes `build/io-cost/report.md` and `report.json`, with compiler
-flags, source hashes, linked flash/static-RAM sizes, and compiler stack
-records. These are build-only probes; their ELF files have no boot startup
-and must not be flashed. The results quantify the selected configurations,
-not a universal zero-overhead guarantee. Compilation and host tests do not
-constitute on-device acceptance of the new facade.
-
-The initial measurements on 26 September 2026 used Arm GCC 15.2.1,
-Cortex-M4, `-Os`, section garbage collection and no LTO:
-
-| Probe | Additional flash | Additional static RAM |
-|---|---:|---:|
-| GPIO | 1,156 bytes | 63 bytes |
-| Blocking serial | 3,060 bytes | 76 bytes |
-| Async serial | 2,908 bytes | 76 bytes |
-| SPI DMA with shared-device support | 6,192 bytes | 196 bytes |
-
-These compare equivalent checked-driver compositions with the facade's
-shared ownership and board state included. They exclude stack from the RAM
-column. The source-set SHA-256 in the generated report is
-`edd8d3400434c521ea2b7f78b24f3bfac59f757f122dba28046f1d6e62162f9b`.
-Re-run the probes when changing configuration, compiler or implementation.
-
-Shared SPI support adds 3,692 bytes of flash and 100 bytes of static RAM to
-the original facade SPI/DMA probe; GPIO and serial probes are unchanged.

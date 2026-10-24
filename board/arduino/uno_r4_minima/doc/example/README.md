@@ -1,12 +1,12 @@
 # Examples
 
-These pages are reader-facing introductions to the public `mcuhw` API. They
+These pages are reader-facing introductions to the public `mcubsp` API. They
 put peripheral code, wiring, lifecycle rules, and troubleshooting hints next
 to each other instead of sending the reader to a test implementation.
 
 The peripheral call is only one part of a firmware application. Before using
 UART, I2C, SPI, ADC, DMA, or PWM period events, read
-[Integrating mcuhw into a bare-metal application](../../../../../doc/concept/application-integration.md).
+[Integrating mcubsp into a bare-metal application](../../../../../doc/concept/application-integration.md).
 That chapter contains the concrete execution policy and shows how startup,
 `main()`, static backend objects, the vector table, IRQ dispatch, deadlines,
 buffers, and transfer handles fit together.
@@ -26,7 +26,7 @@ interrupt-driven peripheral:
 ## Common setup
 
 The examples target the Arduino UNO R4 Minima and use
-`mcuhw::core::direct_mmio`. Asynchronous backends also take an application
+`mcubsp::core::direct_mmio`. Asynchronous backends also take an application
 execution policy. That policy supplies critical sections, notification,
 waiting, a monotonic clock, and ISR-context detection. In the snippets it is a
 template parameter named `ExecutionPolicy`:
@@ -34,7 +34,7 @@ template parameter named `ExecutionPolicy`:
 ```cpp
 template<class ExecutionPolicy>
 int run_example(ExecutionPolicy& execution) {
-    mcuhw::core::direct_mmio mmio;
+    mcubsp::core::direct_mmio mmio;
     // Construct the selected backend with mmio and execution here.
     return 0;
 }
@@ -44,7 +44,7 @@ In an actual application, MMIO, the execution policy, and an
 interrupt-driven backend normally have static lifetime:
 
 ```cpp
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 peripheral_backend hardware{mmio, execution};
 functional_driver peripheral{hardware};
@@ -68,7 +68,7 @@ backend is not enough to make an asynchronous transfer finish.
 
 `configure_interrupt_routes()`, `Peripheral_IRQHandler`, and
 `clear_interrupt_controller_request()` above describe responsibilities; they
-are not symbols exported by `mcuhw`. The integration chapter provides real
+are not symbols exported by `mcubsp`. The integration chapter provides real
 RA4M1 ICU helpers and SCI2 event routing that can be adapted for each
 peripheral.
 
@@ -118,7 +118,7 @@ policy's monotonic clock, not a duration.
 Build and flash one physical suite at a time:
 
 ```sh
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
 cmake --build build/uno-r4-minima --target board-tests -j4
 ./tool/run-uno-r4-minima-tests.sh <suite>
 ```

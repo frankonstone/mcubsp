@@ -5,20 +5,20 @@ board entry for the same architecture as a starting point. The entry declares th
 supported revision, architecture, toolchain, C++ profile, examples, runner and
 startup files. Board IDs are the directory's `<vendor>/<name>` path.
 
-Add the public pin aliases under `include/mcuhw/board/` and the application
-profile under `include/mcuhw/io/board/`. Keep register facts in the MCU
+Add the public pin aliases under `include/mcubsp/board/` and the application
+profile under `include/mcubsp/io/board/`. Keep register facts in the MCU
 headers and controller sequencing in the reusable backend. Put startup sources
 in `bsp/`, physical fixtures in `test/`, and wiring and recovery procedures in
 `doc/`.
 
-`MCUHW_BOARD_EXAMPLES` lists `board/<vendor>/<name>/example/<name>.cpp` sources.
+`MCUBSP_BOARD_EXAMPLES` lists `board/<vendor>/<name>/example/<name>.cpp` sources.
 The board's `example/CMakeLists.txt` declares each executable explicitly as
 `<vendor>.<board>.example.<name>` and uses that name for its output file. Add
 the board to the explicit workspace target list in `board/Workspace.cmake`. Add
 `tests.cmake` for a root style instrumented test build, or set
-`MCUHW_BOARD_TEST_PROJECT` for a standalone SDK test project.
+`MCUBSP_BOARD_TEST_PROJECT` for a standalone SDK test project.
 
-Configure a matching architecture preset with `-DMCUHW_BOARD=<vendor>/<name>`.
+Configure a matching architecture preset with `-DMCUBSP_BOARD=<vendor>/<name>`.
 Cross-build declared applications, check external startup for duplicate reset
 ownership, and run focused host tests. Execute physical fixtures with the
 recorded wiring before claiming hardware results. Register actual results with

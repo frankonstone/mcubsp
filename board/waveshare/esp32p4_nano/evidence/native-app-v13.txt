@@ -46,25 +46,25 @@ target-filtered summary: functions 148/216, statements 1034/1625,
   lines 1155/1698, branches 454/960, MC/DC conditions 69/781,
   invalid MC/DC decisions 0
 
-MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
-MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v13 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=2 observation=mixed_board_native qualification=development
-MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+MCUBSP_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUBSP_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v13 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=2 observation=mixed_board_native qualification=development
+MCUBSP_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
 esp32p4_gpio/gpio2_initializes_toggles_and_releases:PASS
-MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
+MCUBSP_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
 esp32p4_i2c/i2c0_reads_onboard_es8311_identity_with_repeated_start:PASS
-MCUHW_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=philips16 capture_bytes=4032 mic_nonzero=2016 mic_min=-1684 mic_max=439 playback_bytes=193536 tone_hz=1000 tone_peak=6000 duration_ms=1008 amp_gpio=53 verification=dma_codec_readback_no_acoustic_oracle
+MCUBSP_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=philips16 capture_bytes=4032 mic_nonzero=2016 mic_min=-1684 mic_max=439 playback_bytes=193536 tone_hz=1000 tone_peak=6000 duration_ms=1008 amp_gpio=53 verification=dma_codec_readback_no_acoustic_oracle
 esp32p4_audio/captures_onboard_microphone_and_plays_audible_tone:PASS
-MCUHW_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 write_read_restore=last_sector capacity_sectors=61454336 high_capacity=1 mid=0x6f product=CBADS mbr_signature=aa55
+MCUBSP_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 write_read_restore=last_sector capacity_sectors=61454336 high_capacity=1 mid=0x6f product=CBADS mbr_signature=aa55
 esp32p4_sdmmc/identifies_reads_writes_and_restores_onboard_card:PASS
-MCUHW_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 d2=16 d3=17 clk=18 cmd=19 enable_gpio=54 functions=2 rca=0x0001 cccr=0x32 cis=0x01000 manf=0x0092 card=0x6666 function1=ready transport=identity_only
+MCUBSP_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 d2=16 d3=17 clk=18 cmd=19 enable_gpio=54 functions=2 rca=0x0001 cccr=0x32 cis=0x01000 manf=0x0092 card=0x6666 function1=ready transport=identity_only
 esp32p4_wifi_sdio/enumerates_onboard_c5_and_enables_function_one:PASS
-MCUHW_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none
+MCUBSP_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none
 esp32p4_spi/gpspi2_executes_one_native_multisegment_command:PASS
 esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
-MCUHW_ETHERNET backend=esp32p4 interface=rmii phy=IP101GRI address=1 refclk_hz=50000000 id1=0x0243 id2=0x0c54 oui=0x0090c3 model=0x05 bmsr=0x7849 link=down traffic=not_tested
+MCUBSP_ETHERNET backend=esp32p4 interface=rmii phy=IP101GRI address=1 refclk_hz=50000000 id1=0x0243 id2=0x0c54 oui=0x0090c3 model=0x05 bmsr=0x7849 link=down traffic=not_tested
 esp32p4_ethernet/initializes_emac_and_identifies_onboard_ip101:PASS
 8 Tests, 0 Failures
-MCUHW_RESULT status=pass suite=esp32p4_native tests=8 failures=0 registry_overflow=0 coverage=captured
+MCUBSP_RESULT status=pass suite=esp32p4_native tests=8 failures=0 registry_overflow=0 coverage=captured
 
 Original second-stage bootloader backup (not stored in the repository):
 /private/tmp/esp32p4-nano-original-bootloader-20260920.bin

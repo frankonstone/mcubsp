@@ -3,14 +3,14 @@ set -eu
 
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
 . "$project_dir/tool/hardware-common.sh"
-build_dir=${MCUHW_BUILD_DIR:-"$project_dir/build/uno-r4-minima"}
-output=${1:-"$build_dir/artifact/mcuhw_uno_r4_minima_resources.json"}
+build_dir=${MCUBSP_BUILD_DIR:-"$project_dir/build/uno-r4-minima"}
+output=${1:-"$build_dir/artifact/mcubsp_uno_r4_minima_resources.json"}
 size_tool=$(hardware tool --name arm-size --command arm-none-eabi-size --override-env ARM_SIZE)
 nm_tool=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_NM)
 
 mkdir -p "$(dirname -- "$output")"
-temporary=$(mktemp "${TMPDIR:-/tmp}/mcuhw-resources.XXXXXX")
-identity_temporary=$(mktemp "${TMPDIR:-/tmp}/mcuhw-source-identity.XXXXXX")
+temporary=$(mktemp "${TMPDIR:-/tmp}/mcubsp-resources.XXXXXX")
+identity_temporary=$(mktemp "${TMPDIR:-/tmp}/mcubsp-source-identity.XXXXXX")
 identity_output=${output%.json}.source-identity.txt
 trap 'rm -f "$temporary" "$identity_temporary"' EXIT INT TERM
 
@@ -31,7 +31,7 @@ source_identity=$(shasum -a 256 "$identity_temporary" | awk '{print $1}')
 
 first=true
 {
-    printf '{"format":"mcuhw-resource-report","version":1,'
+    printf '{"format":"mcubsp-resource-report","version":1,'
     printf '"board":"Arduino UNO R4 Minima",'
     printf '"mcu":"Renesas RA4M1 R7FA4M1AB",'
     printf '"toolchain":"arm-none-eabi-gcc 15.2.1",'

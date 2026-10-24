@@ -19,18 +19,18 @@ io::i2c_device or io::spi_device
 io bus -> controller backend -> MMIO
 ```
 
-Device code belongs under `include/mcuhw/device/`, grouped by function. Bus
-endpoints live in `include/mcuhw/io/`; connections to another framework live
-under `include/mcuhw/integration/`. Device implementations receive the narrow
+Device code belongs under `include/mcubsp/device/`, grouped by function. Bus
+endpoints live in `include/mcubsp/io/`; connections to another framework live
+under `include/mcubsp/integration/`. Device implementations receive the narrow
 transport interface they need instead of a whole board. The TMP102 can use a
 fake endpoint with no `io`, board, or backend headers. The W5100 separately
 exposes its register protocol and the SPI transport that connects it to `io`.
 
-The optional `mcuhw::device` CMake target depends on the core library; use
-`mcuhw::io` for board composition. The linked UNO examples
+The optional `mcubsp::device` CMake target depends on the core library; use
+`mcubsp::io` for board composition. The linked UNO examples
 [TMP102](../../board/arduino/uno_r4_minima/example/tmp102.cpp) and
 [W5100](../../board/arduino/uno_r4_minima/example/w5100.cpp) are included with
-`MCUHW_BUILD_IO_EXAMPLES=ON`. Their builds and host simulations do not establish
+`MCUBSP_BUILD_IO_EXAMPLES=ON`. Their builds and host simulations do not establish
 physical acceptance of these new device compositions.
 
 ## Board and bus setup
@@ -38,12 +38,12 @@ physical acceptance of these new device compositions.
 Include the desired device and board explicitly. For example:
 
 ```cpp
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/device/sensor/tmp102.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/device/sensor/tmp102.hpp>
 
-namespace io = mcuhw::io;
-namespace device = mcuhw::device;
+namespace io = mcubsp::io;
+namespace device = mcubsp::device;
 using namespace std::chrono_literals;
 
 constexpr io::board_config peripherals{
@@ -90,7 +90,7 @@ makes the operation terminal; consume that result as well.
 
 ## TMP102 temperature sensor
 
-`mcuhw/device/sensor/tmp102.hpp` implements `device::tmp102<Endpoint>`. Passing
+`mcubsp/device/sensor/tmp102.hpp` implements `device::tmp102<Endpoint>`. Passing
 the endpoint by move transfers its address claim to the sensor:
 
 ```cpp
@@ -129,7 +129,7 @@ endpoint's address claim.
 
 ## ES8311 audio codec
 
-`mcuhw/device/audio/es8311.hpp` provides `device::es8311` register definitions
+`mcubsp/device/audio/es8311.hpp` provides `device::es8311` register definitions
 and the existing fixed startup sequence for 12.288 MHz MCLK, 48 kHz, 16-bit
 Philips I2S, analog microphone input and DAC output. It currently contains
 configuration data; the application applies the writes through I2C and
@@ -172,11 +172,11 @@ explicit endpoint first prevents direct bus calls from bypassing the endpoint.
 
 ## W5100 Ethernet adapter
 
-`mcuhw/device/ethernet/w5100.hpp` implements an attached `device::w5100` that
+`mcubsp/device/ethernet/w5100.hpp` implements an attached `device::w5100` that
 owns an SPI endpoint and presents raw Ethernet frames:
 
 ```cpp
-#include <mcuhw/device/ethernet/w5100.hpp>
+#include <mcubsp/device/ethernet/w5100.hpp>
 
 device::w5100 ethernet{std::move(ethernet_spi)};
 auto begun = ethernet.begin({
@@ -215,7 +215,7 @@ another frame. Ambiguous pointer/command commits also require recovery;
 partial uncommitted copies resume across polling calls and deadlines.
 
 The device uses socket 0 MACRAW mode. IP/TCP/UDP belong to the network stack.
-`mcuhw/integration/mcuip/w5100.hpp` provides the board-independent
+`mcubsp/integration/mcuip/w5100.hpp` provides the board-independent
 `w5100_network_device` alias and a contract check against
 `mcuip::NetworkDevice`. It does not impose an RTOS or allocate network storage.
 W5100 protocol and transport headers live under `device/ethernet/`; MCUIP

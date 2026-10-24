@@ -1,4 +1,4 @@
-# mcuhw — Chat Handoff Document
+# mcubsp — Chat Handoff Document
 
 ## Project goal
 
@@ -242,10 +242,10 @@ The desired application-facing API is compact.
 Simple PWM:
 
 ```cpp
-using pwm = mcuhw::pwm<
-    mcuhw::mcu::ra4m1::gpt0,
-    mcuhw::channel<1>,
-    mcuhw::pin::p105
+using pwm = mcubsp::pwm<
+    mcubsp::mcu::ra4m1::gpt0,
+    mcubsp::channel<1>,
+    mcubsp::pin::p105
 >;
 
 constexpr pwm::config cfg{
@@ -263,19 +263,19 @@ int main()
 For grouped/motor PWM:
 
 ```cpp
-using phase_u = mcuhw::pwm<
+using phase_u = mcubsp::pwm<
     mcu::ra4m1::gpt0,
     channel<1>,
     pin::...
 >;
 
-using phase_v = mcuhw::pwm<
+using phase_v = mcubsp::pwm<
     mcu::ra4m1::gpt0,
     channel<2>,
     pin::...
 >;
 
-using phase_w = mcuhw::pwm<
+using phase_w = mcubsp::pwm<
     mcu::ra4m1::gpt0,
     channel<3>,
     pin::...
@@ -285,7 +285,7 @@ using phase_w = mcuhw::pwm<
 Potential higher-level grouping:
 
 ```cpp
-using motor_pwm = mcuhw::pwm_group<
+using motor_pwm = mcubsp::pwm_group<
     phase_u,
     phase_v,
     phase_w
@@ -346,7 +346,7 @@ sensor / EEPROM / device driver
 Example bus:
 
 ```cpp
-using bus = mcuhw::i2c<
+using bus = mcubsp::i2c<
     mcu::ra4m1::iic0,
     pin::scl,
     pin::sda
@@ -365,18 +365,18 @@ int main()
 Concrete I2C device:
 
 ```cpp
-using eeprom = mcuhw::i2c_device<
+using eeprom = mcubsp::i2c_device<
     bus,
-    mcuhw::i2c_address<0x50>
+    mcubsp::i2c_address<0x50>
 >;
 ```
 
 Register-oriented use:
 
 ```cpp
-using sensor = mcuhw::i2c_device<
+using sensor = mcubsp::i2c_device<
     bus,
-    mcuhw::i2c_address<0x76>
+    mcubsp::i2c_address<0x76>
 >;
 
 auto id = sensor::read_register<std::uint8_t>(0xD0);
@@ -431,7 +431,7 @@ Initially coroutines (`task<T>` + `co_await`) were considered.
 Example:
 
 ```cpp
-mcuhw::task<void> read_sensor()
+mcubsp::task<void> read_sensor()
 {
     std::array<std::byte, 6> raw{};
 
@@ -457,7 +457,7 @@ co_await something();
 
 its caller often also becomes a coroutine, and so on.
 
-That is **not** desired as the fundamental architecture for `mcuhw`.
+That is **not** desired as the fundamental architecture for `mcubsp`.
 
 ## Preferred solution: `transfer<T>`
 
@@ -606,14 +606,14 @@ public:
 Concrete binding:
 
 ```cpp
-using bus = mcuhw::i2c<
+using bus = mcubsp::i2c<
     mcu::ra4m1::iic0,
     pin::...,
     pin::...
 >;
 
 using sensor_device =
-    mcuhw::i2c_device<
+    mcubsp::i2c_device<
         bus,
         i2c_address<0x76>
     >;
@@ -627,9 +627,9 @@ using sensor =
 # Suggested project layout
 
 ```text
-mcuhw/
+mcubsp/
 │
-├── include/mcuhw/
+├── include/mcubsp/
 │   ├── core/
 │   │   ├── register.hpp
 │   │   ├── field.hpp
@@ -748,7 +748,7 @@ The application API should remain compact and declarative.
 PWM:
 
 ```cpp
-using pwm = mcuhw::pwm<
+using pwm = mcubsp::pwm<
     mcu::ra4m1::gpt0,
     channel<1>,
     pin::...
@@ -769,13 +769,13 @@ int main()
 I2C:
 
 ```cpp
-using bus = mcuhw::i2c<
+using bus = mcubsp::i2c<
     mcu::ra4m1::iic0,
     pin::...,
     pin::...
 >;
 
-using sensor_dev = mcuhw::i2c_device<
+using sensor_dev = mcubsp::i2c_device<
     bus,
     i2c_address<0x76>
 >;

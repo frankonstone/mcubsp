@@ -1,6 +1,9 @@
 if(NOT DEFINED CXX_COMPILER OR NOT DEFINED SOURCE OR NOT DEFINED EXPECT_SUCCESS)
     message(FATAL_ERROR "CXX_COMPILER, SOURCE and EXPECT_SUCCESS are required")
 endif()
+if(NOT EXISTS "${SOURCE}" OR NOT IS_DIRECTORY "${INCLUDE_DIR}")
+    message(FATAL_ERROR "Compile-case source or include directory is missing: ${SOURCE}")
+endif()
 
 execute_process(
     COMMAND "${CXX_COMPILER}" ${COMPILE_OPTIONS} -std=c++23
@@ -10,6 +13,9 @@ execute_process(
     OUTPUT_VARIABLE compile_output
     ERROR_VARIABLE compile_error
 )
+if(NOT compile_result MATCHES "^[0-9]+$")
+    message(FATAL_ERROR "Compiler could not be started: ${compile_result}")
+endif()
 
 if(EXPECT_SUCCESS AND NOT compile_result EQUAL 0)
     message(FATAL_ERROR

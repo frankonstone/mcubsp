@@ -31,15 +31,15 @@ The authoritative artifacts are generated from the current working tree:
 - `build/host/artifact/mcutest.json`: 174 host cases, zero failures.
 - `build/uno-r4-minima/artifact/mcutest-hardware.json`: 17 passing physical
   cases across all nine UNO runs, including the optimized metrics image.
-- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_all_tests.mcucov.json`:
+- `build/uno-r4-minima/artifact/mcubsp_uno_r4_minima_all_tests.mcucov.json`:
   MCUCOV build `0x4d485701`; 155/238 functions, 1,059/1,680 statements,
   1,205/1,865 lines, 359/814 branches and 45/598 MC/DC conditions. Its 134
   skipped constructs contain 36 warnings and zero errors.
 - `build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.release_metrics.json`:
   three passing physical cases from the non-instrumented `-Os` image.
-- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_resources.json`:
+- `build/uno-r4-minima/artifact/mcubsp_uno_r4_minima_resources.json`:
   section sizes, RAM headroom and SHA-256 identities for every UNO image.
-- `build/uno-r4-minima/artifact/mcuhw_uno_r4_minima_resources.source-identity.txt`:
+- `build/uno-r4-minima/artifact/mcubsp_uno_r4_minima_resources.source-identity.txt`:
   exact content hashes whose manifest hash is recorded by the resource report.
 
 The optimized metrics image measured at 48 MHz:
@@ -68,7 +68,7 @@ does not include architectural exception entry and return.
 Configure and run the native suite:
 
 ```sh
-cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
+cmake --preset native -B build/host -DMCUBSP_BUILD_TESTS=ON -DMCUBSP_BUILD_TOOLING_TESTS=ON -DMCUBSP_BUILD_PROBES=ON -DMCUBSP_CHECK_HEADERS=ON -DMCUBSP_BUILD_MCUIP_CONTRACTS=ON
 cmake --build build/host -j4
 ctest --test-dir build/host --output-on-failure
 ```
@@ -77,9 +77,9 @@ Cross-build all public headers, examples and architecture probes, then link the
 UNO images:
 
 ```sh
-cmake --preset arm-cortex-m4 -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --preset arm-cortex-m4 -DMCUBSP_BUILD_PROBES=ON -DMCUBSP_CHECK_HEADERS=ON
 cmake --build --preset arm-cortex-m4 -j4
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
 cmake --build build/uno-r4-minima --target board-tests -j4
 ```
 

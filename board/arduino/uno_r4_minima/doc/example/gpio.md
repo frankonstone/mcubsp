@@ -1,31 +1,31 @@
 # GPIO
 
-GPIO is the smallest complete `mcuhw` composition. This example configures the
+GPIO is the smallest complete `mcubsp` composition. This example configures the
 UNO R4 Minima built-in LED pin as a push-pull output and toggles it.
 
 ## Code
 
 ```cpp
-#include <mcuhw/backend/ra4m1/gpio.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/gpio.hpp>
+#include <mcubsp/backend/ra4m1/gpio.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/gpio.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
 void application_delay(); // implement with the application's timer/scheduler
 
 int blink_once() {
-    mcuhw::core::direct_mmio mmio;
-    mcuhw::backend::ra4m1::gpio_backend gpio_hardware{mmio};
-    mcuhw::driver::gpio_pin led{gpio_hardware, board::led_builtin_d13};
+    mcubsp::core::direct_mmio mmio;
+    mcubsp::backend::ra4m1::gpio_backend gpio_hardware{mmio};
+    mcubsp::driver::gpio_pin led{gpio_hardware, board::led_builtin_d13};
 
     const auto initialized = led.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
-        .initial_level = mcuhw::driver::gpio_level::low,
-        .output_type = mcuhw::driver::gpio_output_type::push_pull,
-        .pull = mcuhw::driver::gpio_pull::none,
-        .drive = mcuhw::driver::gpio_drive::middle,
+        .direction = mcubsp::driver::gpio_direction::output,
+        .initial_level = mcubsp::driver::gpio_level::low,
+        .output_type = mcubsp::driver::gpio_output_type::push_pull,
+        .pull = mcubsp::driver::gpio_pull::none,
+        .drive = mcubsp::driver::gpio_drive::middle,
     });
     if (!initialized) {
         return 1;
@@ -48,7 +48,7 @@ int main() {
 }
 ```
 
-`application_delay()` is deliberately outside `mcuhw`; use a timer or the
+`application_delay()` is deliberately outside `mcubsp`; use a timer or the
 scheduler owned by your application. Do not implement a production delay from
 an uncalibrated empty loop.
 

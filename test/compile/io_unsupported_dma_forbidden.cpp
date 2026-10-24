@@ -1,7 +1,7 @@
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/esp32p4_nano.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-void forbidden(mcuhw::execution::fake_policy& execution) {
-    constexpr mcuhw::io::board_config config{.dma=mcuhw::io::channels<0>};
-    auto hw = mcuhw::io::make_board<mcuhw::io::boards::esp32p4_nano, config>(execution, 1000U);
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/esp32p4_nano.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+void forbidden(mcubsp::execution::fake_policy& execution) {
+    constexpr mcubsp::io::board_config config{.dma=mcubsp::io::channels<0>};
+    auto hw = mcubsp::io::make_board<mcubsp::io::boards::esp32p4_nano, config>(execution, 1000U);
 }

@@ -14,17 +14,17 @@
 #include <mcutest/assert.hpp>
 #include <mcutest/core.hpp>
 
-#include <mcuhw/backend/esp32p4/gpio.hpp>
-#include <mcuhw/backend/esp32p4/sdmmc.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/driver/sdmmc.hpp>
+#include <mcubsp/backend/esp32p4/gpio.hpp>
+#include <mcubsp/backend/esp32p4/sdmmc.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/driver/sdmmc.hpp>
 
-extern "C" void mcuhw_esp32p4_sdmmc_test_link_anchor() noexcept {}
+extern "C" void mcubsp_esp32p4_sdmmc_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 class delay_policy {
@@ -82,7 +82,7 @@ TEST(esp32p4_sdmmc, identifies_reads_writes_and_restores_onboard_card,
      "REQ-0016", "REQ-0019", "REQ-0034", "REQ-0036", "REQ-0037") {
     core::direct_mmio mmio;
     dma_memory memory;
-    backend::esp32p4::sdmmc_host_backend<decltype(mmio), decltype(memory), mcuhw::board::esp32p4_nano::sdmmc_slot0_binding> host{mmio, memory};
+    backend::esp32p4::sdmmc_host_backend<decltype(mmio), decltype(memory), mcubsp::board::esp32p4_nano::sdmmc_slot0_binding> host{mmio, memory};
     ASSERT_TRUE(host.enable_io_power());
     backend::esp32p4::gpio_backend power_gpio{mmio};
     driver::gpio_pin power{power_gpio,
@@ -115,7 +115,7 @@ TEST(esp32p4_sdmmc, identifies_reads_writes_and_restores_onboard_card,
         const auto hcon = mmio.read<std::uint32_t>(0x5008'3070U);
         const auto clk1 = mmio.read<std::uint32_t>(0x500E'6034U);
         const auto clk2 = mmio.read<std::uint32_t>(0x500E'6038U);
-        esp_rom_printf("MCUHW_SDMMC_ERROR stage=initialize code=%u "
+        esp_rom_printf("MCUBSP_SDMMC_ERROR stage=initialize code=%u "
                        "host_stage=%u ctrl=0x%08lx verid=0x%08lx "
                        "hcon=0x%08lx clk1=0x%08lx clk2=0x%08lx "
                        "command=%u rintsts=0x%08lx idsts=0x%08lx\n",
@@ -140,7 +140,7 @@ TEST(esp32p4_sdmmc, identifies_reads_writes_and_restores_onboard_card,
     const auto read = card.read_sector(0U, sector_zero);
     if (!read) {
         esp_rom_printf(
-            "MCUHW_SDMMC_ERROR stage=read_sector code=%u command=%u "
+            "MCUBSP_SDMMC_ERROR stage=read_sector code=%u command=%u "
             "rintsts=0x%08lx idsts=0x%08lx\n",
             static_cast<unsigned>(read.error()),
             static_cast<unsigned>(host.last_command_index()),
@@ -185,7 +185,7 @@ TEST(esp32p4_sdmmc, identifies_reads_writes_and_restores_onboard_card,
     if (!original_read || !pattern_written || !pattern_verified
         || !restored || !restore_verified) {
         esp_rom_printf(
-            "MCUHW_SDMMC_ERROR stage=write_read_restore original=%u "
+            "MCUBSP_SDMMC_ERROR stage=write_read_restore original=%u "
             "written=%u verified=%u restored=%u restore_verified=%u\n",
             original_read ? 1U : 0U, pattern_written ? 1U : 0U,
             pattern_verified ? 1U : 0U, restored ? 1U : 0U,
@@ -198,7 +198,7 @@ TEST(esp32p4_sdmmc, identifies_reads_writes_and_restores_onboard_card,
     ASSERT_TRUE(restore_verified);
 
     esp_rom_printf(
-        "MCUHW_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 "
+        "MCUBSP_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 "
         "d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 "
         "write_read_restore=last_sector "
         "capacity_sectors=%llu high_capacity=%u mid=0x%02x product=%s "
@@ -217,4 +217,4 @@ TEST(esp32p4_sdmmc, identifies_reads_writes_and_restores_onboard_card,
     ASSERT_TRUE(power.release().has_value());
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

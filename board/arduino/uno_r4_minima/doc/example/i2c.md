@@ -23,19 +23,19 @@ can reach the same backend while this function waits.
 ```cpp
 #include <utility>
 
-#include <mcuhw/backend/ra4m1/iic.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/i2c.hpp>
+#include <mcubsp/backend/ra4m1/iic.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/i2c.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
 void consume_sensor_value(std::uint8_t first, std::uint8_t second);
 
-using binding = mcuhw::backend::ra4m1::iic_binding<
+using binding = mcubsp::backend::ra4m1::iic_binding<
     1, board::a5_scl, board::a4_sda>;
 
-constexpr auto timing = mcuhw::backend::ra4m1::solve_i2c_timing({
+constexpr auto timing = mcubsp::backend::ra4m1::solve_i2c_timing({
     .clock_hz = 24'000'000U,
     .target_hz = 400'000U,
     .maximum_error_ppm = 30'000U,
@@ -45,10 +45,10 @@ constexpr auto timing = mcuhw::backend::ra4m1::solve_i2c_timing({
 static_assert(timing.has_value());
 
 template<class Bus>
-int read_register(Bus& bus, mcuhw::execution::deadline deadline) {
+int read_register(Bus& bus, mcubsp::execution::deadline deadline) {
     // Replace 0x50 with the unshifted seven-bit address from the datasheet.
-    mcuhw::driver::i2c_device<Bus, 0x50U> device{bus};
-    mcuhw::driver::i2c_register_request<2> request;
+    mcubsp::driver::i2c_device<Bus, 0x50U> device{bus};
+    mcubsp::driver::i2c_register_request<2> request;
     auto started = device.read_register(0x20U, request, 2U);
     if (!started) {
         return 2;
@@ -71,13 +71,13 @@ int read_register(Bus& bus, mcuhw::execution::deadline deadline) {
 The surrounding application has this shape:
 
 ```cpp
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 
-using backend_type = mcuhw::backend::ra4m1::iic_controller_backend<
-    binding, mcuhw::core::direct_mmio, application_execution_policy>;
+using backend_type = mcubsp::backend::ra4m1::iic_controller_backend<
+    binding, mcubsp::core::direct_mmio, application_execution_policy>;
 backend_type i2c_hardware{mmio, execution};
-mcuhw::driver::i2c_controller bus{i2c_hardware};
+mcubsp::driver::i2c_controller bus{i2c_hardware};
 
 int main() {
     initialize_monotonic_clock();
@@ -87,7 +87,7 @@ int main() {
         return 1;
     }
     enable_iic1_interrupts();
-    const auto deadline = mcuhw::execution::make_deadline(
+    const auto deadline = mcubsp::execution::make_deadline(
         execution.now(), 4'800'000U);
     const bool read = deadline && read_register(bus, *deadline) == 0;
     disable_iic1_interrupts();

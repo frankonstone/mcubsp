@@ -1,6 +1,6 @@
-# Integrating mcuhw into a bare-metal application
+# Integrating mcubsp into a bare-metal application
 
-`mcuhw` supplies hardware descriptions, peripheral backends, functional
+`mcubsp` supplies hardware descriptions, peripheral backends, functional
 drivers, and fixed-storage transfer state. It deliberately does not take over
 startup, clocks, the vector table, interrupt routing, a scheduler, or the
 application's notion of time.
@@ -16,7 +16,7 @@ main()
   |
   +-- initializes the monotonic clock
   +-- configures interrupt-controller routes
-  +-- initializes mcuhw drivers
+  +-- initializes mcubsp drivers
   +-- starts a transfer and keeps its buffers alive
   +-- waits, polls, or continues application work
   |
@@ -36,10 +36,10 @@ main()
 
 | Concern | Owner |
 | --- | --- |
-| Register addresses, pin routes, peripheral metadata | `mcuhw` MCU description |
-| Native peripheral register sequencing | `mcuhw` backend |
-| Functional GPIO/UART/I2C/SPI/ADC/PWM API | `mcuhw` driver |
-| Transfer state and typed completion errors | `mcuhw` core |
+| Register addresses, pin routes, peripheral metadata | `mcubsp` MCU description |
+| Native peripheral register sequencing | `mcubsp` backend |
+| Functional GPIO/UART/I2C/SPI/ADC/PWM API | `mcubsp` driver |
+| Transfer state and typed completion errors | `mcubsp` core |
 | Reset handler and C/C++ runtime initialization | Application or board support |
 | Linker script and memory placement | Application or board support |
 | Clock-tree initialization and solver input clocks | Application or board support |
@@ -59,7 +59,7 @@ An interrupt-driven transfer is accessed from two contexts:
 2. An interrupt handler advances the peripheral and publishes completion.
 
 Those contexts share a fixed operation slot. The execution policy tells
-`mcuhw` how this application protects that state and how a wait observes time
+`mcubsp` how this application protects that state and how a wait observes time
 and completion. It is a compile-time dependency, not a base class, scheduler,
 thread, or heap-allocated callback.
 
@@ -84,14 +84,14 @@ asynchronous API.
 
 ## Concrete UNO R4 Minima policy
 
-`mcuhw::execution::bare_metal_policy` implements the policy protocol in terms
+`mcubsp::execution::bare_metal_policy` implements the policy protocol in terms
 of application hooks. These hooks use PRIMASK for critical sections and the
 Cortex-M DWT cycle counter as a 48 MHz monotonic clock:
 
 ```cpp
 #include <cstdint>
 
-#include <mcuhw/execution/bare_metal_policy.hpp>
+#include <mcubsp/execution/bare_metal_policy.hpp>
 
 struct application_execution_hooks {
     using critical_token = std::uint32_t;
@@ -111,7 +111,7 @@ struct application_execution_hooks {
         }
     }
 
-    static mcuhw::execution::tick now() noexcept {
+    static mcubsp::execution::tick now() noexcept {
         return *reinterpret_cast<volatile const std::uint32_t*>(
             0xE000'1004U); // DWT_CYCCNT
     }
@@ -140,7 +140,7 @@ struct application_execution_hooks {
 };
 
 using application_execution_policy =
-    mcuhw::execution::bare_metal_policy<application_execution_hooks>;
+    mcubsp::execution::bare_metal_policy<application_execution_hooks>;
 ```
 
 Enable the cycle counter before creating deadlines:
@@ -168,7 +168,7 @@ This policy polls and does not put the core to sleep. Replacing `poll()` with
 in the completion-before-sleep window. An RTOS adapter would map the same
 responsibilities to RTOS critical sections, ticks, and notifications.
 
-`mcuhw::execution::fake_policy` is for deterministic host tests. It is not a
+`mcubsp::execution::fake_policy` is for deterministic host tests. It is not a
 production board policy.
 
 ## Object lifetime and interrupt visibility
@@ -179,21 +179,21 @@ application objects are the simplest bare-metal composition:
 ```cpp
 namespace {
 
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 
-using uart_binding = mcuhw::backend::ra4m1::sci_uart_binding<
+using uart_binding = mcubsp::backend::ra4m1::sci_uart_binding<
     2,
-    mcuhw::board::arduino_uno_r4_minima::d0_rx,
-    mcuhw::board::arduino_uno_r4_minima::d1_tx>;
+    mcubsp::board::arduino_uno_r4_minima::d0_rx,
+    mcubsp::board::arduino_uno_r4_minima::d1_tx>;
 
-using uart_backend_type = mcuhw::backend::ra4m1::sci_uart_backend<
+using uart_backend_type = mcubsp::backend::ra4m1::sci_uart_backend<
     uart_binding,
-    mcuhw::core::direct_mmio,
+    mcubsp::core::direct_mmio,
     application_execution_policy>;
 
 uart_backend_type uart_hardware{mmio, execution};
-mcuhw::driver::uart uart{uart_hardware};
+mcubsp::driver::uart uart{uart_hardware};
 
 } // namespace
 ```
@@ -222,12 +222,12 @@ Cortex-M NVIC lines. Keep the selected lines disabled until
 #include <array>
 #include <utility>
 
-#include <mcuhw/backend/ra4m1/sci_uart.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/uart.hpp>
-#include <mcuhw/execution/deadline.hpp>
-#include <mcuhw/mcu/ra4m1/peripherals.hpp>
+#include <mcubsp/backend/ra4m1/sci_uart.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/uart.hpp>
+#include <mcubsp/execution/deadline.hpp>
+#include <mcubsp/mcu/ra4m1/peripherals.hpp>
 
 namespace {
 
@@ -239,13 +239,13 @@ constexpr std::uintptr_t icu_event_links = 0x4000'6300U;
 
 void configure_icu_line(
     std::uint32_t line,
-    mcuhw::mcu::ra4m1::event event,
+    mcubsp::mcu::ra4m1::event event,
     std::uint8_t priority = 0x80U) noexcept {
     const auto mask = static_cast<std::uint32_t>(1U << line);
     *reinterpret_cast<volatile std::uint32_t*>(nvic_disable) = mask;
     *reinterpret_cast<volatile std::uint32_t*>(
         icu_event_links + line * 4U)
-        = mcuhw::mcu::ra4m1::event_number(event);
+        = mcubsp::mcu::ra4m1::event_number(event);
     *reinterpret_cast<volatile std::uint8_t*>(nvic_priority + line)
         = priority;
     *reinterpret_cast<volatile std::uint32_t*>(nvic_clear_pending) = mask;
@@ -270,10 +270,10 @@ void clear_icu_interrupt_request(std::uint32_t line) noexcept {
 }
 
 void configure_sci2_interrupt_routes() noexcept {
-    configure_icu_line(0U, mcuhw::mcu::ra4m1::event::sci2_rxi);
-    configure_icu_line(1U, mcuhw::mcu::ra4m1::event::sci2_txi);
-    configure_icu_line(2U, mcuhw::mcu::ra4m1::event::sci2_tei);
-    configure_icu_line(3U, mcuhw::mcu::ra4m1::event::sci2_eri);
+    configure_icu_line(0U, mcubsp::mcu::ra4m1::event::sci2_rxi);
+    configure_icu_line(1U, mcubsp::mcu::ra4m1::event::sci2_txi);
+    configure_icu_line(2U, mcubsp::mcu::ra4m1::event::sci2_tei);
+    configure_icu_line(3U, mcubsp::mcu::ra4m1::event::sci2_eri);
 }
 
 void enable_sci2_interrupts() noexcept {
@@ -290,20 +290,20 @@ void disable_sci2_interrupts() noexcept {
     __asm__ volatile("dsb sy\n\tisb sy" ::: "memory");
 }
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 
-using binding = mcuhw::backend::ra4m1::sci_uart_binding<
+using binding = mcubsp::backend::ra4m1::sci_uart_binding<
     2, board::d0_rx, board::d1_tx>;
-using backend_type = mcuhw::backend::ra4m1::sci_uart_backend<
-    binding, mcuhw::core::direct_mmio, application_execution_policy>;
+using backend_type = mcubsp::backend::ra4m1::sci_uart_backend<
+    binding, mcubsp::core::direct_mmio, application_execution_policy>;
 
 backend_type uart_hardware{mmio, execution};
-mcuhw::driver::uart uart{uart_hardware};
+mcubsp::driver::uart uart{uart_hardware};
 
-constexpr auto uart_timing = mcuhw::backend::ra4m1::solve_uart_baud({
+constexpr auto uart_timing = mcubsp::backend::ra4m1::solve_uart_baud({
     .clock_hz = 24'000'000U,
     .target_baud = 115'200U,
     .maximum_error_ppm = 20'000U,
@@ -331,7 +331,7 @@ int main() {
     }
 
     auto transfer = std::move(*started);
-    const auto deadline = mcuhw::execution::make_deadline(
+    const auto deadline = mcubsp::execution::make_deadline(
         execution.now(), 4'800'000U);
     if (!deadline) {
         static_cast<void>(transfer.cancel());
@@ -380,7 +380,7 @@ routing. A vector name alone does not connect SCI2 to that vector.
 Create an absolute deadline from the same clock returned by the policy:
 
 ```cpp
-const auto deadline = mcuhw::execution::make_deadline(
+const auto deadline = mcubsp::execution::make_deadline(
     execution.now(), timeout_ticks);
 ```
 

@@ -1,13 +1,13 @@
 #include <cstdint>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/clock.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/backend/ra4m1/clock.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
 constexpr std::uintptr_t system_base = 0x4001'E000U;
-using policy_type = mcuhw::testing::recording_mmio<0x400, 32>;
+using policy_type = mcubsp::testing::recording_mmio<0x400, 32>;
 
 TEST(ra4m1_clock, applies_verified_48mhz_sequence_and_relocks,
      "REQ-0009", "REQ-0031") {
@@ -17,7 +17,7 @@ TEST(ra4m1_clock, applies_verified_48mhz_sequence_and_relocks,
     ASSERT_TRUE(policy.write<std::uint8_t>(system_base + 0x3CU, 0x01U)
                     .has_value());
     policy.clear_operations();
-    mcuhw::backend::ra4m1::clock_backend backend{policy};
+    mcubsp::backend::ra4m1::clock_backend backend{policy};
 
     ASSERT_TRUE(backend.configure_hoco_48mhz(2U).has_value());
     const auto operations = policy.operations();
@@ -47,15 +47,15 @@ TEST(ra4m1_clock, refuses_a_non_48mhz_option_setting_without_writes,
     ASSERT_TRUE(policy.write<std::uint8_t>(system_base + 0x37U, 0x10U)
                     .has_value());
     policy.clear_operations();
-    mcuhw::backend::ra4m1::clock_backend backend{policy};
+    mcubsp::backend::ra4m1::clock_backend backend{policy};
 
     const auto result = backend.configure_hoco_48mhz(2U);
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error()
-                == mcuhw::backend::ra4m1::clock_error::incompatible_hoco_frequency);
+                == mcubsp::backend::ra4m1::clock_error::incompatible_hoco_frequency);
     ASSERT_EQ(policy.operations().size(), 1U);
     EXPECT_TRUE(policy.operations()[0].kind
-                == mcuhw::testing::mmio_operation_kind::read);
+                == mcubsp::testing::mmio_operation_kind::read);
 }
 
 } // namespace

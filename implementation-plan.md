@@ -1,4 +1,4 @@
-# mcuhw implementation plan
+# mcubsp implementation plan
 
 Revised baseline, 26 September 2026. Implements [requirements.md](requirements.md). The current sequence is: **preserve the completed three-MCU description and RA4M1 driver foundation; accept each bare-metal target from its scoped native, build and directly connected physical evidence; follow PLN-0026 with repository adoption and scalable build workflows; integrate MCUOS last**. Status annotations below track execution; a completed plan is not itself requirement evidence. Existing evidence is retained. Read in the phase order below, not numeric ID order.
 
@@ -22,7 +22,7 @@ not reopen completed releases or imply new physical verification.
 ## Intended structure
 
 ```text
-include/mcuhw/
+include/mcubsp/
   core/                 register/field types, units, concepts and metadata utilities
   arch/arm/cortex_m4/    architecture metadata; execution primitives added with drivers
   arch/arm/cortex_m7/
@@ -47,7 +47,7 @@ cmake/                 native and architecture/toolchain configurations
 
 Templates and constant-evaluated definitions live in headers; other behavior may use compiled translation units. Description headers must be usable together on a host without board startup, OS includes or a global target-selection macro. Do not create empty target trees as evidence of support.
 
-Phase D2 retains the public `include/mcuhw/` entry points and places local
+Phase D2 retains the public `include/mcubsp/` entry points and places local
 build settings and procedures beside each board. Shared MCU, backend and device
 support remains reusable. Board selection reads the chosen `board.cmake`.
 
@@ -484,7 +484,7 @@ peer. This follow-on milestone does not reopen the first RA4M1 driver release.
 4. Reinspect the actual sibling `../mcuip` contracts and implement a thin
    W5100 MACRAW `NetworkDevice` adapter. Keep MCUIP responsible for frame and
    protocol storage; do not expose the W5100 hardware TCP/UDP socket API, copy
-   MCUIP into mcuhw, add lwIP or depend on the Arduino Ethernet library.
+   MCUIP into mcubsp, add lwIP or depend on the Arduino Ethernet library.
 5. Add a dedicated restricted-runtime UNO firmware and runner. Preserve the
    Arduino bootloader offset, emit mcutest/MCUCOV evidence over J-Link RTT and
    record source/ELF identities, SPI/DMAC mode, fixed buffer capacities, image
@@ -563,7 +563,7 @@ The reproducible `run-nucleo-h753zi-native.sh` procedure passed on the connected
 board with STLINK V3J5M2 at 3.28 V. Its result mask was `0x000000ff`: the
 built-in LED passed set/read/clear through the common GPIO driver; TIM1
 configured ARR=3199/CCR1=800 for the 20 kHz 25% case; USART3 BRR=556 and the
-physical PD8/PD9 ST-LINK VCP delivered `MCUHW H753 USART3 OK`; I2C1 and SPI1
+physical PD8/PD9 ST-LINK VCP delivered `MCUBSP H753 USART3 OK`; I2C1 and SPI1
 initialized on the source-backed Arduino pins; ADC1 calibrated and converted
 floating A0/PA3 within the 14-bit range. The test also enabled the Cortex-M7
 D-cache, cleaned a 64-byte aligned AXI-SRAM DMA1 source, and independently read
@@ -629,7 +629,7 @@ Exit: all three declared bare-metal targets have real backends supporting the sh
 @status(done)
 @link(REQ-0002, REQ-0014, REQ-0015, REQ-0018, REQ-0035, REQ-0037, REQ-0038, REQ-0045)
 
-Implemented the optional `mcuhw::io` target and board-oriented API on the
+Implemented the optional `mcubsp::io` target and board-oriented API on the
 existing checked drivers. Compile-time configuration selects peripheral and
 DMA storage. A shared runtime tracks pin aliases and retained handles;
 move-only leases and asynchronous operations expose explicit lifetime and error
@@ -643,8 +643,6 @@ timeouts, cancellation and ISR rejection, with JSON evidence in
 public headers build for the three architectures. UNO blink, serial echo and
 SPI DMA examples link with the existing standalone startup. The
 [application guide](doc/getting-started/io.md) documents API use and limitations.
-`tool/report-io-cost.py` produces paired linked probes, source hashes and
-flash/static-RAM/individual-stack-frame reports in `build/io-cost/`.
 
 Exit scope: implemented and checked at the host/build level. No physical
 acceptance of the new facade, peak-stack/latency measurement, camera API,
@@ -672,8 +670,7 @@ recovery after ambiguous commits or cancellation of an issued SEND.
 
 The host suite, all three architecture/header builds, generic MCUIP contract
 probes and five linked UNO examples provide build/simulation evidence. New
-examples cover a temperature threshold and raw Ethernet reception. Fresh
-paired cost probes quantify the additional shared-SPI state and code; the
+examples cover a temperature threshold and raw Ethernet reception. The
 [components guide](doc/getting-started/components.md) documents the API and
 its single-foreground-context contract. Physical verification and renewed
 throughput measurements of the refactored W5100 remain separate work.
@@ -694,9 +691,9 @@ settings remain intact. See [adoption qualification](doc/acceptance/repository-a
 
 - Make embedded CMake use define only the public library interfaces by default.
   Gate tests, probes, header checks, coverage and hardware images with explicit
-  mcuhw options; preserve parent testing and compiler settings.
-- Add versioned install/export support for `mcuhw::mcuhw`, `mcuhw::io` and
-  `mcuhw::device`, preserving source-checkout and direct-header consumption.
+  mcubsp options; preserve parent testing and compiler settings.
+- Add versioned install/export support for `mcubsp::mcubsp`, `mcubsp::io` and
+  `mcubsp::device`, preserving source-checkout and direct-header consumption.
 - Resolve optional dependencies only when selected. Retain explicit local source
   overrides without requiring the sibling development workspace for applications.
 - Add clean external-consumer checks for source inclusion, installed and relocated
@@ -806,7 +803,7 @@ configuration and 21 for full host verification. See
 [targets and presets](doc/development/verification.md#targets-and-presets).
 
 The D19 workspace refinement selects the architecture through a preset and
-persists `MCUHW_ACTIVE_BOARDS` as a local CMake setting. Local board entries supply
+persists `MCUBSP_ACTIVE_BOARDS` as a local CMake setting. Local board entries supply
 vendor-qualified board example/test aggregates, with separate example images and
 board/revision artifact directories. Reconfiguration removes inactive targets;
 board-test dependencies are configured only when that group is requested.

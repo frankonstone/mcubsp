@@ -16,58 +16,58 @@
 #include <mcuip/ipv4_host.hpp>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/spi.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/device/ethernet/w5100_spi.hpp>
-#include <mcuhw/integration/mcuip/w5100.hpp>
+#include <mcubsp/backend/ra4m1/spi.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/device/ethernet/w5100_spi.hpp>
+#include <mcubsp/integration/mcuip/w5100.hpp>
 
 #include "support.hpp"
 
-#ifndef MCUHW_SOURCE_ID
-#define MCUHW_SOURCE_ID "unavailable"
+#ifndef MCUBSP_SOURCE_ID
+#define MCUBSP_SOURCE_ID "unavailable"
 #endif
 
-#ifndef MCUHW_MCUIP_SOURCE_ID
-#define MCUHW_MCUIP_SOURCE_ID "unavailable"
+#ifndef MCUBSP_MCUIP_SOURCE_ID
+#define MCUBSP_MCUIP_SOURCE_ID "unavailable"
 #endif
 
-#ifndef MCUHW_ETHERNET_SPI_HZ
-#define MCUHW_ETHERNET_SPI_HZ 6000000
+#ifndef MCUBSP_ETHERNET_SPI_HZ
+#define MCUBSP_ETHERNET_SPI_HZ 6000000
 #endif
 
 namespace {
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
-using spi_binding = mcuhw::backend::ra4m1::spi_binding<
+namespace board = mcubsp::board::arduino_uno_r4_minima;
+using spi_binding = mcubsp::backend::ra4m1::spi_binding<
     1, board::d12_miso, board::d11_mosi, board::d13_sck, board::d10_ssl>;
-using spi_type = mcuhw::backend::ra4m1::spi_master_backend<
-    spi_binding, mcuhw::core::direct_mmio,
-    mcuhw::board_test::execution_policy>;
+using spi_type = mcubsp::backend::ra4m1::spi_master_backend<
+    spi_binding, mcubsp::core::direct_mmio,
+    mcubsp::board_test::execution_policy>;
 
-#ifndef MCUHW_ETHERNET_FAST_SPI
+#ifndef MCUBSP_ETHERNET_FAST_SPI
 struct deadline_source {
-    [[nodiscard]] mcuhw::execution::deadline deadline() const noexcept {
+    [[nodiscard]] mcubsp::execution::deadline deadline() const noexcept {
         return {static_cast<std::uint32_t>(
-            mcuhw::board_test::execution_hooks::now() + 4'800'000U)};
+            mcubsp::board_test::execution_hooks::now() + 4'800'000U)};
     }
 };
 
-using transport_type = mcuhw::device::w5100_spi_transport<
+using transport_type = mcubsp::device::w5100_spi_transport<
     spi_type, deadline_source>;
 #else
 using transport_type =
-    mcuhw::device::w5100_spi_immediate_transport<spi_type>;
+    mcubsp::device::w5100_spi_immediate_transport<spi_type>;
 #endif
-using device_type = mcuhw::integration::mcuip::
+using device_type = mcubsp::integration::mcuip::
     w5100_macraw_network_device<transport_type>;
 using host_type = ::mcuip::EthernetIpv4Host<4U>;
 
 static_assert(::mcuip::NetworkDevice<device_type>);
 
-mcuhw::board_test::execution_policy execution;
-spi_type spi{mcuhw::board_test::mmio, execution};
-#ifndef MCUHW_ETHERNET_FAST_SPI
+mcubsp::board_test::execution_policy execution;
+spi_type spi{mcubsp::board_test::mmio, execution};
+#ifndef MCUBSP_ETHERNET_FAST_SPI
 deadline_source deadlines;
 transport_type transport{spi, deadlines};
 #else
@@ -75,14 +75,14 @@ transport_type transport{spi};
 #endif
 device_type device{transport};
 
-constexpr mcuhw::core::pin_id sd_chip_select_pin{1U, 3U};
-mcuhw::driver::gpio_pin sd_chip_select{
-    mcuhw::board_test::gpio, sd_chip_select_pin};
+constexpr mcubsp::core::pin_id sd_chip_select_pin{1U, 3U};
+mcubsp::driver::gpio_pin sd_chip_select{
+    mcubsp::board_test::gpio, sd_chip_select_pin};
 
-constexpr auto spi_timing = mcuhw::backend::ra4m1::solve_spi_timing(
-    {48'000'000U, MCUHW_ETHERNET_SPI_HZ, 0U});
+constexpr auto spi_timing = mcubsp::backend::ra4m1::solve_spi_timing(
+    {48'000'000U, MCUBSP_ETHERNET_SPI_HZ, 0U});
 static_assert(spi_timing.has_value());
-static_assert(spi_timing->achieved_hz == MCUHW_ETHERNET_SPI_HZ);
+static_assert(spi_timing->achieved_hz == MCUBSP_ETHERNET_SPI_HZ);
 
 inline constexpr auto mac_address =
     ::mcuip::MacAddress::from_octets(0x02U, 0x00U, 0x00U,
@@ -92,7 +92,7 @@ inline constexpr ::mcuip::Ipv4InterfaceConfig ipv4_configuration{
     .address = ::mcuip::Ipv4Address::from_octets(192U, 168U, 188U, 240U),
     .netmask = ::mcuip::Ipv4Address::from_octets(255U, 255U, 255U, 0U),
 };
-inline constexpr mcuhw::device::w5100_configuration device_configuration{
+inline constexpr mcubsp::device::w5100_configuration device_configuration{
     .mac = {{0x02U, 0x00U, 0x00U, 0x04U, 0x51U, 0x00U}},
     .command_poll_limit = 256U,
     .stable_read_limit = 4U,
@@ -138,13 +138,13 @@ inline constexpr std::uint32_t benchmark_echo_count = 64U;
 inline constexpr std::uint32_t benchmark_window = 4U;
 inline constexpr std::uint16_t benchmark_sequence_base = 0x1000U;
 inline constexpr std::uint32_t benchmark_reply_timeout_cycles = 96'000'000U;
-#ifdef MCUHW_ETHERNET_METRICS
+#ifdef MCUBSP_ETHERNET_METRICS
 inline constexpr bool benchmark_enabled = true;
 inline constexpr char peer_exchange_description[] =
     "firmware ARP plus initial small/full-MTU ICMP and post-socket-recovery echo; 64 full-MTU echoes benchmarked with window 4";
 #else
 inline constexpr bool benchmark_enabled = false;
-#ifdef MCUHW_ETHERNET_LINK_RECOVERY
+#ifdef MCUBSP_ETHERNET_LINK_RECOVERY
 inline constexpr char peer_exchange_description[] =
     "firmware ARP plus initial small/full-MTU ICMP and post-socket-recovery echo; continuous small echoes detect manual cable loss and restored traffic";
 #else
@@ -152,7 +152,7 @@ inline constexpr char peer_exchange_description[] =
     "firmware ARP plus 8-byte and 1480-byte ICMP echo to gateway 192.168.188.1; 8-byte echo repeated after W5100 socket recovery";
 #endif
 #endif
-#ifdef MCUHW_ETHERNET_LINK_RECOVERY
+#ifdef MCUBSP_ETHERNET_LINK_RECOVERY
 inline constexpr bool link_recovery_enabled = true;
 #else
 inline constexpr bool link_recovery_enabled = false;
@@ -186,10 +186,10 @@ std::uint32_t link_probe_timeouts{};
 
 void configure_interrupts() noexcept {
     constexpr std::array<std::uint16_t, 4U> events{
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_rxi),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_txi),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_idle),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_error),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_rxi),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_txi),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_idle),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_error),
     };
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E180U) = 0x0FU;
     for (std::uint32_t line = 0U; line < events.size(); ++line) {
@@ -302,7 +302,7 @@ void record_benchmark_reply(
     const auto index = static_cast<std::size_t>(
         *sequence - benchmark_sequence_base);
     if (index >= benchmark_echo_count || !benchmark_outstanding[index]) return;
-    const auto now = mcuhw::board_test::execution_hooks::now();
+    const auto now = mcubsp::board_test::execution_hooks::now();
     const auto rtt = static_cast<std::uint32_t>(
         now - benchmark_submit_cycles[index]);
     benchmark_total_rtt_cycles += rtt;
@@ -352,7 +352,7 @@ void service_benchmark(host_type& host,
         || benchmark_completed) {
         return;
     }
-    const auto cycles = mcuhw::board_test::execution_hooks::now();
+    const auto cycles = mcubsp::board_test::execution_hooks::now();
     expire_benchmark_requests(cycles);
     if (benchmark_attempts < benchmark_echo_count
         && benchmark_in_flight < benchmark_window
@@ -390,7 +390,7 @@ void service_link_recovery(host_type& host,
         || icmp_echo_replies < 3U || link_traffic_restored) {
         return;
     }
-    const auto cycles = mcuhw::board_test::execution_hooks::now();
+    const auto cycles = mcubsp::board_test::execution_hooks::now();
     if (link_probe_waiting
         && static_cast<std::uint32_t>(cycles - link_probe_last_submit_cycles)
             >= link_reply_timeout_cycles) {
@@ -467,11 +467,11 @@ void service(host_type& host, std::uint32_t now_ms) noexcept {
     service_link_recovery(host, now);
 }
 
-#if defined(MCUHW_ETHERNET_METRICS)
-#if defined(MCUHW_ETHERNET_FAST_SPI) && MCUHW_ETHERNET_SPI_HZ == 12000000
+#if defined(MCUBSP_ETHERNET_METRICS)
+#if defined(MCUBSP_ETHERNET_FAST_SPI) && MCUBSP_ETHERNET_SPI_HZ == 12000000
 TEST(uno_ethernet, measures_saturated_mtu_fast_spi_12mhz,
      "REQ-0036", "REQ-0037", "REQ-0044") {
-#elif defined(MCUHW_ETHERNET_FAST_SPI)
+#elif defined(MCUBSP_ETHERNET_FAST_SPI)
 TEST(uno_ethernet, measures_saturated_mtu_fast_spi_6mhz,
      "REQ-0036", "REQ-0037", "REQ-0044") {
 #else
@@ -488,7 +488,7 @@ TEST(uno_ethernet, measures_saturated_mtu_interrupt_spi_6mhz,
     EXPECT_TRUE(benchmark_max_rtt_cycles >= benchmark_average_rtt_cycles);
     EXPECT_TRUE(benchmark_payload_goodput_bps > 0U);
 }
-#elif defined(MCUHW_ETHERNET_LINK_RECOVERY)
+#elif defined(MCUBSP_ETHERNET_LINK_RECOVERY)
 TEST(uno_ethernet, restores_traffic_after_physical_link_loss,
      "REQ-0036", "REQ-0044") {
     EXPECT_TRUE(link_probe_replies > 0U);
@@ -528,31 +528,31 @@ TEST(uno_ethernet, answers_arp_and_icmp_through_mcuip,
 }
 #endif
 
-#ifdef MCUHW_ETHERNET_METRICS
-#if defined(MCUHW_ETHERNET_FAST_SPI) && MCUHW_ETHERNET_SPI_HZ == 12000000
+#ifdef MCUBSP_ETHERNET_METRICS
+#if defined(MCUBSP_ETHERNET_FAST_SPI) && MCUBSP_ETHERNET_SPI_HZ == 12000000
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=ethernet_metrics_fast12 "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=ethernet_metrics_fast12 "
     "firmware=pln-0024 fixture=Ethernet_Shield_R3_W5100 "
     "w5100_cs=D10 sd_cs=D4 spi_hz=12000000 transport=bounded_polling "
     "mode=MACRAW ipv4=192.168.188.240/24 mac=02:00:00:04:51:00 "
     "coverage=disabled optimization=Os toolchain=arm-none-eabi-gcc-15.2.1 "
     "interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "ethernet_metrics_fast12",
     .firmware = "pln-0024",
     .fixture = "Arduino Ethernet Shield R3 W5100; D10 CS; D4 high; local Ethernet peer",
     .coverage_build_id = 0U,
     .coverage_enabled = false,
 };
-#elif defined(MCUHW_ETHERNET_FAST_SPI)
+#elif defined(MCUBSP_ETHERNET_FAST_SPI)
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=ethernet_metrics_fast6 "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=ethernet_metrics_fast6 "
     "firmware=pln-0024 fixture=Ethernet_Shield_R3_W5100 "
     "w5100_cs=D10 sd_cs=D4 spi_hz=6000000 transport=bounded_polling "
     "mode=MACRAW ipv4=192.168.188.240/24 mac=02:00:00:04:51:00 "
     "coverage=disabled optimization=Os toolchain=arm-none-eabi-gcc-15.2.1 "
     "interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "ethernet_metrics_fast6",
     .firmware = "pln-0024",
     .fixture = "Arduino Ethernet Shield R3 W5100; D10 CS; D4 high; local Ethernet peer",
@@ -561,13 +561,13 @@ constexpr mcuhw::board_test::evidence_metadata evidence{
 };
 #else
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=ethernet_metrics "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=ethernet_metrics "
     "firmware=pln-0024 fixture=Ethernet_Shield_R3_W5100 "
     "w5100_cs=D10 sd_cs=D4 spi_hz=6000000 mode=MACRAW "
     "ipv4=192.168.188.240/24 mac=02:00:00:04:51:00 "
     "coverage=disabled optimization=Os toolchain=arm-none-eabi-gcc-15.2.1 "
     "interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "ethernet_metrics",
     .firmware = "pln-0024",
     .fixture = "Arduino Ethernet Shield R3 W5100; D10 CS; D4 high; local Ethernet peer",
@@ -575,16 +575,16 @@ constexpr mcuhw::board_test::evidence_metadata evidence{
     .coverage_enabled = false,
 };
 #endif
-#elif defined(MCUHW_ETHERNET_LINK_RECOVERY)
+#elif defined(MCUBSP_ETHERNET_LINK_RECOVERY)
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=ethernet_link_recovery "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=ethernet_link_recovery "
     "firmware=pln-0024 fixture=Ethernet_Shield_R3_W5100 "
     "w5100_cs=D10 sd_cs=D4 spi_hz=6000000 mode=MACRAW "
     "ipv4=192.168.188.240/24 mac=02:00:00:04:51:00 "
     "fault=manual_cable_disconnect_reconnect coverage=disabled "
     "optimization=Os toolchain=arm-none-eabi-gcc-15.2.1 "
     "interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "ethernet_link_recovery",
     .firmware = "pln-0024",
     .fixture = "Arduino Ethernet Shield R3 W5100; manual cable disconnect/reconnect",
@@ -593,12 +593,12 @@ constexpr mcuhw::board_test::evidence_metadata evidence{
 };
 #else
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=ethernet_mcuip "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=ethernet_mcuip "
     "firmware=pln-0024 fixture=Ethernet_Shield_R3_W5100 "
     "w5100_cs=D10 sd_cs=D4 spi_hz=6000000 mode=MACRAW "
     "ipv4=192.168.188.240/24 mac=02:00:00:04:51:00 "
     "toolchain=arm-none-eabi-gcc-15.2.1 interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "ethernet_mcuip",
     .firmware = "pln-0024",
     .fixture = "Arduino Ethernet Shield R3 W5100; D10 CS; D4 high; local Ethernet peer",
@@ -609,19 +609,19 @@ constexpr mcuhw::board_test::evidence_metadata evidence{
 } // namespace
 
 int main() {
-    mcuhw::board_test::start(metadata);
+    mcubsp::board_test::start(metadata);
     sd_deselected = sd_chip_select.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
-        .initial_level = mcuhw::driver::gpio_level::high,
-        .output_type = mcuhw::driver::gpio_output_type::push_pull,
-        .pull = mcuhw::driver::gpio_pull::none,
-        .drive = mcuhw::driver::gpio_drive::middle,
+        .direction = mcubsp::driver::gpio_direction::output,
+        .initial_level = mcubsp::driver::gpio_level::high,
+        .output_type = mcubsp::driver::gpio_output_type::push_pull,
+        .pull = mcubsp::driver::gpio_pull::none,
+        .drive = mcubsp::driver::gpio_drive::middle,
     }).has_value();
     configure_interrupts();
     spi_initialized = spi.initialize(*spi_timing, {
-        .mode = mcuhw::driver::spi_mode::mode0,
-        .bit_order = mcuhw::driver::spi_bit_order::most_significant_first,
-        .frame_width = mcuhw::driver::spi_frame_width::bits8,
+        .mode = mcubsp::driver::spi_mode::mode0,
+        .bit_order = mcubsp::driver::spi_bit_order::most_significant_first,
+        .frame_width = mcubsp::driver::spi_frame_width::bits8,
     }).has_value();
     if (spi_initialized) {
         w5100_initialized = device.initialize(device_configuration).has_value();
@@ -638,17 +638,17 @@ int main() {
         arp_request_submitted = submit_ipv4(
             host, small_echo, ::mcuip::MonotonicTime::from_ticks(0U),
             ::mcuip::PendingDatagramId{1U});
-        const auto started = mcuhw::board_test::execution_hooks::now();
-#if defined(MCUHW_ETHERNET_METRICS) || defined(MCUHW_ETHERNET_LINK_RECOVERY)
+        const auto started = mcubsp::board_test::execution_hooks::now();
+#if defined(MCUBSP_ETHERNET_METRICS) || defined(MCUBSP_ETHERNET_LINK_RECOVERY)
         constexpr std::uint32_t test_window_cycles = 48'000'000U * 30U;
 #else
         constexpr std::uint32_t test_window_cycles = 48'000'000U * 15U;
 #endif
         while (static_cast<std::uint32_t>(
-                   mcuhw::board_test::execution_hooks::now() - started)
+                   mcubsp::board_test::execution_hooks::now() - started)
                < test_window_cycles) {
             const auto elapsed = static_cast<std::uint32_t>(
-                mcuhw::board_test::execution_hooks::now() - started);
+                mcubsp::board_test::execution_hooks::now() - started);
             service(host, elapsed / 48'000U);
             if (arp_frames >= 1U && icmp_echo_replies >= 3U
                 && replies_completed >= 4U && recovery_completed
@@ -661,12 +661,12 @@ int main() {
         }
     }
 
-    mcuhw::board_test::finish(evidence, [&](auto& observations) {
+    mcubsp::board_test::finish(evidence, [&](auto& observations) {
         observations("shield", "Arduino Ethernet Shield R3 WIZnet W5100");
         observations("datasheet", "W5100 Datasheet v1.2.8 2019-05-23");
         observations("w5100_identity",
                      "MR reset plus RMSR/TMSR 0x55 and SHAR read-back");
-#ifdef MCUHW_ETHERNET_FAST_SPI
+#ifdef MCUBSP_ETHERNET_FAST_SPI
         observations("spi", "SPI1 mode0 bounded polling; D10 CS");
 #else
         observations("spi", "SPI1 mode0 interrupt-driven; D10 CS");
@@ -675,8 +675,8 @@ int main() {
         observations("sd_chip_select", "D4 held high");
         observations("ipv4", "192.168.188.240/24");
         observations("mac", "02:00:00:04:51:00");
-        observations("mcuhw_source_sha256", MCUHW_SOURCE_ID);
-        observations("mcuip_source_sha256", MCUHW_MCUIP_SOURCE_ID);
+        observations("mcubsp_source_sha256", MCUBSP_SOURCE_ID);
+        observations("mcuip_source_sha256", MCUBSP_MCUIP_SOURCE_ID);
         observations("rx_slots", device_type::rx_descriptor_count);
         observations("tx_slots", device_type::tx_descriptor_count);
         observations("frame_capacity", device_type::buffer_size);
@@ -708,7 +708,7 @@ int main() {
         observations("driver_recoveries", device.metrics().recoveries);
         observations("driver_transport_errors",
                      device.metrics().transport_errors);
-#ifdef MCUHW_ETHERNET_METRICS
+#ifdef MCUBSP_ETHERNET_METRICS
         observations("benchmark_method",
                      "64 1480-byte ICMP echo payloads to gateway; window 4; DWT cycle timing includes MCUIP, W5100 and peer RTT");
         observations("benchmark_window", benchmark_window);
@@ -728,7 +728,7 @@ int main() {
         observations("benchmark_payload_goodput_bps",
                      benchmark_payload_goodput_bps);
 #endif
-#ifdef MCUHW_ETHERNET_LINK_RECOVERY
+#ifdef MCUBSP_ETHERNET_LINK_RECOVERY
         observations("link_fault",
                      "manual Ethernet cable disconnect and reconnect");
         observations("link_probe_attempts", link_probe_attempts);
@@ -745,20 +745,20 @@ int main() {
 
 extern "C" void IRQ0_Handler() noexcept {
     static_cast<void>(spi.handle_receive_interrupt());
-    mcuhw::board_test::clear_icu_line(0U);
+    mcubsp::board_test::clear_icu_line(0U);
 }
 
 extern "C" void IRQ1_Handler() noexcept {
     static_cast<void>(spi.handle_transmit_empty_interrupt());
-    mcuhw::board_test::clear_icu_line(1U);
+    mcubsp::board_test::clear_icu_line(1U);
 }
 
 extern "C" void IRQ2_Handler() noexcept {
     static_cast<void>(spi.handle_idle_interrupt());
-    mcuhw::board_test::clear_icu_line(2U);
+    mcubsp::board_test::clear_icu_line(2U);
 }
 
 extern "C" void IRQ3_Handler() noexcept {
     static_cast<void>(spi.handle_error_interrupt());
-    mcuhw::board_test::clear_icu_line(3U);
+    mcubsp::board_test::clear_icu_line(3U);
 }

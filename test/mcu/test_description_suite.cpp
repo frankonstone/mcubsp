@@ -1,4 +1,4 @@
-#include <mcuhw/testing/description_suite.hpp>
+#include <mcubsp/testing/description_suite.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -19,7 +19,7 @@ struct counting_contract {
 
 TEST(description_suite, applies_one_contract_to_every_supplied_type) {
     std::size_t invocation_count{};
-    const auto accepted = mcuhw::testing::for_each_description<
+    const auto accepted = mcubsp::testing::for_each_description<
         std::uint8_t,
         std::uint16_t,
         std::uint32_t>(counting_contract{invocation_count});

@@ -15,18 +15,18 @@
 #include <mcutest/assert.hpp>
 #include <mcutest/core.hpp>
 
-#include <mcuhw/backend/esp32p4/gpio.hpp>
-#include <mcuhw/backend/esp32p4/i2c.hpp>
-#include <mcuhw/backend/esp32p4/i2s.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/device/audio/es8311.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/backend/esp32p4/gpio.hpp>
+#include <mcubsp/backend/esp32p4/i2c.hpp>
+#include <mcubsp/backend/esp32p4/i2s.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/device/audio/es8311.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
-extern "C" void mcuhw_esp32p4_audio_test_link_anchor() noexcept {}
+extern "C" void mcubsp_esp32p4_audio_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 using i2c_binding = backend::esp32p4::i2c_binding<
@@ -312,7 +312,7 @@ TEST(esp32p4_audio, captures_onboard_microphone_and_plays_audible_tone,
     }
 
     esp_rom_printf(
-        "MCUHW_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 "
+        "MCUBSP_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 "
         "format=philips16 capture_bytes=%u mic_nonzero=%u mic_min=%d "
         "mic_max=%d playback_bytes=%u tone_hz=%u tone_peak=%d "
         "duration_ms=%u amp_gpio=53 "
@@ -330,4 +330,4 @@ TEST(esp32p4_audio, captures_onboard_microphone_and_plays_audible_tone,
     ASSERT_TRUE(amplifier.release().has_value());
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

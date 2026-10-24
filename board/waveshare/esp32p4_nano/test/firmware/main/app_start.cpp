@@ -16,7 +16,7 @@ extern "C" [[noreturn]] void __wrap_esp_startup_start_app(void) {
     rtc_clk_cpu_freq_get_config(&cpu_config);
     const auto chip_revision = efuse_hal_chip_revision();
     esp_rom_printf(
-        "MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 "
+        "MCUBSP_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 "
         "chip_revision=%u firmware=pln-0019-native-app-v13 "
         "compiler=%s core=hp_cpu0 scheduler=none cpu_mhz=%u apb_hz=%u "
         "gpio=2 observation=mixed_board_native qualification=development\n",
@@ -26,11 +26,11 @@ extern "C" [[noreturn]] void __wrap_esp_startup_start_app(void) {
     esp_rom_delay_us(20'000U);
 
     const auto result =
-        mcuhw::board_test::esp32p4_nano::run_tests_and_dump_coverage();
+        mcubsp::board_test::esp32p4_nano::run_tests_and_dump_coverage();
     const bool passed = result.tests != 0U && result.failures == 0
         && result.registry_overflow == 0U && result.coverage_written;
     esp_rom_printf(
-        "MCUHW_RESULT status=%s suite=esp32p4_native tests=%u failures=%u "
+        "MCUBSP_RESULT status=%s suite=esp32p4_native tests=%u failures=%u "
         "registry_overflow=%u coverage=%s\n",
         passed ? "pass" : "fail", static_cast<unsigned>(result.tests),
         static_cast<unsigned>(result.failures),

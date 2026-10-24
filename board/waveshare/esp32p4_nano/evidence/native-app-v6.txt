@@ -39,7 +39,7 @@ mcutest JSON: 2566 bytes,
   sha256 31c522992ce6e759625be18f1e43718ad857a41bde609d8c6d4349060935e787
 
 coverage: MCUCOV FULL profile, build id 0x4d485006, UART hex transport
-instrumented targets: board GPIO/I2C/UART tests and included mcuhw headers;
+instrumented targets: board GPIO/I2C/UART tests and included mcubsp headers;
   loader, application startup and coverage transport are harness code
 coverage frame: 3832 bytes,
   sha256 6d18b5d48f41fa5fbbdebc595a92cb8e1a2230de3f4e692c987468e62581a46a
@@ -54,15 +54,15 @@ target-filtered mcutrace coverage JSON: 363131 bytes,
 target-filtered summary: functions 56/85, statements 379/657, lines 430/685,
   branches 162/402, MC/DC conditions 14/295, invalid MC/DC decisions 0
 
-MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
-MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v6 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=mixed_board_native qualification=development
-MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+MCUBSP_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUBSP_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v6 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=mixed_board_native qualification=development
+MCUBSP_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
 esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
-MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
+MCUBSP_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 version=0x01 completion=repeated_start_read
 esp32p4_i2c/i2c0_reads_onboard_es8311_identity_with_repeated_start:PASS
 esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
 3 Tests, 0 Failures
-MCUHW_RESULT status=pass suite=esp32p4_native tests=3 failures=0 registry_overflow=0 coverage=captured
+MCUBSP_RESULT status=pass suite=esp32p4_native tests=3 failures=0 registry_overflow=0 coverage=captured
 
 Original second-stage bootloader backup (not stored in the repository):
 /private/tmp/esp32p4-nano-original-bootloader-20260920.bin

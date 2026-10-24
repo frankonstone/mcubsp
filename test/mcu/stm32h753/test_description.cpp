@@ -4,12 +4,12 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/mcu/stm32h753/description.hpp>
-#include <mcuhw/testing/description_suite.hpp>
+#include <mcubsp/mcu/stm32h753/description.hpp>
+#include <mcubsp/testing/description_suite.hpp>
 
 namespace {
 
-namespace stm = mcuhw::mcu::stm32h753;
+namespace stm = mcubsp::mcu::stm32h753;
 
 struct real_description_contract {
     template<typename Description>
@@ -73,17 +73,17 @@ TEST(stm32h753_description, preserves_register_offsets_widths_and_side_effects,
      "REQ-0007") {
     static_assert(stm::gpio_afrh::offset == 0x24U);
     static_assert(stm::dma_lifcr::access
-                  == mcuhw::core::access_semantics::write_one_to_clear);
+                  == mcubsp::core::access_semantics::write_one_to_clear);
     static_assert(stm::tim_update_flag::access
-                  == mcuhw::core::access_semantics::write_zero_to_clear);
+                  == mcubsp::core::access_semantics::write_zero_to_clear);
     static_assert(stm::i2c_icr::access
-                  == mcuhw::core::access_semantics::write_one_to_clear);
+                  == mcubsp::core::access_semantics::write_one_to_clear);
     static_assert(stm::usart_isr::access
-                  == mcuhw::core::access_semantics::read_only);
+                  == mcubsp::core::access_semantics::read_only);
     static_assert(stm::spi_ifcr::access
-                  == mcuhw::core::access_semantics::write_one_to_clear);
+                  == mcubsp::core::access_semantics::write_one_to_clear);
     static_assert(stm::adc_dr::access
-                  == mcuhw::core::access_semantics::read_only);
+                  == mcubsp::core::access_semantics::read_only);
     EXPECT_EQ(stm::gpio_registers.size(), 10U);
     EXPECT_EQ(stm::timer_registers.size(), 17U);
     EXPECT_EQ(stm::dma_registers.size(), 16U);
@@ -92,19 +92,19 @@ TEST(stm32h753_description, preserves_register_offsets_widths_and_side_effects,
 
 TEST(stm32h753_description, validates_package_membership_and_af_routes,
      "REQ-0010") {
-    using mcuhw::core::electrical_mode;
-    constexpr mcuhw::core::pin_id pa8{0, 8};
-    constexpr mcuhw::core::pin_id pk0{10, 0};
+    using mcubsp::core::electrical_mode;
+    constexpr mcubsp::core::pin_id pa8{0, 8};
+    constexpr mcubsp::core::pin_id pk0{10, 0};
     static_assert(stm::lqfp100_pin_database::valid<pa8,
         stm::signal_id(stm::signal::tim1_ch1), electrical_mode::push_pull>);
     static_assert(!stm::lqfp100_pin_database::valid<pk0,
         stm::signal_id(stm::signal::gpio_output), electrical_mode::push_pull>);
     static_assert(stm::package_contains(stm::package_variant::lqfp208, pk0,
                                         stm::package_memberships));
-    EXPECT_TRUE(mcuhw::core::route_exists(
+    EXPECT_TRUE(mcubsp::core::route_exists(
         stm::pin_routes, {0, 5}, stm::signal_id(stm::signal::spi1_sck)));
     EXPECT_EQ(stm::package_pins[7].package_position, 67U);
-    EXPECT_TRUE(mcuhw::core::route_exists(
+    EXPECT_TRUE(mcubsp::core::route_exists(
         stm::pin_routes, {6, 13},
         stm::signal_id(stm::signal::eth_rmii_txd0)));
 }
@@ -112,8 +112,8 @@ TEST(stm32h753_description, validates_package_membership_and_af_routes,
 TEST(stm32h753_description, models_clock_domains_corrected_adc_limit_and_reset,
      "REQ-0011") {
     EXPECT_EQ(stm::clock_nodes[15].maximum.count, 80'000'000U);
-    const auto hclk = mcuhw::core::derive_frequency(
-        mcuhw::core::hertz{480'000'000U}, stm::clock_edges[4], {2, 0, 1},
+    const auto hclk = mcubsp::core::derive_frequency(
+        mcubsp::core::hertz{480'000'000U}, stm::clock_edges[4], {2, 0, 1},
         stm::clock_nodes[8]);
     ASSERT_TRUE(hclk.has_value());
     EXPECT_EQ(hclk->count, 240'000'000U);
@@ -136,24 +136,24 @@ TEST(stm32h753_description, separates_dma_engines_reachability_and_cache_policy,
      "REQ-0013") {
     static_assert(stm::dma12_constraints.engine != stm::bdma_constraints.engine);
     static_assert(stm::dma12_constraints.engine != stm::mdma_constraints.engine);
-    const auto accepted = mcuhw::core::validate_dma_transfer(
+    const auto accepted = mcubsp::core::validate_dma_transfer(
         stm::dma_requests[0], stm::memory_regions[4], stm::dma_reachability[2],
         0x2400'0000U, 16U, 4U,
-        mcuhw::core::dma_direction::peripheral_to_memory);
+        mcubsp::core::dma_direction::peripheral_to_memory);
     EXPECT_TRUE(accepted.has_value());
-    const mcuhw::core::dma_request mdma_request{0, stm::mdma_constraints,
+    const mcubsp::core::dma_request mdma_request{0, stm::mdma_constraints,
                                                 stm::dma_source};
-    const auto tcm = mcuhw::core::validate_dma_transfer(
+    const auto tcm = mcubsp::core::validate_dma_transfer(
         mdma_request, stm::memory_regions[3], stm::dma_reachability[12],
         0x2000'0000U, 16U, 4U,
-        mcuhw::core::dma_direction::peripheral_to_memory);
+        mcubsp::core::dma_direction::peripheral_to_memory);
     EXPECT_TRUE(tcm.has_value());
     EXPECT_TRUE(stm::memory_regions[4].cache
-                == mcuhw::core::cache_policy::software_maintained);
+                == mcubsp::core::cache_policy::software_maintained);
 }
 
 TEST(stm32h753_description, instantiates_shared_description_contract) {
-    static_assert(mcuhw::testing::for_each_description<stm::description>(
+    static_assert(mcubsp::testing::for_each_description<stm::description>(
         real_description_contract{}));
     EXPECT_TRUE(true);
 }

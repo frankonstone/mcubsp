@@ -1,37 +1,41 @@
-# Test groups
+# Tests
 
-Tests are grouped by the layer they exercise. Each group registers its source
-directory through its own `CMakeLists.txt`; shared native registration helpers
-live in `support/NativeSuites.cmake`. Suite names remain stable when sources move.
-
-| Directory | Scope | Selectable board-menu target |
-| --- | --- | --- |
-| `core/` | Metadata, ownership, execution, registers and transfer contracts | `test.core` |
-| `driver/` | Shared driver and timing contracts | `test.driver` |
-| `backend/<mcu>/` | Native peripheral implementations for each MCU | `test.backend` |
-| `device/` | Attached-device protocols and transport integration | `test.device` |
-| `io/` | Board facade, peripherals and bus endpoints | `test.io` |
-| `mcu/<mcu>/`, `mcu/` | MCU descriptions and shared description contracts | `test.mcu` |
-| `compile/` | Positive/negative compile cases and architecture probes | `test.compile` |
-| `support/` | Shared runner, fixtures and source-backed examples | Used by the suites |
-| `tooling/` | Packaging, workflow and verification tooling | `MCUHW_BUILD_TOOLING_TESTS=ON` |
-| `io_cost/` | Paired driver/facade resource probes | `mcuhw_io_cost_report` |
-
-With `MCUHW_BOARD` selected, the `test.*` native groups build and run in
-separate host configurations. `test.board` builds physical-test firmware from
-`board/<vendor>/<board>/test/`. The `tests` aggregate selects all groups.
-Presets select architecture; changing `MCUHW_BOARD` and reconfiguring updates
-the board menu.
-
-Native CMake targets use `Tests/<group>` folders. CTest labels include `core`,
-`driver`, `backend`, `device`, `io`, `mcu` and `compile`, alongside the original
-suite identities. After a native configuration, run a category with:
+The host presets build and run every host-executable suite in this directory.
+Use `macos` on macOS or `linux-x86_64` on Linux x86_64:
 
 ```sh
-ctest --test-dir build/native -L backend --output-on-failure
+cmake --preset macos
+cmake --build --preset macos
 ```
 
-For native suite selection, use `MCUHW_TEST_SUITES=core`, `drivers`, `io`,
-`backend`, `device`, `mcu`, `descriptions`, `compile`, `all`, or an exact
-component ID such as `device:ti/tmp102`. See
-[verification workflows](../doc/development/verification.md).
+The build compiles positive probes, checks expected compiler rejections, and
+runs the native suites through CTest. It also cross-compiles Cortex-M4,
+Cortex-M7, and ESP32-P4 probes and checks generated barrier instructions.
+No check in `test/` executes on a target
+or needs a connected board. Install the GNU Arm and ESP32-P4 RISC-V toolchains
+before building a host preset.
+
+The build compiles the MCUIP contracts;
+set `MCUBSP_MCUIP_SOURCE_DIR` if the MCUIP checkout is not at `../mcuip`.
+The native suites require mcutest at `../mcutest`, or a discoverable mcutest
+CMake package. An explicit `MCUBSP_MCUTEST_SOURCE_DIR` selects another checkout.
+
+| Directory | Host verification |
+| --- | --- |
+| `core/` | Metadata, ownership, execution, register, and transfer contracts |
+| `driver/` | Shared driver and timing contracts |
+| `backend/<mcu>/` | Peripheral behavior against fake or recorded MMIO |
+| `device/` | Device protocols and transport integration |
+| `io/` | Board facade, peripherals, and bus endpoints |
+| `mcu/<mcu>/`, `mcu/` | MCU descriptions and shared contracts |
+| [`compile/`](compile/README.md) | Positive and negative compiler cases and object probes |
+| `support/` | Shared runners and fixtures used by the suites |
+
+CTest labels support focused runs after building, for example:
+
+```sh
+ctest --test-dir build/macos -L backend --output-on-failure
+```
+
+Cross-compiler outputs are under `build/<preset>/test/compile/target-probes/`.
+The barrier reports are inspected on the host; no image is run on a board.

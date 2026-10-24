@@ -5,7 +5,7 @@ The initial physical composition is the on-board ESP32-P4-NANO codec. The linked
 
 ## Implementation and focused checks
 
-Public implementation: `include/mcuhw/device/audio/es8311.hpp`. Required transports: i2c, i2s.
+Public implementation: `include/mcubsp/device/audio/es8311.hpp`. Required transports: i2c, i2s.
 
 Focused test sources:
 

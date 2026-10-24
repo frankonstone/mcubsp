@@ -1,30 +1,30 @@
 #include <cstdint>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/stm32h753/gpio.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/backend/stm32h753/gpio.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
 constexpr std::uintptr_t peripheral_base = 0x5802'0000U;
 constexpr std::uintptr_t gpioe_base = 0x5802'1000U;
 constexpr std::uintptr_t ahb4enr = 0x5802'44E0U;
-using policy_type = mcuhw::testing::recording_mmio<0x4500, 48>;
-using backend_type = mcuhw::backend::stm32h753::gpio_backend<policy_type>;
-using pin_type = mcuhw::driver::gpio_pin<backend_type>;
+using policy_type = mcubsp::testing::recording_mmio<0x4500, 48>;
+using backend_type = mcubsp::backend::stm32h753::gpio_backend<policy_type>;
+using pin_type = mcubsp::driver::gpio_pin<backend_type>;
 
 TEST(stm32h753_gpio, enables_port_and_latches_level_before_output,
      "REQ-0009", "REQ-0021", "REQ-0033") {
     policy_type policy{peripheral_base};
     backend_type backend{policy};
     pin_type led{backend, {4, 1}};
-    const mcuhw::driver::gpio_configuration configuration{
-        .direction = mcuhw::driver::gpio_direction::output,
-        .initial_level = mcuhw::driver::gpio_level::high,
-        .output_type = mcuhw::driver::gpio_output_type::push_pull,
-        .pull = mcuhw::driver::gpio_pull::none,
-        .drive = mcuhw::driver::gpio_drive::middle,
+    const mcubsp::driver::gpio_configuration configuration{
+        .direction = mcubsp::driver::gpio_direction::output,
+        .initial_level = mcubsp::driver::gpio_level::high,
+        .output_type = mcubsp::driver::gpio_output_type::push_pull,
+        .pull = mcubsp::driver::gpio_pull::none,
+        .drive = mcubsp::driver::gpio_drive::middle,
     };
 
     ASSERT_TRUE(led.initialize(configuration).has_value());
@@ -45,7 +45,7 @@ TEST(stm32h753_gpio, set_and_clear_use_atomic_bsrr_writes,
     backend_type backend{policy};
     pin_type led{backend, {4, 1}};
     ASSERT_TRUE(led.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
+        .direction = mcubsp::driver::gpio_direction::output,
     }).has_value());
     policy.clear_operations();
 
@@ -66,7 +66,7 @@ TEST(stm32h753_gpio, rejects_a_pin_absent_from_lqfp144,
 
     const auto result = unavailable.initialize({});
     ASSERT_FALSE(result.has_value());
-    EXPECT_TRUE(result.error() == mcuhw::driver::gpio_error::invalid_pin);
+    EXPECT_TRUE(result.error() == mcubsp::driver::gpio_error::invalid_pin);
     EXPECT_EQ(policy.operations().size(), 0U);
 }
 

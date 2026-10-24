@@ -2,35 +2,35 @@
 #include <array>
 #include <chrono>
 #include <utility>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/io/board/nucleo_h753zi.hpp>
-#include <mcuhw/io/board/esp32p4_nano.hpp>
-#include <mcuhw/device/ethernet/w5100.hpp>
-#include <mcuhw/device/sensor/tmp102.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io/board/nucleo_h753zi.hpp>
+#include <mcubsp/io/board/esp32p4_nano.hpp>
+#include <mcubsp/device/ethernet/w5100.hpp>
+#include <mcubsp/device/sensor/tmp102.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
 namespace {
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using namespace std::chrono_literals;
 struct inert_mmio {
-    template<class T> std::expected<T, mcuhw::core::mmio_error> read(std::uintptr_t) noexcept { return T{}; }
-    template<class T> std::expected<void, mcuhw::core::mmio_error> write(std::uintptr_t, T) noexcept { return {}; }
+    template<class T> std::expected<T, mcubsp::core::mmio_error> read(std::uintptr_t) noexcept { return T{}; }
+    template<class T> std::expected<void, mcubsp::core::mmio_error> write(std::uintptr_t, T) noexcept { return {}; }
 };
 template<class Profile>
 int instantiate() {
     constexpr io::board_config config{.serial = false, .i2c = true, .spi = true};
     inert_mmio mmio;
-    mcuhw::execution::fake_policy policy;
+    mcubsp::execution::fake_policy policy;
     auto hw = io::make_board<Profile, config>(policy, mmio, 1000U);
     if (!hw.begin() || !hw.i2c.begin() || !hw.spi.begin()) return 1;
     auto i2c = hw.i2c.device(0x48);
     if (!i2c) return 2;
-    mcuhw::device::tmp102 sensor{std::move(*i2c)};
+    mcubsp::device::tmp102 sensor{std::move(*i2c)};
     if (sensor.begin()) static_cast<void>(sensor.read(10ms));
     auto spi = hw.spi.device({.cs = Profile::spi_binding::select_pin, .frequency = 1'000'000U});
     if (!spi) return 3;
-    mcuhw::device::w5100 ethernet{std::move(*spi)};
+    mcubsp::device::w5100 ethernet{std::move(*spi)};
     if (ethernet.begin({.mac = {{2, 0, 0, 4, 0x51, 0}}})) {
         std::array<std::byte, decltype(ethernet)::buffer_size> frame{};
         static_cast<void>(ethernet.arm_receive(0, frame));

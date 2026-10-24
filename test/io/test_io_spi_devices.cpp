@@ -3,17 +3,17 @@
 #include <cstdint>
 #include <utility>
 #include <mcutest/mcutest.hpp>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
-namespace io = mcuhw::io;
-namespace driver = mcuhw::driver;
+namespace io = mcubsp::io;
+namespace driver = mcubsp::driver;
 using Board = io::boards::uno_r4_minima;
-using Policy = mcuhw::execution::fake_policy;
-using Recording = mcuhw::testing::recording_mmio<0x80000, 4096>;
+using Policy = mcubsp::execution::fake_policy;
+using Recording = mcubsp::testing::recording_mmio<0x80000, 4096>;
 constexpr io::board_config configuration{.serial = false, .spi = true};
 constexpr auto base = Board::spi_binding::metadata.base;
 using namespace std::chrono_literals;
@@ -26,8 +26,8 @@ public:
     bool fail_configuration{};
     bool fail_deselect{};
     bool fail_stop{};
-    template<mcuhw::testing::mmio_value T>
-    std::expected<T, mcuhw::core::mmio_error> read(std::uintptr_t address) noexcept {
+    template<mcubsp::testing::mmio_value T>
+    std::expected<T, mcubsp::core::mmio_error> read(std::uintptr_t address) noexcept {
         auto recorded = Recording::read<T>(address);
         if (!recorded) return recorded;
         if (address == base + 3U) {
@@ -37,32 +37,32 @@ public:
         if (address == base + 4U) return static_cast<T>(0x5AU);
         return recorded;
     }
-    template<mcuhw::testing::mmio_value T>
-    std::expected<void, mcuhw::core::mmio_error> write(std::uintptr_t address, T value) noexcept {
+    template<mcubsp::testing::mmio_value T>
+    std::expected<void, mcubsp::core::mmio_error> write(std::uintptr_t address, T value) noexcept {
         if (fail_stop && address == base && value == 0U) {
             fail_stop = false;
-            return std::unexpected(mcuhw::core::mmio_error::out_of_range);
+            return std::unexpected(mcubsp::core::mmio_error::out_of_range);
         }
         constexpr auto pin = Board::pins_type::d10;
         if (fail_deselect && address == 0x4004'0008U + pin.port * 0x20U
             && value == (1U << pin.index)) {
             fail_deselect = false;
-            return std::unexpected(mcuhw::core::mmio_error::out_of_range);
+            return std::unexpected(mcubsp::core::mmio_error::out_of_range);
         }
         if (address == base + 0x0AU && fail_configuration) {
             fail_configuration = false;
-            return std::unexpected(mcuhw::core::mmio_error::out_of_range);
+            return std::unexpected(mcubsp::core::mmio_error::out_of_range);
         }
         return Recording::write<T>(address, value);
     }
 };
 bool wrote(const Recording& mmio, std::uintptr_t address, std::uint64_t value) {
     for (const auto& op : mmio.operations())
-        if (op.kind == mcuhw::testing::mmio_operation_kind::write
+        if (op.kind == mcubsp::testing::mmio_operation_kind::write
             && op.address == address && op.value == value) return true;
     return false;
 }
-constexpr auto select_address(mcuhw::core::pin_id pin) {
+constexpr auto select_address(mcubsp::core::pin_id pin) {
     return 0x4004'0008U + pin.port * 0x20U;
 }
 

@@ -5,13 +5,13 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/esp32p4/spi.hpp>
-#include <mcuhw/backend/ra4m1/spi.hpp>
-#include <mcuhw/backend/stm32h753/spi.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/board/nucleo_h753zi.hpp>
-#include <mcuhw/core/mmio.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/backend/esp32p4/spi.hpp>
+#include <mcubsp/backend/ra4m1/spi.hpp>
+#include <mcubsp/backend/stm32h753/spi.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/board/nucleo_h753zi.hpp>
+#include <mcubsp/core/mmio.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
 namespace {
 
@@ -36,17 +36,17 @@ struct device_spi_mmio {
         if (count < cells.size()) cells[count++] = {address, next};
     }
     template<typename Value>
-    std::expected<Value, mcuhw::core::mmio_error> read(std::uintptr_t address) noexcept {
-        if (fail) return std::unexpected(mcuhw::core::mmio_error::invalid_value);
+    std::expected<Value, mcubsp::core::mmio_error> read(std::uintptr_t address) noexcept {
+        if (fail) return std::unexpected(mcubsp::core::mmio_error::invalid_value);
         return static_cast<Value>(value(address));
     }
     template<typename Value>
-    std::expected<void, mcuhw::core::mmio_error> write(
+    std::expected<void, mcubsp::core::mmio_error> write(
         std::uintptr_t address, Value next) noexcept {
-        if (fail) return std::unexpected(mcuhw::core::mmio_error::invalid_value);
+        if (fail) return std::unexpected(mcubsp::core::mmio_error::invalid_value);
         ++writes;
         auto word = static_cast<std::uint32_t>(next);
-        if (address == mcuhw::mcu::esp32p4::spi2_base) word &= ~(1U << 23U);
+        if (address == mcubsp::mcu::esp32p4::spi2_base) word &= ~(1U << 23U);
         set(address, word);
         return {};
     }
@@ -64,28 +64,28 @@ struct device_select {
     }
 };
 
-namespace uno = mcuhw::board::arduino_uno_r4_minima;
-namespace nucleo = mcuhw::board::nucleo_h753zi;
-using ra_binding = mcuhw::backend::ra4m1::spi_binding<
+namespace uno = mcubsp::board::arduino_uno_r4_minima;
+namespace nucleo = mcubsp::board::nucleo_h753zi;
+using ra_binding = mcubsp::backend::ra4m1::spi_binding<
     1, uno::d12_miso, uno::d11_mosi, uno::d13_sck, uno::d10_ssl>;
-using stm_binding = mcuhw::backend::stm32h753::spi_binding<
+using stm_binding = mcubsp::backend::stm32h753::spi_binding<
     1, nucleo::arduino_d12_miso, nucleo::arduino_d11_mosi,
     nucleo::arduino_d13_sck, nucleo::arduino_d10_cs>;
-using esp_binding = mcuhw::backend::esp32p4::spi_binding<
-    2, mcuhw::core::pin_id{0, 20}, mcuhw::core::pin_id{0, 21},
-    mcuhw::core::pin_id{0, 22}, mcuhw::core::pin_id{0, 23}>;
-using policy = mcuhw::execution::fake_policy;
-using ra_backend = mcuhw::backend::ra4m1::spi_master_backend<
+using esp_binding = mcubsp::backend::esp32p4::spi_binding<
+    2, mcubsp::core::pin_id{0, 20}, mcubsp::core::pin_id{0, 21},
+    mcubsp::core::pin_id{0, 22}, mcubsp::core::pin_id{0, 23}>;
+using policy = mcubsp::execution::fake_policy;
+using ra_backend = mcubsp::backend::ra4m1::spi_master_backend<
     ra_binding, device_spi_mmio, policy, true>;
-using stm_backend = mcuhw::backend::stm32h753::spi_master_backend<
+using stm_backend = mcubsp::backend::stm32h753::spi_master_backend<
     stm_binding, device_spi_mmio, policy, true>;
-using esp_backend = mcuhw::backend::esp32p4::spi_master_backend<
+using esp_backend = mcubsp::backend::esp32p4::spi_master_backend<
     esp_binding, device_spi_mmio, policy, true>;
 
-constexpr auto ra_timing = *mcuhw::backend::ra4m1::solve_spi_timing({48'000'000U, 1'000'000U, 0U});
-constexpr auto stm_timing = *mcuhw::backend::stm32h753::solve_stm32_spi_timing(
+constexpr auto ra_timing = *mcubsp::backend::ra4m1::solve_spi_timing({48'000'000U, 1'000'000U, 0U});
+constexpr auto stm_timing = *mcubsp::backend::stm32h753::solve_stm32_spi_timing(
     {64'000'000U, 1'000'000U, 0U});
-constexpr auto esp_timing = *mcuhw::backend::esp32p4::solve_spi_timing(
+constexpr auto esp_timing = *mcubsp::backend::esp32p4::solve_spi_timing(
     {40'000'000U, 1'000'000U, 0U});
 
 TEST(spi_device_backend, ra_external_select_tracks_wire_completion_and_deadline,
@@ -94,19 +94,19 @@ TEST(spi_device_backend, ra_external_select_tracks_wire_completion_and_deadline,
     policy execution;
     device_select selected;
     ra_backend spi{mmio, execution};
-    const auto fixed_cs = mcuhw::mcu::ra4m1::pfs_address(ra_binding::select_pin);
+    const auto fixed_cs = mcubsp::mcu::ra4m1::pfs_address(ra_binding::select_pin);
     mmio.set(fixed_cs, 0x5A5A5A5AU);
     ASSERT_TRUE(spi.initialize(ra_timing).has_value());
     EXPECT_EQ(mmio.value(fixed_cs), 0x5A5A5A5AU);
     ASSERT_TRUE(spi.set_select_handler(&device_select::set, &selected).has_value());
     const std::array<std::uint16_t, 1> tx{0x5AU};
-    const std::array segments{mcuhw::driver::spi_segment{.transmit = tx}};
+    const std::array segments{mcubsp::driver::spi_segment{.transmit = tx}};
     auto started = spi.transaction(segments);
     ASSERT_TRUE(started.has_value());
     EXPECT_TRUE(selected.active);
     EXPECT_TRUE(spi.busy());
-    EXPECT_TRUE(spi.reconfigure(ra_timing).error() == mcuhw::driver::spi_error::busy);
-    EXPECT_TRUE(spi.set_select_handler(nullptr, nullptr).error() == mcuhw::driver::spi_error::busy);
+    EXPECT_TRUE(spi.reconfigure(ra_timing).error() == mcubsp::driver::spi_error::busy);
+    EXPECT_TRUE(spi.set_select_handler(nullptr, nullptr).error() == mcubsp::driver::spi_error::busy);
     ASSERT_TRUE(spi.handle_transmit_empty_interrupt());
     ASSERT_TRUE(spi.handle_receive_interrupt());
     EXPECT_TRUE(selected.active);
@@ -119,7 +119,7 @@ TEST(spi_device_backend, ra_external_select_tracks_wire_completion_and_deadline,
     std::uint32_t checks{};
     const auto immediate = spi.transaction_immediate(byte, {}, 100U,
         [&checks]() noexcept { return ++checks >= 3U; });
-    EXPECT_TRUE(immediate.error() == mcuhw::driver::spi_error::timeout);
+    EXPECT_TRUE(immediate.error() == mcubsp::driver::spi_error::timeout);
     EXPECT_EQ(checks, 3U);
     EXPECT_FALSE(selected.active);
     EXPECT_FALSE(spi.busy());
@@ -139,15 +139,15 @@ TEST(spi_device_backend, ra_reconfigure_rejects_invalid_and_recovers_mmio_failur
     ASSERT_TRUE(spi.set_select_handler(&device_select::set, &selected).has_value());
     const auto writes = mmio.writes;
     EXPECT_TRUE(spi.reconfigure(ra_timing, {
-        .mode = static_cast<mcuhw::driver::spi_mode>(255)}).error()
-        == mcuhw::driver::spi_error::invalid_frame);
+        .mode = static_cast<mcubsp::driver::spi_mode>(255)}).error()
+        == mcubsp::driver::spi_error::invalid_frame);
     EXPECT_EQ(mmio.writes, writes);
     mmio.fail = true;
-    EXPECT_TRUE(spi.reconfigure(ra_timing).error() == mcuhw::driver::spi_error::mmio);
+    EXPECT_TRUE(spi.reconfigure(ra_timing).error() == mcubsp::driver::spi_error::mmio);
     mmio.fail = false;
     const std::array<std::uint16_t, 1> tx{0x55U};
-    const std::array segments{mcuhw::driver::spi_segment{.transmit = tx}};
-    EXPECT_TRUE(spi.transaction(segments).error().cause == mcuhw::driver::spi_error::mmio);
+    const std::array segments{mcubsp::driver::spi_segment{.transmit = tx}};
+    EXPECT_TRUE(spi.transaction(segments).error().cause == mcubsp::driver::spi_error::mmio);
     EXPECT_EQ(selected.assertions, 0U);
     ASSERT_TRUE(spi.reconfigure(ra_timing).has_value());
     auto started = spi.transaction(segments);
@@ -170,17 +170,17 @@ TEST(spi_device_backend, stm_external_select_releases_even_on_mmio_failure,
     ASSERT_TRUE(spi.initialize(stm_timing).has_value());
     ASSERT_TRUE(spi.set_select_handler(&device_select::set, &selected).has_value());
     ASSERT_TRUE(spi.reconfigure(stm_timing, {
-        .mode = mcuhw::driver::spi_mode::mode3,
-        .frame_width = mcuhw::driver::spi_frame_width::bits16}).has_value());
+        .mode = mcubsp::driver::spi_mode::mode3,
+        .frame_width = mcubsp::driver::spi_frame_width::bits16}).has_value());
     EXPECT_EQ(mmio.value(stm_binding::metadata.base + 8U) & 31U, 15U);
     EXPECT_TRUE((mmio.value(stm_binding::metadata.base + 12U) & (3U << 24U))
                 == (3U << 24U));
     const std::array<std::uint16_t, 1> tx{0xABCDU};
-    const std::array segments{mcuhw::driver::spi_segment{.transmit = tx}};
+    const std::array segments{mcubsp::driver::spi_segment{.transmit = tx}};
     auto started = spi.transaction(segments);
     ASSERT_TRUE(started.has_value());
     EXPECT_TRUE(selected.active);
-    EXPECT_TRUE(spi.reconfigure(stm_timing).error() == mcuhw::driver::spi_error::busy);
+    EXPECT_TRUE(spi.reconfigure(stm_timing).error() == mcubsp::driver::spi_error::busy);
     mmio.fail = true;
     EXPECT_FALSE(started->cancel().has_value());
     EXPECT_FALSE(selected.active);
@@ -195,7 +195,7 @@ TEST(spi_device_backend, esp_external_select_disables_native_cs_and_waits_for_id
     policy execution;
     device_select selected;
     esp_backend spi{mmio, execution};
-    const auto fixed_cs = mcuhw::mcu::esp32p4::gpio_matrix_base + 0x558U
+    const auto fixed_cs = mcubsp::mcu::esp32p4::gpio_matrix_base + 0x558U
         + esp_binding::select_pin.index * 4U;
     mmio.set(fixed_cs, 0x5A5A5A5AU);
     ASSERT_TRUE(spi.initialize(esp_timing).has_value());
@@ -203,7 +203,7 @@ TEST(spi_device_backend, esp_external_select_disables_native_cs_and_waits_for_id
     EXPECT_EQ(mmio.value(esp_binding::base + 0x20U) & 0x3FU, 0x3FU);
     ASSERT_TRUE(spi.set_select_handler(&device_select::set, &selected).has_value());
     const std::array<std::uint16_t, 1> tx{0x12U};
-    const std::array segments{mcuhw::driver::spi_segment{.transmit = tx}};
+    const std::array segments{mcubsp::driver::spi_segment{.transmit = tx}};
     auto started = spi.transaction(segments);
     ASSERT_TRUE(started.has_value());
     EXPECT_TRUE(selected.active);
@@ -215,7 +215,7 @@ TEST(spi_device_backend, esp_external_select_disables_native_cs_and_waits_for_id
     EXPECT_FALSE(selected.active);
     ASSERT_TRUE(started->take().has_value());
     ASSERT_TRUE(spi.reconfigure(esp_timing, {
-        .mode = mcuhw::driver::spi_mode::mode3}).has_value());
+        .mode = mcubsp::driver::spi_mode::mode3}).has_value());
     EXPECT_EQ(mmio.value(esp_binding::base + 0x20U) & 0x3FU, 0x3FU);
 
     auto cancelled = spi.transaction(segments);

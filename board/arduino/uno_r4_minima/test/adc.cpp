@@ -4,25 +4,25 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/adc.hpp>
-#include <mcuhw/backend/ra4m1/dmac.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/backend/ra4m1/adc.hpp>
+#include <mcubsp/backend/ra4m1/dmac.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
 
 #include "support.hpp"
 
 namespace {
-namespace board = mcuhw::board::arduino_uno_r4_minima;
-using binding = mcuhw::backend::ra4m1::adc14_binding<
-    mcuhw::backend::ra4m1::adc_input<9, board::a0_an009>>;
-using backend_type = mcuhw::backend::ra4m1::adc14_backend<
-    binding, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
-using dmac_type = mcuhw::backend::ra4m1::dmac_channel_backend<
-    0, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
+using binding = mcubsp::backend::ra4m1::adc14_binding<
+    mcubsp::backend::ra4m1::adc_input<9, board::a0_an009>>;
+using backend_type = mcubsp::backend::ra4m1::adc14_backend<
+    binding, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
+using dmac_type = mcubsp::backend::ra4m1::dmac_channel_backend<
+    0, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
 
-mcuhw::board_test::execution_policy execution;
-backend_type backend{mcuhw::board_test::mmio, execution};
-dmac_type dmac{mcuhw::board_test::mmio, execution};
-constexpr std::array channels{mcuhw::driver::adc_channel{9U}};
+mcubsp::board_test::execution_policy execution;
+backend_type backend{mcubsp::board_test::mmio, execution};
+dmac_type dmac{mcubsp::board_test::mmio, execution};
+constexpr std::array channels{mcubsp::driver::adc_channel{9U}};
 
 struct observation {
     bool initialized{};
@@ -43,10 +43,10 @@ std::uint32_t dma_average{};
 volatile std::uint32_t dma_interrupts{};
 bool dma_interrupt_mode{};
 
-void configure_interrupt(mcuhw::mcu::ra4m1::event event) noexcept {
+void configure_interrupt(mcubsp::mcu::ra4m1::event event) noexcept {
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E180U) = 1U;
     *reinterpret_cast<volatile std::uint32_t*>(0x4000'6300U)
-        = mcuhw::mcu::ra4m1::event_number(event);
+        = mcubsp::mcu::ra4m1::event_number(event);
     *reinterpret_cast<volatile std::uint8_t*>(0xE000'E400U) = 0x80U;
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E280U) = 1U;
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E100U) = 1U;
@@ -55,21 +55,21 @@ void configure_interrupt(mcuhw::mcu::ra4m1::event event) noexcept {
 
 TEST(uno_adc, adc14_a0_continuous_scan_fills_buffer_via_dmac0,
      "REQ-0018", "REQ-0019", "REQ-0029", "REQ-0030", "REQ-0036") {
-    configure_interrupt(mcuhw::mcu::ra4m1::event::dmac0_int);
+    configure_interrupt(mcubsp::mcu::ra4m1::event::dmac0_int);
     dma_interrupt_mode = true;
     dma_initialized = dmac.initialize().has_value()
         && backend.initialize({
-            .resolution = mcuhw::driver::adc_resolution::bits14,
+            .resolution = mcubsp::driver::adc_resolution::bits14,
             .sample_states = 64U,
         }).has_value();
     ASSERT_TRUE(dma_initialized);
     auto started = backend.sample_dma(
-        mcuhw::driver::adc_channel{9U}, dma_samples, dmac);
+        mcubsp::driver::adc_channel{9U}, dma_samples, dmac);
     ASSERT_TRUE(started.has_value());
     auto transfer = std::move(*started);
-    const auto deadline = mcuhw::execution::deadline{
+    const auto deadline = mcubsp::execution::deadline{
         static_cast<std::uint32_t>(
-            mcuhw::board_test::execution_hooks::now() + 480'000U)};
+            mcubsp::board_test::execution_hooks::now() + 480'000U)};
     ASSERT_TRUE(transfer.wait_until(deadline).has_value());
     const auto result = transfer.take();
     dma_completed = result.has_value()
@@ -93,7 +93,7 @@ TEST(uno_adc, adc14_a0_continuous_scan_fills_buffer_via_dmac0,
     ASSERT_TRUE(dma_shutdown);
 }
 
-[[nodiscard]] bool exercise(mcuhw::driver::adc_resolution resolution,
+[[nodiscard]] bool exercise(mcubsp::driver::adc_resolution resolution,
                             observation& result) noexcept {
     result.initialized = backend.initialize({
         .resolution = resolution,
@@ -106,9 +106,9 @@ TEST(uno_adc, adc14_a0_continuous_scan_fills_buffer_via_dmac0,
         return false;
     }
     auto transfer = std::move(*started);
-    const auto deadline = mcuhw::execution::deadline{
+    const auto deadline = mcubsp::execution::deadline{
         static_cast<std::uint32_t>(
-            mcuhw::board_test::execution_hooks::now() + 480'000U)};
+            mcubsp::board_test::execution_hooks::now() + 480'000U)};
     if (!transfer.wait_until(deadline)) {
         static_cast<void>(transfer.take());
         static_cast<void>(backend.shutdown());
@@ -122,9 +122,9 @@ TEST(uno_adc, adc14_a0_continuous_scan_fills_buffer_via_dmac0,
 TEST(uno_adc, adc14_a0_potentiometer_scales_at_14_and_12_bits,
      "REQ-0029", "REQ-0036") {
     dma_interrupt_mode = false;
-    configure_interrupt(mcuhw::mcu::ra4m1::event::adc_scan_end);
-    ASSERT_TRUE(exercise(mcuhw::driver::adc_resolution::bits14, result14));
-    ASSERT_TRUE(exercise(mcuhw::driver::adc_resolution::bits12, result12));
+    configure_interrupt(mcubsp::mcu::ra4m1::event::adc_scan_end);
+    ASSERT_TRUE(exercise(mcubsp::driver::adc_resolution::bits14, result14));
+    ASSERT_TRUE(exercise(mcubsp::driver::adc_resolution::bits12, result12));
     const auto raw14 = static_cast<std::uint32_t>(result14.raw[0]);
     const auto raw12_scaled = static_cast<std::uint32_t>(result12.raw[0]) * 4U;
     const auto difference = raw14 > raw12_scaled ? raw14 - raw12_scaled
@@ -136,13 +136,13 @@ TEST(uno_adc, adc14_a0_potentiometer_scales_at_14_and_12_bits,
 }
 
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=adc "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=adc "
     "firmware=pln-0010 fixture=A0_AN009_potentiometer_GND_to_3V3 "
     "resolutions=14,12 sample_states=64 reference=VREFH0 format=right_aligned "
     "dma=DMAC0 activation=ADC140_ADI mode=continuous_single_channel "
     "toolchain=arm-none-eabi-gcc-15.2.1 iclk_hz=48000000 "
     "pclkb_hz=24000000 pclkc_hz=24000000 interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "adc",
     .firmware = "pln-0010",
     .fixture = "potentiometer wiper on A0/AN009, ends on GND and 3.3 V",
@@ -163,9 +163,9 @@ void write_observation(Writer& out, const observation& result,
 } // namespace
 
 int main() {
-    mcuhw::board_test::start(metadata);
-    configure_interrupt(mcuhw::mcu::ra4m1::event::adc_scan_end);
-    mcuhw::board_test::finish(evidence, [&](auto& observations) {
+    mcubsp::board_test::start(metadata);
+    configure_interrupt(mcubsp::mcu::ra4m1::event::adc_scan_end);
+    mcubsp::board_test::finish(evidence, [&](auto& observations) {
         observations("converter", "ADC140 software-triggered finite scan");
         observations("requested_order", "AN009");
         observations("reference", "VREFH0/AVCC0 nominal 3.3 V");
@@ -198,5 +198,5 @@ extern "C" void IRQ0_Handler() noexcept {
     } else {
         static_cast<void>(backend.handle_scan_end_interrupt());
     }
-    mcuhw::board_test::clear_icu_line(0U);
+    mcubsp::board_test::clear_icu_line(0U);
 }

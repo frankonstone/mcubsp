@@ -71,7 +71,7 @@ jobs:
             cxx: g++
     env:
       CXX: ${{ matrix.cxx }}
-      MCUHW_CI_SUITES: ${{ needs.selection.outputs.suites }}
+      MCUBSP_CI_SUITES: ${{ needs.selection.outputs.suites }}
       CMAKE_BUILD_PARALLEL_LEVEL: '2'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -122,7 +122,7 @@ jobs:
         if: needs.selection.outputs.run_native == 'true'
         shell: ${{ matrix.shell }}
         run: >-
-          python tool/verify.py --build build/verification --suites "$MCUHW_CI_SUITES"
+          python tool/verify.py --build build/verification --suites "$MCUBSP_CI_SUITES"
           --mcutest _ci/mcutest --compiler "$CXX" --tooling --jobs 2
       - name: Run tooling for an empty native diff
         if: needs.selection.outputs.run_native != 'true'
@@ -134,7 +134,7 @@ jobs:
         if: github.event_name != 'pull_request'
         shell: ${{ matrix.shell }}
         run: |
-          cmake -S . -B build/headers -G Ninja -DCMAKE_CXX_COMPILER="$CXX" -DMCUHW_CHECK_HEADERS=ON -DMCUHW_INSTALL=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake -S . -B build/headers -G Ninja -DCMAKE_CXX_COMPILER="$CXX" -DMCUBSP_CHECK_HEADERS=ON -DMCUBSP_INSTALL=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
           cmake --build build/headers --parallel 2
           cmake -E copy build/headers/compile_commands.json build/verification/artifact/header-compile-commands.json
       - name: Upload scoped verification evidence

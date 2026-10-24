@@ -4,17 +4,17 @@
 #include <span>
 
 #include <mcutest/mcutest.hpp>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
-namespace io = mcuhw::io;
-namespace driver = mcuhw::driver;
+namespace io = mcubsp::io;
+namespace driver = mcubsp::driver;
 using Board = io::boards::uno_r4_minima;
-using Policy = mcuhw::execution::fake_policy;
-using Mmio = mcuhw::testing::recording_mmio<0x80000, 4096>;
+using Policy = mcubsp::execution::fake_policy;
+using Mmio = mcubsp::testing::recording_mmio<0x80000, 4096>;
 using namespace std::chrono_literals;
 constexpr io::board_config spi_only{.serial = false, .spi = true};
 constexpr io::board_config i2c_only{.serial = false, .i2c = true};
@@ -25,7 +25,7 @@ constexpr auto adc_base = Board::adc_binding::metadata.base;
 
 bool wrote(const Mmio& mmio, std::uintptr_t address, std::uint64_t value) {
     for (const auto& op : mmio.operations()) {
-        if (op.kind == mcuhw::testing::mmio_operation_kind::write
+        if (op.kind == mcubsp::testing::mmio_operation_kind::write
             && op.address == address && op.value == value) return true;
     }
     return false;
@@ -34,8 +34,8 @@ bool wrote(const Mmio& mmio, std::uintptr_t address, std::uint64_t value) {
 struct SpiArrival {
     Mmio& mmio;
     unsigned phase{};
-    static void advance(void* context, mcuhw::execution::fake_wait_stage stage) noexcept {
-        if (stage != mcuhw::execution::fake_wait_stage::after_prepare) return;
+    static void advance(void* context, mcubsp::execution::fake_wait_stage stage) noexcept {
+        if (stage != mcubsp::execution::fake_wait_stage::after_prepare) return;
         auto& self = *static_cast<SpiArrival*>(context);
         switch (self.phase++) {
         case 0:
@@ -82,8 +82,8 @@ TEST(io_peripherals, spi_timeout_quiesces_local_buffers_and_reuses_slot, "REQ-00
     EXPECT_TRUE(hw.spi.transfer(std::uint16_t{0x5AU}, -1ms).error().code
                 == io::errc::invalid_timeout);
     EXPECT_EQ(mmio.operations().size(), 0U);
-    policy.set_wait_hook([](void* context, mcuhw::execution::fake_wait_stage stage) noexcept {
-        if (stage == mcuhw::execution::fake_wait_stage::after_prepare) {
+    policy.set_wait_hook([](void* context, mcubsp::execution::fake_wait_stage stage) noexcept {
+        if (stage == mcubsp::execution::fake_wait_stage::after_prepare) {
             // Model a peripheral that never produces TX/RX-ready or idle.
             (void)static_cast<Mmio*>(context)->write<std::uint8_t>(spi_base + 3U, 0x02U);
         }
@@ -167,8 +167,8 @@ TEST(io_peripherals, i2c_combined_transfer_borrows_buffers_through_stop, "REQ-00
 
 struct AdcArrival {
     Mmio& mmio;
-    static void complete(void* context, mcuhw::execution::fake_wait_stage stage) noexcept {
-        if (stage != mcuhw::execution::fake_wait_stage::after_prepare) return;
+    static void complete(void* context, mcubsp::execution::fake_wait_stage stage) noexcept {
+        if (stage != mcubsp::execution::fake_wait_stage::after_prepare) return;
         auto& self = *static_cast<AdcArrival*>(context);
         (void)self.mmio.write<std::uint16_t>(adc_base, 0U); // ADST cleared by converter
         (void)self.mmio.write<std::uint16_t>(adc_base + 0x32U, 0x2345U); // AN009

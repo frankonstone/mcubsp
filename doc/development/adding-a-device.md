@@ -1,6 +1,6 @@
 # Adding an external chip
 
-Add its public protocol implementation under `include/mcuhw/device/<category>/`
+Add its public protocol implementation under `include/mcubsp/device/<category>/`
 and a local `device/<vendor>/<part>/README.md`. Record the exact chip and datasheet
 scope, supported modes, wiring needs and limitations in that README.
 

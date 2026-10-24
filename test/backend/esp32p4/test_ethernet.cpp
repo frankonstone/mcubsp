@@ -7,10 +7,10 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/esp32p4/ethernet.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/integration/mcuip/esp32p4_ethernet.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/backend/esp32p4/ethernet.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/integration/mcuip/esp32p4_ethernet.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
@@ -33,9 +33,9 @@ struct fake_protection {
 class sparse_mmio {
 public:
     template<std::unsigned_integral Value>
-    [[nodiscard]] std::expected<Value, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<Value, mcubsp::core::mmio_error>
     read(std::uintptr_t address) noexcept {
-        constexpr auto ethernet = mcuhw::mcu::esp32p4::ethernet_base;
+        constexpr auto ethernet = mcubsp::mcu::esp32p4::ethernet_base;
         if (address == ethernet + 0x14U) {
             const auto reg = (value(ethernet + 0x10U) >> 6U) & 0x1FU;
             if (reg == 2U) return static_cast<Value>(0x0243U);
@@ -46,10 +46,10 @@ public:
     }
 
     template<std::unsigned_integral Value>
-    [[nodiscard]] std::expected<void, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<void, mcubsp::core::mmio_error>
     write(std::uintptr_t address, Value written) noexcept {
         auto stored = static_cast<std::uint32_t>(written);
-        constexpr auto ethernet = mcuhw::mcu::esp32p4::ethernet_base;
+        constexpr auto ethernet = mcubsp::mcu::esp32p4::ethernet_base;
         if ((address == ethernet + 0x1000U || address == ethernet + 0x10U)
             && (stored & 1U) != 0U) stored &= ~1U;
         set(address, stored);
@@ -79,34 +79,34 @@ private:
     std::size_t count_{};
 };
 
-using dma_mmio = mcuhw::testing::recording_mmio<0x1100, 128>;
-using dma_device = mcuhw::backend::esp32p4::ethernet_dma_device<
+using dma_mmio = mcubsp::testing::recording_mmio<0x1100, 128>;
+using dma_device = mcubsp::backend::esp32p4::ethernet_dma_device<
     dma_mmio, fake_protection, 4U, 4U>;
 
-#if defined(MCUHW_TEST_MCUIP_CONTRACTS)
+#if defined(MCUBSP_TEST_MCUIP_CONTRACTS)
 static_assert(::mcuip::NetworkDevice<dma_device>);
 static_assert(::mcuip::DescriptorProtection<fake_protection>);
 static_assert(::mcuip::valid_hardware(
-    mcuhw::integration::mcuip::esp32p4_nano_hardware));
+    mcubsp::integration::mcuip::esp32p4_nano_hardware));
 #endif
 
 TEST(esp32p4_ethernet, sequences_rmii_clock_pins_mac_and_ip101_mdio,
      "REQ-0003", "REQ-0010", "REQ-0011", "REQ-0034", "REQ-0043") {
     sparse_mmio mmio;
-    mcuhw::backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcuhw::board::esp32p4_nano::ethernet_binding> mac{mmio};
-    const mcuhw::backend::esp32p4::ethernet_mac_address address{
+    mcubsp::backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcubsp::board::esp32p4_nano::ethernet_binding> mac{mmio};
+    const mcubsp::backend::esp32p4::ethernet_mac_address address{
         {0x02U, 0x00U, 0x00U, 0x04U, 0x00U, 0x01U}};
     EXPECT_TRUE(mac.initialize(address).has_value());
 
-    constexpr auto ethernet = mcuhw::mcu::esp32p4::ethernet_base;
+    constexpr auto ethernet = mcubsp::mcu::esp32p4::ethernet_base;
     EXPECT_EQ(mmio.value(0x500E'6018U) & (1U << 13U), 1U << 13U);
     EXPECT_EQ(mmio.value(0x500E'514CU) & (0x7U << 2U), 4U << 2U);
     EXPECT_EQ(mmio.value(0x500E'6030U) & ((1U << 27U) | (1U << 29U)),
               (1U << 27U) | (1U << 29U));
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::io_mux_base + 0x04U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::io_mux_base + 0x04U
                          + 50U * 4U) & ((0x7U << 12U) | (1U << 9U)),
               (3U << 12U) | (1U << 9U));
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gpio_matrix_base + 0x558U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gpio_matrix_base + 0x558U
                          + 31U * 4U) & 0x1FFU, 108U);
     EXPECT_EQ(mmio.value(ethernet + 0x44U), 0x0400'0002U);
     EXPECT_EQ(mmio.value(ethernet + 0x40U), 0x0000'0100U);
@@ -122,8 +122,8 @@ TEST(esp32p4_ethernet, sequences_rmii_clock_pins_mac_and_ip101_mdio,
 TEST(esp32p4_ethernet, rejects_multicast_and_invalid_phy_arguments,
      "REQ-0002", "REQ-0043") {
     sparse_mmio mmio;
-    mcuhw::backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcuhw::board::esp32p4_nano::ethernet_binding> mac{mmio};
-    const mcuhw::backend::esp32p4::ethernet_mac_address multicast{
+    mcubsp::backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcubsp::board::esp32p4_nano::ethernet_binding> mac{mmio};
+    const mcubsp::backend::esp32p4::ethernet_mac_address multicast{
         {0x01U, 0U, 0U, 0U, 0U, 1U}};
     EXPECT_TRUE(!mac.initialize(multicast).has_value());
     EXPECT_TRUE(!mac.read_phy(32U, 0U).has_value());
@@ -132,7 +132,7 @@ TEST(esp32p4_ethernet, rejects_multicast_and_invalid_phy_arguments,
 
 TEST(esp32p4_ethernet, fixed_enhanced_rings_preserve_slot_completion,
      "REQ-0002", "REQ-0009", "REQ-0013", "REQ-0043") {
-    dma_mmio mmio{mcuhw::mcu::esp32p4::ethernet_base};
+    dma_mmio mmio{mcubsp::mcu::esp32p4::ethernet_base};
     fake_protection protection;
     dma_device device{mmio, protection};
     ASSERT_TRUE(device.initialize());
@@ -165,7 +165,7 @@ TEST(esp32p4_ethernet, fixed_enhanced_rings_preserve_slot_completion,
 
 TEST(esp32p4_ethernet, rejects_short_oversize_and_unaligned_dma_buffers,
      "REQ-0002", "REQ-0013", "REQ-0043") {
-    dma_mmio mmio{mcuhw::mcu::esp32p4::ethernet_base};
+    dma_mmio mmio{mcubsp::mcu::esp32p4::ethernet_base};
     fake_protection protection;
     dma_device device{mmio, protection};
     ASSERT_TRUE(device.initialize());

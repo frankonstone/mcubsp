@@ -1,25 +1,25 @@
 # Build a selected-board application
 
-The optional `tool/mcuhw.py` frontend creates an ordinary external CMake
+The optional `tool/mcubsp.py` frontend creates an ordinary external CMake
 application and selects one board, revision, startup owner and toolchain. Use
 Python 3.10 or newer. The commands below use `python`; use `python3` on hosts
 where that is the Python 3 command, or `py -3` on Windows.
 
 For a board-independent application, see [installation](installation.md) and
-[library use](using-mcuhw.md). It does not need board discovery or this frontend.
+[library use](using-mcubsp.md). It does not need board discovery or this frontend.
 
 ## Create an application
 
-Run these commands from the mcuhw checkout or installed `share/mcuhw` directory:
+Run these commands from the mcubsp checkout or installed `share/mcubsp` directory:
 
 ```sh
-python tool/mcuhw.py new ../my-blink --board arduino/uno_r4_minima
+python tool/mcubsp.py new ../my-blink --board arduino/uno_r4_minima
 ```
 
 `new` copies the [UNO examples](../../board/arduino/uno_r4_minima/example/README.md) into an external
 directory and selects Blink. Choose `--example tmp102` for the TMP102 firmware;
 read its [wiring guide](../../device/ti/tmp102/README.md) before connecting hardware. The selected revision is
-written explicitly into `mcuhw.json`; `--revision` selects another revision
+written explicitly into `mcubsp.json`; `--revision` selects another revision
 supported by that board. An unknown board or revision fails before creation.
 Existing nonempty directories are never overwritten.
 
@@ -50,16 +50,16 @@ or unpack the complete distribution, and add its executable directory to
 you; the frontend checks and records what was actually imported.
 
 ```sh
-python tool/mcuhw.py setup --project ../my-blink --offline
-python tool/mcuhw.py doctor --project ../my-blink
-python tool/mcuhw.py build --project ../my-blink
+python tool/mcubsp.py setup --project ../my-blink --offline
+python tool/mcubsp.py doctor --project ../my-blink
+python tool/mcubsp.py build --project ../my-blink
 ```
 
 Setup imports tools from `PATH` unless overridden. Paths containing spaces are
 supported; quote the complete `NAME=PATH` argument:
 
 ```sh
-python tool/mcuhw.py setup --project ../my-blink --offline --tool "arm-gcc=/opt/Arm Toolchain/bin/arm-none-eabi-g++"
+python tool/mcubsp.py setup --project ../my-blink --offline --tool "arm-gcc=/opt/Arm Toolchain/bin/arm-none-eabi-g++"
 ```
 
 On Windows the equivalent override is, for example,
@@ -70,29 +70,29 @@ override names are `cmake`, `ninja`, `riscv-gcc`, `idf-python`, `jlink` and
 Setup records the imported tools and exposes one configuration to the frontend,
 CMake and the IDE:
 
-- `.mcuhw/toolchains.lock.json` records exact expected versions and optional
+- `.mcubsp/toolchains.lock.json` records exact expected versions and optional
   immutable archive sources. Commit this file with the application.
-- `.mcuhw/environment.json` records the host, actual installation paths,
+- `.mcubsp/environment.json` records the host, actual installation paths,
   executable SHA-256 values, compiler/assembler/linker/library identities,
   frontend Python identity, versions, explicit version overrides, SDK commit
   and submodules, Python package versions, and SDK constraints checksum. This
   machine-local file is ignored by the generated `.gitignore`.
-- `.mcuhw/CMakePresets.json` provides the `mcuhw` configure and build presets,
+- `.mcubsp/CMakePresets.json` provides the `mcubsp` configure and build presets,
   including the selected board, tool paths and SDK environment. Setup adds its
   include to `CMakeUserPresets.json`, preserving existing user presets.
-- `.mcuhw/verify-environment.cmake` checks the recorded installation during
+- `.mcubsp/verify-environment.cmake` checks the recorded installation during
   direct CMake and IDE configuration as well as frontend builds.
 
 From the generated application directory, the equivalent CMake commands are:
 
 ```sh
-cmake --preset mcuhw
-cmake --build --preset mcuhw
+cmake --preset mcubsp
+cmake --build --preset mcubsp
 ```
 
-Select the `mcuhw` configure/build preset in the IDE. Use the CMake executable
+Select the `mcubsp` configure/build preset in the IDE. Use the CMake executable
 recorded by setup; the preset supplies that path to IDEs. The frontend invokes
-these same presets. Change board/revision/startup selection in `mcuhw.json`
+these same presets. Change board/revision/startup selection in `mcubsp.json`
 and rerun setup to regenerate the shared configuration. Generated files and
 machine-local presets are ignored by version control.
 
@@ -111,7 +111,7 @@ isolated directory below `build/`. Adding a debugger does not change the build
 directory. Each successful CMake build writes a target-specific
 `firmware.build.json` beside `firmware.elf`, identifying the board, revision,
 startup owner, actual artifact path and checksum. Frontend-created projects
-also update `.mcuhw/last-build.json`; this works when the build is invoked
+also update `.mcubsp/last-build.json`; this works when the build is invoked
 directly by CMake or an IDE. Source and toolchain provenance remains in the
 adjacent `firmware.identity.json` report.
 
@@ -121,7 +121,7 @@ For ESP board verification, use the complete ESP-IDF v6.1 installation at commit
 `fff9895c82d744c7237be8847347bdd1b07c6643`, its pinned submodules,
 `esp-15.2.0_20251204` RISC-V compiler and Python environment. Set `IDF_PATH`
 and `IDF_TOOLS_PATH` from that installation before configuring the
-`esp32p4-riscv` preset with `MCUHW_BOARD=waveshare/esp32p4_nano`.
+`esp32p4-riscv` preset with `MCUBSP_BOARD=waveshare/esp32p4_nano`.
 The current packaged Blink and TMP102 applications target the UNO board;
 ESP board fixtures remain under its local `test/` directory.
 
@@ -160,9 +160,9 @@ paths escaping the extraction root are rejected. Import an existing install
 for vendor bundles requiring symbolic links. Local `file://` archives work too.
 
 ```sh
-python tool/mcuhw.py setup --project ../my-blink --lock team-toolchains.lock.json --cache ../tool-cache
-python tool/mcuhw.py setup --project ../my-blink --offline --cache ../tool-cache
-python tool/mcuhw.py build --project ../my-blink
+python tool/mcubsp.py setup --project ../my-blink --lock team-toolchains.lock.json --cache ../tool-cache
+python tool/mcubsp.py setup --project ../my-blink --offline --cache ../tool-cache
+python tool/mcubsp.py build --project ../my-blink
 ```
 
 Only explicit `setup` can fetch an archive. Downloaded bytes are checked before
@@ -182,10 +182,10 @@ Compilation never flashes. Import the debugger for the requested operation,
 inspect its command, then run the same command without `--dry-run`:
 
 ```sh
-python tool/mcuhw.py setup --project ../my-blink --operation flash --offline
-python tool/mcuhw.py doctor --project ../my-blink --operation flash
-python tool/mcuhw.py flash --project ../my-blink --probe 123456789 --dry-run
-python tool/mcuhw.py flash --project ../my-blink --probe 123456789
+python tool/mcubsp.py setup --project ../my-blink --operation flash --offline
+python tool/mcubsp.py doctor --project ../my-blink --operation flash
+python tool/mcubsp.py flash --project ../my-blink --probe 123456789 --dry-run
+python tool/mcubsp.py flash --project ../my-blink --probe 123456789
 ```
 
 Replace `123456789` with the selected physical probe's serial number. UNO uses
@@ -202,7 +202,7 @@ also requires a completed image. To select another completed CMake build,
 provide its exact record (or a directory containing a single record):
 
 ```sh
-python tool/mcuhw.py flash --project ../my-blink --build /path/to/build/firmware.build.json --probe 123456789 --dry-run
+python tool/mcubsp.py flash --project ../my-blink --build /path/to/build/firmware.build.json --probe 123456789 --dry-run
 ```
 
 For ESP, the SDK Python environment already imported for the build supplies
@@ -221,48 +221,28 @@ Physical acceptance fixtures live under each board's `test/` directory. The
 existing `tool/run-*.sh` commands remain compatibility wrappers. Their board
 runner, tool resolution and artifact locations use the same shared host helpers
 as application flashing; fixture-specific observation and evidence parsing stay
-with the board. Set `MCUHW_PROBE_SERIAL` for J-Link/ST-LINK fixtures, and pass the
-ESP serial port or set `MCUHW_SERIAL_PORT`. `MCUHW_ENVIRONMENT_JSON` can point to
+with the board. Set `MCUBSP_PROBE_SERIAL` for J-Link/ST-LINK fixtures, and pass the
+ESP serial port or set `MCUBSP_SERIAL_PORT`. `MCUBSP_ENVIRONMENT_JSON` can point to
 an application's recorded environment; explicit `JLINK_EXE`, `OPENOCD_EXE`,
 `IDF_PYTHON`, `ARM_NM` and `MCUCOV_EXE` overrides remain supported. An explicit
 ELF argument makes captures and coverage lookup follow that image's build
-directory. For the UNO named suites, `MCUHW_BUILD_DIR` selects an architecture
+directory. For the UNO named suites, `MCUBSP_BUILD_DIR` selects an architecture
 workspace's test build instead of the legacy preset directory.
 
-## Board targets in the repository
+## Board presets in the repository
 
-The Cortex-M4 preset selects the UNO R4 Minima board. For other boards, set the
-visible `MCUHW_BOARD` cache variable:
+Select a board and its toolchain together:
 
 ```sh
-cmake --preset arm-cortex-m4
-cmake --build --preset arm-cortex-m4 --target firmware
-cmake --build --preset arm-cortex-m4 --target examples
-cmake --build --preset arm-cortex-m4 --target test.board
-cmake --build --preset arm-cortex-m4 --target test.backend test.device
+cmake --preset arduino-uno-r4-minima
+cmake --preset st-nucleo-h753zi
+cmake --preset waveshare-esp32p4-nano
 ```
 
-Edit `MCUHW_BOARD` in CMake Tools or pass a new `-D` value, then reconfigure.
-Reapplying the Cortex-M4 preset restores the UNO board; the other presets
-preserve explicit selections. The selected board is printed in configure
-output. Use `arm-cortex-m7` with `st/nucleo_h753zi` or `esp32p4-riscv` with
-`waveshare/esp32p4_nano`. Supply the ESP SDK paths described below.
-
-On the UNO R4 Minima, `firmware` builds Blink by default; set
-`-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds all five
-examples; `arduino.uno_r4_minima.example.blink`, `arduino.uno_r4_minima.example.serial_echo`,
-`arduino.uno_r4_minima.example.spi_dma`, `arduino.uno_r4_minima.example.tmp102`,
-and `arduino.uno_r4_minima.example.w5100` allow individual builds. All five executables appear in `build/<preset>/application/` with names matching their CMake targets.
-The other boards currently have no declared examples; selecting
-them still exposes their available test targets.
-`test.board` configures a separate instrumented build under
-`board/<vendor>/<board>/<revision>/test/` only when requested. For UNO named
-runners, set `MCUHW_BUILD_DIR` to this child build. Nucleo runners accept its
-ELF path explicitly. The native groups `test.backend`, `test.device`, `test.core`, `test.driver`,
-`test.io`, `test.mcu` and `test.compile` build and run host checks. `tests`
-selects all groups, including physical images. No target flashes or executes
-physical-board tests.
-See [board selection](../development/verification.md#board-selection) for details.
+The UNO preset builds separate executables from every `.cpp` in its
+`example/` and `test/` directories. The old host verification targets were
+removed with their CMake helpers. Board-specific hardware procedures remain
+in the board directories.
 
 ## Direct CMake and existing startup
 
@@ -275,17 +255,17 @@ The generated application is a normal CMake project. The equivalent ARM build
 is, with paths and board selected for your host:
 
 ```sh
-cmake -S ../my-blink -B ../my-blink/build/manual-uno -G Ninja -DMCUHW_SOURCE_DIR=/path/to/mcuhw -DMCUHW_BOARD=arduino/uno_r4_minima -DMCUHW_BOARD_REVISION=r4 -DCMAKE_TOOLCHAIN_FILE=/path/to/mcuhw/cmake/McuhwToolchain.cmake -DMCUHW_STARTUP=supplied
+cmake -S ../my-blink -B ../my-blink/build/manual-uno -G Ninja -DMCUBSP_SOURCE_DIR=/path/to/mcubsp -DMCUBSP_BOARD=arduino/uno_r4_minima -DMCUBSP_BOARD_REVISION=r4 -DCMAKE_TOOLCHAIN_FILE=/path/to/mcubsp/cmake/McubspToolchain.cmake -DMCUBSP_STARTUP=supplied
 cmake --build ../my-blink/build/manual-uno --target firmware
 ```
 
-For ESP also supply `MCUHW_IDF_PATH`, `MCUHW_IDF_TOOLS_PATH` and `PYTHON`, and
+For ESP also supply `MCUBSP_IDF_PATH`, `MCUBSP_IDF_TOOLS_PATH` and `PYTHON`, and
 activate or explicitly select the SDK compiler. `build --dry-run` prints the
 exact equivalent configure/build argument arrays for your recorded environment.
 
-An existing BSP/RTOS application chooses `MCUHW_STARTUP=external` and supplies
+An existing BSP/RTOS application chooses `MCUBSP_STARTUP=external` and supplies
 its own startup sources, linker script and reset/clock services through the
-documented [firmware helper](../../board/Support.cmake). In this mode mcuhw
+documented [firmware helper](../../board/Support.cmake). In this mode mcubsp
 does not add its board vectors or reset owner. `new --startup external` records
 that choice; the generated application must then be adapted to provide its BSP
 before it can link. Use a separate build directory when switching startup.

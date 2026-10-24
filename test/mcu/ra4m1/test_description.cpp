@@ -2,13 +2,13 @@
 #include <cstdint>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/mcu/ra4m1/description.hpp>
-#include <mcuhw/testing/description_suite.hpp>
+#include <mcubsp/mcu/ra4m1/description.hpp>
+#include <mcubsp/testing/description_suite.hpp>
 
 namespace {
 
-namespace ra = mcuhw::mcu::ra4m1;
-using mcuhw::core::electrical_mode;
+namespace ra = mcubsp::mcu::ra4m1;
+using mcubsp::core::electrical_mode;
 
 struct real_description_contract {
     template<typename Description>
@@ -55,16 +55,16 @@ TEST(ra4m1_description, preserves_real_register_widths_aliases_and_side_effects,
     static_assert(ra::p000pfs_by::width == 1U);
     static_assert(std::same_as<ra::p000pfs_ha::canonical_register, ra::p000pfs>);
     static_assert(ra::sci_parity_error::access
-                  == mcuhw::core::access_semantics::write_zero_to_clear);
+                  == mcubsp::core::access_semantics::write_zero_to_clear);
     static_assert(ra::spi_mode_fault::access
-                  == mcuhw::core::access_semantics::write_zero_to_clear);
+                  == mcubsp::core::access_semantics::write_zero_to_clear);
     static_assert(ra::hococr2::offset == 0x37U);
     static_assert(ra::hoco_frequency::mask == 0x38U);
     static_assert(!ra::hococr2::reset_fully_known);
     EXPECT_EQ(ra::dmac_registers.size(), 12U);
     EXPECT_EQ(ra::gpt_registers.size(), 24U);
     EXPECT_EQ(ra::spi_registers.size(), 13U);
-    EXPECT_TRUE(ra::sci_rdr::access == mcuhw::core::access_semantics::read_only);
+    EXPECT_TRUE(ra::sci_rdr::access == mcubsp::core::access_semantics::read_only);
 }
 
 TEST(ra4m1_description, carries_protection_groups_without_executing_sequences,
@@ -79,29 +79,29 @@ TEST(ra4m1_description, carries_protection_groups_without_executing_sequences,
 
 TEST(ra4m1_description, validates_package_and_source_backed_pfs_routes,
      "REQ-0010") {
-    constexpr mcuhw::core::pin_id p400{4, 0};
-    constexpr mcuhw::core::pin_id absent_p600{6, 0};
+    constexpr mcubsp::core::pin_id p400{4, 0};
+    constexpr mcubsp::core::pin_id absent_p600{6, 0};
     static_assert(ra::pin_database::valid<p400,
         ra::signal_id(ra::signal::iic0_scl), electrical_mode::open_drain>);
     static_assert(!ra::pin_database::valid<absent_p600,
         ra::signal_id(ra::signal::gpio_output), electrical_mode::push_pull>);
     static_assert(ra::pfs_address({4, 8}) == 0x4004'0920U);
     EXPECT_EQ(ra::package_pins.size(), 52U);
-    EXPECT_TRUE(mcuhw::core::route_exists(
+    EXPECT_TRUE(mcubsp::core::route_exists(
         ra::pin_routes, {1, 0}, ra::signal_id(ra::signal::spi0_miso)));
-    EXPECT_TRUE(!mcuhw::core::route_exists(
+    EXPECT_TRUE(!mcubsp::core::route_exists(
         ra::pin_routes, {4, 0}, ra::signal_id(ra::signal::spi0_miso)));
 }
 
 TEST(ra4m1_description, models_clock_limits_domains_and_shared_module_stops,
      "REQ-0011") {
-    const auto pclkb = mcuhw::core::derive_frequency(
-        mcuhw::core::hertz{48'000'000U}, ra::clock_edges[2], {2, 0, 1},
+    const auto pclkb = mcubsp::core::derive_frequency(
+        mcubsp::core::hertz{48'000'000U}, ra::clock_edges[2], {2, 0, 1},
         ra::clock_nodes[8]);
     ASSERT_TRUE(pclkb.has_value());
     EXPECT_EQ(pclkb->count, 24'000'000U);
-    const auto too_fast = mcuhw::core::derive_frequency(
-        mcuhw::core::hertz{64'000'000U}, ra::clock_edges[2], {1, 0, 1},
+    const auto too_fast = mcubsp::core::derive_frequency(
+        mcubsp::core::hertz{64'000'000U}, ra::clock_edges[2], {1, 0, 1},
         ra::clock_nodes[8]);
     EXPECT_TRUE(!too_fast.has_value());
     EXPECT_EQ(ra::mstpcrd::reset_value, 0xFFFF'FFFFU);
@@ -124,15 +124,15 @@ TEST(ra4m1_description, keeps_dmac_and_dtc_distinct_and_checks_sram,
     static_assert(ra::dmac_constraints.engine
                   != ra::dtc_constraints.engine);
     static_assert(sizeof(ra::dtc_transfer_data) == 16U);
-    const auto accepted = mcuhw::core::validate_dma_transfer(
+    const auto accepted = mcubsp::core::validate_dma_transfer(
         ra::dma_requests[0], ra::memory_regions[1], ra::dma_reachability[1],
         0x2000'0000U, 16U, 4U,
-        mcuhw::core::dma_direction::peripheral_to_memory);
+        mcubsp::core::dma_direction::peripheral_to_memory);
     EXPECT_TRUE(accepted.has_value());
-    const auto misaligned = mcuhw::core::validate_dma_transfer(
+    const auto misaligned = mcubsp::core::validate_dma_transfer(
         ra::dma_requests[0], ra::memory_regions[1], ra::dma_reachability[1],
         0x2000'0001U, 16U, 4U,
-        mcuhw::core::dma_direction::peripheral_to_memory);
+        mcubsp::core::dma_direction::peripheral_to_memory);
     EXPECT_TRUE(!misaligned.has_value());
 }
 
@@ -152,7 +152,7 @@ TEST(ra4m1_description, preserves_gpt_instance_width_and_two_output_identities,
 }
 
 TEST(ra4m1_description, instantiates_the_shared_description_contract) {
-    static_assert(mcuhw::testing::for_each_description<ra::description>(
+    static_assert(mcubsp::testing::for_each_description<ra::description>(
         real_description_contract{}));
     EXPECT_TRUE(true);
 }

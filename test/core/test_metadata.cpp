@@ -5,12 +5,12 @@
 #include <limits>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/core/metadata.hpp>
-#include <mcuhw/core/units.hpp>
+#include <mcubsp/core/metadata.hpp>
+#include <mcubsp/core/units.hpp>
 
 namespace {
 
-using namespace mcuhw;
+using namespace mcubsp;
 
 TEST(capabilities, exposes_absent_target_features_at_compile_and_run_time,
      "REQ-0004") {

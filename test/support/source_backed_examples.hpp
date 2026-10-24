@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <limits>
 
-#include <mcuhw/core/metadata.hpp>
-#include <mcuhw/core/register.hpp>
+#include <mcubsp/core/metadata.hpp>
+#include <mcubsp/core/register.hpp>
 
-namespace mcuhw::contract_trials {
+namespace mcubsp::contract_trials {
 
 namespace ra4m1 {
 
@@ -121,4 +121,4 @@ using gpio_out_w1tc = core::register_descriptor<
 
 } // namespace esp32p4
 
-} // namespace mcuhw::contract_trials
+} // namespace mcubsp::contract_trials

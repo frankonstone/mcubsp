@@ -21,10 +21,10 @@ Use a separate build directory for each architecture/toolchain.
 
 ### Board selection
 
-The `arm-cortex-m4` preset supplies `MCUHW_BOARD=arduino/uno_r4_minima`. For
-another board, set `MCUHW_BOARD` using `-D` or edit its visible STRING entry in
+The `arm-cortex-m4` preset supplies `MCUBSP_BOARD=arduino/uno_r4_minima`. For
+another board, set `MCUBSP_BOARD` using `-D` or edit its visible STRING entry in
 the CMake cache.
-`MCUHW_BOARD_REVISION` optionally overrides the board entry's default revision.
+`MCUBSP_BOARD_REVISION` optionally overrides the board entry's default revision.
 Reapplying the Cortex-M4 preset restores the UNO board selection; other presets
 preserve explicit board selections. Reconfigure after editing cache entries.
 The configure output prints the selected board and architecture.
@@ -45,7 +45,7 @@ cmake --build --preset arm-cortex-m4 --target test.backend test.device
 
 | Target | Behavior |
 | --- | --- |
-| `firmware` | Selected UNO R4 example, Blink by default; override `MCUHW_EXAMPLE` |
+| `firmware` | Selected UNO R4 example, Blink by default; override `MCUBSP_EXAMPLE` |
 | `examples` | All five UNO R4 examples |
 | `arduino.uno_r4_minima.example.blink`, `arduino.uno_r4_minima.example.serial_echo`, `arduino.uno_r4_minima.example.spi_dma`, `arduino.uno_r4_minima.example.tmp102`, `arduino.uno_r4_minima.example.w5100` | Individual UNO R4 example builds |
 | `test.board` | Configure and build the board's instrumented physical-test images |
@@ -53,7 +53,7 @@ cmake --build --preset arm-cortex-m4 --target test.backend test.device
 | `test.core`, `test.driver`, `test.io`, `test.mcu`, `test.compile` | Build and run focused host suites and compile contracts |
 | `tests` | All host groups plus physical-test image builds |
 
-An empty `MCUHW_BOARD` provides no board targets. Invalid boards, revisions,
+An empty `MCUBSP_BOARD` provides no board targets. Invalid boards, revisions,
 architectures and undeclared firmware applications fail during configuration.
 Boards without declared examples expose test targets only.
 Unselected board entries are not loaded. Test dependencies are resolved only when
@@ -63,7 +63,7 @@ the architecture build directory. The child test build lives in
 `board/<vendor>/<board>/<revision>/test/` and inherits global compiler settings.
 Physical-test images are built without running or flashing them; use the
 documented hardware runners. Native groups run CTest after building.
-For UNO runners, point `MCUHW_BUILD_DIR` at the child test build. Nucleo runners
+For UNO runners, point `MCUBSP_BUILD_DIR` at the child test build. Nucleo runners
 accept an explicit ELF path from that directory.
 
 ESP boards require the installed SDK and Python environment described in
@@ -71,13 +71,13 @@ ESP boards require the installed SDK and Python environment described in
 SDK project and build directory. `test.board` builds the existing instrumented SDK
 project.
 
-Host groups use `MCUHW_NATIVE_CXX_COMPILER` and `MCUHW_NATIVE_CXX_FLAGS` in
+Host groups use `MCUBSP_NATIVE_CXX_COMPILER` and `MCUBSP_NATIVE_CXX_FLAGS` in
 separate builds under `native-test/<group>/`; cross-architecture flags stay in
-the board firmware builds. Set `MCUHW_MCUTEST_SOURCE_DIR` for a non-default
+the board firmware builds. Set `MCUBSP_MCUTEST_SOURCE_DIR` for a non-default
 mcutest checkout. Each group resolves dependencies only when selected.
 
 Explicit multi-board maintainer configurations remain available through
-`MCUHW_WORKSPACE=ON` and `MCUHW_ACTIVE_BOARDS`; they are not preset defaults.
+`MCUBSP_WORKSPACE=ON` and `MCUBSP_ACTIVE_BOARDS`; they are not preset defaults.
 They expose vendor-qualified groups and retain their isolated board outputs.
 
 ### Native and compile verification
@@ -85,19 +85,19 @@ They expose vendor-qualified groups and retain their isolated board outputs.
 Enable native suites independently of the preset:
 
 ```sh
-cmake --preset native -DMCUHW_BUILD_TESTS=ON -DMCUHW_TEST_SUITES=device:ti/tmp102
+cmake --preset native -DMCUBSP_BUILD_TESTS=ON -DMCUBSP_TEST_SUITES=device:ti/tmp102
 cmake --build --preset native --target native-tests
 ctest --test-dir build/native --output-on-failure
 ```
 
-For all suites select `MCUHW_TEST_SUITES=all`. Enable tooling tests with
-`MCUHW_BUILD_TOOLING_TESTS=ON`, probes with `MCUHW_BUILD_PROBES=ON`, header
-checks with `MCUHW_CHECK_HEADERS=ON`, and optional MCUIP contracts with
-`MCUHW_BUILD_MCUIP_CONTRACTS=ON` together with probes. Presets do not reset these
+For all suites select `MCUBSP_TEST_SUITES=all`. Enable tooling tests with
+`MCUBSP_BUILD_TOOLING_TESTS=ON`, probes with `MCUBSP_BUILD_PROBES=ON`, header
+checks with `MCUBSP_CHECK_HEADERS=ON`, and optional MCUIP contracts with
+`MCUBSP_BUILD_MCUIP_CONTRACTS=ON` together with probes. Presets do not reset these
 options. Use separate build directories for different verification scopes.
 
 ```sh
-cmake --preset arm-cortex-m4 -B build/arm-checks -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
+cmake --preset arm-cortex-m4 -B build/arm-checks -DMCUBSP_BUILD_PROBES=ON -DMCUBSP_CHECK_HEADERS=ON
 cmake --build build/arm-checks --target check-headers check-compile
 ```
 

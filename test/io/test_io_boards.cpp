@@ -4,29 +4,29 @@
 #include <expected>
 #include <type_traits>
 #include <mcutest/mcutest.hpp>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/analog.hpp>
-#include <mcuhw/io/pwm.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/io/board/nucleo_h753zi.hpp>
-#include <mcuhw/io/board/esp32p4_nano.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/analog.hpp>
+#include <mcubsp/io/pwm.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io/board/nucleo_h753zi.hpp>
+#include <mcubsp/io/board/esp32p4_nano.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using Uno = io::boards::uno_r4_minima;
 using Nucleo = io::boards::nucleo_h753zi;
 using Nano = io::boards::esp32p4_nano;
-using Policy = mcuhw::execution::fake_policy;
-using Mmio = mcuhw::testing::recording_mmio<0x80000, 4096>;
+using Policy = mcubsp::execution::fake_policy;
+using Mmio = mcubsp::testing::recording_mmio<0x80000, 4096>;
 constexpr io::board_config buses{.serial = true, .i2c = true, .spi = true};
 
 class changing_spi_status_mmio : public Mmio {
 public:
     changing_spi_status_mmio() : Mmio{0x4000'0000U} {}
     bool become_busy_after_receive{};
-    template<mcuhw::testing::mmio_value T>
+    template<mcubsp::testing::mmio_value T>
     auto read(std::uintptr_t address) noexcept {
         auto value = Mmio::read<T>(address);
         if (become_busy_after_receive
@@ -42,7 +42,7 @@ public:
 std::size_t writes_to(const Mmio& mmio, std::uintptr_t address) {
     std::size_t count{};
     for (const auto& operation : mmio.operations()) {
-        if (operation.kind == mcuhw::testing::mmio_operation_kind::write
+        if (operation.kind == mcubsp::testing::mmio_operation_kind::write
             && operation.address == address) ++count;
     }
     return count;
@@ -53,29 +53,29 @@ std::size_t writes_to(const Mmio& mmio, std::uintptr_t address) {
 // manufactured by this fixture.
 class sparse_mmio {
 public:
-    template<mcuhw::testing::mmio_value T>
-    std::expected<T, mcuhw::core::mmio_error> read(std::uintptr_t address) noexcept {
+    template<mcubsp::testing::mmio_value T>
+    std::expected<T, mcubsp::core::mmio_error> read(std::uintptr_t address) noexcept {
         if (address % alignof(T) != 0U)
-            return std::unexpected(mcuhw::core::mmio_error::misaligned);
+            return std::unexpected(mcubsp::core::mmio_error::misaligned);
         for (const auto& cell : cells_)
             if (cell.address == address) return static_cast<T>(cell.value);
         return T{};
     }
-    template<mcuhw::testing::mmio_value T>
-    std::expected<void, mcuhw::core::mmio_error>
+    template<mcubsp::testing::mmio_value T>
+    std::expected<void, mcubsp::core::mmio_error>
     write(std::uintptr_t address, T value) noexcept {
         if (address % alignof(T) != 0U)
-            return std::unexpected(mcuhw::core::mmio_error::misaligned);
+            return std::unexpected(mcubsp::core::mmio_error::misaligned);
         std::uint32_t next = value;
         if (address == Nano::serial_binding::base + 0x98U) next &= ~1U;
-        if (address == mcuhw::mcu::esp32p4::spi2_base) next &= ~(1U << 23U);
+        if (address == mcubsp::mcu::esp32p4::spi2_base) next &= ~(1U << 23U);
         for (auto& cell : cells_) {
             if (cell.address == address || cell.address == 0U) {
                 cell = {address, next};
                 return {};
             }
         }
-        return std::unexpected(mcuhw::core::mmio_error::trace_full);
+        return std::unexpected(mcubsp::core::mmio_error::trace_full);
     }
 private:
     struct cell { std::uintptr_t address{}; std::uint32_t value{}; };
@@ -87,7 +87,7 @@ TEST(io_boards, traits_keep_physical_pin_and_clock_profiles_explicit, "REQ-0045"
     static_assert(std::is_same_v<Nucleo::target_identity, Nucleo>);
     static_assert(std::is_same_v<Nano::target_identity, Nano>);
     static_assert(Uno::pwm_pin == Uno::pins_type::d3);
-    static_assert(Nucleo::pwm_pin == mcuhw::core::pin_id{0U, 8U});
+    static_assert(Nucleo::pwm_pin == mcubsp::core::pin_id{0U, 8U});
     static_assert(Uno::adc_channels[0].value == 9U);
     static_assert(Nucleo::adc_channels[0].value == 15U);
     static_assert(!Nano::adc_available && !Nano::pwm_available);
@@ -148,7 +148,7 @@ TEST(io_boards, i2c_poll_obeys_enabled_conditions_and_waits_for_stop, "REQ-0045"
     ASSERT_TRUE(hw.i2c.begin());
     constexpr auto base = Uno::i2c_binding::metadata.base;
     const std::array<std::uint8_t, 1> bytes{0xA5U};
-    const auto address = mcuhw::driver::make_i2c_address(0x48U);
+    const auto address = mcubsp::driver::make_i2c_address(0x48U);
     ASSERT_TRUE(address);
     auto transfer = hw.i2c.write_async(*address, bytes);
     ASSERT_TRUE(transfer);
@@ -187,7 +187,7 @@ TEST(io_boards, spi_poll_requires_final_receive_and_current_idle, "REQ-0045") {
     constexpr auto base = Uno::spi_binding::metadata.base;
     const std::array<std::uint16_t, 2> transmit{0x12U, 0x34U};
     std::array<std::uint16_t, 2> receive{};
-    const mcuhw::driver::spi_segment segment{transmit, receive};
+    const mcubsp::driver::spi_segment segment{transmit, receive};
     auto transfer = hw.spi.transaction_async(std::span{&segment, 1U});
     ASSERT_TRUE(transfer);
     // Idle plus empty transmitter cannot complete an unreceived transaction.
@@ -252,7 +252,7 @@ TEST(io_boards, spi_idle_is_rechecked_after_receive_changes_hardware_status, "RE
     constexpr auto base = Uno::spi_binding::metadata.base;
     const std::array<std::uint16_t, 1> transmit{0x12U};
     std::array<std::uint16_t, 1> receive{};
-    const mcuhw::driver::spi_segment segment{transmit, receive};
+    const mcubsp::driver::spi_segment segment{transmit, receive};
     auto transfer = hw.spi.transaction_async(std::span{&segment, 1U});
     ASSERT_TRUE(transfer);
     ASSERT_TRUE(mmio.write<std::uint8_t>(base + 3U, 0x20U));

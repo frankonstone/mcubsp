@@ -4,12 +4,12 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/mcu/esp32p4/description.hpp>
-#include <mcuhw/testing/description_suite.hpp>
+#include <mcubsp/mcu/esp32p4/description.hpp>
+#include <mcubsp/testing/description_suite.hpp>
 
 namespace {
 
-namespace esp = mcuhw::mcu::esp32p4;
+namespace esp = mcubsp::mcu::esp32p4;
 
 struct real_description_contract {
     template<typename Description>
@@ -53,9 +53,9 @@ TEST(esp32p4_description, preserves_hp_lp_ownership_and_memory_aliases,
     EXPECT_EQ(esp::memory_regions[4].begin, 0x4FF0'0000U);
     EXPECT_EQ(esp::memory_regions[4].size, 768U * 1024U);
     EXPECT_TRUE(esp::memory_regions[2].cache
-                == mcuhw::core::cache_policy::software_maintained);
+                == mcubsp::core::cache_policy::software_maintained);
     EXPECT_TRUE(esp::memory_regions[8].cache
-                == mcuhw::core::cache_policy::uncached);
+                == mcubsp::core::cache_policy::uncached);
     EXPECT_TRUE(esp::memory_details[6].lp_cpu_access);
 }
 
@@ -79,17 +79,17 @@ TEST(esp32p4_description, preserves_register_widths_offsets_and_side_effects,
      "REQ-0007") {
     static_assert(esp::gpio_out_w1ts::offset == 0x08U);
     static_assert(esp::gpio_out_w1ts::access
-                  == mcuhw::core::access_semantics::set_alias);
+                  == mcubsp::core::access_semantics::set_alias);
     static_assert(esp::gpio_out_w1tc::access
-                  == mcuhw::core::access_semantics::clear_alias);
+                  == mcubsp::core::access_semantics::clear_alias);
     static_assert(esp::gpio_out1_w1ts::offset == 0x14U);
     static_assert(esp::gpio_enable1_w1tc::offset == 0x34U);
     static_assert(esp::gpio_input1::offset == 0x40U);
     static_assert(esp::uart_int_clear::access
-                  == mcuhw::core::access_semantics::write_one_to_clear);
+                  == mcubsp::core::access_semantics::write_one_to_clear);
     static_assert(esp::uart_clock_divider::offset == 0x14U);
     static_assert(esp::uart_status::access
-                  == mcuhw::core::access_semantics::read_only);
+                  == mcubsp::core::access_semantics::read_only);
     static_assert(esp::uart_register_update::offset == 0x98U);
     static_assert(esp::i2c_int_clear::offset == 0x24U);
     static_assert(esp::i2s_tx_configuration::offset == 0x24U);
@@ -102,16 +102,16 @@ TEST(esp32p4_description, preserves_register_widths_offsets_and_side_effects,
 
 TEST(esp32p4_description, validates_qfn104_io_mux_matrix_and_analog_routes,
      "REQ-0010") {
-    using mcuhw::core::electrical_mode;
-    static_assert(esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 37},
+    using mcubsp::core::electrical_mode;
+    static_assert(esp::qfn104_pin_database::valid<mcubsp::core::pin_id{0, 37},
         esp::signal_id(esp::signal::uart0_tx), electrical_mode::push_pull>);
-    static_assert(esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 23},
+    static_assert(esp::qfn104_pin_database::valid<mcubsp::core::pin_id{0, 23},
         esp::signal_id(esp::signal::i2c0_sda), electrical_mode::open_drain>);
-    static_assert(esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 13},
+    static_assert(esp::qfn104_pin_database::valid<mcubsp::core::pin_id{0, 13},
         esp::signal_id(esp::signal::i2s0_mclk), electrical_mode::push_pull>);
-    static_assert(esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 16},
+    static_assert(esp::qfn104_pin_database::valid<mcubsp::core::pin_id{0, 16},
         esp::signal_id(esp::signal::adc1_ch0), electrical_mode::analog>);
-    static_assert(!esp::qfn104_pin_database::valid<mcuhw::core::pin_id{0, 16},
+    static_assert(!esp::qfn104_pin_database::valid<mcubsp::core::pin_id{0, 16},
         esp::signal_id(esp::signal::adc1_ch0), electrical_mode::input>);
     EXPECT_EQ(esp::package_pins.size(), 55U);
     EXPECT_EQ(esp::package_pins[0].package_position, 104U);
@@ -125,8 +125,8 @@ TEST(esp32p4_description, models_hp_lp_clocks_resets_and_source_conflict,
     EXPECT_EQ(esp::clock_nodes[8].maximum.count, 400'000'000U);
     EXPECT_EQ(esp::clock_nodes[10].maximum.count, 200'000'000U);
     EXPECT_EQ(esp::clock_nodes[11].maximum.count, 100'000'000U);
-    const auto apb = mcuhw::core::derive_frequency(
-        mcuhw::core::hertz{200'000'000U}, esp::clock_edges[6], {2, 0, 1},
+    const auto apb = mcubsp::core::derive_frequency(
+        mcubsp::core::hertz{200'000'000U}, esp::clock_edges[6], {2, 0, 1},
         esp::clock_nodes[11]);
     ASSERT_TRUE(apb.has_value());
     EXPECT_EQ(apb->count, 100'000'000U);
@@ -176,10 +176,10 @@ TEST(esp32p4_description, separates_dma_engines_requests_and_reachability,
     EXPECT_EQ(esp::dma_engines[3].descriptor_alignment, 8U);
     EXPECT_TRUE(!esp::dma_engines[0].descriptors_may_be_external);
     EXPECT_TRUE(esp::dma_engines[1].descriptors_may_be_external);
-    const auto accepted = mcuhw::core::validate_dma_transfer(
+    const auto accepted = mcubsp::core::validate_dma_transfer(
         esp::dma_requests[4], esp::memory_regions[4], esp::dma_reachability[2],
         0x4FF0'0000U, 32U, 4U,
-        mcuhw::core::dma_direction::peripheral_to_memory);
+        mcubsp::core::dma_direction::peripheral_to_memory);
     EXPECT_TRUE(accepted.has_value());
 }
 
@@ -197,7 +197,7 @@ TEST(esp32p4_description, records_reviewed_slices_and_unavailable_i3c,
 }
 
 TEST(esp32p4_description, instantiates_shared_description_contract) {
-    static_assert(mcuhw::testing::for_each_description<esp::description>(
+    static_assert(mcubsp::testing::for_each_description<esp::description>(
         real_description_contract{}));
     EXPECT_TRUE(true);
 }

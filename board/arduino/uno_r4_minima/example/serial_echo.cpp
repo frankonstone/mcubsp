@@ -1,9 +1,9 @@
 #include <array>
 #include <chrono>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
 
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using namespace std::chrono_literals;
 static io::board<io::boards::uno_r4_minima> hw;
 
@@ -13,7 +13,7 @@ int main() {
     if (!hw.startup_ok()) __builtin_trap();
     io::require(hw.begin());
     io::require(hw.serial.begin(115200));
-    io::require(hw.serial.println("mcuhw::io ready"));
+    io::require(hw.serial.println("mcubsp::io ready"));
     std::array<std::uint8_t, 1> byte{};
     for (;;) {
         auto read = hw.serial.read(byte, 100ms);

@@ -6,23 +6,23 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/iic.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/driver/i2c.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/backend/ra4m1/iic.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/driver/i2c.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
-using binding = mcuhw::backend::ra4m1::iic_binding<
-    1, mcuhw::board::arduino_uno_r4_minima::a5_scl,
-    mcuhw::board::arduino_uno_r4_minima::a4_sda>;
-using mmio_type = mcuhw::testing::recording_mmio<0x60000, 512>;
-using execution_type = mcuhw::execution::fake_policy;
-using backend_type = mcuhw::backend::ra4m1::iic_controller_backend<
+using binding = mcubsp::backend::ra4m1::iic_binding<
+    1, mcubsp::board::arduino_uno_r4_minima::a5_scl,
+    mcubsp::board::arduino_uno_r4_minima::a4_sda>;
+using mmio_type = mcubsp::testing::recording_mmio<0x60000, 512>;
+using execution_type = mcubsp::execution::fake_policy;
+using backend_type = mcubsp::backend::ra4m1::iic_controller_backend<
     binding, mmio_type, execution_type>;
 
-constexpr auto timing_100khz = mcuhw::backend::ra4m1::solve_i2c_timing({
+constexpr auto timing_100khz = mcubsp::backend::ra4m1::solve_i2c_timing({
     .clock_hz = 24'000'000U,
     .target_hz = 100'000U,
     .maximum_error_ppm = 20'000U,
@@ -30,7 +30,7 @@ constexpr auto timing_100khz = mcuhw::backend::ra4m1::solve_i2c_timing({
     .fall_time_ns = 100U,
 });
 static_assert(timing_100khz.has_value());
-constexpr auto timing_400khz = mcuhw::backend::ra4m1::solve_i2c_timing({
+constexpr auto timing_400khz = mcubsp::backend::ra4m1::solve_i2c_timing({
     .clock_hz = 24'000'000U,
     .target_hz = 400'000U,
     .maximum_error_ppm = 30'000U,
@@ -38,14 +38,14 @@ constexpr auto timing_400khz = mcuhw::backend::ra4m1::solve_i2c_timing({
     .fall_time_ns = 60U,
 });
 static_assert(timing_400khz.has_value());
-constexpr auto address = mcuhw::driver::make_i2c_address(0x50U);
+constexpr auto address = mcubsp::driver::make_i2c_address(0x50U);
 static_assert(address.has_value());
 
-[[nodiscard]] bool has_write(std::span<const mcuhw::testing::mmio_operation> ops,
+[[nodiscard]] bool has_write(std::span<const mcubsp::testing::mmio_operation> ops,
                              std::uintptr_t address_value,
                              std::uint64_t value) {
     for (const auto& operation : ops) {
-        if (operation.kind == mcuhw::testing::mmio_operation_kind::write
+        if (operation.kind == mcubsp::testing::mmio_operation_kind::write
             && operation.address == address_value
             && operation.value == value) {
             return true;
@@ -55,11 +55,11 @@ static_assert(address.has_value());
 }
 
 [[nodiscard]] bool has_write_bits(
-    std::span<const mcuhw::testing::mmio_operation> ops,
+    std::span<const mcubsp::testing::mmio_operation> ops,
     std::uintptr_t address_value, std::uint64_t set,
     std::uint64_t clear) {
     for (const auto& operation : ops) {
-        if (operation.kind == mcuhw::testing::mmio_operation_kind::write
+        if (operation.kind == mcubsp::testing::mmio_operation_kind::write
             && operation.address == address_value
             && (operation.value & set) == set
             && (operation.value & clear) == 0U) {
@@ -70,12 +70,12 @@ static_assert(address.has_value());
 }
 
 [[nodiscard]] bool write_precedes(
-    std::span<const mcuhw::testing::mmio_operation> ops,
+    std::span<const mcubsp::testing::mmio_operation> ops,
     std::uintptr_t first_address, std::uint64_t first_value,
     std::uintptr_t second_address, std::uint64_t second_set) {
     bool first_seen = false;
     for (const auto& operation : ops) {
-        if (operation.kind != mcuhw::testing::mmio_operation_kind::write) {
+        if (operation.kind != mcubsp::testing::mmio_operation_kind::write) {
             continue;
         }
         if (!first_seen && operation.address == first_address
@@ -92,10 +92,10 @@ static_assert(address.has_value());
 
 TEST(i2c_contract, rejects_reserved_addresses_and_solves_real_bus_timing,
      "REQ-0024") {
-    EXPECT_TRUE(mcuhw::driver::make_i2c_address(0x07U).error()
-                == mcuhw::driver::i2c_error::invalid_address);
-    EXPECT_TRUE(mcuhw::driver::make_i2c_address(0x78U).error()
-                == mcuhw::driver::i2c_error::invalid_address);
+    EXPECT_TRUE(mcubsp::driver::make_i2c_address(0x07U).error()
+                == mcubsp::driver::i2c_error::invalid_address);
+    EXPECT_TRUE(mcubsp::driver::make_i2c_address(0x78U).error()
+                == mcubsp::driver::i2c_error::invalid_address);
     ASSERT_TRUE(timing_100khz.has_value());
     EXPECT_TRUE(timing_100khz->achieved_hz >= 98'000U);
     EXPECT_TRUE(timing_100khz->achieved_hz <= 102'000U);
@@ -104,10 +104,10 @@ TEST(i2c_contract, rejects_reserved_addresses_and_solves_real_bus_timing,
     ASSERT_TRUE(timing_400khz.has_value());
     EXPECT_TRUE(timing_400khz->achieved_hz >= 388'000U);
     EXPECT_TRUE(timing_400khz->achieved_hz <= 412'000U);
-    EXPECT_TRUE(mcuhw::backend::ra4m1::solve_i2c_timing(
+    EXPECT_TRUE(mcubsp::backend::ra4m1::solve_i2c_timing(
                     {24'000'000U, 400'000U, 50'000U, 1'000U, 100U})
                     .error()
-                == mcuhw::driver::i2c_error::invalid_rise_fall);
+                == mcubsp::driver::i2c_error::invalid_rise_fall);
 }
 
 TEST(ra4m1_i2c, configures_iic1_timing_and_uno_a4_a5_open_drain_routes,
@@ -295,7 +295,7 @@ TEST(ra4m1_i2c, distinguishes_address_data_nack_and_arbitration_loss,
     const auto address_error = address_transfer.take();
     ASSERT_FALSE(address_error.has_value());
     EXPECT_TRUE(address_error.error().cause
-                == mcuhw::driver::i2c_error::address_nack);
+                == mcubsp::driver::i2c_error::address_nack);
 
     auto data_start = backend.write(*address, bytes);
     ASSERT_TRUE(data_start.has_value());
@@ -311,7 +311,7 @@ TEST(ra4m1_i2c, distinguishes_address_data_nack_and_arbitration_loss,
     const auto data_error = data_transfer.take();
     ASSERT_FALSE(data_error.has_value());
     EXPECT_TRUE(data_error.error().cause
-                == mcuhw::driver::i2c_error::data_nack);
+                == mcubsp::driver::i2c_error::data_nack);
 
     mmio.clear_operations();
     auto arbitration_start = backend.write(*address, bytes);
@@ -323,7 +323,7 @@ TEST(ra4m1_i2c, distinguishes_address_data_nack_and_arbitration_loss,
     const auto arbitration_error = arbitration.take();
     ASSERT_FALSE(arbitration_error.has_value());
     EXPECT_TRUE(arbitration_error.error().cause
-                == mcuhw::driver::i2c_error::arbitration_lost);
+                == mcubsp::driver::i2c_error::arbitration_lost);
     EXPECT_FALSE(has_write(mmio.operations(), 0x4005'3100U, 0xC0U));
     ASSERT_TRUE(backend.shutdown().has_value());
 }
@@ -339,22 +339,22 @@ TEST(ra4m1_i2c, timeout_cancels_hardware_and_operation_slot_is_reusable,
     const auto empty_start = backend.write(*address, empty);
     ASSERT_FALSE(empty_start.has_value());
     EXPECT_TRUE(empty_start.error().cause
-                == mcuhw::driver::i2c_error::empty_transfer);
+                == mcubsp::driver::i2c_error::empty_transfer);
     auto started = backend.write(*address, bytes);
     ASSERT_TRUE(started.has_value());
     auto transfer = std::move(*started);
-    const auto waited = transfer.wait_until(mcuhw::execution::deadline{0U});
+    const auto waited = transfer.wait_until(mcubsp::execution::deadline{0U});
     ASSERT_FALSE(waited.has_value());
     EXPECT_TRUE(waited.error().kind
-                == mcuhw::core::transfer_error_kind::timeout);
+                == mcubsp::core::transfer_error_kind::timeout);
     EXPECT_TRUE(transfer.take().error().kind
-                == mcuhw::core::transfer_error_kind::timeout);
+                == mcubsp::core::transfer_error_kind::timeout);
     auto reused = backend.write(*address, bytes);
     ASSERT_TRUE(reused.has_value());
     auto cancelled = std::move(*reused);
     ASSERT_TRUE(cancelled.cancel().has_value());
     EXPECT_TRUE(cancelled.take().error().kind
-                == mcuhw::core::transfer_error_kind::cancelled);
+                == mcubsp::core::transfer_error_kind::cancelled);
     ASSERT_TRUE(backend.shutdown().has_value());
 }
 
@@ -376,12 +376,12 @@ TEST(ra4m1_i2c, hardware_timeout_and_opt_in_reset_recover_before_reuse,
     EXPECT_TRUE(backend.handle_error_interrupt());
     const auto timed = transfer.take();
     ASSERT_FALSE(timed.has_value());
-    EXPECT_TRUE(timed.error().cause == mcuhw::driver::i2c_error::timeout);
+    EXPECT_TRUE(timed.error().cause == mcubsp::driver::i2c_error::timeout);
 
     ASSERT_TRUE(mmio.write<std::uint8_t>(0x4005'3101U, 0U).has_value());
     mmio.clear_operations();
     ASSERT_TRUE(backend.recover_bus(
-        mcuhw::backend::ra4m1::iic_recovery_policy::exclusive_peripheral_reset)
+        mcubsp::backend::ra4m1::iic_recovery_policy::exclusive_peripheral_reset)
                     .has_value());
     EXPECT_TRUE(has_write(mmio.operations(), 0x4005'3100U, 0xC0U));
     auto reused_start = backend.write(*address, bytes);
@@ -389,15 +389,15 @@ TEST(ra4m1_i2c, hardware_timeout_and_opt_in_reset_recover_before_reuse,
     auto reused = std::move(*reused_start);
     ASSERT_TRUE(reused.cancel().has_value());
     EXPECT_TRUE(reused.take().error().kind
-                == mcuhw::core::transfer_error_kind::cancelled);
+                == mcubsp::core::transfer_error_kind::cancelled);
     ASSERT_TRUE(backend.shutdown().has_value());
 }
 
 struct fake_bus {
-    using error_type = mcuhw::core::transfer_error<mcuhw::driver::i2c_error>;
+    using error_type = mcubsp::core::transfer_error<mcubsp::driver::i2c_error>;
     using result_type = std::expected<int, error_type>;
 
-    result_type write_read(mcuhw::driver::i2c_address address,
+    result_type write_read(mcubsp::driver::i2c_address address,
                            std::span<const std::uint8_t> command,
                            std::span<std::uint8_t> data) noexcept {
         seen_address = address.value;
@@ -419,11 +419,11 @@ struct fake_bus {
 TEST(i2c_device, same_fixed_storage_register_helper_is_bus_independent,
      "REQ-0018", "REQ-0026") {
     fake_bus bus;
-    mcuhw::driver::i2c_device<fake_bus, 0x50U> device{bus};
-    mcuhw::driver::i2c_register_request<4, 2> request;
+    mcubsp::driver::i2c_device<fake_bus, 0x50U> device{bus};
+    mcubsp::driver::i2c_register_request<4, 2> request;
     const auto result = device.read_register(
         0x1234U, request, 1U,
-        mcuhw::driver::register_byte_order::most_significant_first);
+        mcubsp::driver::register_byte_order::most_significant_first);
     ASSERT_TRUE(result.has_value());
     EXPECT_EQ(bus.seen_address, 0x50U);
     EXPECT_EQ(bus.seen_length, 2U);
@@ -434,17 +434,17 @@ TEST(i2c_device, same_fixed_storage_register_helper_is_bus_independent,
     mmio_type mmio{0x4001'E000U};
     execution_type execution;
     backend_type backend{mmio, execution};
-    mcuhw::driver::i2c_controller controller{backend};
+    mcubsp::driver::i2c_controller controller{backend};
     ASSERT_TRUE(controller.initialize(*timing_100khz).has_value());
-    mcuhw::driver::i2c_device<decltype(controller), 0x50U> real_device{
+    mcubsp::driver::i2c_device<decltype(controller), 0x50U> real_device{
         controller};
-    mcuhw::driver::i2c_register_request<2, 1> real_request;
+    mcubsp::driver::i2c_register_request<2, 1> real_request;
     auto real_started = real_device.read_register(0x20U, real_request, 1U);
     ASSERT_TRUE(real_started.has_value());
     auto real_transfer = std::move(*real_started);
     ASSERT_TRUE(real_transfer.cancel().has_value());
     EXPECT_TRUE(real_transfer.take().error().kind
-                == mcuhw::core::transfer_error_kind::cancelled);
+                == mcubsp::core::transfer_error_kind::cancelled);
     ASSERT_TRUE(controller.shutdown().has_value());
 }
 

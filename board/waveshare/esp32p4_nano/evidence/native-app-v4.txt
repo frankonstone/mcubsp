@@ -31,7 +31,7 @@ flash verification: esptool post-write hash verification passed
 test framework: two registered mcutest TEST cases, mcutest::Runner UART output
 GPIO observation: GPIO45 output-enable, route, IO-MUX and OUT1 register readback
 UART observation: UART0 clock/source/divider readback plus physical marker received
-  through the on-board CH343 bridge only after mcuhw backend initialization
+  through the on-board CH343 bridge only after mcubsp backend initialization
 UART configuration: 40 MHz XTAL source, requested 115200 baud, achieved 115191 baud
 UART completion: finite transfer remained active until UART TX_DONE
 result: 2 tests, 0 failures, registry overflow 0
@@ -42,7 +42,7 @@ physical scope: UART TX is observed through direct USB; RX and injected line err
 
 coverage: MCUCOV FULL profile, build id 0x4d485004, UART hex transport
 instrumented targets: board/esp32p4_nano/tests/gpio.cpp,
-  board/esp32p4_nano/tests/uart.cpp and included mcuhw headers;
+  board/esp32p4_nano/tests/uart.cpp and included mcubsp headers;
   loader, application startup and coverage transport are uninstrumented harness code
 coverage frame: 2065 bytes,
   sha256 b5a2c9d137da6b4b3f83768fcc1558cb0bf89651dd419a8432c101f3a14b08ac
@@ -78,19 +78,19 @@ I (48) boot: Partition Table:
 I (57) boot:  0 nvs              WiFi data        01 02 00009000 00006000
 I (63) boot:  1 phy_init         RF data          01 01 0000f000 00001000
 I (70) boot:  2 factory          factory app      00 00 00010000 00100000
-MCUHW_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
+MCUBSP_BOOT status=load policy=factory offset=0x00010000 size=0x00100000
 I (141) boot: Loaded app from partition at offset 0x10000
 I (152) cpu_start: Unicore app
 I (152) cpu_start: Single core mode
 I (162) cpu_start: cpu freq: 360000000 Hz
 I (203) heap_init: Initializing. RAM available for dynamic allocation:
-MCUHW_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v4 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
-MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
+MCUBSP_CONTEXT board=ESP32-P4-NANO part=ESP32-P4NRW32 chip_revision=100 firmware=pln-0019-native-app-v4 compiler=15.2.0 core=hp_cpu0 scheduler=none cpu_mhz=360 apb_hz=90000000 gpio=45 observation=register_readback qualification=development
+MCUBSP_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done
 esp32p4_gpio/gpio45_initializes_toggles_and_releases:PASS
 esp32p4_uart/uart0_transmits_through_direct_usb_bridge:PASS
 -----------------------
 2 Tests, 0 Failures
-MCUHW_RESULT status=pass suite=esp32p4_native tests=2 failures=0 registry_overflow=0 coverage=captured
+MCUBSP_RESULT status=pass suite=esp32p4_native tests=2 failures=0 registry_overflow=0 coverage=captured
 
 Original second-stage bootloader backup (not stored in the repository):
 /private/tmp/esp32p4-nano-original-bootloader-20260920.bin

@@ -10,32 +10,32 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/spi.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/driver/gpio.hpp>
+#include <mcubsp/backend/ra4m1/spi.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/driver/gpio.hpp>
 
 #include "support.hpp"
 
 namespace {
-namespace board = mcuhw::board::arduino_uno_r4_minima;
-using binding = mcuhw::backend::ra4m1::spi_binding<
+namespace board = mcubsp::board::arduino_uno_r4_minima;
+using binding = mcubsp::backend::ra4m1::spi_binding<
     1, board::d12_miso, board::d11_mosi, board::d13_sck, board::d10_ssl>;
-using backend_type = mcuhw::backend::ra4m1::spi_master_backend<
-    binding, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
+using backend_type = mcubsp::backend::ra4m1::spi_master_backend<
+    binding, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
 
-mcuhw::board_test::execution_policy execution;
-backend_type backend{mcuhw::board_test::mmio, execution};
+mcubsp::board_test::execution_policy execution;
+backend_type backend{mcubsp::board_test::mmio, execution};
 
 // The Ethernet Shield R3 shares SPI with its microSD socket. D4/P103 is the
 // SD chip select and must stay high while the W5100 on D10 is selected.
-constexpr mcuhw::core::pin_id sd_chip_select_pin{1U, 3U};
-mcuhw::driver::gpio_pin sd_chip_select{
-    mcuhw::board_test::gpio, sd_chip_select_pin};
+constexpr mcubsp::core::pin_id sd_chip_select_pin{1U, 3U};
+mcubsp::driver::gpio_pin sd_chip_select{
+    mcubsp::board_test::gpio, sd_chip_select_pin};
 bool sd_deselected{};
 
-constexpr auto timing_1mhz = mcuhw::backend::ra4m1::solve_spi_timing(
+constexpr auto timing_1mhz = mcubsp::backend::ra4m1::solve_spi_timing(
     {48'000'000U, 1'000'000U, 0U});
-constexpr auto timing_6mhz = mcuhw::backend::ra4m1::solve_spi_timing(
+constexpr auto timing_6mhz = mcubsp::backend::ra4m1::solve_spi_timing(
     {48'000'000U, 6'000'000U, 0U});
 static_assert(timing_1mhz.has_value() && timing_6mhz.has_value());
 
@@ -75,10 +75,10 @@ rate_observation fast_observation{};
 
 void configure_interrupts() noexcept {
     constexpr std::array<std::uint16_t, 4> events{
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_rxi),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_txi),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_idle),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::spi1_error),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_rxi),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_txi),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_idle),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::spi1_error),
     };
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E180U) = 0x0FU;
     for (std::uint32_t line = 0U; line < events.size(); ++line) {
@@ -92,14 +92,14 @@ void configure_interrupts() noexcept {
     __asm__ volatile("dsb sy\n\tisb sy\n\tcpsie i" ::: "memory");
 }
 
-[[nodiscard]] mcuhw::execution::deadline deadline_after(
+[[nodiscard]] mcubsp::execution::deadline deadline_after(
     std::uint32_t cycles) noexcept {
     return {static_cast<std::uint32_t>(
-        mcuhw::board_test::execution_hooks::now() + cycles)};
+        mcubsp::board_test::execution_hooks::now() + cycles)};
 }
 
 [[nodiscard]] bool transact(
-    std::span<const mcuhw::driver::spi_segment> segments,
+    std::span<const mcubsp::driver::spi_segment> segments,
     std::size_t expected_frames, rate_observation& observation) noexcept {
     auto started = backend.transaction(segments);
     if (!started) {
@@ -128,8 +128,8 @@ void configure_interrupts() noexcept {
     };
     std::array<std::uint16_t, 1> response{};
     const std::array segments{
-        mcuhw::driver::spi_segment{.transmit = header},
-        mcuhw::driver::spi_segment{.receive = response, .dummy = 0x00U},
+        mcubsp::driver::spi_segment{.transmit = header},
+        mcubsp::driver::spi_segment{.receive = response, .dummy = 0x00U},
     };
     if (!transact(segments, 4U, observation)) {
         return false;
@@ -147,7 +147,7 @@ void configure_interrupts() noexcept {
         value,
     };
     const std::array segments{
-        mcuhw::driver::spi_segment{.transmit = command},
+        mcubsp::driver::spi_segment{.transmit = command},
     };
     return transact(segments, command.size(), observation);
 }
@@ -171,7 +171,7 @@ void configure_interrupts() noexcept {
                           static_cast<std::uint8_t>(value), observation);
 }
 
-[[nodiscard]] bool exercise(const mcuhw::backend::ra4m1::spi_timing& timing,
+[[nodiscard]] bool exercise(const mcubsp::backend::ra4m1::spi_timing& timing,
                             rate_observation& observation) noexcept {
     const auto receive_before = receive_interrupts;
     const auto transmit_before = transmit_interrupts;
@@ -179,9 +179,9 @@ void configure_interrupts() noexcept {
     const auto error_before = error_interrupts;
 
     observation.initialized = backend.initialize(timing, {
-        .mode = mcuhw::driver::spi_mode::mode0,
-        .bit_order = mcuhw::driver::spi_bit_order::most_significant_first,
-        .frame_width = mcuhw::driver::spi_frame_width::bits8,
+        .mode = mcubsp::driver::spi_mode::mode0,
+        .bit_order = mcubsp::driver::spi_bit_order::most_significant_first,
+        .frame_width = mcubsp::driver::spi_frame_width::bits8,
     }).has_value();
     if (!observation.initialized) {
         return false;
@@ -231,12 +231,12 @@ TEST(uno_spi, spi1_w5100_segmented_read_write_restore_and_idle_completion,
 }
 
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=spi "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=spi "
     "firmware=pln-0009 fixture=Ethernet_Shield_R3_W5100 "
     "w5100_cs=D10 sd_cs=D4 clock=D13 mode=0 rates_hz=1000000,6000000 "
     "completion=SPI1_SPII toolchain=arm-none-eabi-gcc-15.2.1 "
     "iclk_hz=48000000 pclka_hz=48000000 interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "spi",
     .firmware = "pln-0009",
     .fixture = "Arduino Ethernet Shield R3 W5100 stacked; W5100 CS D10; SD CS D4 held high",
@@ -245,7 +245,7 @@ constexpr mcuhw::board_test::evidence_metadata evidence{
 
 template<typename Writer>
 void write_observation(Writer& out, const rate_observation& value,
-                       const mcuhw::backend::ra4m1::spi_timing& timing) noexcept {
+                       const mcubsp::backend::ra4m1::spi_timing& timing) noexcept {
     out("target_hz", timing.target_hz);
     out("achieved_hz", timing.achieved_hz);
     out("initialized", value.initialized);
@@ -269,16 +269,16 @@ void write_observation(Writer& out, const rate_observation& value,
 } // namespace
 
 int main() {
-    mcuhw::board_test::start(metadata);
+    mcubsp::board_test::start(metadata);
     sd_deselected = sd_chip_select.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
-        .initial_level = mcuhw::driver::gpio_level::high,
-        .output_type = mcuhw::driver::gpio_output_type::push_pull,
-        .pull = mcuhw::driver::gpio_pull::none,
-        .drive = mcuhw::driver::gpio_drive::middle,
+        .direction = mcubsp::driver::gpio_direction::output,
+        .initial_level = mcubsp::driver::gpio_level::high,
+        .output_type = mcubsp::driver::gpio_output_type::push_pull,
+        .pull = mcubsp::driver::gpio_pull::none,
+        .drive = mcubsp::driver::gpio_drive::middle,
     }).has_value();
     configure_interrupts();
-    mcuhw::board_test::finish(evidence, [&](auto& observations) {
+    mcubsp::board_test::finish(evidence, [&](auto& observations) {
         observations("controller", "SPI1 interrupt-driven master");
         observations("device", "WIZnet W5100 using four-byte SPI frames");
         observations("device_register", "RTR 0x0017-0x0018; restored after probe");
@@ -296,20 +296,20 @@ int main() {
 extern "C" void IRQ0_Handler() noexcept {
     receive_interrupts = receive_interrupts + 1U;
     static_cast<void>(backend.handle_receive_interrupt());
-    mcuhw::board_test::clear_icu_line(0U);
+    mcubsp::board_test::clear_icu_line(0U);
 }
 extern "C" void IRQ1_Handler() noexcept {
     transmit_interrupts = transmit_interrupts + 1U;
     static_cast<void>(backend.handle_transmit_empty_interrupt());
-    mcuhw::board_test::clear_icu_line(1U);
+    mcubsp::board_test::clear_icu_line(1U);
 }
 extern "C" void IRQ2_Handler() noexcept {
     idle_interrupts = idle_interrupts + 1U;
     static_cast<void>(backend.handle_idle_interrupt());
-    mcuhw::board_test::clear_icu_line(2U);
+    mcubsp::board_test::clear_icu_line(2U);
 }
 extern "C" void IRQ3_Handler() noexcept {
     error_interrupts = error_interrupts + 1U;
     static_cast<void>(backend.handle_error_interrupt());
-    mcuhw::board_test::clear_icu_line(3U);
+    mcubsp::board_test::clear_icu_line(3U);
 }

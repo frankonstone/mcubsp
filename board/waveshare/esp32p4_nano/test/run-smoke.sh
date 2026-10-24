@@ -4,9 +4,9 @@ set -eu
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
 . "$project_dir/tool/hardware-common.sh"
 smoke_dir="$project_dir/board/waveshare/esp32p4_nano/test/firmware"
-port=${1:-${MCUHW_SERIAL_PORT:-${MCUHW_ESP32P4_PORT:-}}}
-[ -n "$port" ] || { echo "select a serial port argument or set MCUHW_SERIAL_PORT" >&2; exit 2; }
-timeout_seconds=${MCUHW_BOARD_TEST_TIMEOUT:-20}
+port=${1:-${MCUBSP_SERIAL_PORT:-${MCUBSP_ESP32P4_PORT:-}}}
+[ -n "$port" ] || { echo "select a serial port argument or set MCUBSP_SERIAL_PORT" >&2; exit 2; }
+timeout_seconds=${MCUBSP_BOARD_TEST_TIMEOUT:-20}
 
 if [ -z "${IDF_PATH:-}" ] || [ ! -f "$IDF_PATH/tools/idf.py" ]; then
     echo "activate ESP-IDF v6.1 before running this script" >&2
@@ -27,37 +27,37 @@ fi
 
 "$python_exe" "$idf_py" -C "$smoke_dir" build
 hardware flash --board waveshare/esp32p4_nano \
-    --elf "$smoke_dir/build/mcuhw_esp32p4_baremetal_smoke.elf" --sdk-build "$smoke_dir/build" \
+    --elf "$smoke_dir/build/mcubsp_esp32p4_baremetal_smoke.elf" --sdk-build "$smoke_dir/build" \
     --port "$port" --tool-environment IDF_PYTHON
 
-run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcuhw-esp32p4.XXXXXX")
+run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcubsp-esp32p4.XXXXXX")
 trap 'rm -rf "$run_dir"' EXIT INT TERM
 monitor_log="$run_dir/monitor.log"
 normalized_log="$run_dir/monitor.txt"
 
-MCUHW_MONITOR_LOG=$monitor_log \
-MCUHW_MONITOR_PYTHON=$python_exe \
-MCUHW_MONITOR_PORT=$port \
-MCUHW_MONITOR_ELF="$smoke_dir/build/mcuhw_esp32p4_baremetal_smoke.elf" \
-MCUHW_MONITOR_TIMEOUT=$timeout_seconds \
+MCUBSP_MONITOR_LOG=$monitor_log \
+MCUBSP_MONITOR_PYTHON=$python_exe \
+MCUBSP_MONITOR_PORT=$port \
+MCUBSP_MONITOR_ELF="$smoke_dir/build/mcubsp_esp32p4_baremetal_smoke.elf" \
+MCUBSP_MONITOR_TIMEOUT=$timeout_seconds \
 expect <<'EOF'
-    set timeout $env(MCUHW_MONITOR_TIMEOUT)
+    set timeout $env(MCUBSP_MONITOR_TIMEOUT)
     log_user 0
-    log_file -a -noappend $env(MCUHW_MONITOR_LOG)
-    spawn -noecho $env(MCUHW_MONITOR_PYTHON) -m esp_idf_monitor \
-        -p $env(MCUHW_MONITOR_PORT) -b 115200 --target esp32p4 \
-        --revision 100 --disable-address-decoding $env(MCUHW_MONITOR_ELF)
+    log_file -a -noappend $env(MCUBSP_MONITOR_LOG)
+    spawn -noecho $env(MCUBSP_MONITOR_PYTHON) -m esp_idf_monitor \
+        -p $env(MCUBSP_MONITOR_PORT) -b 115200 --target esp32p4 \
+        --revision 100 --disable-address-decoding $env(MCUBSP_MONITOR_ELF)
     # Reset only after the monitor owns the port so early custom-bootloader
     # evidence cannot be lost in the flash-to-monitor handoff.
     after 200
     send "\024\022"
     expect {
-        -re {MCUHW_CONTEXT board=ESP32-P4-NANO .*qualification=development} {}
+        -re {MCUBSP_CONTEXT board=ESP32-P4-NANO .*qualification=development} {}
         timeout { exit 124 }
         eof { exit 125 }
     }
     expect {
-        -re {MCUHW_RESULT status=(pass|fail) suite=esp32p4_native tests=([0-9]+) failures=([0-9]+) registry_overflow=([0-9]+) coverage=(captured|failed)} {}
+        -re {MCUBSP_RESULT status=(pass|fail) suite=esp32p4_native tests=([0-9]+) failures=([0-9]+) registry_overflow=([0-9]+) coverage=(captured|failed)} {}
         timeout { exit 124 }
         eof { exit 125 }
     }
@@ -68,11 +68,11 @@ EOF
 tr -d '\r' < "$monitor_log" > "$normalized_log"
 # Keep the terminal log readable; the complete coverage frame remains in the
 # normalized UART artifact and is decoded below.
-sed '/^MCUHW_COVERAGE_HEX:/d' "$normalized_log"
+sed '/^MCUBSP_COVERAGE_HEX:/d' "$normalized_log"
 
-result=$(sed -n 's/^MCUHW_RESULT //p' "$normalized_log" | tail -n 1)
-boot=$(sed -n 's/^MCUHW_BOOT //p' "$normalized_log" | tail -n 1)
-coverage_hex=$(sed -n 's/^MCUHW_COVERAGE_HEX://p' "$normalized_log" | tail -n 1)
+result=$(sed -n 's/^MCUBSP_RESULT //p' "$normalized_log" | tail -n 1)
+boot=$(sed -n 's/^MCUBSP_BOOT //p' "$normalized_log" | tail -n 1)
+coverage_hex=$(sed -n 's/^MCUBSP_COVERAGE_HEX://p' "$normalized_log" | tail -n 1)
 case "$boot" in
     status=load\ policy=factory\ offset=0x00010000\ size=0x00100000) ;;
     *)
@@ -91,31 +91,31 @@ if [ "$result" != "status=pass suite=esp32p4_native tests=8 failures=0 registry_
     echo "ESP32-P4 smoke test did not pass: ${result:-missing result}" >&2
     exit 1
 fi
-if ! grep -q 'MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done' "$normalized_log"; then
+if ! grep -q 'MCUBSP_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done' "$normalized_log"; then
     echo "ESP32-P4 UART0 transmission marker was not observed" >&2
     exit 1
 fi
-if ! grep -q 'MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 .*completion=repeated_start_read' "$normalized_log"; then
+if ! grep -q 'MCUBSP_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 chip_id=0x8311 .*completion=repeated_start_read' "$normalized_log"; then
     echo "ESP32-P4 ES8311 identity transaction was not observed" >&2
     exit 1
 fi
-if ! grep -q 'MCUHW_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=philips16 capture_bytes=4032 mic_nonzero=[1-9][0-9]* .*playback_bytes=193536 tone_hz=1000 tone_peak=6000 duration_ms=1008 amp_gpio=53 verification=dma_codec_readback_no_acoustic_oracle' "$normalized_log"; then
+if ! grep -q 'MCUBSP_AUDIO backend=esp32p4 i2s=0 codec=ES8311 rate=48000 format=philips16 capture_bytes=4032 mic_nonzero=[1-9][0-9]* .*playback_bytes=193536 tone_hz=1000 tone_peak=6000 duration_ms=1008 amp_gpio=53 verification=dma_codec_readback_no_acoustic_oracle' "$normalized_log"; then
     echo "ESP32-P4 ES8311 microphone/playback transaction was not observed" >&2
     exit 1
 fi
-if ! grep -q 'MCUHW_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none' "$normalized_log"; then
+if ! grep -q 'MCUBSP_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 segments=2 completion=trans_done target=none' "$normalized_log"; then
     echo "ESP32-P4 GPSPI2 transaction marker was not observed" >&2
     exit 1
 fi
-if ! grep -q 'MCUHW_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 write_read_restore=last_sector capacity_sectors=[1-9][0-9]* high_capacity=[01] mid=0x[0-9a-fA-F][0-9a-fA-F] product=' "$normalized_log"; then
+if ! grep -q 'MCUBSP_SDMMC backend=esp32p4 slot=0 width=4 d0=39 d1=40 d2=41 d3=42 clk=43 cmd=44 power_gpio=45 read=sector0 write_read_restore=last_sector capacity_sectors=[1-9][0-9]* high_capacity=[01] mid=0x[0-9a-fA-F][0-9a-fA-F] product=' "$normalized_log"; then
     echo "ESP32-P4 microSD write/read/restore transaction marker was not observed" >&2
     exit 1
 fi
-if ! grep -q 'MCUHW_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 d2=16 d3=17 clk=18 cmd=19 enable_gpio=54 functions=[1-7] rca=0x[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F] cccr=0x[0-9a-fA-F][0-9a-fA-F] cis=0x0*1000 manf=0x0092 card=0x6666 function1=ready transport=identity_only' "$normalized_log"; then
+if ! grep -q 'MCUBSP_WIFI_SDIO backend=esp32p4 slot=1 width=4 d0=14 d1=15 d2=16 d3=17 clk=18 cmd=19 enable_gpio=54 functions=[1-7] rca=0x[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F] cccr=0x[0-9a-fA-F][0-9a-fA-F] cis=0x0*1000 manf=0x0092 card=0x6666 function1=ready transport=identity_only' "$normalized_log"; then
     echo "ESP32-P4 ESP32-C5 SDIO identity transaction was not observed" >&2
     exit 1
 fi
-ethernet_record=$(sed -n 's/^MCUHW_ETHERNET //p' "$normalized_log" | tail -n 1)
+ethernet_record=$(sed -n 's/^MCUBSP_ETHERNET //p' "$normalized_log" | tail -n 1)
 case "$ethernet_record" in
     backend=esp32p4\ interface=rmii\ phy=IP101GRI\ address=1\ refclk_hz=50000000\ id1=0x*\ id2=0x*\ oui=0x0090c3\ model=0x05\ bmsr=0x*\ link=up\ traffic=not_tested|\
     backend=esp32p4\ interface=rmii\ phy=IP101GRI\ address=1\ refclk_hz=50000000\ id1=0x*\ id2=0x*\ oui=0x0090c3\ model=0x05\ bmsr=0x*\ link=down\ traffic=not_tested) ;;
@@ -137,7 +137,7 @@ if [ $((${#coverage_hex} % 2)) -ne 0 ]; then
     exit 1
 fi
 
-artifact_dir=$(hardware artifact-dir --elf "$smoke_dir/build/mcuhw_esp32p4_baremetal_smoke.elf")
+artifact_dir=$(hardware artifact-dir --elf "$smoke_dir/build/mcubsp_esp32p4_baremetal_smoke.elf")
 mkdir -p "$artifact_dir"
 printf '%s' "$coverage_hex" | xxd -r -p \
     > "$artifact_dir/esp32p4_native_smoke.mcuv.tmp"
@@ -374,7 +374,7 @@ for manifest in "$manifest_dir"/*.mcucov.json; do
             "$manifest" > "$split_manifest"
         source_path=$(jq -r '.modules[0].path' "$split_manifest")
         case "$source_path" in
-            board/waveshare/esp32p4_nano/test/*|include/mcuhw/backend/esp32p4/*)
+            board/waveshare/esp32p4_nano/test/*|include/mcubsp/backend/esp32p4/*)
                 cp "$split_manifest" "$trace_manifest_dir/" ;;
         esac
         module_index=$((module_index + 1))

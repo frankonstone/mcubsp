@@ -13,14 +13,14 @@
 #include <mcutest/assert.hpp>
 #include <mcutest/core.hpp>
 
-#include <mcuhw/backend/esp32p4/spi.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/backend/esp32p4/spi.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
-extern "C" void mcuhw_esp32p4_spi_test_link_anchor() noexcept {}
+extern "C" void mcubsp_esp32p4_spi_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 using binding = backend::esp32p4::spi_binding<
@@ -96,9 +96,9 @@ TEST(esp32p4_spi, gpspi2_executes_one_native_multisegment_command,
     ASSERT_EQ(result->frames, 4U);
     ASSERT_EQ(register_at(binding::base + 0x00U) & (1U << 24U), 0U);
     esp_rom_printf(
-        "MCUHW_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 "
+        "MCUBSP_SPI backend=esp32p4 spi=2 rate=1000000 frames=4 "
         "segments=2 completion=trans_done target=none\n");
     ASSERT_TRUE(spi.shutdown().has_value());
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

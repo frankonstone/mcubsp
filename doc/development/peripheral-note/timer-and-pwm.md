@@ -11,11 +11,11 @@ The UNO R4 Minima D3 binding is GPT1 output B on P104. This configuration is
 evaluated at compile time:
 
 ```cpp
-using binding = mcuhw::backend::ra4m1::gpt_binding<
-    1, mcuhw::mcu::ra4m1::gpt_output::b,
-    mcuhw::board::arduino_uno_r4_minima::d3>;
+using binding = mcubsp::backend::ra4m1::gpt_binding<
+    1, mcubsp::mcu::ra4m1::gpt_output::b,
+    mcubsp::board::arduino_uno_r4_minima::d3>;
 
-constexpr auto timing = mcuhw::backend::ra4m1::solve_pwm_timing({
+constexpr auto timing = mcubsp::backend::ra4m1::solve_pwm_timing({
     .clock_hz = 48'000'000,
     .target_hz = 20'000,
     .maximum_error_ppm = 0,

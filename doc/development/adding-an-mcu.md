@@ -1,7 +1,7 @@
 # Adding an MCU and native backend
 
-Start from the existing `include/mcuhw/mcu/` descriptions and
-`include/mcuhw/backend/` implementations. Pin the exact part, package, silicon
+Start from the existing `include/mcubsp/mcu/` descriptions and
+`include/mcubsp/backend/` implementations. Pin the exact part, package, silicon
 revision, manuals and errata before adding register and route facts. Keep
 package differences explicit in C++ types.
 

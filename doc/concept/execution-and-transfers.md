@@ -2,7 +2,7 @@
 
 This page defines the detailed contract. For a user-facing explanation and a
 complete `main()`/execution-policy/interrupt example, start with
-[Integrating mcuhw into a bare-metal application](application-integration.md).
+[Integrating mcubsp into a bare-metal application](application-integration.md).
 
 PLN-0006 establishes the execution boundary used by later functional drivers.
 It does not own a scheduler, system tick, vector table, or global event loop, and

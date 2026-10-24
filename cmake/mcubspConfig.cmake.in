@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+# @req REQ-0047 REQ-0049
+include("${CMAKE_CURRENT_LIST_DIR}/mcubspTargets.cmake")
+set(MCUBSP_ROOT "${PACKAGE_PREFIX_DIR}/share/mcubsp")
+check_required_components(mcubsp)

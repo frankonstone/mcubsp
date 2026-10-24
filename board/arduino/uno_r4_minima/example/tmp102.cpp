@@ -1,11 +1,11 @@
 // @req-file REQ-0046
 #include <chrono>
 #include <utility>
-#include <mcuhw/io.hpp>
-#include <mcuhw/io/board/uno_r4_minima.hpp>
-#include <mcuhw/device/sensor/tmp102.hpp>
+#include <mcubsp/io.hpp>
+#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/device/sensor/tmp102.hpp>
 
-namespace io = mcuhw::io;
+namespace io = mcubsp::io;
 using namespace std::chrono_literals;
 constexpr io::board_config configuration{.serial = false, .i2c = true};
 static io::board<io::boards::uno_r4_minima, configuration> hw;
@@ -18,7 +18,7 @@ int main() {
     io::require(hw.i2c.begin());
     auto led = io::require(hw.output(hw.pins.led_builtin));
     auto connection = io::require(hw.i2c.device(0x48));
-    mcuhw::device::tmp102 sensor{std::move(connection)};
+    mcubsp::device::tmp102 sensor{std::move(connection)};
     if (!sensor.begin()) __builtin_trap();
     io::require(hw.delay(20ms)); // Allow the first conversion after power-up.
     for (;;) {

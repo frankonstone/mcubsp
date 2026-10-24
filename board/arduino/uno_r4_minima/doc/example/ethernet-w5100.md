@@ -5,7 +5,7 @@ and [linked IO example](../../example/w5100.cpp). They create
 `device::w5100` from an `hw.spi.device(...)` handle. The lower-level composition
 below uses the device register protocol and a direct controller transport.
 
-The Arduino Ethernet Shield R3 contains an original WIZnet W5100. `mcuhw`
+The Arduino Ethernet Shield R3 contains an original WIZnet W5100. `mcubsp`
 drives it through the UNO R4 Minima SPI backend, opens socket 0 in MACRAW mode,
 and presents fixed receive/transmit slots suitable for an `mcuip`
 `NetworkDevice`. The driver provides raw Ethernet frames; it does not expose
@@ -32,20 +32,20 @@ network. A duplicate IPv4 or MAC address will produce misleading packet loss.
 #include <cstddef>
 #include <span>
 
-#include <mcuhw/backend/ra4m1/gpio.hpp>
-#include <mcuhw/backend/ra4m1/spi.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/device/ethernet/w5100_spi.hpp>
-#include <mcuhw/integration/mcuip/w5100.hpp>
+#include <mcubsp/backend/ra4m1/gpio.hpp>
+#include <mcubsp/backend/ra4m1/spi.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/device/ethernet/w5100_spi.hpp>
+#include <mcubsp/integration/mcuip/w5100.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
-using spi_binding = mcuhw::backend::ra4m1::spi_binding<
+using spi_binding = mcubsp::backend::ra4m1::spi_binding<
     1, board::d12_miso, board::d11_mosi, board::d13_sck, board::d10_ssl>;
 
-constexpr auto spi_timing = mcuhw::backend::ra4m1::solve_spi_timing({
+constexpr auto spi_timing = mcubsp::backend::ra4m1::solve_spi_timing({
     .clock_hz = 48'000'000U,
     .target_hz = 6'000'000U,
     .maximum_error_ppm = 0U,
@@ -54,36 +54,36 @@ static_assert(spi_timing.has_value());
 
 template<class ExecutionPolicy>
 class ethernet_port {
-    using gpio_type = mcuhw::backend::ra4m1::gpio_backend<
-        mcuhw::core::direct_mmio>;
-    using gpio_pin_type = mcuhw::driver::gpio_pin<gpio_type>;
-    using spi_type = mcuhw::backend::ra4m1::spi_master_backend<
-        spi_binding, mcuhw::core::direct_mmio, ExecutionPolicy>;
+    using gpio_type = mcubsp::backend::ra4m1::gpio_backend<
+        mcubsp::core::direct_mmio>;
+    using gpio_pin_type = mcubsp::driver::gpio_pin<gpio_type>;
+    using spi_type = mcubsp::backend::ra4m1::spi_master_backend<
+        spi_binding, mcubsp::core::direct_mmio, ExecutionPolicy>;
     using transport_type =
-        mcuhw::device::w5100_spi_immediate_transport<spi_type>;
-    using device_type = mcuhw::integration::mcuip::
+        mcubsp::device::w5100_spi_immediate_transport<spi_type>;
+    using device_type = mcubsp::integration::mcuip::
         w5100_macraw_network_device<transport_type>;
 
 public:
     explicit ethernet_port(ExecutionPolicy& execution)
         : spi_{mmio_, execution}, transport_{spi_}, device_{transport_},
-          sd_cs_{gpio_, mcuhw::core::pin_id{1U, 3U}} {}
+          sd_cs_{gpio_, mcubsp::core::pin_id{1U, 3U}} {}
 
     bool initialize() {
         if (!sd_cs_.initialize({
-                .direction = mcuhw::driver::gpio_direction::output,
-                .initial_level = mcuhw::driver::gpio_level::high,
-                .output_type = mcuhw::driver::gpio_output_type::push_pull,
-                .pull = mcuhw::driver::gpio_pull::none,
-                .drive = mcuhw::driver::gpio_drive::middle,
+                .direction = mcubsp::driver::gpio_direction::output,
+                .initial_level = mcubsp::driver::gpio_level::high,
+                .output_type = mcubsp::driver::gpio_output_type::push_pull,
+                .pull = mcubsp::driver::gpio_pull::none,
+                .drive = mcubsp::driver::gpio_drive::middle,
             })) {
             return false;
         }
         if (!spi_.initialize(*spi_timing, {
-                .mode = mcuhw::driver::spi_mode::mode0,
+                .mode = mcubsp::driver::spi_mode::mode0,
                 .bit_order =
-                    mcuhw::driver::spi_bit_order::most_significant_first,
-                .frame_width = mcuhw::driver::spi_frame_width::bits8,
+                    mcubsp::driver::spi_bit_order::most_significant_first,
+                .frame_width = mcubsp::driver::spi_frame_width::bits8,
             })) {
             return false;
         }
@@ -131,7 +131,7 @@ public:
     const auto& metrics() const { return device_.metrics(); }
 
 private:
-    mcuhw::core::direct_mmio mmio_;
+    mcubsp::core::direct_mmio mmio_;
     gpio_type gpio_{mmio_};
     spi_type spi_;
     transport_type transport_;

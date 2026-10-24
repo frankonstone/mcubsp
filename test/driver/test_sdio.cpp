@@ -5,14 +5,14 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/driver/sdio.hpp>
+#include <mcubsp/driver/sdio.hpp>
 
 namespace {
 
-using mcuhw::driver::sdio_device;
-using mcuhw::driver::sdmmc_command;
-using mcuhw::driver::sdmmc_error;
-using mcuhw::driver::sdmmc_response;
+using mcubsp::driver::sdio_device;
+using mcubsp::driver::sdmmc_command;
+using mcubsp::driver::sdmmc_error;
+using mcubsp::driver::sdmmc_response;
 
 class fake_delay {
 public:

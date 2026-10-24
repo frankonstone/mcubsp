@@ -7,7 +7,7 @@
 #include <span>
 #include <utility>
 #include <mcutest/mcutest.hpp>
-#include <mcuhw/device/sensor/tmp102.hpp>
+#include <mcubsp/device/sensor/tmp102.hpp>
 
 namespace {
 using namespace std::chrono_literals;
@@ -65,8 +65,8 @@ public:
 private:
     fake_state* state_;
 };
-using sensor = mcuhw::device::tmp102<fake_endpoint>;
-using errc = mcuhw::device::tmp102_errc;
+using sensor = mcubsp::device::tmp102<fake_endpoint>;
+using errc = mcubsp::device::tmp102_errc;
 
 TEST(tmp102, owns_endpoint_and_preserves_configuration, "REQ-0046") {
     fake_state state;

@@ -22,17 +22,17 @@ must have application lifetime so the SCI interrupt handlers can reach it.
 #include <array>
 #include <utility>
 
-#include <mcuhw/backend/ra4m1/sci_uart.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/uart.hpp>
+#include <mcubsp/backend/ra4m1/sci_uart.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/uart.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
-using binding = mcuhw::backend::ra4m1::sci_uart_binding<
+using binding = mcubsp::backend::ra4m1::sci_uart_binding<
     2, board::d0_rx, board::d1_tx>;
 
-constexpr auto timing = mcuhw::backend::ra4m1::solve_uart_baud({
+constexpr auto timing = mcubsp::backend::ra4m1::solve_uart_baud({
     .clock_hz = 24'000'000U,
     .target_baud = 115'200U,
     .maximum_error_ppm = 20'000U, // 2%
@@ -40,7 +40,7 @@ constexpr auto timing = mcuhw::backend::ra4m1::solve_uart_baud({
 static_assert(timing.has_value());
 
 template<class Uart>
-int send_ok(Uart& port, mcuhw::execution::deadline deadline) {
+int send_ok(Uart& port, mcubsp::execution::deadline deadline) {
     if (!port.initialize(*timing)) {
         return 1;
     }
@@ -68,13 +68,13 @@ dispatch the four SCI events to the same backend:
 ```cpp
 // application_execution_policy and initialize_monotonic_clock() are defined
 // in the bare-metal application integration chapter.
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 
-using backend_type = mcuhw::backend::ra4m1::sci_uart_backend<
-    binding, mcuhw::core::direct_mmio, application_execution_policy>;
+using backend_type = mcubsp::backend::ra4m1::sci_uart_backend<
+    binding, mcubsp::core::direct_mmio, application_execution_policy>;
 backend_type uart_hardware{mmio, execution};
-mcuhw::driver::uart port{uart_hardware};
+mcubsp::driver::uart port{uart_hardware};
 
 int main() {
     initialize_monotonic_clock();
@@ -84,7 +84,7 @@ int main() {
         return 1;
     }
     enable_sci2_interrupts();
-    const auto deadline = mcuhw::execution::make_deadline(
+    const auto deadline = mcubsp::execution::make_deadline(
         execution.now(), 4'800'000U);
     const bool sent = deadline && send_ok(port, *deadline) == 0;
     disable_sci2_interrupts();

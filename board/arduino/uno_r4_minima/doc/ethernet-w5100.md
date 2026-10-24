@@ -40,11 +40,11 @@ completion, the `RMSR/TMSR = 0x55` reset values, and SHAR write/read-back.
 ## Build and native verification
 
 ```sh
-cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
+cmake --preset native -B build/host -DMCUBSP_BUILD_TESTS=ON -DMCUBSP_BUILD_TOOLING_TESTS=ON -DMCUBSP_BUILD_PROBES=ON -DMCUBSP_CHECK_HEADERS=ON -DMCUBSP_BUILD_MCUIP_CONTRACTS=ON
 cmake --build build/host
 ctest --test-dir build/host --output-on-failure
 
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
 cmake --build build/uno-r4-minima --target board-tests
 ```
 

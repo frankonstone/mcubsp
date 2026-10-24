@@ -4,7 +4,7 @@ set -eu
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
 . "$project_dir/tool/hardware-common.sh"
 selection=${1:-startup-gpio}
-build_dir=${MCUHW_BUILD_DIR:-"$project_dir/build/uno-r4-minima"}
+build_dir=${MCUBSP_BUILD_DIR:-"$project_dir/build/uno-r4-minima"}
 
 aggregate_evidence() {
     evidence_dir=$(hardware artifact-dir --elf "$build_dir/arduino.uno_r4_minima.test.startup_gpio.elf")
@@ -43,9 +43,9 @@ aggregate_evidence() {
     mv "$combined_tests.tmp" "$combined_tests"
     echo "combined mcutest evidence: $combined_tests"
     mcucov_exe=$(hardware tool --name mcucov --command mcucov --override-env MCUCOV_EXE)
-    aggregate_capture="$evidence_dir/mcuhw_uno_r4_minima_all_tests.mcuv"
-    aggregate_json="$evidence_dir/mcuhw_uno_r4_minima_all_tests.mcucov.json"
-    aggregate_html="$evidence_dir/mcuhw_uno_r4_minima_all_tests.mcucov.html"
+    aggregate_capture="$evidence_dir/mcubsp_uno_r4_minima_all_tests.mcuv"
+    aggregate_json="$evidence_dir/mcubsp_uno_r4_minima_all_tests.mcucov.json"
+    aggregate_html="$evidence_dir/mcubsp_uno_r4_minima_all_tests.mcucov.html"
     aggregate_lcov="$evidence_dir/coverage.lcov"
     "$mcucov_exe" merge \
         "$evidence_dir/arduino.uno_r4_minima.test.startup_gpio.mcuv" \
@@ -161,14 +161,14 @@ case "$selection" in
 esac
 elf=${elf:-"$build_dir/$target.elf"}
 build_dir=$(dirname -- "$elf")
-timeout_seconds=${MCUHW_BOARD_TEST_TIMEOUT:-20}
+timeout_seconds=${MCUBSP_BOARD_TEST_TIMEOUT:-20}
 if [ "$selection" = ethernet-metrics ] \
     || [ "$selection" = ethernet-metrics-fast6 ] \
     || [ "$selection" = ethernet-metrics-fast12 ]; then
-    timeout_seconds=${MCUHW_BOARD_TEST_TIMEOUT:-40}
+    timeout_seconds=${MCUBSP_BOARD_TEST_TIMEOUT:-40}
 fi
 if [ "$selection" = ethernet-recovery ]; then
-    timeout_seconds=${MCUHW_BOARD_TEST_TIMEOUT:-45}
+    timeout_seconds=${MCUBSP_BOARD_TEST_TIMEOUT:-45}
 fi
 rtt_logger=$(hardware tool --name jlink-rtt --command JLinkRTTLogger --override-env JLINK_RTT_LOGGER)
 nm=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_NM)
@@ -176,18 +176,18 @@ device=$(hardware runner-field --board arduino/uno_r4_minima --field device)
 
 if [ ! -f "$elf" ]; then
     echo "missing firmware: $elf" >&2
-    echo "build it with: cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima && cmake --build build/uno-r4-minima --target board-tests" >&2
+    echo "build it with: cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima && cmake --build build/uno-r4-minima --target board-tests" >&2
     exit 2
 fi
 
-rtt_symbol=_ZN5mcuhw7testing3rtt16terminal_controlE
+rtt_symbol=_ZN5mcubsp7testing3rtt16terminal_controlE
 if ! rtt_address=$("$nm" -n "$elf" | awk -v symbol="$rtt_symbol" \
     '$3 == symbol { print toupper($1); found = 1; exit } END { if (!found) exit 1 }'); then
     echo "RTT control block symbol not found in firmware: $elf" >&2
     exit 2
 fi
 
-run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcuhw-uno-r4.XXXXXX")
+run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcubsp-uno-r4.XXXXXX")
 flash_log="$run_dir/jlink-flash.log"
 rtt_log="$run_dir/mcutest-rtt.log"
 evidence_dir=$(hardware artifact-dir --elf "$build_dir/arduino.uno_r4_minima.test.startup_gpio.elf")
@@ -221,17 +221,17 @@ start_logger() {
     # The macOS RTT Logger build needs a terminal-backed session to initialize
     # the target connection reliably. expect(1) supplies a PTY without sending
     # the EOF that script(1) forwards in a background, non-interactive shell.
-    MCUHW_RTT_EXE=$rtt_logger \
-    MCUHW_RTT_DEVICE=$device \
-    MCUHW_RTT_PROBE=$MCUHW_PROBE_SERIAL \
-    MCUHW_RTT_ADDRESS=$rtt_address \
-    MCUHW_RTT_LOG=$rtt_log \
+    MCUBSP_RTT_EXE=$rtt_logger \
+    MCUBSP_RTT_DEVICE=$device \
+    MCUBSP_RTT_PROBE=$MCUBSP_PROBE_SERIAL \
+    MCUBSP_RTT_ADDRESS=$rtt_address \
+    MCUBSP_RTT_LOG=$rtt_log \
     expect -c '
         set timeout -1
-        spawn -noecho $env(MCUHW_RTT_EXE) \
-            -Device $env(MCUHW_RTT_DEVICE) -If SWD -Speed 4000 -USB $env(MCUHW_RTT_PROBE) \
-            -RTTAddress $env(MCUHW_RTT_ADDRESS) -RTTChannel 0 \
-            $env(MCUHW_RTT_LOG)
+        spawn -noecho $env(MCUBSP_RTT_EXE) \
+            -Device $env(MCUBSP_RTT_DEVICE) -If SWD -Speed 4000 -USB $env(MCUBSP_RTT_PROBE) \
+            -RTTAddress $env(MCUBSP_RTT_ADDRESS) -RTTChannel 0 \
+            $env(MCUBSP_RTT_LOG)
         expect eof
     ' > "$run_dir/jlink-rtt.log" 2>&1 &
     logger_pid=$!
@@ -263,18 +263,18 @@ fi
 
 elapsed=0
 while [ "$elapsed" -lt "$timeout_seconds" ]; do
-    if [ -f "$rtt_log" ] && grep -q 'MCUHW_RESULT:' "$rtt_log"; then
+    if [ -f "$rtt_log" ] && grep -q 'MCUBSP_RESULT:' "$rtt_log"; then
         cat "$rtt_log"
-        if grep -q '^MCUHW_JSON:' "$rtt_log"; then
+        if grep -q '^MCUBSP_JSON:' "$rtt_log"; then
             mkdir -p "$evidence_dir"
-            sed -n 's/^MCUHW_JSON://p' "$rtt_log" | tail -n 1 \
+            sed -n 's/^MCUBSP_JSON://p' "$rtt_log" | tail -n 1 \
                 > "$evidence_file.tmp"
             mv "$evidence_file.tmp" "$evidence_file"
             echo "mcutrace evidence: $evidence_file"
         fi
-        if grep -q '^MCUHW_COVERAGE_HEX:' "$rtt_log"; then
+        if grep -q '^MCUBSP_COVERAGE_HEX:' "$rtt_log"; then
             mkdir -p "$evidence_dir"
-            sed -n 's/^MCUHW_COVERAGE_HEX://p' "$rtt_log" | tail -n 1 \
+            sed -n 's/^MCUBSP_COVERAGE_HEX://p' "$rtt_log" | tail -n 1 \
                 | xxd -r -p > "$coverage_capture.tmp"
             mv "$coverage_capture.tmp" "$coverage_capture"
             mcucov_exe=$(hardware tool --name mcucov --command mcucov --override-env MCUCOV_EXE)
@@ -291,7 +291,7 @@ while [ "$elapsed" -lt "$timeout_seconds" ]; do
             echo "instrumented firmware produced no MCUCOV capture" >&2
             exit 1
         fi
-        if grep -q 'MCUHW_RESULT:PASS' "$rtt_log"; then
+        if grep -q 'MCUBSP_RESULT:PASS' "$rtt_log"; then
             echo "artifacts: $run_dir"
             exit 0
         fi

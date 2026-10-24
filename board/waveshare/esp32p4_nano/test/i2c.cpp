@@ -12,14 +12,14 @@
 #include <mcutest/assert.hpp>
 #include <mcutest/core.hpp>
 
-#include <mcuhw/backend/esp32p4/i2c.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/backend/esp32p4/i2c.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
-extern "C" void mcuhw_esp32p4_i2c_test_link_anchor() noexcept {}
+extern "C" void mcubsp_esp32p4_i2c_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 using binding = backend::esp32p4::i2c_binding<
@@ -134,7 +134,7 @@ TEST(esp32p4_i2c, i2c0_reads_onboard_es8311_identity_with_repeated_start,
     ASSERT_EQ(chip_id1.value, es8311_chip_id1);
     ASSERT_EQ(chip_id2.value, es8311_chip_id2);
     esp_rom_printf(
-        "MCUHW_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 "
+        "MCUBSP_I2C backend=esp32p4 i2c=0 address=0x18 device=ES8311 "
         "chip_id=0x%02x%02x version=0x%02x "
         "completion=repeated_start_read\n",
         static_cast<unsigned>(chip_id1.value),
@@ -143,4 +143,4 @@ TEST(esp32p4_i2c, i2c0_reads_onboard_es8311_identity_with_repeated_start,
     ASSERT_TRUE(i2c.shutdown().has_value());
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

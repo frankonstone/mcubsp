@@ -1,6 +1,6 @@
-# mcuhw documentation
+# mcubsp documentation
 
-This directory contains the authored documentation for `mcuhw`. Start with the
+This directory contains the authored documentation for `mcubsp`. Start with the
 repository [README](../README.md) for the project overview and five-minute
 native build.
 
@@ -9,8 +9,8 @@ native build.
 - [Installation and dependencies](getting-started/installation.md)
 - [First board application: setup, build and flash](getting-started/building.md)
 - [Maintainer build and verification](getting-started/build-and-test.md)
-- [Using mcuhw in firmware](getting-started/using-mcuhw.md)
-- [The `mcuhw::io` application interface](getting-started/io.md)
+- [Using mcubsp in firmware](getting-started/using-mcubsp.md)
+- [The `mcubsp::io` application interface](getting-started/io.md)
 - [Attached I2C/SPI devices and reusable components](getting-started/components.md)
 
 ## Concepts

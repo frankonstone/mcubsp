@@ -8,19 +8,19 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/stm32h753/adc.hpp>
-#include <mcuhw/backend/stm32h753/i2c.hpp>
-#include <mcuhw/backend/stm32h753/memory.hpp>
-#include <mcuhw/backend/stm32h753/spi.hpp>
-#include <mcuhw/backend/stm32h753/timer.hpp>
-#include <mcuhw/backend/stm32h753/usart.hpp>
-#include <mcuhw/board/nucleo_h753zi.hpp>
-#include <mcuhw/driver/adc.hpp>
-#include <mcuhw/driver/i2c.hpp>
-#include <mcuhw/driver/pwm.hpp>
-#include <mcuhw/driver/spi.hpp>
-#include <mcuhw/driver/uart.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/backend/stm32h753/adc.hpp>
+#include <mcubsp/backend/stm32h753/i2c.hpp>
+#include <mcubsp/backend/stm32h753/memory.hpp>
+#include <mcubsp/backend/stm32h753/spi.hpp>
+#include <mcubsp/backend/stm32h753/timer.hpp>
+#include <mcubsp/backend/stm32h753/usart.hpp>
+#include <mcubsp/board/nucleo_h753zi.hpp>
+#include <mcubsp/driver/adc.hpp>
+#include <mcubsp/driver/i2c.hpp>
+#include <mcubsp/driver/pwm.hpp>
+#include <mcubsp/driver/spi.hpp>
+#include <mcubsp/driver/uart.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
 namespace {
 
@@ -29,14 +29,14 @@ class sparse_mmio {
 public:
     template<typename Value>
         requires(std::is_unsigned_v<Value>)
-    [[nodiscard]] std::expected<Value, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<Value, mcubsp::core::mmio_error>
     read(std::uintptr_t address) noexcept {
         return static_cast<Value>(value(address));
     }
 
     template<typename Value>
         requires(std::is_unsigned_v<Value>)
-    [[nodiscard]] std::expected<void, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<void, mcubsp::core::mmio_error>
     write(std::uintptr_t address, Value next) noexcept {
         auto stored = static_cast<std::uint32_t>(next);
         constexpr std::uintptr_t adc_isr = 0x4002'2000U;
@@ -81,41 +81,41 @@ private:
     std::array<cell, 256> cells_{};
 };
 
-namespace stm = mcuhw::mcu::stm32h753;
-namespace board = mcuhw::board::nucleo_h753zi;
-using execution = mcuhw::execution::fake_policy;
+namespace stm = mcubsp::mcu::stm32h753;
+namespace board = mcubsp::board::nucleo_h753zi;
+using execution = mcubsp::execution::fake_policy;
 
-using timer_binding = mcuhw::backend::stm32h753::timer_binding<
+using timer_binding = mcubsp::backend::stm32h753::timer_binding<
     1, stm::timer_output::ch1, board::timer1_ch1>;
-using timer_backend = mcuhw::backend::stm32h753::timer_pwm_backend<
+using timer_backend = mcubsp::backend::stm32h753::timer_pwm_backend<
     timer_binding, sparse_mmio, execution>;
-using usart_binding = mcuhw::backend::stm32h753::usart_binding<
+using usart_binding = mcubsp::backend::stm32h753::usart_binding<
     3, board::stlink_vcp_rx, board::stlink_vcp_tx>;
-using usart_backend = mcuhw::backend::stm32h753::usart_backend<
+using usart_backend = mcubsp::backend::stm32h753::usart_backend<
     usart_binding, sparse_mmio, execution>;
-using i2c_binding = mcuhw::backend::stm32h753::i2c_binding<
+using i2c_binding = mcubsp::backend::stm32h753::i2c_binding<
     1, board::arduino_d15_scl, board::arduino_d14_sda>;
-using i2c_backend = mcuhw::backend::stm32h753::i2c_controller_backend<
+using i2c_backend = mcubsp::backend::stm32h753::i2c_controller_backend<
     i2c_binding, sparse_mmio, execution>;
-using spi_binding = mcuhw::backend::stm32h753::spi_binding<
+using spi_binding = mcubsp::backend::stm32h753::spi_binding<
     1, board::arduino_d12_miso, board::arduino_d11_mosi,
     board::arduino_d13_sck, board::arduino_d10_cs>;
-using spi_backend = mcuhw::backend::stm32h753::spi_master_backend<
+using spi_backend = mcubsp::backend::stm32h753::spi_master_backend<
     spi_binding, sparse_mmio, execution>;
-using adc_binding = mcuhw::backend::stm32h753::adc1_binding<
-    mcuhw::backend::stm32h753::adc_input<15, board::arduino_a0>>;
-using adc_backend = mcuhw::backend::stm32h753::adc_backend<
+using adc_binding = mcubsp::backend::stm32h753::adc1_binding<
+    mcubsp::backend::stm32h753::adc_input<15, board::arduino_a0>>;
+using adc_backend = mcubsp::backend::stm32h753::adc_backend<
     adc_binding, sparse_mmio, execution>;
 
 TEST(stm32h753_solvers, produce_native_timer_uart_i2c_and_spi_encodings,
      "REQ-0011", "REQ-0022", "REQ-0024", "REQ-0027", "REQ-0028") {
-    const auto timer = mcuhw::backend::stm32h753::solve_timer_pwm(
+    const auto timer = mcubsp::backend::stm32h753::solve_timer_pwm(
         {64'000'000U, 20'000U, 0U, 16U});
-    const auto uart = mcuhw::backend::stm32h753::solve_usart_baud(
+    const auto uart = mcubsp::backend::stm32h753::solve_usart_baud(
         {64'000'000U, 115'200U, 1'000U});
-    const auto i2c = mcuhw::backend::stm32h753::solve_stm32_i2c_timing(
+    const auto i2c = mcubsp::backend::stm32h753::solve_stm32_i2c_timing(
         {64'000'000U, 100'000U, 20'000U, 400U, 100U});
-    const auto spi = mcuhw::backend::stm32h753::solve_stm32_spi_timing(
+    const auto spi = mcubsp::backend::stm32h753::solve_stm32_spi_timing(
         {64'000'000U, 8'000'000U, 0U});
     ASSERT_TRUE(timer.has_value());
     EXPECT_EQ(timer->period_counts, 3200U);
@@ -132,11 +132,11 @@ TEST(stm32h753_timer, drives_pwm_and_publishes_update_event,
     sparse_mmio mmio;
     execution policy;
     timer_backend backend{mmio, policy};
-    mcuhw::driver::pwm_channel pwm{backend};
-    const auto timing = mcuhw::backend::stm32h753::solve_timer_pwm(
+    mcubsp::driver::pwm_channel pwm{backend};
+    const auto timing = mcubsp::backend::stm32h753::solve_timer_pwm(
         {64'000'000U, 20'000U, 0U, 16U});
     ASSERT_TRUE(timing.has_value());
-    ASSERT_TRUE(pwm.initialize(*timing, mcuhw::driver::pwm_duty::percent(25U)));
+    ASSERT_TRUE(pwm.initialize(*timing, mcubsp::driver::pwm_duty::percent(25U)));
     EXPECT_EQ(mmio.value(0x4001'0034U), 800U);
     ASSERT_TRUE(pwm.start());
     auto pending = pwm.next_period();
@@ -154,7 +154,7 @@ TEST(stm32h753_usart, completes_vcp_transmit_only_after_tc,
     sparse_mmio mmio;
     execution policy;
     usart_backend backend{mmio, policy};
-    const auto timing = mcuhw::backend::stm32h753::solve_usart_baud(
+    const auto timing = mcubsp::backend::stm32h753::solve_usart_baud(
         {64'000'000U, 115'200U, 1'000U});
     ASSERT_TRUE(timing.has_value());
     ASSERT_TRUE(backend.initialize(*timing, {}));
@@ -177,7 +177,7 @@ TEST(stm32h753_i2c, performs_write_and_stops_at_autoend,
     sparse_mmio mmio;
     execution policy;
     i2c_backend backend{mmio, policy};
-    const auto timing = mcuhw::backend::stm32h753::solve_stm32_i2c_timing(
+    const auto timing = mcubsp::backend::stm32h753::solve_stm32_i2c_timing(
         {64'000'000U, 100'000U, 20'000U, 400U, 100U});
     ASSERT_TRUE(timing.has_value());
     ASSERT_TRUE(backend.initialize(*timing));
@@ -201,13 +201,13 @@ TEST(stm32h753_spi, holds_software_cs_until_eot,
     sparse_mmio mmio;
     execution policy;
     spi_backend backend{mmio, policy};
-    const auto timing = mcuhw::backend::stm32h753::solve_stm32_spi_timing(
+    const auto timing = mcubsp::backend::stm32h753::solve_stm32_spi_timing(
         {64'000'000U, 8'000'000U, 0U});
     ASSERT_TRUE(timing.has_value());
     ASSERT_TRUE(backend.initialize(*timing));
     const std::array<std::uint16_t, 1> output{0x5AU};
     std::array<std::uint16_t, 1> input{};
-    const std::array<mcuhw::driver::spi_segment, 1> segments{{{output, input, 0U}}};
+    const std::array<mcubsp::driver::spi_segment, 1> segments{{{output, input, 0U}}};
     auto started = backend.transaction(segments);
     ASSERT_TRUE(started.has_value());
     auto transfer = std::move(*started);
@@ -229,7 +229,7 @@ TEST(stm32h753_adc, calibrates_and_converts_bound_a0_input,
     execution policy;
     adc_backend backend{mmio, policy};
     ASSERT_TRUE(backend.initialize({}));
-    const std::array<mcuhw::driver::adc_channel, 1> channels{{{15U}}};
+    const std::array<mcubsp::driver::adc_channel, 1> channels{{{15U}}};
     std::array<std::uint16_t, 1> results{};
     auto started = backend.convert(channels, results);
     ASSERT_TRUE(started.has_value());
@@ -244,24 +244,24 @@ TEST(stm32h753_adc, calibrates_and_converts_bound_a0_input,
 
 TEST(stm32h753_dma_memory, rejects_tcm_and_plans_cache_maintenance,
      "REQ-0009", "REQ-0013", "REQ-0033") {
-    using mcuhw::backend::stm32h753::dma_buffer_access;
-    const auto dtcm = mcuhw::backend::stm32h753::plan_dma_buffer(
-        mcuhw::core::dma_engine_kind::stm32_dma, 0x2000'0000U, 32U,
+    using mcubsp::backend::stm32h753::dma_buffer_access;
+    const auto dtcm = mcubsp::backend::stm32h753::plan_dma_buffer(
+        mcubsp::core::dma_engine_kind::stm32_dma, 0x2000'0000U, 32U,
         dma_buffer_access::dma_reads);
     EXPECT_FALSE(dtcm.has_value());
-    const auto unaligned = mcuhw::backend::stm32h753::plan_dma_buffer(
-        mcuhw::core::dma_engine_kind::stm32_dma, 0x2400'0001U, 32U,
+    const auto unaligned = mcubsp::backend::stm32h753::plan_dma_buffer(
+        mcubsp::core::dma_engine_kind::stm32_dma, 0x2400'0001U, 32U,
         dma_buffer_access::dma_reads);
     EXPECT_FALSE(unaligned.has_value());
-    const auto axi = mcuhw::backend::stm32h753::plan_dma_buffer(
-        mcuhw::core::dma_engine_kind::stm32_dma, 0x2400'0000U, 64U,
+    const auto axi = mcubsp::backend::stm32h753::plan_dma_buffer(
+        mcubsp::core::dma_engine_kind::stm32_dma, 0x2400'0000U, 64U,
         dma_buffer_access::bidirectional);
     ASSERT_TRUE(axi.has_value());
     EXPECT_TRUE(axi->clean_before);
     EXPECT_TRUE(axi->invalidate_before);
     EXPECT_TRUE(axi->invalidate_after);
     sparse_mmio mmio;
-    mcuhw::backend::stm32h753::dma_cache_maintenance maintenance{mmio};
+    mcubsp::backend::stm32h753::dma_cache_maintenance maintenance{mmio};
     ASSERT_TRUE(maintenance.prepare(*axi));
     ASSERT_TRUE(maintenance.complete(*axi));
 }

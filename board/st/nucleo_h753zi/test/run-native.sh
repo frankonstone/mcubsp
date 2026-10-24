@@ -9,7 +9,7 @@ nm=$(hardware tool --name arm-nm --command arm-none-eabi-nm --override-env ARM_N
 
 if [ ! -f "$elf" ]; then
     echo "missing firmware: $elf" >&2
-    echo "build it with: cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi && cmake --build build/nucleo-h753zi" >&2
+    echo "build it with: cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUBSP_BOARD_TESTS=st/nucleo_h753zi && cmake --build build/nucleo-h753zi" >&2
     exit 2
 fi
 
@@ -18,22 +18,22 @@ symbol_address() {
         '$3 == symbol { print "0x" $1; found = 1; exit } END { if (!found) exit 1 }'
 }
 
-status_address=$(symbol_address mcuhw_nucleo_native_status)
-arr_address=$(symbol_address mcuhw_nucleo_pwm_arr)
-ccr_address=$(symbol_address mcuhw_nucleo_pwm_ccr)
-adc_address=$(symbol_address mcuhw_nucleo_adc_sample)
-brr_address=$(symbol_address mcuhw_nucleo_uart_brr)
-cache_address=$(symbol_address mcuhw_nucleo_cache_buffer)
-control_address=$(symbol_address mcuhw_nucleo_evidence_control)
-evidence_address=$(symbol_address mcuhw_nucleo_evidence_buffer)
-coverage_address=$(symbol_address mcuhw_nucleo_coverage_buffer)
+status_address=$(symbol_address mcubsp_nucleo_native_status)
+arr_address=$(symbol_address mcubsp_nucleo_pwm_arr)
+ccr_address=$(symbol_address mcubsp_nucleo_pwm_ccr)
+adc_address=$(symbol_address mcubsp_nucleo_adc_sample)
+brr_address=$(symbol_address mcubsp_nucleo_uart_brr)
+cache_address=$(symbol_address mcubsp_nucleo_cache_buffer)
+control_address=$(symbol_address mcubsp_nucleo_evidence_control)
+evidence_address=$(symbol_address mcubsp_nucleo_evidence_buffer)
+coverage_address=$(symbol_address mcubsp_nucleo_coverage_buffer)
 control_complete_address=$(printf '0x%08x' $((control_address + 4)))
 evidence_size_address=$(printf '0x%08x' $((control_address + 8)))
 coverage_size_address=$(printf '0x%08x' $((control_address + 12)))
 test_count_address=$(printf '0x%08x' $((control_address + 16)))
 failure_count_address=$(printf '0x%08x' $((control_address + 20)))
 build_id_address=$(printf '0x%08x' $((control_address + 24)))
-run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcuhw-nucleo-h753zi-native.XXXXXX")
+run_dir=$(mktemp -d "${TMPDIR:-/tmp}/mcubsp-nucleo-h753zi-native.XXXXXX")
 log="$run_dir/openocd.log"
 evidence_raw="$run_dir/evidence-buffer.bin"
 coverage_raw="$run_dir/coverage-buffer.bin"
@@ -124,7 +124,7 @@ for path in root.glob("st.nucleo_h753zi.*/*.mcucov.json"):
     for module in manifest.get("modules", []):
         source_path = module.get("path", "")
         if not (source_path.startswith("board/st/nucleo_h753zi/")
-                or source_path.startswith("include/mcuhw/backend/stm32h753/")):
+                or source_path.startswith("include/mcubsp/backend/stm32h753/")):
             continue
         selected.append(module)
     manifest["modules"] = selected
@@ -156,7 +156,7 @@ fi
 [ -n "$vcp" ] || { echo "ST-LINK VCP not found; set NUCLEO_VCP" >&2; exit 1; }
 
 "$project_dir/tool/read-serial-banner.py" \
-    "$vcp" "MCUHW H753 USART3 OK"
+    "$vcp" "MCUBSP H753 USART3 OK"
 
 echo "NUCLEO-H753ZI native peripheral test passed"
 echo "status=$status PWM(ARR=$arr CCR1=$ccr) ADC=$adc USART3(BRR=$brr)"

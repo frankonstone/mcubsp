@@ -1,17 +1,17 @@
 #include <cstdint>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/esp32p4/gpio.hpp>
-#include <mcuhw/driver/gpio.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/backend/esp32p4/gpio.hpp>
+#include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
 constexpr std::uintptr_t gpio_base = 0x500E'0000U;
 constexpr std::uintptr_t io_mux_base = 0x500E'1000U;
-using policy_type = mcuhw::testing::recording_mmio<0x1200, 48>;
-using backend_type = mcuhw::backend::esp32p4::gpio_backend<policy_type>;
-using pin_type = mcuhw::driver::gpio_pin<backend_type>;
+using policy_type = mcubsp::testing::recording_mmio<0x1200, 48>;
+using backend_type = mcubsp::backend::esp32p4::gpio_backend<policy_type>;
+using pin_type = mcubsp::driver::gpio_pin<backend_type>;
 
 TEST(esp32p4_gpio, latches_then_configures_then_enables_lower_bank_output,
      "REQ-0009", "REQ-0034") {
@@ -20,11 +20,11 @@ TEST(esp32p4_gpio, latches_then_configures_then_enables_lower_bank_output,
     pin_type pin{backend, {0, 7}};
 
     ASSERT_TRUE(pin.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
-        .initial_level = mcuhw::driver::gpio_level::high,
-        .output_type = mcuhw::driver::gpio_output_type::open_drain,
-        .pull = mcuhw::driver::gpio_pull::up,
-        .drive = mcuhw::driver::gpio_drive::middle,
+        .direction = mcubsp::driver::gpio_direction::output,
+        .initial_level = mcubsp::driver::gpio_level::high,
+        .output_type = mcubsp::driver::gpio_output_type::open_drain,
+        .pull = mcubsp::driver::gpio_pull::up,
+        .drive = mcubsp::driver::gpio_drive::middle,
     }).has_value());
 
     const auto operations = policy.operations();
@@ -49,7 +49,7 @@ TEST(esp32p4_gpio, upper_bank_uses_atomic_aliases_and_input_register,
     backend_type backend{policy};
     pin_type pin{backend, {0, 45}};
     ASSERT_TRUE(pin.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
+        .direction = mcubsp::driver::gpio_direction::output,
     }).has_value());
     policy.clear_operations();
 
@@ -57,7 +57,7 @@ TEST(esp32p4_gpio, upper_bank_uses_atomic_aliases_and_input_register,
     ASSERT_TRUE(pin.clear().has_value());
     const auto level = pin.read();
     ASSERT_TRUE(level.has_value());
-    EXPECT_TRUE(*level == mcuhw::driver::gpio_level::low);
+    EXPECT_TRUE(*level == mcubsp::driver::gpio_level::low);
 
     const auto operations = policy.operations();
     ASSERT_EQ(operations.size(), 3U);
@@ -80,11 +80,11 @@ TEST(esp32p4_gpio, rejects_invalid_and_duplicate_claims,
     const auto duplicate_result = duplicate.initialize({});
     ASSERT_FALSE(duplicate_result.has_value());
     EXPECT_TRUE(duplicate_result.error()
-                == mcuhw::driver::gpio_error::already_owned);
+                == mcubsp::driver::gpio_error::already_owned);
     const auto invalid_result = invalid.initialize({});
     ASSERT_FALSE(invalid_result.has_value());
     EXPECT_TRUE(invalid_result.error()
-                == mcuhw::driver::gpio_error::invalid_pin);
+                == mcubsp::driver::gpio_error::invalid_pin);
 }
 
 TEST(esp32p4_gpio, leaves_native_usb_phy_pins_to_usb_integration,
@@ -94,11 +94,11 @@ TEST(esp32p4_gpio, leaves_native_usb_phy_pins_to_usb_integration,
     pin_type usb_dm{backend, {0, 24}};
 
     const auto result = usb_dm.initialize({
-        .direction = mcuhw::driver::gpio_direction::output,
+        .direction = mcubsp::driver::gpio_direction::output,
     });
     ASSERT_FALSE(result.has_value());
     EXPECT_TRUE(result.error()
-                == mcuhw::driver::gpio_error::unsupported_configuration);
+                == mcubsp::driver::gpio_error::unsupported_configuration);
     EXPECT_EQ(policy.operations().size(), 0U);
 }
 

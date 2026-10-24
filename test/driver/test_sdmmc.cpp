@@ -6,13 +6,13 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/driver/sdmmc.hpp>
+#include <mcubsp/driver/sdmmc.hpp>
 
 namespace {
 
-using mcuhw::driver::sdmmc_command;
-using mcuhw::driver::sdmmc_error;
-using mcuhw::driver::sdmmc_response;
+using mcubsp::driver::sdmmc_command;
+using mcubsp::driver::sdmmc_error;
+using mcubsp::driver::sdmmc_response;
 
 class fake_delay {
 public:
@@ -124,7 +124,7 @@ TEST(sdmmc, decodes_capacity_and_initializes_native_sd_sequence,
      "REQ-0014", "REQ-0016", "REQ-0019", "REQ-0034", "REQ-0037") {
     fake_host host;
     fake_delay delay;
-    mcuhw::driver::sd_card card{host, delay};
+    mcubsp::driver::sd_card card{host, delay};
 
     const auto initialized = card.initialize();
     ASSERT_TRUE(initialized.has_value());
@@ -146,7 +146,7 @@ TEST(sdmmc, exposes_bounded_sector_read_and_write_operations,
      "REQ-0016", "REQ-0019", "REQ-0034", "REQ-0037") {
     fake_host host;
     fake_delay delay;
-    mcuhw::driver::sd_card card{host, delay};
+    mcubsp::driver::sd_card card{host, delay};
     std::array<std::byte, 512> sector{};
     std::array<std::byte, 512> output{};
     output[0] = std::byte{0xA5U};
@@ -171,7 +171,7 @@ TEST(sdmmc, cleans_up_failed_initialization,
     fake_host host;
     host.fail_initialize();
     fake_delay delay;
-    mcuhw::driver::sd_card card{host, delay};
+    mcubsp::driver::sd_card card{host, delay};
     const auto initialized = card.initialize();
     ASSERT_FALSE(initialized.has_value());
     EXPECT_TRUE(initialized.error() == sdmmc_error::host_initialization);

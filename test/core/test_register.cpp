@@ -4,12 +4,12 @@
 #include <limits>
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/core/register.hpp>
-#include <mcuhw/testing/recording_mmio.hpp>
+#include <mcubsp/core/register.hpp>
+#include <mcubsp/testing/recording_mmio.hpp>
 
 namespace {
 
-using namespace mcuhw;
+using namespace mcubsp;
 using host_policy = testing::recording_mmio<512, 16>;
 
 template<typename Reference>

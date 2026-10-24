@@ -10,12 +10,12 @@ exceptions, RTTI, scheduler, or hidden thread is required.
 The UNO R4 Minima uses SCI2 on D0/D1 and IIC1 on A4/A5:
 
 ```cpp
-using uart_binding = mcuhw::backend::ra4m1::sci_uart_binding<
-    2, mcuhw::board::arduino_uno_r4_minima::d0_rx,
-    mcuhw::board::arduino_uno_r4_minima::d1_tx>;
-using i2c_binding = mcuhw::backend::ra4m1::iic_binding<
-    1, mcuhw::board::arduino_uno_r4_minima::a5_scl,
-    mcuhw::board::arduino_uno_r4_minima::a4_sda>;
+using uart_binding = mcubsp::backend::ra4m1::sci_uart_binding<
+    2, mcubsp::board::arduino_uno_r4_minima::d0_rx,
+    mcubsp::board::arduino_uno_r4_minima::d1_tx>;
+using i2c_binding = mcubsp::backend::ra4m1::iic_binding<
+    1, mcubsp::board::arduino_uno_r4_minima::a5_scl,
+    mcubsp::board::arduino_uno_r4_minima::a4_sda>;
 ```
 
 Invalid instance/pin combinations fail at compile time. A backend claims its
@@ -77,8 +77,8 @@ fixed-capacity request object owns both the register command bytes and response
 storage:
 
 ```cpp
-mcuhw::driver::i2c_device<decltype(bus), 0x50> eeprom{bus};
-mcuhw::driver::i2c_register_request<16, 2> request;
+mcubsp::driver::i2c_device<decltype(bus), 0x50> eeprom{bus};
+mcubsp::driver::i2c_register_request<16, 2> request;
 auto started = eeprom.read_register(0x0120, request, 8);
 auto transfer = std::move(*started);
 auto result = transfer.wait_until(deadline);
@@ -113,7 +113,7 @@ the original bytes, and verifies the restoration. It repeats the scenario at
 100 kHz and 400 kHz. Run it with:
 
 ```sh
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
+cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
 cmake --build build/uno-r4-minima --target board-tests
 tool/run-uno-r4-minima-tests.sh i2c
 ```

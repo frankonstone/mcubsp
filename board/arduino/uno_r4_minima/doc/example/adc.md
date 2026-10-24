@@ -22,21 +22,21 @@ must remain visible to the scan-end ISR until the transfer completes.
 #include <array>
 #include <utility>
 
-#include <mcuhw/backend/ra4m1/adc.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/adc.hpp>
+#include <mcubsp/backend/ra4m1/adc.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/adc.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
 void consume_adc_sample(std::uint16_t sample);
 
-using binding = mcuhw::backend::ra4m1::adc14_binding<
-    mcuhw::backend::ra4m1::adc_input<0, board::a1_an000>>;
+using binding = mcubsp::backend::ra4m1::adc14_binding<
+    mcubsp::backend::ra4m1::adc_input<0, board::a1_an000>>;
 
 template<class Adc>
-int sample_a1(Adc& adc, mcuhw::execution::deadline deadline) {
-    const std::array channels{mcuhw::driver::adc_channel{0U}};
+int sample_a1(Adc& adc, mcubsp::execution::deadline deadline) {
+    const std::array channels{mcubsp::driver::adc_channel{0U}};
     std::array<std::uint16_t, 1> samples{};
     auto started = adc.convert(channels, samples);
     if (!started) {
@@ -59,26 +59,26 @@ int sample_a1(Adc& adc, mcuhw::execution::deadline deadline) {
 The surrounding application supplies static storage and scan-end dispatch:
 
 ```cpp
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 
-using backend_type = mcuhw::backend::ra4m1::adc14_backend<
-    binding, mcuhw::core::direct_mmio, application_execution_policy>;
+using backend_type = mcubsp::backend::ra4m1::adc14_backend<
+    binding, mcubsp::core::direct_mmio, application_execution_policy>;
 backend_type adc_hardware{mmio, execution};
-mcuhw::driver::adc_controller adc{adc_hardware};
+mcubsp::driver::adc_controller adc{adc_hardware};
 
 int main() {
     initialize_monotonic_clock();
     configure_adc_scan_end_interrupt();
 
     if (!adc.initialize({
-            .resolution = mcuhw::driver::adc_resolution::bits14,
+            .resolution = mcubsp::driver::adc_resolution::bits14,
             .sample_states = 13U,
         })) {
         return 1;
     }
     enable_adc_scan_end_interrupt();
-    const auto deadline = mcuhw::execution::make_deadline(
+    const auto deadline = mcubsp::execution::make_deadline(
         execution.now(), 480'000U);
     const bool sampled = deadline && sample_a1(adc, *deadline) == 0;
     disable_adc_scan_end_interrupt();

@@ -1,6 +1,6 @@
-# mcuhw
+# mcubsp
 
-`mcuhw` is a C++23 hardware-description and bare-metal driver library for
+`mcubsp` is a C++23 hardware-description and bare-metal driver library for
 microcontrollers. It combines source-traceable MCU metadata, compile-time
 validation, type-safe MMIO access, reusable functional drivers, and explicit
 board compositions without requiring a vendor HAL or an RTOS.
@@ -30,7 +30,7 @@ Application
     |
 Device driver (optional) TMP102 temperature, W5100 Ethernet, ...
     |
-mcuhw::io (optional)    board objects, named pins, selected storage and leases
+mcubsp::io (optional)    board objects, named pins, selected storage and leases
     |
 Functional driver       GPIO, PWM, UART, I2C, SPI, ADC, DMA, ...
     |
@@ -52,15 +52,15 @@ The main source layers are:
 
 | Path | Purpose |
 | --- | --- |
-| `include/mcuhw/core/` | Register metadata, MMIO contracts, ownership, units, and fixed transfer state |
-| `include/mcuhw/mcu/` | Declarative, source-backed MCU descriptions |
-| `include/mcuhw/backend/` | MCU-specific peripheral sequencing |
-| `include/mcuhw/driver/` | Target-independent functional drivers and external-device drivers |
-| `include/mcuhw/io/` | Modern C++ application interface and explicit board profiles |
-| `include/mcuhw/device/` | Attached-chip protocols using I2C/SPI device handles or supplied transports |
-| `include/mcuhw/board/` | Board identities, package selection, and connector/pin aliases |
-| `include/mcuhw/execution/` | Bare-metal and test execution policies |
-| `include/mcuhw/integration/` | Optional integration boundaries such as MCUIP network devices |
+| `include/mcubsp/core/` | Register metadata, MMIO contracts, ownership, units, and fixed transfer state |
+| `include/mcubsp/mcu/` | Declarative, source-backed MCU descriptions |
+| `include/mcubsp/backend/` | MCU-specific peripheral sequencing |
+| `include/mcubsp/driver/` | Target-independent functional drivers and external-device drivers |
+| `include/mcubsp/io/` | Modern C++ application interface and explicit board profiles |
+| `include/mcubsp/device/` | Attached-chip protocols using I2C/SPI device handles or supplied transports |
+| `include/mcubsp/board/` | Board identities, package selection, and connector/pin aliases |
+| `include/mcubsp/execution/` | Bare-metal and test execution policies |
+| `include/mcubsp/integration/` | Optional integration boundaries such as MCUIP network devices |
 | `board/<vendor>/<name>/` | Local board build rules, runner configuration and procedures |
 | `mcu/`, `ip/`, `device/` | Component-owned documentation and fixtures |
 | `test/` | Native behavioral tests, compile checks, and compile-fail cases |
@@ -91,66 +91,31 @@ tools are required only when flashing. See the
 [first-build guide](doc/getting-started/building.md) for pinned setup, SDK and
 host qualification details.
 
-For maintainer verification:
+Board presets require Ninja and the matching cross compiler:
 
-- CMake 3.25 or newer;
-- Ninja;
-- a C++23 compiler;
-- a checkout of `mcutest` for the host test suite.
+- `arm-none-eabi-g++` for the Arduino UNO R4 Minima and NUCLEO-H753ZI;
+- an activated ESP-IDF toolchain containing `riscv32-esp-elf-g++` for ESP32-P4.
 
-Cross-builds additionally require:
-
-- `arm-none-eabi-g++`, binutils, and size tools for Cortex-M4/M7;
-- an activated ESP-IDF toolchain containing `riscv32-esp-elf-g++` for ESP32-P4;
-- the board-specific debugger and command-line tools described in the board
-  documentation.
-
-Explicit maintainer workflows use these configurable sibling locations by
-default; ordinary applications do not resolve them:
-
-```text
-workspace/
-├── mcuhw/
-├── mcutest/    # host and target test framework
-├── mcujson/    # target evidence serialization
-├── mcucov/     # target coverage instrumentation and reports
-└── mcuip/      # allocation-free IP stack used by Ethernet integrations
-```
-
-Every path is configurable:
-
-| CMake variable | Default |
-| --- | --- |
-| `MCUHW_MCUTEST_SOURCE_DIR` | `../mcutest` |
-| `MCUHW_MCUJSON_SOURCE_DIR` | `../mcujson` |
-| `MCUHW_MCUCOV_SOURCE_DIR` | `../mcucov` |
-| `MCUHW_MCUIP_SOURCE_DIR` | `../mcuip` |
-
-`mcutest` is required for native tests. `mcujson` and an installed `mcucov`
-package are required by the instrumented board-test images. `mcuip` is optional
-for description/driver-only builds but required for the Ethernet contract and
-hardware tests.
+The CMake packages for `mcutest`, `mcucov` and `mcujson` must also be
+discoverable by `find_package`.
 
 ## Quick start
 
-Create a complete external application:
+Configure the repository for a supported board:
 
 ```sh
-python3 tool/mcuhw.py new ../my-blink --board arduino/uno_r4_minima --example blink
-python3 tool/mcuhw.py setup --project ../my-blink
-python3 tool/mcuhw.py build --project ../my-blink
+cmake --preset arduino-uno-r4-minima
+cmake --build --preset arduino-uno-r4-minima
 ```
 
-Setup imports the pinned installed tools (or an explicitly configured archive
-cache). It reports missing prerequisites before building. The
-[first-build guide](doc/getting-started/building.md) includes installation,
-offline use, direct CMake commands and separately requested flashing. Complete
-[Blink and TMP102](board/arduino/uno_r4_minima/example/README.md) are among the
-UNO R4 Minima examples.
-See [attached devices](doc/getting-started/components.md) for chip support.
+The UNO preset builds a separate `.elf` for every source in its `example/`
+and `test/` directories. For one image, build its named target, for example
+`arduino.uno_r4_minima.example.blink` or
+`arduino.uno_r4_minima.test.startup_gpio`. Flashing and running physical tests
+remain separate hardware procedures.
 
 For application code, start with the [modern C++ I/O guide](doc/getting-started/io.md).
-The optional `mcuhw::io`
+The optional `mcubsp::io`
 CMake target provides `hw.output()`, `hw.serial`, `hw.i2c`, `hw.spi`,
 `hw.analog`, `hw.pwm`, and explicit DMA leases. Storage is selected at compile
 time; execution and MMIO can be supplied by the application. This new layer
@@ -160,50 +125,30 @@ from the existing driver evidence below.
 The [components guide](doc/getting-started/components.md) shows how attached
 chips share buses through `hw.i2c.device(address)` and
 `hw.spi.device(configuration)`. TMP102 and W5100 drivers live under
-`mcuhw::device`; the W5100 exposes raw Ethernet through the generic MCUIP
-integration. Link `mcuhw::device` for device headers and `mcuhw::io` for the
+`mcubsp::device`; the W5100 exposes raw Ethernet through the generic MCUIP
+integration. Link `mcubsp::device` for device headers and `mcubsp::io` for the
 board facade.
-
-For focused native verification, with `mcutest` in its default sibling location:
-
-```sh
-python3 tool/verify.py --build build/verification --suites all
-python3 tool/verify.py --build build/tmp102-tests --suites device:ti/tmp102
-```
-
-Enable architecture probes, independent header checks and optional MCUIP
-contracts explicitly, using the configured development checkouts:
-
-```sh
-cmake --preset native -B build/host -DMCUHW_BUILD_TESTS=ON -DMCUHW_BUILD_TOOLING_TESTS=ON -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON -DMCUHW_BUILD_MCUIP_CONTRACTS=ON
-python3 tool/verify.py --build build/host --existing
-```
-
-The native suite exercises metadata, solvers, ownership, register ordering,
-drivers, error paths, cancellation, and fake-MMIO behavior without accessing
-real MCU addresses. It also builds negative cases that must fail to compile.
 
 ## Installation and use from another project
 
-`mcuhw` is a header-only CMake interface library. Consume a source checkout,
+`mcubsp` is a header-only CMake interface library. Consume a source checkout,
 install a relocatable CMake package, or vendor the public headers.
 
 ### Use the CMake target
 
-Add the checkout to the firmware project and link `mcuhw::mcuhw`:
+Add the checkout to the firmware project and link `mcubsp::mcubsp`:
 
 ```cmake
 cmake_minimum_required(VERSION 3.25)
 project(my_firmware LANGUAGES CXX ASM)
 
-# Defaults expose library targets without enabling mcuhw's maintainer checks.
-add_subdirectory(external/mcuhw EXCLUDE_FROM_ALL)
+add_subdirectory(external/mcubsp EXCLUDE_FROM_ALL)
 
 add_executable(my_firmware
     startup.S
     main.cpp
 )
-target_link_libraries(my_firmware PRIVATE mcuhw::mcuhw)
+target_link_libraries(my_firmware PRIVATE mcubsp::mcubsp)
 target_compile_features(my_firmware PRIVATE cxx_std_23)
 target_compile_options(my_firmware PRIVATE
     -fno-exceptions
@@ -221,13 +166,13 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ```
 
-To install a package, run `cmake -S . -B build/package`, then
-`cmake --install build/package --prefix /path/to/prefix`. In the consumer,
-replace `add_subdirectory` with `find_package(mcuhw 0.1 CONFIG REQUIRED)` and
+To install a package, configure a board preset, then run
+`cmake --install build/<preset> --prefix /path/to/prefix`. In the consumer,
+replace `add_subdirectory` with `find_package(mcubsp 0.1 CONFIG REQUIRED)` and
 configure with `-DCMAKE_PREFIX_PATH=/path/to/prefix`. The same three targets
-are available: `mcuhw::mcuhw`, `mcuhw::io` and `mcuhw::device`. See
+are available: `mcubsp::mcubsp`, `mcubsp::io` and `mcubsp::device`. See
 [installation](doc/getting-started/installation.md) for package layout and
-[firmware integration](doc/getting-started/using-mcuhw.md) for startup ownership.
+[firmware integration](doc/getting-started/using-mcubsp.md) for startup ownership.
 
 ### Use the headers directly
 
@@ -244,19 +189,19 @@ minimal RA4M1 example configures the UNO R4 Minima built-in LED after startup
 has established the board clock and memory environment:
 
 ```cpp
-#include <mcuhw/backend/ra4m1/gpio.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/gpio.hpp>
+#include <mcubsp/backend/ra4m1/gpio.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/gpio.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
-mcuhw::core::direct_mmio mmio;
-mcuhw::backend::ra4m1::gpio_backend gpio_hardware{mmio};
-mcuhw::driver::gpio_pin led{gpio_hardware, board::led_builtin_d13};
+mcubsp::core::direct_mmio mmio;
+mcubsp::backend::ra4m1::gpio_backend gpio_hardware{mmio};
+mcubsp::driver::gpio_pin led{gpio_hardware, board::led_builtin_d13};
 
 bool initialize_led() {
-    using namespace mcuhw::driver;
+    using namespace mcubsp::driver;
     return led.initialize({
         .direction = gpio_direction::output,
         .initial_level = gpio_level::low,
@@ -289,109 +234,32 @@ implicit cancellation.
 
 ## Build presets
 
-The `arm-cortex-m4` preset selects the toolchain and the Arduino UNO R4 Minima
-board by default. Other presets select only their toolchain/architecture and
-global compiler settings. Presets do not select applications, tests or build
-targets.
+The host presets run the native suites in `test/` and cross-compile the target
+probes with the GNU Arm and ESP32-P4 RISC-V toolchains. Nothing in `test/`
+must run on a board. Board
+presets select a board and its required cross compiler. The optional
+`MCUBSP_COVERAGE` switch instruments Arduino UNO R4 Minima test images. Board
+revisions are not configurable in the top-level CMake build.
 
-| Preset | Architecture |
-| --- | --- |
-| `native` | Host compiler |
-| `arm-cortex-m4` | ARM Cortex-M4 |
-| `arm-cortex-m7` | ARM Cortex-M7 |
-| `esp32p4-riscv` | ESP32-P4 RISC-V |
-
-The UNO board targets are available after configuring the preset:
-
-```sh
-cmake --preset arm-cortex-m4
-cmake --build --preset arm-cortex-m4 --target firmware
-cmake --build --preset arm-cortex-m4 --target examples
-cmake --build --preset arm-cortex-m4 --target test.board
-cmake --build --preset arm-cortex-m4 --target test.backend test.device
-```
-
-For the UNO R4 Minima, `firmware` builds Blink by default; set
-`-DMCUHW_EXAMPLE=tmp102` to select TMP102. `examples` builds all five
-examples. Build one with `example.blink`, `example.serial_echo`,
-`example.spi_dma`, `example.tmp102`, or `example.w5100`. Other boards currently
-expose no examples. `test.board` builds the board's physical-test firmware in a separate child build.
-`test.backend`, `test.device`, `test.core`, `test.driver`, `test.io`, `test.mcu`
-and `test.compile` build and run focused host suites; `tests` selects all groups. Running or
-flashing these images remains an explicit hardware procedure.
-
-`MCUHW_BOARD`, `MCUHW_BOARD_REVISION` and `MCUHW_EXAMPLE` are visible in the CMake
-cache and editable through CMake Tools. Reconfigure after editing them. The
-configure log displays the resolved board, revision and architecture. Reapplying
-the Cortex-M4 preset selects the UNO board again; the other presets preserve an
-explicit board selection. An empty board selection exposes no board targets.
-Unselected board entries are not loaded.
-
-Firmware is written under `build/<preset>/application/`, additional examples
-under `build/<preset>/example/`, and tests under
-`build/<preset>/board/<vendor>/<board>/<revision>/test/`. Test dependencies
-are resolved only when their test group is built. Global compiler flags are forwarded
-to the child test configuration. See [focused targets and presets](doc/development/verification.md#targets-and-presets).
-
-Enable verification independently of the architecture preset:
+| Preset | Board | Toolchain |
+| --- | --- | --- |
+| `macos` | Host tests | macOS Clang |
+| `linux-x86_64` | Host tests | Linux x86_64 GCC or Clang |
+| `arduino-uno-r4-minima` | Arduino UNO R4 Minima | ARM Cortex-M4 |
+| `st-nucleo-h753zi` | NUCLEO-H753ZI | ARM Cortex-M7 |
+| `waveshare-esp32p4-nano` | Waveshare ESP32-P4-NANO | ESP32-P4 RISC-V |
 
 ```sh
-cmake --preset native -DMCUHW_BUILD_TESTS=ON -DMCUHW_TEST_SUITES=device:ti/tmp102
-cmake --build --preset native --target native-tests
-ctest --test-dir build/native --output-on-failure
+cmake --preset macos
+cmake --build --preset macos
 
-cmake --preset arm-cortex-m4 -B build/arm-checks -DMCUHW_BUILD_PROBES=ON -DMCUHW_CHECK_HEADERS=ON
-cmake --build build/arm-checks --target check-headers check-compile -j4
+cmake --preset st-nucleo-h753zi
+cmake --build --preset st-nucleo-h753zi
 ```
 
-The same explicit verification options work with `arm-cortex-m7` and
-`esp32p4-riscv`. `check-headers` compiles each public header independently.
-
-## Running on supported boards
-
-Board builds create firmware but do not automatically flash hardware. Use the
-matching runner and follow its wiring, debugger, and recovery notes.
-
-### Arduino UNO R4 Minima
-
-```sh
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUHW_BOARD_TESTS=arduino/uno_r4_minima
-cmake --build build/uno-r4-minima --target board-tests -j4
-./tool/run-uno-r4-minima-tests.sh startup-gpio
-```
-
-Additional runner selections cover GPIO loopback, PWM, UART, I2C, SPI, ADC,
-DMAC, W5100 Ethernet, metrics, and link recovery. See the
-[UNO R4 Minima guide](board/arduino/uno_r4_minima/doc/README.md),
-[RA4M1 acceptance record](doc/acceptance/ra4m1-release.md), and
-[W5100 Ethernet guide](board/arduino/uno_r4_minima/doc/ethernet-w5100.md).
-
-### NUCLEO-H753ZI
-
-```sh
-cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi
-cmake --build build/nucleo-h753zi --target board-tests -j4
-./tool/run-nucleo-h753zi-smoke.sh
-./tool/run-nucleo-h753zi-native.sh
-```
-
-See the [NUCLEO-H753ZI guide](board/st/nucleo_h753zi/doc/README.md) for
-ST-LINK, VCP, Ethernet jumper, and physical-evidence details.
-
-### ESP32-P4-NANO
-
-The generic compile probe uses `esp32p4-riscv` with `MCUHW_BUILD_PROBES=ON`. The physical board image is a
-separate ESP-IDF build:
-
-```sh
-idf.py -C board/waveshare/esp32p4_nano/test/firmware set-target esp32p4
-idf.py -C board/waveshare/esp32p4_nano/test/firmware build
-./tool/run-esp32p4-nano-smoke.sh /dev/cu.usbmodemXXXXXXXXXXXX
-```
-
-This runner replaces selected flash regions. Read the recovery and silicon-
-revision notes in
-[ESP32-P4-NANO guide](board/waveshare/esp32p4_nano/doc/README.md) first.
+The ESP32-P4 physical test image remains an independent ESP-IDF project under
+`board/waveshare/esp32p4_nano/test/firmware/`. Building or flashing any board
+image requires the matching board procedure.
 
 ## Verification philosophy
 
@@ -408,7 +276,7 @@ Generated `mcutest` and `mcucov` artifacts are imported through
 [`mcutrace.toml`](mcutrace.toml). Plan status is not used as a substitute for
 test evidence.
 
-## Extending mcuhw
+## Extending mcubsp
 
 ### Add a board for an existing MCU
 
@@ -420,7 +288,7 @@ already exist.
    assumptions. Do not copy pin mappings from a similar board without checking
    its exact assembly.
 2. **Add the board binding.** Create
-   `include/mcuhw/board/<board_name>.hpp`. Select the exact MCU/package and add
+   `include/mcubsp/board/<board_name>.hpp`. Select the exact MCU/package and add
    only board-level identities and connector aliases. Keep MCU register facts
    in `mcu/` and peripheral sequences in `backend/`.
 3. **Add the physical composition.** Create `board/<vendor>/<name>/` with the
@@ -451,7 +319,7 @@ A new MCU requires a description before it receives functional backends.
 1. **Define the supported identity.** Select the exact family, part/package
    variants, silicon revisions, and authoritative manual/datasheet/errata
    revisions. Add them to the source manifest and record unresolved conflicts.
-2. **Create the description.** Add `include/mcuhw/mcu/<mcu>/` following the
+2. **Create the description.** Add `include/mcubsp/mcu/<mcu>/` following the
    existing split: `model.hpp`, `system.hpp`, `peripherals.hpp`, `pins.hpp`,
    `interrupts_dma.hpp`, `coverage.hpp`, and `description.hpp`. Describe native
    capabilities; do not force them into another vendor's register model.
@@ -463,7 +331,7 @@ A new MCU requires a description before it receives functional backends.
    create a CMake toolchain and preset, apply the restricted-runtime flags, and
    verify generated barrier instructions and public-header compilation.
 5. **Implement backends incrementally.** Add
-   `include/mcuhw/backend/<mcu>/` one peripheral at a time. Reuse functional
+   `include/mcubsp/backend/<mcu>/` one peripheral at a time. Reuse functional
    drivers, typed errors, fixed storage, ownership, deadlines, and transfer
    contracts. Test each backend first with recording/fake MMIO, including
    cleanup and failure paths.

@@ -1,7 +1,7 @@
 # NUCLEO-H753ZI bare-metal binding
 
 This binding targets the STM32H753ZI in the NUCLEO-H753ZI MB1364 revision E
-assembly. MCU metadata remains under `include/mcuhw/mcu/stm32h753`; connector
+assembly. MCU metadata remains under `include/mcubsp/mcu/stm32h753`; connector
 aliases and test-image choices are board-specific.
 
 ## Sources and received configuration
@@ -26,7 +26,7 @@ a complete audit of every factory assembly option.
 Build both images:
 
 ```sh
-cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUHW_BOARD_TESTS=st/nucleo_h753zi
+cmake --preset arm-cortex-m7 -B build/nucleo-h753zi -DMCUBSP_BOARD_TESTS=st/nucleo_h753zi
 cmake --build build/nucleo-h753zi -j4
 ```
 

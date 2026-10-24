@@ -9,24 +9,24 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/ra4m1/iic.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/driver/i2c.hpp>
+#include <mcubsp/backend/ra4m1/iic.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/driver/i2c.hpp>
 
 #include "support.hpp"
 
 namespace {
 
-using binding = mcuhw::backend::ra4m1::iic_binding<
-    1, mcuhw::board::arduino_uno_r4_minima::a5_scl,
-    mcuhw::board::arduino_uno_r4_minima::a4_sda>;
-using backend_type = mcuhw::backend::ra4m1::iic_controller_backend<
-    binding, mcuhw::core::direct_mmio, mcuhw::board_test::execution_policy>;
+using binding = mcubsp::backend::ra4m1::iic_binding<
+    1, mcubsp::board::arduino_uno_r4_minima::a5_scl,
+    mcubsp::board::arduino_uno_r4_minima::a4_sda>;
+using backend_type = mcubsp::backend::ra4m1::iic_controller_backend<
+    binding, mcubsp::core::direct_mmio, mcubsp::board_test::execution_policy>;
 
-mcuhw::board_test::execution_policy execution;
-backend_type backend{mcuhw::board_test::mmio, execution};
-mcuhw::driver::i2c_controller bus{backend};
-mcuhw::driver::i2c_device<decltype(bus), 0x73U> gesture_sensor{bus};
+mcubsp::board_test::execution_policy execution;
+backend_type backend{mcubsp::board_test::mmio, execution};
+mcubsp::driver::i2c_controller bus{backend};
+mcubsp::driver::i2c_device<decltype(bus), 0x73U> gesture_sensor{bus};
 
 volatile std::uint32_t receive_interrupts{};
 volatile std::uint32_t transmit_interrupts{};
@@ -37,17 +37,17 @@ constexpr std::uint8_t bank_select_register = 0xEFU;
 constexpr std::uint8_t bank_zero = 0x00U;
 constexpr std::uint8_t part_id_register = 0x00U;
 constexpr std::array<std::uint8_t, 2> expected_identity{0x20U, 0x76U};
-constexpr auto device_address = mcuhw::driver::make_i2c_address(0x73U);
+constexpr auto device_address = mcubsp::driver::make_i2c_address(0x73U);
 static_assert(device_address.has_value());
 
-constexpr auto timing_100khz = mcuhw::backend::ra4m1::solve_i2c_timing({
+constexpr auto timing_100khz = mcubsp::backend::ra4m1::solve_i2c_timing({
     .clock_hz = 24'000'000U,
     .target_hz = 100'000U,
     .maximum_error_ppm = 20'000U,
     .rise_time_ns = 300U,
     .fall_time_ns = 100U,
 });
-constexpr auto timing_400khz = mcuhw::backend::ra4m1::solve_i2c_timing({
+constexpr auto timing_400khz = mcubsp::backend::ra4m1::solve_i2c_timing({
     .clock_hz = 24'000'000U,
     .target_hz = 400'000U,
     .maximum_error_ppm = 30'000U,
@@ -81,10 +81,10 @@ rate_observation fast_observation{};
 
 void configure_interrupts() noexcept {
     constexpr std::array<std::uint16_t, 4> events{
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::iic1_rxi),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::iic1_txi),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::iic1_tei),
-        mcuhw::mcu::ra4m1::event_number(mcuhw::mcu::ra4m1::event::iic1_eei),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::iic1_rxi),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::iic1_txi),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::iic1_tei),
+        mcubsp::mcu::ra4m1::event_number(mcubsp::mcu::ra4m1::event::iic1_eei),
     };
     *reinterpret_cast<volatile std::uint32_t*>(0xE000'E180U) = 0x0FU;
     for (std::uint32_t line = 0U; line < events.size(); ++line) {
@@ -98,10 +98,10 @@ void configure_interrupts() noexcept {
     __asm__ volatile("dsb sy\n\tisb sy\n\tcpsie i" ::: "memory");
 }
 
-[[nodiscard]] mcuhw::execution::deadline deadline_after(
+[[nodiscard]] mcubsp::execution::deadline deadline_after(
     std::uint32_t cycles) noexcept {
     return {static_cast<std::uint32_t>(
-        mcuhw::board_test::execution_hooks::now() + cycles)};
+        mcubsp::board_test::execution_hooks::now() + cycles)};
 }
 
 template<typename Timing>
@@ -144,7 +144,7 @@ template<typename Timing>
     }
 
     if (observation.bank_selected) {
-        mcuhw::driver::i2c_register_request<expected_identity.size()> request;
+        mcubsp::driver::i2c_register_request<expected_identity.size()> request;
         auto identity_started = gesture_sensor.read_register(
             part_id_register, request, expected_identity.size());
         observation.identity_read_started = identity_started.has_value();
@@ -195,13 +195,13 @@ TEST(uno_i2c, iic1_a4_a5_paj7620u2_identity_write_and_repeated_start_read,
 }
 
 constexpr char metadata[] =
-    "MCUHW_META board=Arduino_UNO_R4_Minima suite=i2c "
+    "MCUBSP_META board=Arduino_UNO_R4_Minima suite=i2c "
     "firmware=pln-0008 fixture=A5_IIC1_SCL_A4_IIC1_SDA_to_PAJ7620U2_0x73 "
     "rates_hz=100000,400000 transaction=bank_select_and_repeated_start_identity_read "
     "pullups=grove_module toolchain=arm-none-eabi-gcc-15.2.1 "
     "iclk_hz=48000000 pclka_hz=48000000 pclkb_hz=24000000 "
     "pclkd_hz=48000000 interface=J-Link_SWD_RTT\n";
-constexpr mcuhw::board_test::evidence_metadata evidence{
+constexpr mcubsp::board_test::evidence_metadata evidence{
     .suite = "i2c",
     .firmware = "pln-0008",
     .fixture = "A5 IIC1 SCL and A4 IIC1 SDA to Grove Gesture PAJ7620U2 address 0x73",
@@ -210,7 +210,7 @@ constexpr mcuhw::board_test::evidence_metadata evidence{
 
 template<typename Writer>
 void write_rate_observation(Writer& rate, const rate_observation& observation,
-                            const mcuhw::backend::ra4m1::i2c_timing& timing) noexcept {
+                            const mcubsp::backend::ra4m1::i2c_timing& timing) noexcept {
     rate("target_hz", timing.target_hz);
     rate("achieved_hz", timing.achieved_hz);
     rate("error_ppm", timing.error_ppm);
@@ -236,9 +236,9 @@ void write_rate_observation(Writer& rate, const rate_observation& observation,
 } // namespace
 
 int main() {
-    mcuhw::board_test::start(metadata);
+    mcubsp::board_test::start(metadata);
     configure_interrupts();
-    mcuhw::board_test::finish(evidence, [&](auto& observations) {
+    mcubsp::board_test::finish(evidence, [&](auto& observations) {
         observations("controller", "IIC1 interrupt-driven controller");
         observations("device", "Grove Gesture PAJ7620U2 at 0x73");
         observations("expected_part_id", 0x7620U);
@@ -255,23 +255,23 @@ int main() {
 extern "C" void IRQ0_Handler() noexcept {
     receive_interrupts = receive_interrupts + 1U;
     static_cast<void>(backend.handle_receive_interrupt());
-    mcuhw::board_test::clear_icu_line(0U);
+    mcubsp::board_test::clear_icu_line(0U);
 }
 
 extern "C" void IRQ1_Handler() noexcept {
     transmit_interrupts = transmit_interrupts + 1U;
     static_cast<void>(backend.handle_transmit_empty_interrupt());
-    mcuhw::board_test::clear_icu_line(1U);
+    mcubsp::board_test::clear_icu_line(1U);
 }
 
 extern "C" void IRQ2_Handler() noexcept {
     transmit_end_interrupts = transmit_end_interrupts + 1U;
     static_cast<void>(backend.handle_transmit_end_interrupt());
-    mcuhw::board_test::clear_icu_line(2U);
+    mcubsp::board_test::clear_icu_line(2U);
 }
 
 extern "C" void IRQ3_Handler() noexcept {
     error_interrupts = error_interrupts + 1U;
     static_cast<void>(backend.handle_error_interrupt());
-    mcuhw::board_test::clear_icu_line(3U);
+    mcubsp::board_test::clear_icu_line(3U);
 }

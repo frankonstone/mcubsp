@@ -20,20 +20,20 @@
 void operator delete(void*) noexcept {}
 void operator delete(void*, std::size_t) noexcept {}
 
-extern "C" void mcuhw_esp32p4_gpio_test_link_anchor() noexcept;
-extern "C" void mcuhw_esp32p4_i2c_test_link_anchor() noexcept;
-extern "C" void mcuhw_esp32p4_audio_test_link_anchor() noexcept;
-extern "C" void mcuhw_esp32p4_ethernet_test_link_anchor() noexcept;
-extern "C" void mcuhw_esp32p4_sdmmc_test_link_anchor() noexcept;
-extern "C" void mcuhw_esp32p4_wifi_sdio_test_link_anchor() noexcept;
-extern "C" void mcuhw_esp32p4_spi_test_link_anchor() noexcept;
-extern "C" void mcuhw_esp32p4_uart_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_gpio_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_i2c_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_audio_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_ethernet_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_sdmmc_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_wifi_sdio_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_spi_test_link_anchor() noexcept;
+extern "C" void mcubsp_esp32p4_uart_test_link_anchor() noexcept;
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 void run_uart_preflight() noexcept;
 }
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 struct uart_output {
@@ -72,14 +72,14 @@ struct coverage_hex_sink {
 } // namespace
 
 run_result MCUCOV_NO_INSTRUMENT run_tests_and_dump_coverage() noexcept {
-    mcuhw_esp32p4_gpio_test_link_anchor();
-    mcuhw_esp32p4_i2c_test_link_anchor();
-    mcuhw_esp32p4_audio_test_link_anchor();
-    mcuhw_esp32p4_ethernet_test_link_anchor();
-    mcuhw_esp32p4_sdmmc_test_link_anchor();
-    mcuhw_esp32p4_wifi_sdio_test_link_anchor();
-    mcuhw_esp32p4_spi_test_link_anchor();
-    mcuhw_esp32p4_uart_test_link_anchor();
+    mcubsp_esp32p4_gpio_test_link_anchor();
+    mcubsp_esp32p4_i2c_test_link_anchor();
+    mcubsp_esp32p4_audio_test_link_anchor();
+    mcubsp_esp32p4_ethernet_test_link_anchor();
+    mcubsp_esp32p4_sdmmc_test_link_anchor();
+    mcubsp_esp32p4_wifi_sdio_test_link_anchor();
+    mcubsp_esp32p4_spi_test_link_anchor();
+    mcubsp_esp32p4_uart_test_link_anchor();
     run_uart_preflight();
     mcutest::Runner<uart_output> runner;
     runner.run_all_registered();
@@ -87,7 +87,7 @@ run_result MCUCOV_NO_INSTRUMENT run_tests_and_dump_coverage() noexcept {
     const auto tests = mcutest::registry().count;
     const auto registry_overflow = mcutest::registry().overflow_count;
 
-    esp_rom_printf("MCUHW_COVERAGE_HEX:");
+    esp_rom_printf("MCUBSP_COVERAGE_HEX:");
     coverage_hex_sink backend;
     mcucov::BufferedSink<coverage_hex_sink, 64> sink{backend};
     const bool written = mcucov::dump(sink);
@@ -100,4 +100,4 @@ run_result MCUCOV_NO_INSTRUMENT run_tests_and_dump_coverage() noexcept {
     };
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

@@ -12,14 +12,14 @@
 #include <mcutest/assert.hpp>
 #include <mcutest/core.hpp>
 
-#include <mcuhw/backend/esp32p4/uart.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/backend/esp32p4/uart.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
-extern "C" void mcuhw_esp32p4_uart_test_link_anchor() noexcept {}
+extern "C" void mcubsp_esp32p4_uart_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 namespace {
 
 using binding = backend::esp32p4::uart_binding<
@@ -71,7 +71,7 @@ void run_uart_preflight() noexcept {
             == (347U | (4U << 20U));
 
     constexpr char marker[] =
-        "MCUHW_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done\r\n";
+        "MCUBSP_UART backend=esp32p4 uart=0 baud=115191 completion=tx_done\r\n";
     const auto bytes = std::span<const std::uint8_t>{
         reinterpret_cast<const std::uint8_t*>(marker), sizeof(marker) - 1U};
     auto started = uart.transmit(bytes);
@@ -98,4 +98,4 @@ TEST(esp32p4_uart, uart0_transmits_through_direct_usb_bridge,
     ASSERT_TRUE(preflight.transmit_completed);
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano

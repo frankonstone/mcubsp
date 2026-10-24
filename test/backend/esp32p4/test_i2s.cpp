@@ -8,9 +8,9 @@
 
 #include <mcutest/mcutest.hpp>
 
-#include <mcuhw/backend/esp32p4/i2s.hpp>
-#include <mcuhw/core/mmio.hpp>
-#include <mcuhw/execution/fake_policy.hpp>
+#include <mcubsp/backend/esp32p4/i2s.hpp>
+#include <mcubsp/core/mmio.hpp>
+#include <mcubsp/execution/fake_policy.hpp>
 
 namespace {
 
@@ -18,30 +18,30 @@ class sparse_mmio {
 public:
     template<std::unsigned_integral Value>
         requires(sizeof(Value) == 1 || sizeof(Value) == 2 || sizeof(Value) == 4)
-    [[nodiscard]] std::expected<Value, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<Value, mcubsp::core::mmio_error>
     read(std::uintptr_t address) noexcept {
         if (address % alignof(Value) != 0U) {
-            return std::unexpected(mcuhw::core::mmio_error::misaligned);
+            return std::unexpected(mcubsp::core::mmio_error::misaligned);
         }
-        if (fail_) return std::unexpected(mcuhw::core::mmio_error::invalid_value);
+        if (fail_) return std::unexpected(mcubsp::core::mmio_error::invalid_value);
         return static_cast<Value>(value(address));
     }
 
     template<std::unsigned_integral Value>
         requires(sizeof(Value) == 1 || sizeof(Value) == 2 || sizeof(Value) == 4)
-    [[nodiscard]] std::expected<void, mcuhw::core::mmio_error>
+    [[nodiscard]] std::expected<void, mcubsp::core::mmio_error>
     write(std::uintptr_t address, Value next) noexcept {
         if (address % alignof(Value) != 0U) {
-            return std::unexpected(mcuhw::core::mmio_error::misaligned);
+            return std::unexpected(mcubsp::core::mmio_error::misaligned);
         }
-        if (fail_) return std::unexpected(mcuhw::core::mmio_error::invalid_value);
+        if (fail_) return std::unexpected(mcubsp::core::mmio_error::invalid_value);
         auto word = static_cast<std::uint32_t>(next);
-        if ((address == mcuhw::mcu::esp32p4::i2s0_base + 0x20U
-             || address == mcuhw::mcu::esp32p4::i2s0_base + 0x24U)
+        if ((address == mcubsp::mcu::esp32p4::i2s0_base + 0x20U
+             || address == mcubsp::mcu::esp32p4::i2s0_base + 0x24U)
             && (word & (1U << 8U)) != 0U) {
             word &= ~(1U << 8U);
         }
-        const auto dma = mcuhw::mcu::esp32p4::gdma_ahb_base;
+        const auto dma = mcubsp::mcu::esp32p4::gdma_ahb_base;
         if (address == dma + 0x0CU) {
             set(dma, value(dma) & ~word);
             return {};
@@ -82,7 +82,7 @@ private:
 
 class fake_dma_memory {
 public:
-    [[nodiscard]] std::expected<std::uint32_t, mcuhw::driver::i2s_error>
+    [[nodiscard]] std::expected<std::uint32_t, mcubsp::driver::i2s_error>
     address(const void*) noexcept {
         const auto result = next_;
         next_ += 0x100U;
@@ -107,14 +107,14 @@ private:
     bool fail_{};
 };
 
-using binding = mcuhw::backend::esp32p4::i2s_binding<
-    0, mcuhw::core::pin_id{0, 13}, mcuhw::core::pin_id{0, 12},
-    mcuhw::core::pin_id{0, 10}, mcuhw::core::pin_id{0, 9},
-    mcuhw::core::pin_id{0, 11}>;
-using backend_type = mcuhw::backend::esp32p4::i2s_backend<
-    binding, sparse_mmio, mcuhw::execution::fake_policy, fake_dma_memory>;
+using binding = mcubsp::backend::esp32p4::i2s_binding<
+    0, mcubsp::core::pin_id{0, 13}, mcubsp::core::pin_id{0, 12},
+    mcubsp::core::pin_id{0, 10}, mcubsp::core::pin_id{0, 9},
+    mcubsp::core::pin_id{0, 11}>;
+using backend_type = mcubsp::backend::esp32p4::i2s_backend<
+    binding, sparse_mmio, mcubsp::execution::fake_policy, fake_dma_memory>;
 
-constexpr auto timing_48k = mcuhw::backend::esp32p4::solve_i2s_timing({
+constexpr auto timing_48k = mcubsp::backend::esp32p4::solve_i2s_timing({
     .clock_hz = 40'000'000U,
     .sample_rate_hz = 48'000U,
     .mclk_multiple = 256U,
@@ -134,9 +134,9 @@ TEST(esp32p4_i2s, solves_exact_48khz_codec_clock,
     EXPECT_EQ(timing_48k->divider_numerator, 49U);
     EXPECT_EQ(timing_48k->divider_denominator, 192U);
     EXPECT_EQ(timing_48k->bclk_divider, 8U);
-    EXPECT_FALSE(mcuhw::backend::esp32p4::solve_i2s_timing(
+    EXPECT_FALSE(mcubsp::backend::esp32p4::solve_i2s_timing(
         {0U, 48'000U, 256U, 16U, 2U, 0U}).has_value());
-    EXPECT_FALSE(mcuhw::backend::esp32p4::solve_i2s_timing(
+    EXPECT_FALSE(mcubsp::backend::esp32p4::solve_i2s_timing(
         {40'000'000U, 48'000U, 256U, 24U, 2U, 0U}).has_value());
 }
 
@@ -144,30 +144,30 @@ TEST(esp32p4_i2s, configures_philips_clocks_slots_and_gpio_matrix,
      "REQ-0010", "REQ-0011", "REQ-0013", "REQ-0034") {
     sparse_mmio mmio;
     fake_dma_memory memory;
-    mcuhw::execution::fake_policy execution;
+    mcubsp::execution::fake_policy execution;
     backend_type i2s{mmio, execution, memory};
     ASSERT_TRUE(i2s.initialize(*timing_48k).has_value());
-    EXPECT_TRUE((mmio.value(mcuhw::mcu::esp32p4::hp_soc_clock_ctrl1)
+    EXPECT_TRUE((mmio.value(mcubsp::mcu::esp32p4::hp_soc_clock_ctrl1)
                  & (1U << 3U)) != 0U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::hp_rst_en1)
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::hp_rst_en1)
                   & (1U << 1U),
               0U);
-    EXPECT_TRUE((mmio.value(mcuhw::mcu::esp32p4::hp_soc_clock_ctrl2)
+    EXPECT_TRUE((mmio.value(mcubsp::mcu::esp32p4::hp_soc_clock_ctrl2)
                  & (1U << 14U)) != 0U);
-    EXPECT_TRUE((mmio.value(mcuhw::mcu::esp32p4::i2s0_base + 0x20U)
+    EXPECT_TRUE((mmio.value(mcubsp::mcu::esp32p4::i2s0_base + 0x20U)
                  & (1U << 19U)) != 0U);
-    EXPECT_TRUE((mmio.value(mcuhw::mcu::esp32p4::i2s0_base + 0x24U)
+    EXPECT_TRUE((mmio.value(mcubsp::mcu::esp32p4::i2s0_base + 0x24U)
                  & (1U << 13U)) != 0U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::i2s0_base + 0x28U)
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::i2s0_base + 0x28U)
                   & 0x1FFU, 15U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gpio_matrix_base + 0x558U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gpio_matrix_base + 0x558U
                          + binding::mclk_pin.index * 4U) & 0x1FFU,
               binding::mclk_matrix_signal);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gpio_matrix_base + 0x158U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gpio_matrix_base + 0x158U
                          + binding::data_matrix_signal * 4U) & 0x3FU,
               binding::data_in_pin.index);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gdma_ahb_base + 0xA0U), 3U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gdma_ahb_base + 0x100U), 3U);
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gdma_ahb_base + 0xA0U), 3U);
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gdma_ahb_base + 0x100U), 3U);
     EXPECT_TRUE(i2s.shutdown().has_value());
 }
 
@@ -175,7 +175,7 @@ TEST(esp32p4_i2s, completes_finite_receive_and_transmit_dma,
      "REQ-0009", "REQ-0013", "REQ-0014", "REQ-0017", "REQ-0019") {
     sparse_mmio mmio;
     fake_dma_memory memory;
-    mcuhw::execution::fake_policy execution;
+    mcubsp::execution::fake_policy execution;
     backend_type i2s{mmio, execution, memory};
     ASSERT_TRUE(i2s.initialize(*timing_48k).has_value());
     std::array<std::int16_t, 8> samples{};
@@ -184,17 +184,17 @@ TEST(esp32p4_i2s, completes_finite_receive_and_transmit_dma,
     ASSERT_TRUE(receiving_start.has_value());
     auto receiving = std::move(*receiving_start);
     EXPECT_FALSE(receiving.ready());
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gpio_matrix_base + 0x558U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gpio_matrix_base + 0x558U
                          + binding::bclk_pin.index * 4U) & 0x1FFU,
               binding::rx_bclk_matrix_signal);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gpio_matrix_base + 0x558U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gpio_matrix_base + 0x558U
                          + binding::ws_pin.index * 4U) & 0x1FFU,
               binding::rx_ws_matrix_signal);
-    mmio.set(mcuhw::mcu::esp32p4::gdma_ahb_base, 1U << 1U);
+    mmio.set(mcubsp::mcu::esp32p4::gdma_ahb_base, 1U << 1U);
     EXPECT_TRUE(i2s.handle_interrupt());
     const auto received = receiving.take();
     ASSERT_TRUE(received.has_value());
-    EXPECT_TRUE(received->direction == mcuhw::driver::i2s_direction::receive);
+    EXPECT_TRUE(received->direction == mcubsp::driver::i2s_direction::receive);
     EXPECT_EQ(received->bytes, samples.size() * sizeof(samples[0]));
     EXPECT_EQ(memory.completed(), 1U);
 
@@ -202,18 +202,18 @@ TEST(esp32p4_i2s, completes_finite_receive_and_transmit_dma,
     ASSERT_TRUE(transmitting_start.has_value());
     auto transmitting = std::move(*transmitting_start);
     EXPECT_TRUE(memory.prepared() >= 3U);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gpio_matrix_base + 0x558U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gpio_matrix_base + 0x558U
                          + binding::bclk_pin.index * 4U) & 0x1FFU,
               binding::tx_bclk_matrix_signal);
-    EXPECT_EQ(mmio.value(mcuhw::mcu::esp32p4::gpio_matrix_base + 0x558U
+    EXPECT_EQ(mmio.value(mcubsp::mcu::esp32p4::gpio_matrix_base + 0x558U
                          + binding::ws_pin.index * 4U) & 0x1FFU,
               binding::tx_ws_matrix_signal);
-    mmio.set(mcuhw::mcu::esp32p4::gdma_ahb_base + 0x30U, 1U << 3U);
+    mmio.set(mcubsp::mcu::esp32p4::gdma_ahb_base + 0x30U, 1U << 3U);
     EXPECT_TRUE(i2s.handle_interrupt());
     const auto transmitted = transmitting.take();
     ASSERT_TRUE(transmitted.has_value());
     EXPECT_TRUE(transmitted->direction
-                == mcuhw::driver::i2s_direction::transmit);
+                == mcubsp::driver::i2s_direction::transmit);
     EXPECT_EQ(transmitted->bytes, samples.size() * sizeof(samples[0]));
 
     auto cancelled_start = i2s.receive(samples);

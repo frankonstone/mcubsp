@@ -23,19 +23,19 @@ pool remain valid for the complete transfer.
 #include <array>
 #include <utility>
 
-#include <mcuhw/backend/ra4m1/spi.hpp>
-#include <mcuhw/board/arduino_uno_r4_minima.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/spi.hpp>
+#include <mcubsp/backend/ra4m1/spi.hpp>
+#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/spi.hpp>
 
-namespace board = mcuhw::board::arduino_uno_r4_minima;
+namespace board = mcubsp::board::arduino_uno_r4_minima;
 
 void use_identity(const std::array<std::uint16_t, 3>& identity);
 
-using binding = mcuhw::backend::ra4m1::spi_binding<
+using binding = mcubsp::backend::ra4m1::spi_binding<
     1, board::d12_miso, board::d11_mosi, board::d13_sck, board::d10_ssl>;
 
-constexpr auto timing = mcuhw::backend::ra4m1::solve_spi_timing({
+constexpr auto timing = mcubsp::backend::ra4m1::solve_spi_timing({
     .clock_hz = 48'000'000U,
     .target_hz = 1'000'000U,
     .maximum_error_ppm = 0U,
@@ -43,12 +43,12 @@ constexpr auto timing = mcuhw::backend::ra4m1::solve_spi_timing({
 static_assert(timing.has_value());
 
 template<class Spi>
-int read_id(Spi& spi, mcuhw::execution::deadline deadline) {
+int read_id(Spi& spi, mcubsp::execution::deadline deadline) {
     const std::array<std::uint16_t, 1> command{0x9FU};
     std::array<std::uint16_t, 3> identity{};
     const std::array segments{
-        mcuhw::driver::spi_segment{.transmit = command},
-        mcuhw::driver::spi_segment{.receive = identity, .dummy = 0xFFU},
+        mcubsp::driver::spi_segment{.transmit = command},
+        mcubsp::driver::spi_segment{.receive = identity, .dummy = 0xFFU},
     };
 
     auto started = spi.transaction(segments);
@@ -71,11 +71,11 @@ The surrounding application supplies initialization, the deadline, and IRQ
 dispatch:
 
 ```cpp
-mcuhw::core::direct_mmio mmio;
+mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
 
-using backend_type = mcuhw::backend::ra4m1::spi_master_backend<
-    binding, mcuhw::core::direct_mmio, application_execution_policy>;
+using backend_type = mcubsp::backend::ra4m1::spi_master_backend<
+    binding, mcubsp::core::direct_mmio, application_execution_policy>;
 backend_type spi{mmio, execution};
 
 int main() {
@@ -83,14 +83,14 @@ int main() {
     configure_spi1_interrupt_routes();
 
     if (!spi.initialize(*timing, {
-            .mode = mcuhw::driver::spi_mode::mode0,
-            .bit_order = mcuhw::driver::spi_bit_order::most_significant_first,
-            .frame_width = mcuhw::driver::spi_frame_width::bits8,
+            .mode = mcubsp::driver::spi_mode::mode0,
+            .bit_order = mcubsp::driver::spi_bit_order::most_significant_first,
+            .frame_width = mcubsp::driver::spi_frame_width::bits8,
         })) {
         return 1;
     }
     enable_spi1_interrupts();
-    const auto deadline = mcuhw::execution::make_deadline(
+    const auto deadline = mcubsp::execution::make_deadline(
         execution.now(), 4'800'000U);
     const bool read = deadline && read_id(spi, *deadline) == 0;
     disable_spi1_interrupts();

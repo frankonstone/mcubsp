@@ -10,16 +10,16 @@
 #include <mcutest/assert.hpp>
 #include <mcutest/core.hpp>
 
-#include <mcuhw/backend/esp32p4/ethernet.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/backend/esp32p4/gpio.hpp>
-#include <mcuhw/board/esp32p4_nano.hpp>
-#include <mcuhw/core/direct_mmio.hpp>
-#include <mcuhw/driver/gpio.hpp>
+#include <mcubsp/backend/esp32p4/ethernet.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/backend/esp32p4/gpio.hpp>
+#include <mcubsp/board/esp32p4_nano.hpp>
+#include <mcubsp/core/direct_mmio.hpp>
+#include <mcubsp/driver/gpio.hpp>
 
-extern "C" void mcuhw_esp32p4_ethernet_test_link_anchor() noexcept {}
+extern "C" void mcubsp_esp32p4_ethernet_test_link_anchor() noexcept {}
 
-namespace mcuhw::board_test::esp32p4_nano {
+namespace mcubsp::board_test::esp32p4_nano {
 
 TEST(esp32p4_ethernet, initializes_emac_and_identifies_onboard_ip101,
      "REQ-0003", "REQ-0009", "REQ-0010", "REQ-0011", "REQ-0013",
@@ -43,7 +43,7 @@ TEST(esp32p4_ethernet, initializes_emac_and_identifies_onboard_ip101,
     ASSERT_TRUE(reset.set().has_value());
     esp_rom_delay_us(10'000U);
 
-    backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcuhw::board::esp32p4_nano::ethernet_binding> mac{mmio};
+    backend::esp32p4::ethernet_rmii_mac<decltype(mmio), mcubsp::board::esp32p4_nano::ethernet_binding> mac{mmio};
     const backend::esp32p4::ethernet_mac_address address{
         {0x02U, 0x00U, 0x00U, 0x04U, 0x00U, 0x01U}};
     const auto initialized = mac.initialize(address);
@@ -66,7 +66,7 @@ TEST(esp32p4_ethernet, initializes_emac_and_identifies_onboard_ip101,
     const bool link_up = (*bmsr & (1U << 2U)) != 0U;
 
     esp_rom_printf(
-        "MCUHW_ETHERNET backend=esp32p4 interface=rmii phy=IP101GRI "
+        "MCUBSP_ETHERNET backend=esp32p4 interface=rmii phy=IP101GRI "
         "address=1 refclk_hz=50000000 id1=0x%04x id2=0x%04x "
         "oui=0x%06lx model=0x%02x bmsr=0x%04x link=%s "
         "traffic=not_tested\n",
@@ -77,4 +77,4 @@ TEST(esp32p4_ethernet, initializes_emac_and_identifies_onboard_ip101,
         static_cast<unsigned>(*bmsr), link_up ? "up" : "down");
 }
 
-} // namespace mcuhw::board_test::esp32p4_nano
+} // namespace mcubsp::board_test::esp32p4_nano
