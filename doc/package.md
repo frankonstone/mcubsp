@@ -7,13 +7,17 @@ when an application explicitly requests them.
 
 ## Use an installed package
 
-The default checkout workflow produces `output/install`:
+The Apple Silicon macOS checkout workflow builds, tests and produces `output/install`:
 
 ```sh
-cmake --preset library
-cmake --build --preset library
-cmake --install output/build/library
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64
+cmake --install output/build/macos-arm64
 ```
+
+On Linux x86_64, replace `macos-arm64` with `linux-x86_64` in the commands and
+build path. To install without test dependencies, configure with
+`-DMCUBSP_BUILD_HOST_TESTS=OFF -DMCUBSP_CHECK_HEADERS=OFF`.
 
 In a dependent project's `CMakeLists.txt`:
 

@@ -18,7 +18,7 @@ install(DIRECTORY include/ DESTINATION share/mcubsp/include
 install(FILES cmake/Firmware.cmake cmake/FirmwareArtifact.cmake
     cmake/board-toolchain.cmake
     cmake/toolchain-arm-cortex-m4.cmake cmake/toolchain-arm-cortex-m7.cmake
-    cmake/toolchain-esp32p4.cmake cmake/toolchain-macos.cmake
+    cmake/toolchain-esp32p4.cmake cmake/toolchain-macos-arm64.cmake
     cmake/toolchain-linux-x86_64.cmake
     DESTINATION share/mcubsp/cmake)
 install(DIRECTORY cmake/arch cmake/esp-idf DESTINATION share/mcubsp/cmake

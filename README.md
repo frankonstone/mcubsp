@@ -184,9 +184,12 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ```
 
-To install without board or test dependencies, run
-`cmake --preset library`, then `cmake --build --preset library` and
-`cmake --install output/build/library`. The package goes to `output/install`.
+To build, test and install on Apple Silicon macOS, run
+`cmake --preset macos-arm64`, then `cmake --build --preset macos-arm64` and
+`cmake --install output/build/macos-arm64`. The package goes to `output/install`.
+On Linux x86_64, use `linux-x86_64` in the commands and build path instead.
+For installation without test dependencies, configure with
+`-DMCUBSP_BUILD_HOST_TESTS=OFF -DMCUBSP_CHECK_HEADERS=OFF`.
 In the consumer,
 replace `add_subdirectory` with `find_package(mcubsp 0.1 CONFIG REQUIRED)` and
 configure with `-DCMAKE_PREFIX_PATH=/absolute/path/to/mcubsp/output/install`.
@@ -255,7 +258,7 @@ implicit cancellation.
 
 ## Framework maintainer presets
 
-The `host`, `macos` and `linux-x86_64` presets build and run native suites,
+The `macos-arm64` and `linux-x86_64` presets build and run native suites,
 compiler contracts and isolated-header checks. Native verification needs Python
 3.10+ and mcutest; cross compilers are optional. MCUIP compositions belong to
 the sibling integration project. Board presets select
@@ -263,18 +266,17 @@ the matching cross compiler. `MCUBSP_BUILD_BOARD_TESTS=ON` opts into UNO physica
 test images and `MCUBSP_COVERAGE=ON` instruments them. Exact board revisions
 are selected with `MCUBSP_BOARD_REVISION`.
 
-| Preset | Board | Toolchain |
+| Preset | Purpose / board | Toolchain |
 | --- | --- | --- |
-| `host` | Portable host tests | Selected native compiler |
-| `macos` | Host tests | macOS Clang |
-| `linux-x86_64` | Host tests | Linux x86_64 GCC or Clang |
+| `macos-arm64` | Apple Silicon host tests and installation | macOS arm64 Clang |
+| `linux-x86_64` | Linux host tests and installation | Linux x86_64 GCC or Clang |
 | `arduino-uno-r4-minima` | Arduino UNO R4 Minima | ARM Cortex-M4 |
 | `st-nucleo-h753zi` | NUCLEO-H753ZI | ARM Cortex-M7 |
 | `waveshare-esp32p4-nano` | Waveshare ESP32-P4-NANO | ESP32-P4 RISC-V |
 
 ```sh
-cmake --preset macos
-cmake --build --preset macos
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64
 
 cmake --preset st-nucleo-h753zi
 cmake --build --preset st-nucleo-h753zi

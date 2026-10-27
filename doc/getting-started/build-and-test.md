@@ -4,31 +4,35 @@ This page is for contributors testing mcubsp itself. Library users should start
 with [their application's build](application.md); these test dependencies and
 repository presets are not required just to consume mcubsp.
 
-The portable host preset needs CMake 3.25+, Ninja, Git, Python 3.10+, a C++23 compiler
+The native presets need CMake 3.25+, Ninja, Git, Python 3.10+, a C++23 compiler
 with matching standard library, and mcutest. It defaults to `../mcutest`; pass
 `-DMCUBSP_MCUTEST_SOURCE_DIR=/path/to/mcutest` or supply its installed package.
 
 ```sh
-cmake --preset host
-cmake --build --preset host --parallel 4
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64 --parallel 4
 ```
 
 The build compiles isolated public headers, native suites and positive probes,
 then runs CTest, including compiler rejection and external-consumer checks.
-`macos` and `linux-x86_64` provide host-specific alternatives. Select a compiler
+Use `macos-arm64` on Apple Silicon macOS, as above, or replace it with
+`linux-x86_64` on Linux x86_64, including in build paths and CTest commands. Both
+presets also support installation with `cmake --install output/build/<preset>`.
+Select a compiler
 with `-DCMAKE_CXX_COMPILER=g++-15` on the first configuration. Cross compilers,
 MCUIP and coverage tools are unnecessary for native verification.
 
 After building, run focused tests using labels:
 
 ```sh
-ctest --test-dir output/build/host -L backend --output-on-failure
-ctest --test-dir output/build/host -L io --output-on-failure
-ctest --preset host
+ctest --test-dir output/build/macos-arm64 -L backend --output-on-failure
+ctest --test-dir output/build/macos-arm64 -L io --output-on-failure
+ctest --preset macos-arm64
 ```
 
-Native reports are under `output/build/host/artifact/native/`. CTest has the complete
-compile/build-test log under `output/build/host/Testing/Temporary/LastTest.log`.
+Native reports are under `output/build/macos-arm64/artifact/native/`. CTest has the complete
+compile/build-test log under `output/build/macos-arm64/Testing/Temporary/LastTest.log`.
+Successful builds also publish the merged trace report to `output/artifact/native.json`.
 
 ## Optional checks
 
@@ -42,8 +46,8 @@ compile/build-test log under `output/build/host/Testing/Temporary/LastTest.log`.
 | `MCUBSP_COVERAGE=ON` | Instrument selected UNO/NUCLEO test images |
 
 ```sh
-cmake --preset host
-cmake --build --preset host --target target-probes-cortex-m4
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64 --target target-probes-cortex-m4
 ```
 
 For cross checks without any native test dependency:

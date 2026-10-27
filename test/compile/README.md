@@ -25,15 +25,15 @@ compiler. Each cross build runs its own `check-compile` target. The host build
 then runs all CTest entries, including the cases handled by `CompileCase.cmake`.
 
 ```sh
-cmake --preset macos
-cmake --build --preset macos
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64
 ```
 
 Use `linux-x86_64` on Linux. To run only one part after configuring:
 
 ```sh
-cmake --build --preset macos --target target-compile-probes
-cmake --build --preset macos --target check-compile
+cmake --build --preset macos-arm64 --target target-compile-probes
+cmake --build --preset macos-arm64 --target check-compile
 ```
 
 The cross-build outputs are under

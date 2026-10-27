@@ -28,8 +28,8 @@ Host presets build the native suites, positive probes and expected compiler
 rejections and run them through CTest:
 
 ```sh
-cmake --preset macos
-cmake --build --preset macos
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64
 ```
 
 Use `linux-x86_64` on Linux x86_64. Native suites require `mcutest` at
@@ -37,7 +37,7 @@ Use `linux-x86_64` on Linux x86_64. Native suites require `mcutest` at
 explicit checkout. After building, CTest labels allow focused runs:
 
 ```sh
-ctest --test-dir output/build/macos -L backend --output-on-failure
+ctest --test-dir output/build/macos-arm64 -L backend --output-on-failure
 ```
 
 Physical tests live under `src/board/<vendor>/<board>/test/`. They are built only

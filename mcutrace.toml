@@ -25,11 +25,12 @@ build_files = [
   "example/**/CMakeLists.txt",
 ]
 
-# The host build merges only reports in its explicit producer registry.
+# Native builds publish only reports in their explicit producer registry.
+# The shared report represents the latest successful native build.
 # Historical physical records remain indexed in doc/acceptance, not imported
 # as current-tree evidence. Run the host build before loading this graph.
 [[artifacts]]
-path = "output/build/host/artifact/native.json"
+path = "output/artifact/native.json"
 importer = "mcutest"
 
 [validation]

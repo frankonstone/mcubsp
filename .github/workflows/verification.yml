@@ -20,12 +20,18 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
+            configure: --preset linux-x86_64
+            build_dir: linux-x86_64
             cxx: g++-14
             shell: bash
           - os: macos-14
+            configure: --preset macos-arm64
+            build_dir: macos-arm64
             cxx: g++-15
             shell: bash
           - os: windows-2022
+            configure: -S . -B output/build/windows-x86_64 -G Ninja -DMCUBSP_BUILD_HOST_TESTS=ON -DMCUBSP_CHECK_HEADERS=ON
+            build_dir: windows-x86_64
             cxx: g++
             shell: 'msys2 {0}'
     runs-on: ${{ matrix.os }}
@@ -54,19 +60,19 @@ jobs:
             mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-python
       - name: Configure native, header and consumer checks
         shell: ${{ matrix.shell }}
-        run: cmake --preset host -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DMCUBSP_MCUTEST_SOURCE_DIR="$PWD/_ci/mcutest"
+        run: cmake ${{ matrix.configure }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DMCUBSP_MCUTEST_SOURCE_DIR="$PWD/_ci/mcutest"
       - name: Build and test without cross compilers or MCUIP
         shell: ${{ matrix.shell }}
-        run: cmake --build --preset host --parallel 2
+        run: cmake --build output/build/${{ matrix.build_dir }} --parallel 2
       - name: Preserve results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: native-${{ matrix.os }}
           path: |
-            output/build/host/artifact/
-            output/build/host/Testing/Temporary/LastTest.log
-            output/build/host/CMakeCache.txt
+            output/build/${{ matrix.build_dir }}/artifact/
+            output/build/${{ matrix.build_dir }}/Testing/Temporary/LastTest.log
+            output/build/${{ matrix.build_dir }}/CMakeCache.txt
   arm:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

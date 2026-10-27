@@ -26,13 +26,17 @@ mcubsp and MCUIP dependencies.
 
 ## Trace evidence
 
-`mcutrace.toml` imports `output/build/host/artifact/native.json`. The host target
+`mcutrace.toml` imports `output/artifact/native.json`. The `host-tests` target
 merges only the producer files declared by the configured test registry;
 unregistered stale results cannot enter it. Individual reports remain under
-`output/build/host/artifact/native/`. The merged report records their SHA-256 identities. Run the `host` preset
-before loading the analyzed graph on a clean checkout; the server requires its declared artifact files to
-exist. Other build directories produce independent results but do not silently
-replace the canonical reports. Compiler checks remain CTest results; native
+`output/build/<preset>/artifact/native/`. The merged report records their SHA-256
+identities. Build `macos-arm64` or `linux-x86_64` before loading the analyzed graph
+on a clean checkout; the server requires its declared artifact files to exist.
+Each native build retains its own merged report under `artifact/native.json` and
+publishes a copy to the shared path after its tests pass. The shared report
+represents the latest successful native build, without combining platforms.
+It is removed before native tests run so a failed test run cannot leave old canonical
+results. Compiler checks remain CTest results; native
 JSON files contain the actual behavior-test results.
 
 Historical physical and coverage paths removed during the build migration are
@@ -49,7 +53,7 @@ installed host mcucov package and enables the `host-coverage` target. The locall
 verified macOS configuration uses AppleClang in a fresh build directory:
 
 ```sh
-cmake --preset macos -B output/build/native-coverage -DMCUBSP_HOST_COVERAGE=ON -DMCUBSP_CHECK_HEADERS=OFF -Dmcucov_DIR=/path/to/host/mcucov/lib/cmake/mcucov
+cmake --preset macos-arm64 -B output/build/native-coverage -DMCUBSP_HOST_COVERAGE=ON -DMCUBSP_CHECK_HEADERS=OFF -Dmcucov_DIR=/path/to/host/mcucov/lib/cmake/mcucov
 cmake --build output/build/native-coverage --target host-coverage --parallel 2
 ```
 

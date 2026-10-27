@@ -67,11 +67,15 @@ if(MCUBSP_BUILD_HOST_TESTS)
     find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
     add_custom_target(host-tests ALL
         COMMAND "${CMAKE_COMMAND}" -E rm -f "${CMAKE_BINARY_DIR}/artifact/native.json"
+            "${PROJECT_SOURCE_DIR}/output/artifact/native.json"
         COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
             --output-on-failure
         COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/test/support/MergeResults.py"
             --registry "${CMAKE_BINARY_DIR}/artifact/native-results.txt"
             --output "${CMAKE_BINARY_DIR}/artifact/native.json"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${PROJECT_SOURCE_DIR}/output/artifact"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_BINARY_DIR}/artifact/native.json"
+            "${PROJECT_SOURCE_DIR}/output/artifact/native.json"
         DEPENDS compile-probes native-tests
         USES_TERMINAL)
     if(MCUBSP_HOST_COVERAGE)

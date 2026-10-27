@@ -30,13 +30,18 @@ provides setup, diagnostics, build and explicit flash commands.
 
 ## Install a relocatable package
 
-Configure and install the library from a checkout:
+Configure, test and install from a checkout on Apple Silicon macOS:
 
 ```sh
-cmake --preset library
-cmake --build --preset library
-cmake --install output/build/library
+cmake --preset macos-arm64
+cmake --build --preset macos-arm64
+cmake --install output/build/macos-arm64
 ```
+
+On Linux x86_64, replace `macos-arm64` with `linux-x86_64` in the commands and
+build path. Both presets enable native tests and header checks by default.
+For installation without test dependencies, add
+`-DMCUBSP_BUILD_HOST_TESTS=OFF -DMCUBSP_CHECK_HEADERS=OFF` to the configure command.
 
 An application consumes the package with:
 
@@ -48,7 +53,7 @@ target_link_libraries(my_firmware PRIVATE mcubsp::device)
 The default installation is `output/install`. Configure a dependent application
 with `-DCMAKE_PREFIX_PATH=/absolute/path/to/mcubsp/output/install`, or set
 `mcubsp_DIR` to that directory's `lib/cmake/mcubsp` subdirectory. An explicit
-`cmake --install output/build/library --prefix /path/to/install` selects another prefix.
+`cmake --install output/build/macos-arm64 --prefix /path/to/install` selects another prefix.
 The
 package exports `mcubsp::mcubsp`, `mcubsp::io` and `mcubsp::device`; version matching
 uses the same minor release. It can be relocated as one installation prefix.

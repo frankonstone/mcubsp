@@ -123,8 +123,9 @@ Historical evidence retains its original source and firmware identity.
 
 ## Build and installation output
 
-Repository presets build under `output/build/<preset>/`. The `library` preset
-prepares the consumer package; `cmake --install output/build/library` installs it
+Repository presets build under `output/build/<preset>/`. The `macos-arm64` and
+`linux-x86_64` presets build and test the library and prepare the consumer package;
+`cmake --install output/build/<preset>` installs it
 under `output/install` by default. Dependent projects use that prefix through
 `CMAKE_PREFIX_PATH`, or its `lib/cmake/mcubsp` directory through `mcubsp_DIR`.
 Explicit install-prefix overrides remain supported.
@@ -180,7 +181,7 @@ Cross-library compositions live one level above this repository:
 
 ```text
 pocs/
-  mcuhw/       # mcubsp: hardware descriptions, backends, devices and BSPs
+  mcubsp/       # mcubsp: hardware descriptions, backends, devices and BSPs
   mcuip/       # network stack
   integration/ # adapters, cross-library contract checks and composed applications
 ```
