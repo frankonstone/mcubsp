@@ -13,7 +13,8 @@ target_include_directories(mcubsp_headers INTERFACE "${mcubsp_SOURCE_DIR}/includ
 target_compile_features(mcubsp_headers INTERFACE cxx_std_23)
 
 include("${mcubsp_SOURCE_DIR}/test/support/ProjectOptions.cmake")
-set(MCUBSP_BUILD_MCUIP_CONTRACTS ON)
-set(MCUBSP_MCUIP_SOURCE_DIR "${mcubsp_SOURCE_DIR}/../mcuip" CACHE PATH
-    "MCUIP source checkout for target compile probes")
 include("${mcubsp_SOURCE_DIR}/test/compile/Probes.cmake")
+if(MCUBSP_CHECK_HEADERS)
+    mcubsp_add_header_self_containment_checks(check-headers ROOT "${mcubsp_SOURCE_DIR}/include")
+    add_dependencies(check-compile check-headers)
+endif()

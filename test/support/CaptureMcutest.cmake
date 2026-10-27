@@ -4,8 +4,14 @@ endif()
 
 get_filename_component(output_directory "${OUTPUT_FILE}" DIRECTORY)
 file(MAKE_DIRECTORY "${output_directory}")
+set(test_command "${TEST_PROGRAM}" ${TEST_ARGUMENTS})
+if(COVERAGE_FILE)
+    file(REMOVE "${COVERAGE_FILE}")
+    set(test_command "${CMAKE_COMMAND}" -E env
+        "MCUBSP_COVERAGE_FILE=${COVERAGE_FILE}" ${test_command})
+endif()
 execute_process(
-    COMMAND "${TEST_PROGRAM}"
+    COMMAND ${test_command}
     RESULT_VARIABLE test_result
     OUTPUT_FILE "${OUTPUT_FILE}"
     ERROR_VARIABLE test_error

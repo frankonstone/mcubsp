@@ -1,5 +1,10 @@
 # Repository adoption and scale qualification
 
+> Historical physical/qualification record. Commands referencing the removed
+> `tool/` frontend or old presets are not a current automated runner. Use the
+> repository's current build guide and support matrix; hardware observations
+> below retain their original firmware and fixture scope.
+
 REQ-0047 through REQ-0052 / PLN-0027 through PLN-0032, recorded 2026-09-26.
 This record covers the implementation working tree based on repository revision
 `8136cb2a190fb697d26ce00c9d7fb9ee3e9a126e`. Each firmware identity separately

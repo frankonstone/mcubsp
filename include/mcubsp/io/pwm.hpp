@@ -34,7 +34,7 @@ public:
 
     ~pwm_output() {
         if (driver_.initialized() && !shutdown()) {
-            context_.execution().active_transfer_destroyed();
+            context_.execution().fail({"pwm", "live resources or failed cleanup during destruction"});
             __builtin_trap();
         }
     }

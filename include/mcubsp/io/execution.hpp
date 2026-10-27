@@ -33,6 +33,12 @@ public:
     }
     void notify() noexcept { policy_.notify(); }
     void active_transfer_destroyed() noexcept { policy_.active_transfer_destroyed(); }
+    [[noreturn]] void fail(contract_failure diagnostic) noexcept {
+        if constexpr (requires { policy_.contract_violation(diagnostic); })
+            policy_.contract_violation(diagnostic);
+        policy_.active_transfer_destroyed();
+        __builtin_trap();
+    }
     void set_progress(void (*function)(void*) noexcept, void* context) noexcept {
         progress_ = function;
         context_ = context;
@@ -55,16 +61,16 @@ duration_ticks(std::chrono::duration<Rep, Period> duration,
     if (frequency == 0U || duration.count() < 0)
         return std::unexpected(error{errc::invalid_timeout});
     const auto count = static_cast<std::uint64_t>(duration.count());
-    // Restrict to ordinary integer nanoseconds through seconds. This keeps
+    // Bound the ratio denominator to ordinary nanosecond precision. This keeps
     // the embedded conversion allocation-free and avoids floating runtime.
-    static_assert(Period::num == 1 && Period::den <= 1'000'000'000LL,
-                  "use integer seconds, milliseconds, microseconds or nanoseconds");
+    static_assert(Period::num > 0 && Period::den <= 1'000'000'000LL,
+                  "use an integral chrono duration with at least nanosecond resolution");
     constexpr auto denominator = static_cast<std::uint64_t>(Period::den);
     constexpr auto maximum = execution::maximum_deadline_interval;
-    const auto maximum_count = static_cast<std::uint64_t>(maximum) * denominator / frequency;
+    const auto maximum_count = static_cast<std::uint64_t>(maximum) * denominator / frequency / static_cast<std::uint64_t>(Period::num);
     if (count > maximum_count)
         return std::unexpected(error{errc::invalid_timeout});
-    const auto numerator = count * frequency;
+    const auto numerator = count * frequency * static_cast<std::uint64_t>(Period::num);
     return static_cast<execution::tick>(numerator / denominator
                                        + (numerator % denominator != 0U));
 }

@@ -7,58 +7,113 @@
   },
   "configurePresets": [
     {
+      "name": "library",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/output/build/library"
+    },
+    {
+      "name": "host",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/output/build/host",
+      "cacheVariables": {
+        "MCUBSP_BUILD_HOST_TESTS": "ON",
+        "MCUBSP_CHECK_HEADERS": "ON"
+      }
+    },
+    {
       "name": "macos",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/macos",
+      "binaryDir": "${sourceDir}/output/build/macos",
       "toolchainFile": "${sourceDir}/cmake/toolchain-macos.cmake",
       "cacheVariables": {
         "MCUBSP_BUILD_HOST_TESTS": "ON",
-        "MCUBSP_BUILD_MCUIP_CONTRACTS": "ON"
+        "MCUBSP_CHECK_HEADERS": "ON"
       }
     },
     {
       "name": "linux-x86_64",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/linux-x86_64",
+      "binaryDir": "${sourceDir}/output/build/linux-x86_64",
       "toolchainFile": "${sourceDir}/cmake/toolchain-linux-x86_64.cmake",
       "cacheVariables": {
         "MCUBSP_BUILD_HOST_TESTS": "ON",
-        "MCUBSP_BUILD_MCUIP_CONTRACTS": "ON"
+        "MCUBSP_CHECK_HEADERS": "ON"
       }
     },
     {
       "name": "arduino-uno-r4-minima",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/arduino-uno-r4-minima",
+      "binaryDir": "${sourceDir}/output/build/arduino-uno-r4-minima",
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m4.cmake",
       "cacheVariables": {
-        "MCUBSP_BOARD": { "type": "STRING", "value": "arduino/uno_r4_minima" }
+        "MCUBSP_BOARD": {
+          "type": "STRING",
+          "value": "arduino/uno_r4_minima"
+        }
       }
     },
     {
       "name": "st-nucleo-h753zi",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/st-nucleo-h753zi",
+      "binaryDir": "${sourceDir}/output/build/st-nucleo-h753zi",
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-cortex-m7.cmake",
       "cacheVariables": {
-        "MCUBSP_BOARD": { "type": "STRING", "value": "st/nucleo_h753zi" }
+        "MCUBSP_BOARD": {
+          "type": "STRING",
+          "value": "st/nucleo_h753zi"
+        }
       }
     },
     {
       "name": "waveshare-esp32p4-nano",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/waveshare-esp32p4-nano",
+      "binaryDir": "${sourceDir}/output/build/waveshare-esp32p4-nano",
       "toolchainFile": "${sourceDir}/cmake/toolchain-esp32p4.cmake",
       "cacheVariables": {
-        "MCUBSP_BOARD": { "type": "STRING", "value": "waveshare/esp32p4_nano" }
+        "MCUBSP_BOARD": {
+          "type": "STRING",
+          "value": "waveshare/esp32p4_nano"
+        }
       }
     }
   ],
   "buildPresets": [
-    { "name": "macos", "configurePreset": "macos" },
-    { "name": "linux-x86_64", "configurePreset": "linux-x86_64" },
-    { "name": "arduino-uno-r4-minima", "configurePreset": "arduino-uno-r4-minima" },
-    { "name": "st-nucleo-h753zi", "configurePreset": "st-nucleo-h753zi" },
-    { "name": "waveshare-esp32p4-nano", "configurePreset": "waveshare-esp32p4-nano" }
+    {
+      "name": "library",
+      "configurePreset": "library"
+    },
+    {
+      "name": "host",
+      "configurePreset": "host"
+    },
+    {
+      "name": "macos",
+      "configurePreset": "macos"
+    },
+    {
+      "name": "linux-x86_64",
+      "configurePreset": "linux-x86_64"
+    },
+    {
+      "name": "arduino-uno-r4-minima",
+      "configurePreset": "arduino-uno-r4-minima"
+    },
+    {
+      "name": "st-nucleo-h753zi",
+      "configurePreset": "st-nucleo-h753zi"
+    },
+    {
+      "name": "waveshare-esp32p4-nano",
+      "configurePreset": "waveshare-esp32p4-nano"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "host",
+      "configurePreset": "host",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
   ]
 }

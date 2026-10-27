@@ -3,7 +3,10 @@
 Initial inventory for `PLN-0001`, reviewed 12 September 2026, incrementally
 populated by `PLN-0004`, `PLN-0014` and `PLN-0015`, and reconciled across the
 complete source denominator by `PLN-0013` on 13 September 2026. It tracks
-source coverage independently from functional driver support. The authoritative
+reviewed source units independently from typed declarations and functional
+driver support. The verified chapter inventory does not measure typed register,
+field or route coverage. See the [support matrix](../reference/support-matrix.md)
+for the driver-facing subset and physical evidence boundaries. The authoritative
 machine-readable rows are the three `complete_source_inventory` arrays exposed
 by the public descriptions.
 

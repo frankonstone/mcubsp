@@ -5,6 +5,10 @@ checkout, a versioned CMake package, or the public headers directly. Ordinary
 library use needs no board selection or the Python frontend,
 test framework or sibling checkout.
 
+Choose [existing-BSP consumption or a new board application](application.md)
+before selecting tools. An application uses either the source checkout or an
+installed dependency; it does not need to run mcubsp's maintainer workflow.
+
 ## Use a source checkout
 
 Add mcubsp to your application and link only the interface you use:
@@ -29,8 +33,9 @@ provides setup, diagnostics, build and explicit flash commands.
 Configure and install the library from a checkout:
 
 ```sh
-cmake --preset arduino-uno-r4-minima
-cmake --install build/arduino-uno-r4-minima --prefix /path/to/install
+cmake --preset library
+cmake --build --preset library
+cmake --install output/build/library
 ```
 
 An application consumes the package with:
@@ -40,7 +45,11 @@ find_package(mcubsp 0.1 CONFIG REQUIRED)
 target_link_libraries(my_firmware PRIVATE mcubsp::device)
 ```
 
-Configure the application with `-DCMAKE_PREFIX_PATH=/path/to/install`. The
+The default installation is `output/install`. Configure a dependent application
+with `-DCMAKE_PREFIX_PATH=/absolute/path/to/mcubsp/output/install`, or set
+`mcubsp_DIR` to that directory's `lib/cmake/mcubsp` subdirectory. An explicit
+`cmake --install output/build/library --prefix /path/to/install` selects another prefix.
+The
 package exports `mcubsp::mcubsp`, `mcubsp::io` and `mcubsp::device`; version matching
 uses the same minor release. It can be relocated as one installation prefix.
 
@@ -52,15 +61,25 @@ their relative paths:
   lib/cmake/mcubsp/       CMake configuration, version and imported targets
   share/mcubsp/
     include/mcubsp/      Public headers
-    cmake/              Toolchains and remaining CMake files
-    board/              Board definitions, local examples and documentation
-    doc/                Project documentation
-    test/               Test sources
+    cmake/              Public toolchains and firmware helpers
+    src/board/          Board metadata, startup, linker and SDK boot resources
+    example/            Standalone example applications, grouped by topic
+    doc/package.md      Self-contained application package guide
+    tool/               Firmware records and the board runner
 ```
+
+Both source inclusion and `find_package` expose the public `mcubsp_add_firmware`
+function when a new board application requests it. Ordinary library inclusion
+does not select a board or create a firmware target. The installed
+`share/mcubsp/cmake/board-toolchain.cmake` is the public pre-project board selector;
+the copyable starter is under `share/mcubsp/example/blink/`.
 
 `find_package` exposes `MCUBSP_ROOT` as `<prefix>/share/mcubsp`. Imported targets
 supply `<prefix>/share/mcubsp/include` automatically. SDKs, toolchains, private
 vendor documents, development checkouts and build products are not bundled.
+Root and module tests, test-only CMake files, captured evidence and internal
+plans stay in the checkout. The package includes only application resources;
+the full development documentation remains with the source tree.
 
 ## Direct headers
 
@@ -72,6 +91,9 @@ responsible for its BSP, startup and linker integration.
 
 ## Contributor and maintainer dependencies
 
-The top-level CMake project has no optional test or probe switches. The
-previous maintainer build targets depended on removed CMake helpers. The
-header-only library and installed package need no sibling checkouts.
+Native verification uses `MCUBSP_BUILD_HOST_TESTS`; isolated headers,
+Cross checks and board-test images have independent options. MCUIP adapters and
+contracts belong to the sibling [integration project](../../../integration/README.md),
+which is not included in the mcubsp package.
+See [build and verification](build-and-test.md). Ordinary top-level configuration
+builds and installs the application package without running tests.

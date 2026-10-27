@@ -13,19 +13,19 @@ configure a new system clock tree.
 
 ## First program
 
-The [UNO blink example](../../board/arduino/uno_r4_minima/example/blink.cpp) uses the repository's
+The [UNO blink example](../../example/blink/arduino/uno_r4_minima.cpp) uses the repository's
 UNO startup and checks that its clock initialization succeeded:
 
 ```cpp
 #include <chrono>
-#include <mcubsp/io.hpp>
-#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io/board.hpp>
+#include <mcubsp/board/arduino/uno_r4_minima.hpp>
 
 namespace io = mcubsp::io;
 using namespace std::chrono_literals;
 
 constexpr io::board_config configuration{.serial = false};
-static io::board<io::boards::uno_r4_minima, configuration> hw;
+static io::board<mcubsp::board::arduino::uno_r4_minima, configuration> hw;
 
 int main() {
     if (!hw.startup_ok()) __builtin_trap();
@@ -63,7 +63,7 @@ constexpr io::board_config configuration{
     .adc = true,
     .pwm = true,
 };
-static io::board<io::boards::uno_r4_minima, configuration> hw;
+static io::board<mcubsp::board::arduino::uno_r4_minima, configuration> hw;
 ```
 
 Disabled features omit their backend storage. Calling a disabled feature or
@@ -88,7 +88,7 @@ if (received) io::require(hw.serial.write(byte, 100ms));
 The default serial format is 8N1. Reads request a finite buffer; they do not
 provide an Arduino-style background receive queue. `println()` writes its
 text and CRLF with one overall deadline. The [serial echo
-example](../../board/arduino/uno_r4_minima/example/serial_echo.cpp) handles idle read timeouts.
+example](../../example/serial_echo/arduino/uno_r4_minima.cpp) handles idle read timeouts.
 On UNO this port is SCI2 on D0/D1; it is not USB CDC.
 
 ```cpp
@@ -120,8 +120,12 @@ io::require(hw.pwm.begin(20'000, io::percent(25)));
 io::require(hw.pwm.duty(io::percent(75)));
 ```
 
-Non-DMA SPI buffers contain 16-bit elements even with the default eight-bit
-wire format. Direct bus calls use the profile's default chip select, claimed
+CPU SPI accepts `std::span<const std::uint8_t>` and
+`std::span<std::uint8_t>` for eight-bit wire transfers, without staging copies.
+Wide-frame spans remain available. `driver::byte_segment(tx, rx)` constructs a
+segment for an asynchronous or multi-segment transaction; segment arrays and
+buffers stay alive until terminal completion. Byte segments reject 16-bit wire
+mode and mixed byte/wide buffers. Direct bus calls use the profile's default chip select, claimed
 on first use. `hw.spi.device({.cs = pin, .frequency = hz, .mode = mode})`
 creates an endpoint with its own CS and precomputed settings. Endpoints share
 one controller; overlapping operations return `busy`. `transaction()` accepts
@@ -174,7 +178,7 @@ io::require(rx_dma.release());
 io::require(tx_dma.release());
 ```
 
-The complete [SPI DMA example](../../board/arduino/uno_r4_minima/example/spi_dma.cpp) includes
+The complete [SPI DMA example](../../example/spi_dma/arduino/uno_r4_minima.cpp) includes
 initialization and wiring. Its buffers reside in RAM. The backend validates
 DMA reachability and transfer constraints; requesting DMA does not silently
 fall back to CPU transfer. SPI completion includes both DMA transfers and
@@ -204,8 +208,8 @@ interrupt handlers concurrently with facade polling. Polling services DMA
 before its consuming peripherals. A custom execution policy alone does not
 turn this foreground interface into a thread-safe RTOS driver service.
 
-Most blocking operations default to one second. Use integral `s`, `ms`,
-`us`, or `ns` chrono durations. Negative intervals and intervals exceeding
+Most blocking operations default to one second. Use integral chrono durations, including hours, minutes, seconds and
+nanoseconds. Negative intervals and intervals exceeding
 `2^31 - 1` clock ticks are rejected. The default cycle clocks therefore have
 different maximum intervals: approximately 44.7 seconds on UNO, 33.6 seconds
 on NUCLEO, and 6.0 seconds on the P4 profile. Cycles must continue advancing
@@ -270,7 +274,7 @@ board's default. A host example uses the deterministic test policy:
 mcubsp::execution::fake_policy policy;
 mcubsp::testing::recording_mmio<0x80000, 4096> mmio{0x4000'0000U};
 constexpr io::board_config configuration{.serial = false};
-auto hw = io::make_board<io::boards::uno_r4_minima, configuration>(
+auto hw = io::make_board<mcubsp::board::arduino::uno_r4_minima, configuration>(
     policy, mmio, 1000U); // One tick is one millisecond.
 io::require(hw.begin());
 io::require(hw.delay(10ms));
@@ -286,13 +290,88 @@ transfers](../concept/execution-and-transfers.md).
 
 ## Build examples
 
-The UNO examples use the existing Arm startup and linker image:
+The [example applications](../../example/README.md) share the sources used by
+repository targets. The UNO examples use the existing Arm startup and linker image:
 
 ```sh
 cmake --preset arduino-uno-r4-minima
-cmake --build --preset arduino-uno-r4-minima
+cmake --build --preset arduino-uno-r4-minima --target examples
 ```
 
 For application CMake targets, use
 `target_link_libraries(your_firmware PRIVATE mcubsp::io)` alongside the
 application's startup composition.
+
+## Select peripheral bindings and additional instances
+
+Include `<mcubsp/io/composition.hpp>` (also included by `mcubsp/io/board.hpp`). Native binding
+types keep their existing instance/package/pin validation. `io::select` changes
+the defaults without requiring a handwritten derived board profile:
+
+```cpp
+using inputs = mcubsp::backend::ra4m1::adc14_binding<
+    mcubsp::backend::ra4m1::adc_input<1, {0, 1}>,
+    mcubsp::backend::ra4m1::adc_input<0, {0, 0}>>;
+using selected = io::select<mcubsp::board::arduino::uno_r4_minima,
+                            io::analog_selection<inputs>>;
+constexpr io::board_config config{.serial = false, .adc = true};
+static io::board<selected, config> hw;
+```
+
+`hw.analog.sample(samples)` scans all bound inputs in binding order. A
+multi-input selection has no scalar `read()`; pass one output element per
+channel. DMA sampling requires a single-input binding. `serial_selection`, `i2c_selection`,
+`spi_selection` and `pwm_selection` rebind the corresponding defaults.
+Selections retain the original physical target identity and fixed clock tree.
+
+For simultaneous instances, add selectors to `composed_board` and use indexed
+peripherals. Only those instances consume additional storage:
+
+```cpp
+using extra_uart = io::serial_selection<
+    mcubsp::backend::ra4m1::sci_uart_binding<0, {1, 0}, {1, 1}>>;
+static io::composed_board<mcubsp::board::arduino::uno_r4_minima, {}, extra_uart> hw;
+// After hw.begin():
+// io::require(hw.serial.begin());          // default SCI2
+// io::require(hw.peripheral<0>().begin());  // additional SCI0
+```
+
+`make_board<Profile, config, Selectors...>(policy, mmio, frequency)` supplies
+borrowed execution/MMIO for the same composition. Polling and shutdown include
+all selected instances; they share pin claims with GPIO and default peripherals.
+Duplicate hardware instances fail ownership checks even when pins differ.
+Only routes and capabilities already supported by the native backend are valid.
+
+## Independent monotonic time
+
+The default cycle counters retain their frequency/sleep assumptions. For longer
+intervals, include `<mcubsp/execution/monotonic_policy.hpp>` and borrow a separate
+clock with `now()` and static `ticks_per_second`:
+
+```cpp
+// application_clock is initialized by the BSP and remains monotonic through
+// the sleep modes the application uses. At 1 kHz the maximum interval is 24.8 days.
+mcubsp::execution::monotonic_policy policy{synchronization_policy, application_clock};
+auto hw = io::make_board<mcubsp::board::arduino::uno_r4_minima>(
+    policy, decltype(policy)::ticks_per_second);
+```
+
+The adapter separates clock units from synchronization-policy waits, forwarding
+only a bounded wait step to the latter. It adds no timer interrupt, oscillator
+or sleep policy. The application initializes both borrowed objects and keeps
+them alive. Clock values can be wider than 32 bits; deadline ordering uses the
+low 32 bits and the existing half-range limit.
+
+## Diagnose and recover lifecycle failures
+
+An execution policy can provide `void contract_violation(io::contract_failure)`.
+It receives the component, reason, source location, and (for pending operations)
+slot/generation before the mandatory trap. Store these values in application
+fault storage or inspect them in a debugger; avoid recursive calls into the
+failing peripheral. The default remains a trap with no logging dependency.
+
+The [recovery example](../../example/recovery/arduino/uno_r4_minima.cpp)
+shows finite serial reads, idle timeouts, explicit cancellation if a handle
+remains pending, peripheral reinitialization and orderly shutdown. Its `q`
+command exits the loop. A failed quiesce must be escalated; returning a buffer
+to application use while hardware still owns it is not recovery.

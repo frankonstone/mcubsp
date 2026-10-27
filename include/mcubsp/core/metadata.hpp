@@ -23,8 +23,11 @@ struct source_ref {
 };
 
 // Source-unit coverage is intentionally separate from driver support.  A
-// completed source unit accounts for register, field, and routing material,
-// including an explicit not-applicable decision when a category does not occur
+// completed source unit records an assertion of source review/accounting for
+// register, field, and routing material; it does not count typed declarations.
+// The inventory validator checks these assertions for consistency only.
+// It does not independently establish manual correctness or typed completeness.
+// Accounting includes an explicit not-applicable decision when a category does not occur
 // in that unit.  Unavailable material is retained in the denominator and must
 // never be reported as verified.
 // @req REQ-0005 REQ-0006 REQ-0040

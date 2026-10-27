@@ -745,6 +745,12 @@ physical acceptance claim.
 @status(in_progress)
 @link(REQ-0002, REQ-0036, REQ-0038, REQ-0047, REQ-0049, REQ-0050)
 
+Current migration note (24 October 2026): the frontend/workspace/verification
+helpers described in the historical implementation notes below were removed.
+PLN-0033 restores direct CMake workflows and current native evidence. It does not
+reestablish the removed setup/flash frontend, multi-board workspace qualification,
+or hosted/physical execution. These acceptance items remain open.
+
 Prerequisite: PLN-0029.
 
 Implemented: optional new/setup/doctor/build/flash frontend, pinned
@@ -784,6 +790,12 @@ are deferred.
 ## PLN-0032 Scale verification and qualify the repository adoption workflow
 @status(in_progress)
 @link(REQ-0035, REQ-0036, REQ-0037, REQ-0038, REQ-0039, REQ-0047, REQ-0048, REQ-0049, REQ-0050, REQ-0051, REQ-0052)
+
+Current migration note (24 October 2026): the frontend/workspace/verification
+helpers described in the historical implementation notes below were removed.
+PLN-0033 restores direct CMake workflows and current native evidence. It does not
+reestablish the removed setup/flash frontend, multi-board workspace qualification,
+or hosted/physical execution. These acceptance items remain open.
 
 Prerequisite: PLN-0027 through PLN-0031; suite decomposition may begin after
 PLN-0028 establishes component identities and dependencies.
@@ -865,3 +877,160 @@ Exit: each selected extension preserves storage, ownership and portability contr
 The path is all-three sources → shared metadata foundation → three incremental complete descriptions → common description gate → completed RA4M1 foundation → scoped target releases and the application/device foundation → repository adoption and scale (PLN-0027 through PLN-0032, immediately after PLN-0026) → MCUOS. Remaining target-specific acceptance proceeds independently of the repository work. Each target report defines what its physical procedures observed and preserves explicit non-claims; it does not require a shared cross-target fixture. MCUOS ports matter only in the later RTOS phase.
 
 Compile-time tests establish representability and reject invalid configurations; they do not verify hardware register behavior, electrical timing or driver portability by themselves. Those claims require subsequent native behavioral tests and independent physical observations. Keep the coverage denominator, verification state and explicit exclusions visible throughout.
+
+## PLN-0033 Repair framework usability and verification after build migration
+@status(done)
+@link(REQ-0014, REQ-0015, REQ-0018, REQ-0035, REQ-0038, REQ-0039, REQ-0040, REQ-0045, REQ-0047, REQ-0048, REQ-0049, REQ-0051, REQ-0052)
+
+Implement the approved repository review: direct CMake application and library
+workflows, independent native/cross/integration checks, current CI and evidence
+paths, diagnostic-aware compiler rejections, and isolated public-header checks.
+Provide selectable facade peripherals, byte SPI buffers, explicit monotonic
+clock adaptation, and actionable lifecycle diagnostics. Publish a support matrix
+that separates source review, typed metadata, driver implementation and physical
+evidence. Existing target acceptance keeps its original firmware/fixture scope.
+
+Exit: fresh native, packaging, header and cross-compiler checks pass; Blink
+firmware links for all three boards; documentation describes delivered commands.
+Physical traffic/timing checks and hosted CI execution remain independently open
+until their producers are actually run.
+
+Verified locally on macOS arm64: 41/41 CTest entries with GCC 15.1 and
+AppleClang 21; 266 behavior/workflow cases; 110 isolated headers and architecture
+probes on Cortex-M4, Cortex-M7 and P4; optional native MCUIP integration;
+linked Blink for all three boards and all non-instrumented UNO test images.
+Installed UNO/NUCLEO consumers link with supplied or external startup and one
+Reset_Handler each. See [the repair record](doc/acceptance/usability-repair.md).
+Hosted execution, coverage regeneration and physical refresh are not completed
+by this software milestone; PLN-0030/PLN-0032 and target milestones retain their
+independent outstanding acceptance.
+
+## PLN-0034 Restore capture tooling and current coverage production
+@status(done)
+@link(REQ-0014, REQ-0017, REQ-0035, REQ-0036, REQ-0038, REQ-0039, REQ-0049, REQ-0050, REQ-0052)
+
+Continue the approved usability work by restoring shared board-runner helpers,
+explicit probe/port and image-boundary validation, NUCLEO test-image builds,
+and native coverage capture/report production. Test runner planning with fake
+tools and image fixtures; do not substitute those tests for physical evidence.
+Repair unsupported trace annotation placement without changing requirement scope.
+
+Exit: shared runner and coverage regressions pass, native coverage reports are
+produced from executed current suites, and board test images build. Hosted CI,
+physical flashing/observations and production-silicon acceptance remain separate.
+
+Verified locally: 42/42 CTest entries and 283 behavior/workflow cases with
+ordinary GCC and instrumented AppleClang; FULL native coverage exports with
+zero invalid MC/DC decisions and explicit skipped constructs. All ten UNO,
+three NUCLEO and the P4 SDK test images build. Current-image dry runs validate
+all three runner paths without hardware access. See the
+[capture and coverage record](doc/acceptance/capture-and-coverage.md) for scope,
+coverage denominators and remaining qualification.
+
+## PLN-0035 Record selected firmware inputs
+@status(done)
+@link(REQ-0049, REQ-0052)
+
+Extend completed firmware records with selected compiler dependencies, generated
+configuration, linker inputs, build commands and tool fingerprints. Keep the
+repository revision separate from the selected-input identity and reject missing
+or modified provenance sidecars during runner validation. Cover the SDK's
+separate application and bootloader graphs; explicitly identify unsupported
+generator tracking instead of claiming complete provenance.
+
+The selected SDK graphs also revealed and corrected an ignored P4 test
+bootloader setting and implicit Git-derived application version flags. Current
+builds select the factory-only boot component and explicit application version.
+
+Exit: selected source/header/configuration/flag and transitive-library changes
+alter identity; unrelated files and repository-only commits do not. Fresh Arm
+and P4 images produce records, runner tampering checks pass, and documentation
+states the supported producer scope. Hosted/physical qualification stays open.
+
+Verified locally: 43/43 CTest entries, 287 cases on GCC/AppleClang, all 14 board
+test bundles and P4 Blink input records. Relocated installed UNO/NUCLEO consumers
+with supplied/external startup produce records in paths with spaces and contain
+one Reset_Handler each. See the [input record](doc/acceptance/selected-firmware-inputs.md).
+
+## PLN-0036 Define the library user's CMake entry points
+@status(done)
+@link(REQ-0047, REQ-0049, REQ-0050, REQ-0051)
+
+Expose application helpers through source/package consumption without requiring
+private includes. Select the board's toolchain before project(), preserve pure
+library inclusion in an existing BSP, and use explicit named C++ board types
+in applications. Ship a complete external Blink project and explain
+the user's responsibilities separately from framework test/release tooling.
+
+Exit: source and relocated-package consumers use the same public helper; the
+starter links for the three supported boards; existing-BSP consumption retains
+its own targets/testing/compiler policy; invalid selections fail clearly.
+Host/physical qualification and the remaining workspace milestone stay separate.
+
+Verified locally on 26 October 2026: public starter links from source and a
+relocated installation for UNO, NUCLEO and P4; existing-BSP consumers retain
+their own targets/testing/languages; 43/43 CTest entries and 289 cases pass on
+GCC/AppleClang. See the [application CMake record](doc/acceptance/application-cmake.md).
+
+Board-name follow-up: remove the generated generic C++ alias and its include
+directory. Starter sources now name UNO, NUCLEO and P4 types and LED pins
+explicitly; CMake selects each board's source file and startup/toolchain.
+
+## PLN-0037 Consolidate public board ownership
+@status(done)
+@link(REQ-0031, REQ-0048, REQ-0049, REQ-0051)
+
+Move concrete I/O compositions into the vendor-qualified public board tree.
+Provide one named board entry header and separate lightweight pins/bindings
+headers per board. Keep generic I/O in io/, chip facts in mcu/ and the root
+board support resources in place. Update consumers, packaging, build metadata
+and migration documentation together; retain historical evidence identities.
+
+Exit: native, isolated-header and cross-architecture checks pass; source and
+installed applications link for the supported boards; low-level board bindings
+require no I/O facade/backend implementation. Physical acceptance is unchanged.
+
+Verified locally on 26 October 2026: 43 CTest entries and 290 cases on GCC and
+AppleClang, 113 isolated headers on host and all three target architectures,
+source and relocated-package starters for all three boards, and all 14 board
+test images. The lightweight binding dependency check passes. See the
+[board layout record](doc/acceptance/board-layout.md) for scope and migration.
+
+## PLN-0038 Complete the BSP support-tree move
+@status(done)
+@link(REQ-0048, REQ-0049, REQ-0050, REQ-0051, REQ-0052)
+
+Finish the approved directory layout: move root board support to bsp/ and
+board-local startup sources to startup/, with Arm linker scripts beside the
+board entry. Update build selection, runners, packaging, trace inputs and
+authored documentation together, preserving captured evidence bytes.
+
+Exit: root board/ is absent; CMake and installed consumers resolve bsp/ resources;
+native, architecture and firmware builds pass with current paths; hardware
+planning resolves the moved board entries without device execution. Existing
+cached repository application defaults migrate to the new support path.
+
+Verified locally on 26 October 2026: all three repository firmware builds,
+source/relocated-package starters, all 14 board-test images and dry-run image
+validation pass. Both native configurations pass 43 CTest entries and 290 cases.
+Root board/ is absent, installed resources use bsp/, and historical captures
+are preserved byte for byte. See the [BSP completion record](doc/acceptance/bsp-layout.md).
+
+## PLN-0039 Extract cross-library integration
+@status(done)
+@link(REQ-0043, REQ-0044, REQ-0046, REQ-0047, REQ-0051)
+
+Move MCUIP adapters, contract probes and combined board-test applications into
+the sibling ../integration project. Keep peripheral/device implementations and
+protocol-neutral tests in mcubsp. Remove core integration switches and document
+explicit upper-layer consumption. Preserve recorded physical evidence.
+
+Exit: mcubsp builds and installs independently; the sibling project compiles its
+contracts on host and all three architectures and links both Ethernet images.
+
+Verified locally on 27 October 2026: the real sibling project builds with default
+sibling paths, host/M4/M7/P4 contracts pass, both Ethernet images link with and
+without integration coverage, and both runner dry runs validate selected inputs.
+mcubsp retains 43 passing CTest entries and 290 cases on GCC/AppleClang, 110
+standalone headers and independent source/package consumers. See the
+[integration extraction record](doc/acceptance/integration-extraction.md).

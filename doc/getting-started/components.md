@@ -21,15 +21,15 @@ io bus -> controller backend -> MMIO
 
 Device code belongs under `include/mcubsp/device/`, grouped by function. Bus
 endpoints live in `include/mcubsp/io/`; connections to another framework live
-under `include/mcubsp/integration/`. Device implementations receive the narrow
+in the sibling `../integration` project. Device implementations receive the narrow
 transport interface they need instead of a whole board. The TMP102 can use a
 fake endpoint with no `io`, board, or backend headers. The W5100 separately
 exposes its register protocol and the SPI transport that connects it to `io`.
 
 The optional `mcubsp::device` CMake target depends on the core library; use
 `mcubsp::io` for board composition. The linked UNO examples
-[TMP102](../../board/arduino/uno_r4_minima/example/tmp102.cpp) and
-[W5100](../../board/arduino/uno_r4_minima/example/w5100.cpp) are included with
+[TMP102](../../example/tmp102/arduino/uno_r4_minima.cpp) and
+[W5100](../../example/w5100/arduino/uno_r4_minima.cpp) are included with
 `MCUBSP_BUILD_IO_EXAMPLES=ON`. Their builds and host simulations do not establish
 physical acceptance of these new device compositions.
 
@@ -38,8 +38,8 @@ physical acceptance of these new device compositions.
 Include the desired device and board explicitly. For example:
 
 ```cpp
-#include <mcubsp/io.hpp>
-#include <mcubsp/io/board/uno_r4_minima.hpp>
+#include <mcubsp/io/board.hpp>
+#include <mcubsp/board/arduino/uno_r4_minima.hpp>
 #include <mcubsp/device/sensor/tmp102.hpp>
 
 namespace io = mcubsp::io;
@@ -51,7 +51,7 @@ constexpr io::board_config peripherals{
     .i2c = true,
     .spi = true,
 };
-io::board<io::boards::uno_r4_minima, peripherals> hw;
+io::board<mcubsp::board::arduino::uno_r4_minima, peripherals> hw;
 ```
 
 After the board's clock/startup code has run, the application calls
@@ -215,11 +215,12 @@ another frame. Ambiguous pointer/command commits also require recovery;
 partial uncommitted copies resume across polling calls and deadlines.
 
 The device uses socket 0 MACRAW mode. IP/TCP/UDP belong to the network stack.
-`mcubsp/integration/mcuip/w5100.hpp` provides the board-independent
-`w5100_network_device` alias and a contract check against
-`mcuip::NetworkDevice`. It does not impose an RTOS or allocate network storage.
-W5100 protocol and transport headers live under `device/ethernet/`; MCUIP
-compositions use the generic integration header directly.
+The sibling [integration project](../../../integration/README.md) provides
+`mcuintegration/mcubsp_mcuip/w5100.hpp` and the board-independent
+`mcuintegration::mcubsp_mcuip::w5100_network_device` alias. Link its explicit
+`mcuintegration::mcubsp_mcuip` target to check the actual `mcuip::NetworkDevice`
+contract. The adapter imposes no RTOS and allocates no network storage.
+W5100 protocol and transport headers remain under `mcubsp/device/ethernet/`.
 
 `device::w5100` is immovable because its internal protocol objects refer to its
 transport. Its board and SPI controller must outlive it. The reusable register

@@ -399,8 +399,10 @@ Acceptance: RA4M1 bare-metal release acceptance is independent of MCUOS and uses
 @depends(REQ-0002, REQ-0003, REQ-0009, REQ-0013, REQ-0015, REQ-0017, REQ-0018, REQ-0033)
 
 Every Ethernet backend delivered by mcubsp shall expose protocol-neutral,
-fixed-storage MAC, MDIO, PHY and DMA facilities plus a thin target adapter that
-can be composed with the sibling `../mcuip` project. The initial
+fixed-storage MAC, MDIO, PHY and DMA facilities. Thin target adapters,
+MCUIP contract probes and combined firmware belong to the sibling
+`../integration` project, which depends on mcubsp and `../mcuip`; mcubsp
+shall not include or load that upper layer. The initial
 NUCLEO-H753ZI composition shall satisfy the actual public MCUIP
 `NetworkDevice`, `DescriptorProtection` and `HardwareDescription` contracts and
 shall integrate with MCUIP's fixed receive/transmit rings and completion model.
@@ -411,10 +413,10 @@ terminal completion without dynamic allocation.
 
 MCUIP owns packet storage policy and the Ethernet/ARP/IP transport protocols;
 mcubsp owns the target peripheral implementation and source-backed hardware
-description. Vendor types shall not cross into MCUIP's portable core. MCUIP
-shall be an explicit optional source dependency whose local default is the
-sibling path, not copied into mcubsp. lwIP is not a supported dependency or
-compatibility target. Integration evidence shall identify the exact MCUIP
+description. Vendor types shall not cross into MCUIP's portable core. The upper
+integration project shall select MCUIP explicitly; it is not a dependency of
+mcubsp, including its own tests or installed headers. lwIP is not a supported
+dependency or compatibility target. Integration evidence shall identify the exact MCUIP
 source content and build configuration used.
 
 Acceptance: compile-time probes reject incomplete target contracts; one Cortex-
@@ -446,6 +448,8 @@ operations shall be quiescent before buffers or operation slots are released.
 
 Expose the raw-frame path through a thin adapter satisfying the actual sibling
 MCUIP `NetworkDevice` contract so MCUIP owns Ethernet/ARP/IP transport policy.
+The adapter and combined test application shall reside in `../integration`,
+with no dependency from mcubsp back to that project.
 The SPI-attached W5100 is an external network device, not an RA4M1 native MAC;
 the adapter shall not invent MDIO, PHY-register or native Ethernet-DMA
 facilities. The initial increment does not expose the W5100 hardware TCP/UDP
@@ -516,8 +520,8 @@ transport contract. Add a TMP102 sensor returning explicit signed temperature
 units without a board dependency; preserve its latest-sample semantics and
 existing hardware settings. Compose the W5100 with a checked SPI device handle,
 retain a board-independent register protocol, and expose its MCUIP contract
-through a generic integration header. Place ES8311 codec configuration under
-`device/audio/`. Remove the former driver and board-specific W5100 compatibility
+through a generic header in the upper `../integration` project. Place ES8311
+codec configuration under `device/audio/`. Remove the former driver and board-specific W5100 compatibility
 entry points; keep shield wiring in the application.
 
 Component operations comprising multiple bus transactions shall share one
@@ -565,7 +569,7 @@ the existing verification workflows.
 @depends(REQ-0003, REQ-0005, REQ-0010, REQ-0038, REQ-0046)
 
 Boards own their build settings, startup, wiring, fixtures and procedures under
-`board/<vendor>/<name>/`. Public C++ headers remain authoritative for MCU facts,
+`src/board/<vendor>/<name>/`. Public C++ headers remain authoritative for MCU facts,
 register definitions, pin mappings and constraints. Reusable device protocols
 retain narrow transport contracts. Board selection reads only the chosen local
 `board.cmake` entry; a separate hardware catalog is deferred.

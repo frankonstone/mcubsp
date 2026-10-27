@@ -184,8 +184,8 @@ application_execution_policy execution;
 
 using uart_binding = mcubsp::backend::ra4m1::sci_uart_binding<
     2,
-    mcubsp::board::arduino_uno_r4_minima::d0_rx,
-    mcubsp::board::arduino_uno_r4_minima::d1_tx>;
+    mcubsp::board::arduino::uno_r4_minima_bindings::d0_rx,
+    mcubsp::board::arduino::uno_r4_minima_bindings::d1_tx>;
 
 using uart_backend_type = mcubsp::backend::ra4m1::sci_uart_backend<
     uart_binding,
@@ -223,7 +223,7 @@ Cortex-M NVIC lines. Keep the selected lines disabled until
 #include <utility>
 
 #include <mcubsp/backend/ra4m1/sci_uart.hpp>
-#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/board/arduino/uno_r4_minima/bindings.hpp>
 #include <mcubsp/core/direct_mmio.hpp>
 #include <mcubsp/driver/uart.hpp>
 #include <mcubsp/execution/deadline.hpp>
@@ -290,7 +290,7 @@ void disable_sci2_interrupts() noexcept {
     __asm__ volatile("dsb sy\n\tisb sy" ::: "memory");
 }
 
-namespace board = mcubsp::board::arduino_uno_r4_minima;
+using board = mcubsp::board::arduino::uno_r4_minima_bindings;
 
 mcubsp::core::direct_mmio mmio;
 application_execution_policy execution;
@@ -432,6 +432,6 @@ Recommended shutdown or reconfiguration order:
 4. Call the driver/backend shutdown or release function.
 5. Only then reuse pins, buffers, DMA channels, or object storage.
 
-Continue with the [examples index](../../board/arduino/uno_r4_minima/doc/example/README.md). Each peripheral page
+Continue with the [examples index](../../src/board/arduino/uno_r4_minima/doc/example/README.md). Each peripheral page
 adds its binding, timing, buffer, and hardware-specific notes to this common
 application structure.

@@ -40,7 +40,7 @@ public:
         lease& operator=(lease&&) = delete;
         ~lease() {
             if (endpoint_ && !release()) {
-                endpoint_->context_.execution().active_transfer_destroyed();
+                endpoint_->context_.execution().fail({"dma", "live resources or failed cleanup during destruction"});
                 __builtin_trap();
             }
         }

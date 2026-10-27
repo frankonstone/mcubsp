@@ -11,11 +11,11 @@ The UNO R4 Minima uses SCI2 on D0/D1 and IIC1 on A4/A5:
 
 ```cpp
 using uart_binding = mcubsp::backend::ra4m1::sci_uart_binding<
-    2, mcubsp::board::arduino_uno_r4_minima::d0_rx,
-    mcubsp::board::arduino_uno_r4_minima::d1_tx>;
+    2, mcubsp::board::arduino::uno_r4_minima_bindings::d0_rx,
+    mcubsp::board::arduino::uno_r4_minima_bindings::d1_tx>;
 using i2c_binding = mcubsp::backend::ra4m1::iic_binding<
-    1, mcubsp::board::arduino_uno_r4_minima::a5_scl,
-    mcubsp::board::arduino_uno_r4_minima::a4_sda>;
+    1, mcubsp::board::arduino::uno_r4_minima_bindings::a5_scl,
+    mcubsp::board::arduino::uno_r4_minima_bindings::a4_sda>;
 ```
 
 Invalid instance/pin combinations fail at compile time. A backend claims its
@@ -113,8 +113,8 @@ the original bytes, and verifies the restoration. It repeats the scenario at
 100 kHz and 400 kHz. Run it with:
 
 ```sh
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
-cmake --build build/uno-r4-minima --target board-tests
+cmake --preset arm-cortex-m4 -B output/build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build output/build/uno-r4-minima --target board-tests
 tool/run-uno-r4-minima-tests.sh i2c
 ```
 
@@ -122,8 +122,8 @@ Capture A4 and A5 with a logic analyzer during the run. The RTT result records
 the configured and achieved rates, but it is not an independent waveform or
 protocol measurement.
 
-The standalone [UART](../../../board/arduino/uno_r4_minima/doc/example/uart.md) and
-[I2C](../../../board/arduino/uno_r4_minima/doc/example/i2c.md) guides include their code, wiring, lifecycle, and
+The standalone [UART](../../../src/board/arduino/uno_r4_minima/doc/example/uart.md) and
+[I2C](../../../src/board/arduino/uno_r4_minima/doc/example/i2c.md) guides include their code, wiring, lifecycle, and
 bring-up hints. Native fixtures additionally inject every IRQ transition,
 timeout, NACK class, arbitration loss, cancellation, and slot reuse without
 wall-clock sleeps.

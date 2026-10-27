@@ -90,13 +90,13 @@ public:
     }
     void retain() noexcept {
         execution_.critical([this] {
-            if (handles_ == 0xFFFFU) __builtin_trap();
+            if (handles_ == 0xFFFFU) execution_.fail({"board", "resource reference count overflow"});
             ++handles_;
         });
     }
     void drop() noexcept {
         execution_.critical([this] {
-            if (handles_ == 0U) __builtin_trap();
+            if (handles_ == 0U) execution_.fail({"board", "resource reference count underflow"});
             --handles_;
         });
     }

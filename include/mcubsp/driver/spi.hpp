@@ -64,7 +64,46 @@ struct spi_segment {
     std::span<const std::uint16_t> transmit{};
     std::span<std::uint16_t> receive{};
     std::uint16_t dummy{0xFFFFU};
+    std::span<const std::uint8_t> transmit_bytes{};
+    std::span<std::uint8_t> receive_bytes{};
+
+    [[nodiscard]] std::size_t transmit_size() const noexcept {
+        return transmit.empty() ? transmit_bytes.size() : transmit.size();
+    }
+    [[nodiscard]] std::size_t receive_size() const noexcept {
+        return receive.empty() ? receive_bytes.size() : receive.size();
+    }
+    [[nodiscard]] std::size_t size() const noexcept {
+        return transmit_size() ? transmit_size() : receive_size();
+    }
+    [[nodiscard]] std::uint16_t frame(std::size_t index) const noexcept {
+        if (!transmit.empty()) return transmit[index];
+        return transmit_bytes.empty() ? dummy : transmit_bytes[index];
+    }
+    void store(std::size_t index, std::uint16_t value) const noexcept {
+        if (!receive.empty()) receive[index] = value;
+        else if (!receive_bytes.empty()) receive_bytes[index] = static_cast<std::uint8_t>(value);
+    }
+    [[nodiscard]] std::expected<std::size_t, spi_error> validate(spi_frame_width width) const noexcept {
+        const bool bytes = !transmit_bytes.empty() || !receive_bytes.empty();
+        if (bytes && (width != spi_frame_width::bits8 || !transmit.empty() || !receive.empty()))
+            return std::unexpected(spi_error::invalid_frame);
+        if (size() == 0U) return std::unexpected(spi_error::empty_transfer);
+        if (transmit_size() && receive_size() && transmit_size() != receive_size())
+            return std::unexpected(spi_error::mismatched_segment);
+        if (width == spi_frame_width::bits8) {
+            if (!transmit_size() && dummy > 0xFFU) return std::unexpected(spi_error::invalid_frame);
+            for (auto value : transmit) if (value > 0xFFU) return std::unexpected(spi_error::invalid_frame);
+        }
+        return size();
+    }
 };
+
+[[nodiscard]] inline spi_segment byte_segment(std::span<const std::uint8_t> transmit,
+                                             std::span<std::uint8_t> receive,
+                                             std::uint8_t dummy = 0xFFU) noexcept {
+    return {.dummy = dummy, .transmit_bytes = transmit, .receive_bytes = receive};
+}
 
 // Explicit full-duplex DMA mode. Both spans must have the same non-zero
 // length, and the controller must be configured for 8-bit frames.

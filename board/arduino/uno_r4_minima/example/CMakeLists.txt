@@ -1,5 +1,0 @@
-file(GLOB mcubsp_uno_examples CONFIGURE_DEPENDS "*.cpp")
-foreach(source IN LISTS mcubsp_uno_examples)
-    get_filename_component(name "${source}" NAME_WE)
-    mcubsp_uno_firmware("arduino.uno_r4_minima.example.${name}" "${source}")
-endforeach()

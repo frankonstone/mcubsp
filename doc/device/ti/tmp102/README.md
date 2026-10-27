@@ -9,8 +9,8 @@ Public implementation: `include/mcubsp/device/sensor/tmp102.hpp`. Required trans
 
 Focused test sources:
 
-- `test/device/test_tmp102.cpp`
-- `test/io/test_io_i2c_devices.cpp`
+- `src/device/sensor/test/test_tmp102.cpp`
+- `src/io/test/test_io_i2c_devices.cpp`
 
 See [the device contribution guide](../../../doc/development/adding-a-device.md) for checks.
 

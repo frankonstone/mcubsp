@@ -12,8 +12,8 @@ namespace mcubsp::execution {
 // poll() runs with the policy's critical section released. It shall make
 // bounded progress and shall not use WFI without an independently validated
 // event handshake. The initial contract is single-core.
-// @req REQ-0012 REQ-0015 REQ-0016 REQ-0041
 template<typename Hooks>
+// @req REQ-0012 REQ-0015 REQ-0016 REQ-0041
 class bare_metal_policy {
 public:
     using wait_token = std::uint32_t;

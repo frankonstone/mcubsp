@@ -1,5 +1,10 @@
 # RA4M1 bare-metal release acceptance
 
+> Historical physical/qualification record. Commands referencing the removed
+> `tool/` frontend or old presets are not a current automated runner. Use the
+> repository's current build guide and support matrix; hardware observations
+> below retain their original firmware and fixture scope.
+
 This is the evidence index and operating contract for PLN-0011. The release is
 **accepted** under D14: the user retired the cross-target fixture requirement
 and selected representative directly connected UNO R4 Minima hardware as the

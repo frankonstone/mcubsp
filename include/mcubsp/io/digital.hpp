@@ -22,7 +22,7 @@ public:
     digital_pin& operator=(digital_pin&&) = delete;
     ~digital_pin() {
         if (context_ && !release()) {
-            context_->execution().active_transfer_destroyed();
+            context_->execution().fail({"digital", "live resources or failed cleanup during destruction"});
             __builtin_trap();
         }
     }

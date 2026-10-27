@@ -1,301 +1,96 @@
-# Build a selected-board application
+# Build a board application
 
-The optional `tool/mcubsp.py` frontend creates an ordinary external CMake
-application and selects one board, revision, startup owner and toolchain. Use
-Python 3.10 or newer. The commands below use `python`; use `python3` on hosts
-where that is the Python 3 command, or `py -3` on Windows.
+For a project you own, start with the [application guide](application.md) and
+[standalone starter](../../example/blink/README.md). The preset commands below
+build demos from the mcubsp repository itself.
 
-For a board-independent application, see [installation](installation.md) and
-[library use](using-mcubsp.md). It does not need board discovery or this frontend.
+Use CMake 3.25+, Ninja, Python 3.10+ and a complete C++23 cross compiler with
+matching libstdc++ headers. Python records selected firmware inputs after linking.
+Build and flash are separate operations. The former Python
+new/setup/doctor/flash frontend was removed; CMake is the supported entry point.
+No command on this page downloads tools or touches hardware.
 
-## Create an application
-
-Run these commands from the mcubsp checkout or installed `share/mcubsp` directory:
-
-```sh
-python tool/mcubsp.py new ../my-blink --board arduino/uno_r4_minima
-```
-
-`new` copies the [UNO examples](../../board/arduino/uno_r4_minima/example/README.md) into an external
-directory and selects Blink. Choose `--example tmp102` for the TMP102 firmware;
-read its [wiring guide](../../device/ti/tmp102/README.md) before connecting hardware. The selected revision is
-written explicitly into `mcubsp.json`; `--revision` selects another revision
-supported by that board. An unknown board or revision fails before creation.
-Existing nonempty directories are never overwritten.
-
-| Board | Selected binding revision | Toolchain | Supplied startup |
-| --- | --- | --- | --- |
-| `arduino/uno_r4_minima` | `r4` | Arm GNU 15.2.Rel1 | RA4M1, application starts at `0x4000`; retained DFU bootloader |
-| `st/nucleo_h753zi` | `mb1364-rev-e` | Arm GNU 15.2.Rel1 | STM32H753, HSI 64 MHz; vectors at `0x08000000` |
-| `waveshare/esp32p4_nano` | `development-v1.0` | Espressif GCC 15.2.0 and ESP-IDF v6.1 | Custom SDK second-stage bootloader and explicit pre-scheduler application entry |
-
-The UNO `r4` name identifies the supported binding, not an audited PCB revision.
-The ESP binding is scoped to the observed development silicon; build success
-does not establish production-silicon or physical TMP102 acceptance. See each board procedure for its evidence scope.
-
-## Import installed prerequisites explicitly
-
-Install the versions in [the tool lock](../../tool/toolchains.lock.json)
-using the tool vendors' distribution mechanisms, then import those installed
-tools. ARM builds need CMake, Ninja and the complete Arm GNU compiler installation,
-including its matching C++23 libstdc++ headers and binutils. Debuggers are only
-required for the separate `flash` operation.
-
-Use the official distributions for your host: [Python](https://www.python.org/downloads/),
-[CMake](https://cmake.org/download/), [Ninja 1.12.1](https://github.com/ninja-build/ninja/releases/tag/v1.12.1),
-and [Arm GNU Toolchain](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
-Choose each recorded version rather than an unqualified latest release, install
-or unpack the complete distribution, and add its executable directory to
-`PATH` or pass the explicit path below. The installation source is selected by
-you; the frontend checks and records what was actually imported.
-
-```sh
-python tool/mcubsp.py setup --project ../my-blink --offline
-python tool/mcubsp.py doctor --project ../my-blink
-python tool/mcubsp.py build --project ../my-blink
-```
-
-Setup imports tools from `PATH` unless overridden. Paths containing spaces are
-supported; quote the complete `NAME=PATH` argument:
-
-```sh
-python tool/mcubsp.py setup --project ../my-blink --offline --tool "arm-gcc=/opt/Arm Toolchain/bin/arm-none-eabi-g++"
-```
-
-On Windows the equivalent override is, for example,
-`--tool "arm-gcc=C:/Arm Toolchain/bin/arm-none-eabi-g++.exe"`. Other executable
-override names are `cmake`, `ninja`, `riscv-gcc`, `idf-python`, `jlink` and
-`openocd`. `esp-idf` and `idf-tools` name directories.
-
-Setup records the imported tools and exposes one configuration to the frontend,
-CMake and the IDE:
-
-- `.mcubsp/toolchains.lock.json` records exact expected versions and optional
-  immutable archive sources. Commit this file with the application.
-- `.mcubsp/environment.json` records the host, actual installation paths,
-  executable SHA-256 values, compiler/assembler/linker/library identities,
-  frontend Python identity, versions, explicit version overrides, SDK commit
-  and submodules, Python package versions, and SDK constraints checksum. This
-  machine-local file is ignored by the generated `.gitignore`.
-- `.mcubsp/CMakePresets.json` provides the `mcubsp` configure and build presets,
-  including the selected board, tool paths and SDK environment. Setup adds its
-  include to `CMakeUserPresets.json`, preserving existing user presets.
-- `.mcubsp/verify-environment.cmake` checks the recorded installation during
-  direct CMake and IDE configuration as well as frontend builds.
-
-From the generated application directory, the equivalent CMake commands are:
-
-```sh
-cmake --preset mcubsp
-cmake --build --preset mcubsp
-```
-
-Select the `mcubsp` configure/build preset in the IDE. Use the CMake executable
-recorded by setup; the preset supplies that path to IDEs. The frontend invokes
-these same presets. Change board/revision/startup selection in `mcubsp.json`
-and rerun setup to regenerate the shared configuration. Generated files and
-machine-local presets are ignored by version control.
-
-Build and doctor verify recorded installations before use. If a tool changes,
-rerun explicit setup to accept its new identity. An intentional alternative
-version requires `--allow-version-override`; the resulting report preserves
-that fact. Version overrides do not bypass the C++23 standard-library probe.
-Modified SDK sources must be committed before importing an alternate SDK
-revision; this keeps source overrides reproducible. Setup and doctor check the
-SDK and every nested submodule worktree, including untracked source files,
-independently of Git's submodule-ignore settings. An explicit version override
-accepts a different clean commit, not uncommitted dependency changes.
-
-The selected toolchain, SDK, board revision and startup owner determine an
-isolated directory below `build/`. Adding a debugger does not change the build
-directory. Each successful CMake build writes a target-specific
-`firmware.build.json` beside `firmware.elf`, identifying the board, revision,
-startup owner, actual artifact path and checksum. Frontend-created projects
-also update `.mcubsp/last-build.json`; this works when the build is invoked
-directly by CMake or an IDE. Source and toolchain provenance remains in the
-adjacent `firmware.identity.json` report.
-
-## ESP32-P4 SDK setup
-
-For ESP board verification, use the complete ESP-IDF v6.1 installation at commit
-`fff9895c82d744c7237be8847347bdd1b07c6643`, its pinned submodules,
-`esp-15.2.0_20251204` RISC-V compiler and Python environment. Set `IDF_PATH`
-and `IDF_TOOLS_PATH` from that installation before configuring the
-`esp32p4-riscv` preset with `MCUBSP_BOARD=waveshare/esp32p4_nano`.
-The current packaged Blink and TMP102 applications target the UNO board;
-ESP board fixtures remain under its local `test/` directory.
-
-The [ESP-IDF v6.1 setup instructions](https://github.com/espressif/esp-idf/tree/v6.1#setting-up-esp-idf)
-provide the platform prerequisites and installer entry points: `install.sh` on
-Linux/macOS and `install.bat` or `install.ps1` on Windows. Keep the installed
-compiler, SDK, Python packages and constraints file together after setup.
-
-## Cached archive setup and offline builds
-
-The bundled lock intentionally contains no unverified download URL or checksum.
-It supports import of existing installations on each host. To distribute an
-approved tool archive to a team, copy the lock and add a host-specific `archives`
-entry to a tool. For example, this schematic entry must be populated with the
-actual immutable URL, digest and path before use:
-
-```json
-{
-  "archives": {
-    "linux-x86_64": {
-      "url": "https://your-tool-mirror.example/tool-version.zip",
-      "sha256": "<actual 64-character lowercase SHA-256>",
-      "format": "zip",
-      "path": "tool-version/bin/tool"
-    }
-  }
-}
-```
-
-Supported host keys include `linux-x86_64`, `linux-arm64`, `darwin-arm64`,
-`darwin-x86_64`, `windows-x86_64` and `windows-arm64`. An archive entry is part of
-the selected tool definition, next to `kind`, `version` and `version_args`.
-Supported formats are `zip` and `tar` (including compressed tar files).
-Archives may contain regular files and directories; links, device entries and
-paths escaping the extraction root are rejected. Import an existing install
-for vendor bundles requiring symbolic links. Local `file://` archives work too.
-
-```sh
-python tool/mcubsp.py setup --project ../my-blink --lock team-toolchains.lock.json --cache ../tool-cache
-python tool/mcubsp.py setup --project ../my-blink --offline --cache ../tool-cache
-python tool/mcubsp.py build --project ../my-blink
-```
-
-Only explicit `setup` can fetch an archive. Downloaded bytes are checked before
-extraction and cached by SHA-256. Offline setup requires an existing verified
-cache entry, and reports the missing entry with remediation otherwise. Reusing
-the cache rechecks archive integrity and extracts fresh contents. Explicit
-`--tool` imports take precedence over archives.
-
-Build does not perform setup or resolve a newer tool version. Imported installs
-and all selected SDK sources/packages must remain available locally. Ordinary
-ARM builds and the selected minimal SDK application can be rebuilt with network
-access unavailable after setup; no board SDK/component download step is added.
-
-## Inspect and flash separately
-
-Compilation never flashes. Import the debugger for the requested operation,
-inspect its command, then run the same command without `--dry-run`:
-
-```sh
-python tool/mcubsp.py setup --project ../my-blink --operation flash --offline
-python tool/mcubsp.py doctor --project ../my-blink --operation flash
-python tool/mcubsp.py flash --project ../my-blink --probe 123456789 --dry-run
-python tool/mcubsp.py flash --project ../my-blink --probe 123456789
-```
-
-Replace `123456789` with the selected physical probe's serial number. UNO uses
-J-Link with `R7FA4M1AB`, SWD and 4 MHz; NUCLEO uses OpenOCD with ST-LINK and
-`stm32h7x.cfg`. Flashing checks that ELF load segments fit the board's declared
-application flash regions. The UNO application region starts at `0x4000` to
-preserve its DFU bootloader. Reusable adapters read these settings from the
-board entry; they do not choose a connected probe implicitly.
-
-Flash reads the last completed artifact record; changing a compiler or importing
-a debugger does not redirect it to an unbuilt output directory. The record must
-match the selected board/revision/startup and the firmware checksum. A dry-run
-also requires a completed image. To select another completed CMake build,
-provide its exact record (or a directory containing a single record):
-
-```sh
-python tool/mcubsp.py flash --project ../my-blink --build /path/to/build/firmware.build.json --probe 123456789 --dry-run
-```
-
-For ESP, the SDK Python environment already imported for the build supplies
-esptool. For a completed custom ESP application, select its serial port
-explicitly when using the shared runner.
-
-The runner reads the generated SDK `flasher_args.json`, verifies its chip and
-flash regions, and flashes the bootloader at `0x2000`, partition table at
-`0x8000` and application at `0x10000`. Existing contents in those regions are
-replaced. See each board's local README and procedure for
-boot policy, preserved regions and recovery. A flash dry-run prints structured
-argument arrays and any proposed command-file contents; it sends nothing to a
-probe or serial device and writes no runner files.
-
-Physical acceptance fixtures live under each board's `test/` directory. The
-existing `tool/run-*.sh` commands remain compatibility wrappers. Their board
-runner, tool resolution and artifact locations use the same shared host helpers
-as application flashing; fixture-specific observation and evidence parsing stay
-with the board. Set `MCUBSP_PROBE_SERIAL` for J-Link/ST-LINK fixtures, and pass the
-ESP serial port or set `MCUBSP_SERIAL_PORT`. `MCUBSP_ENVIRONMENT_JSON` can point to
-an application's recorded environment; explicit `JLINK_EXE`, `OPENOCD_EXE`,
-`IDF_PYTHON`, `ARM_NM` and `MCUCOV_EXE` overrides remain supported. An explicit
-ELF argument makes captures and coverage lookup follow that image's build
-directory. For the UNO named suites, `MCUBSP_BUILD_DIR` selects an architecture
-workspace's test build instead of the legacy preset directory.
-
-## Board presets in the repository
-
-Select a board and its toolchain together:
+## Build Blink from the checkout
 
 ```sh
 cmake --preset arduino-uno-r4-minima
-cmake --preset st-nucleo-h753zi
-cmake --preset waveshare-esp32p4-nano
+cmake --build --preset arduino-uno-r4-minima --target firmware
 ```
 
-The UNO preset builds separate executables from every `.cpp` in its
-`example/` and `test/` directories. The old host verification targets were
-removed with their CMake helpers. Board-specific hardware procedures remain
-in the board directories.
+| Preset | Binding revision | Compiler | Output |
+| --- | --- | --- | --- |
+| `arduino-uno-r4-minima` | `r4` | Arm GNU | `output/build/arduino-uno-r4-minima/src/board/firmware.elf` |
+| `st-nucleo-h753zi` | `mb1364-rev-e` | Arm GNU | `output/build/st-nucleo-h753zi/src/board/firmware.elf` |
+| `waveshare-esp32p4-nano` | `development-v1.0` | ESP-IDF RISC-V GCC | `output/build/waveshare-esp32p4-nano/src/board/firmware.elf` |
 
-## Direct CMake and existing startup
+Replace the preset name in both commands to select another board. The supported
+Arm baseline is Arm GNU 15.2.Rel1 (GCC 15.2.1). P4 uses ESP-IDF v6.1 and its
+GCC 15.2.0 toolchain. These are recorded local build environments; hosted
+Linux/Windows qualification requires successful CI runs.
 
-The frontend's explicit setup workflow remains available for external
-applications. It records installed tools and creates a project-local
-configuration for the chosen application. Adding a board does not require
-editing the repository's shared presets.
+UNO preserves its DFU bootloader: application flash starts at `0x4000`.
+NUCLEO uses HSI at 64 MHz and vectors at `0x08000000`. P4 supplied startup
+requires development-v1.0 silicon at 360 MHz and rejects another revision.
+P4 Blink toggles free expansion GPIO2; observing it requires an external LED
+and series resistor. The NANO has no claimed built-in GPIO LED.
 
-The generated application is a normal CMake project. The equivalent ARM build
-is, with paths and board selected for your host:
+For P4, activate the installed ESP-IDF environment first. Set `IDF_PATH`,
+`IDF_TOOLS_PATH` and, when necessary, `-DPYTHON=/path/to/idf/venv/bin/python`.
+The SDK, Python packages and constraints file must belong to that installation.
+The build uses the installed SDK without component downloads. The complete
+flash bundle remains in `src/board/firmware-idf-build/`, including the bootloader,
+partition table, application and `flasher_args.json`.
+
+Select an application or exact revision explicitly:
 
 ```sh
-cmake -S ../my-blink -B ../my-blink/build/manual-uno -G Ninja -DMCUBSP_SOURCE_DIR=/path/to/mcubsp -DMCUBSP_BOARD=arduino/uno_r4_minima -DMCUBSP_BOARD_REVISION=r4 -DCMAKE_TOOLCHAIN_FILE=/path/to/mcubsp/cmake/McubspToolchain.cmake -DMCUBSP_STARTUP=supplied
-cmake --build ../my-blink/build/manual-uno --target firmware
+cmake --preset arduino-uno-r4-minima -DMCUBSP_APPLICATION=/absolute/path/main.cpp -DMCUBSP_BOARD_REVISION=r4
+cmake --build --preset arduino-uno-r4-minima --target firmware
 ```
 
-For ESP also supply `MCUBSP_IDF_PATH`, `MCUBSP_IDF_TOOLS_PATH` and `PYTHON`, and
-activate or explicitly select the SDK compiler. `build --dry-run` prints the
-exact equivalent configure/build argument arrays for your recorded environment.
+Use a separate build directory when changing board, toolchain or startup owner.
+Every linked image has an adjacent `.elf.build.json` recording its SHA-256,
+size, board, revision, startup choice and compiler path. Ninja builds also bind
+an adjacent `.elf.inputs.json` with selected source/header/configuration,
+linker-input and compiler/tool fingerprints. See
+[input identity and scope](../development/firmware-inputs.md).
 
-An existing BSP/RTOS application chooses `MCUBSP_STARTUP=external` and supplies
-its own startup sources, linker script and reset/clock services through the
-documented [firmware helper](../../board/Support.cmake). In this mode mcubsp
-does not add its board vectors or reset owner. `new --startup external` records
-that choice; the generated application must then be adapted to provide its BSP
-before it can link. Use a separate build directory when switching startup.
+## Create an external application
 
-## Qualification and diagnostics
+Create `main.cpp` and the following `CMakeLists.txt`:
 
-The initial implementation was exercised on macOS arm64. The lock records
-observed versions rather than claiming every host/tool combination is qualified:
+```cmake
+cmake_minimum_required(VERSION 3.25)
+project(my_firmware LANGUAGES CXX ASM)
+find_package(mcubsp 0.1 CONFIG REQUIRED)
+mcubsp_add_firmware(firmware
+    BOARD arduino/uno_r4_minima REVISION r4
+    STARTUP supplied SOURCES main.cpp)
+```
 
-| Input | Recorded baseline | Scope |
-| --- | --- | --- |
-| Frontend Python | 3.14.7 (frontend supports 3.10+) | Local CLI/unit checks |
-| CMake / Ninja | 4.4.0 / 1.12.1 | Local external builds |
-| Arm compiler and libstdc++ | Arm GNU 15.2.Rel1, GCC 15.2.1 | C++23 probe and UNO/NUCLEO applications |
-| RISC-V compiler and libstdc++ | esp-15.2.0_20251204, GCC 15.2.0 | C++23 probe and ESP32-P4 SDK applications |
-| ESP-IDF / SDK Python | v6.1 at the commit above / 3.12.2 | Complete local SDK application build and package checks |
-| J-Link / OpenOCD | 9.76 / 0.12.0 | Version inspection and command planning; no new physical flash qualification |
-| Linux / Windows | Portable tests and CI workflow supplied | Not executed on those hosts during this implementation; results must be recorded before claiming qualification |
-
-The frontend tests exercise paths containing spaces, exact subprocess arguments,
-setup imports, explicit overrides, missing tools, changed identities, C++ library
-diagnostics, cache misses, checksum failures, offline reuse and each flash
-adapter without touching hardware:
+After [installing the library](installation.md), configure with its toolchain
+and package prefix, then build:
 
 ```sh
-python -m unittest discover -s test/tooling -p test_frontend.py -v
+cmake -S . -B build -G Ninja -DCMAKE_PREFIX_PATH=/path/to/install -DCMAKE_TOOLCHAIN_FILE=/path/to/install/share/mcubsp/cmake/board-toolchain.cmake -DMCUBSP_BOARD=arduino/uno_r4_minima
+cmake --build build --target firmware
 ```
 
-`doctor --operation build` checks only build prerequisites. `doctor --operation
-flash` checks only the selected runner. Missing tools name their import option
-and expected version; changed tool identities require explicit setup, and a
-C++23 header failure names the matching standard-library installation. Setup
-reports are machine-local artifacts, not physical hardware evidence.
+A checkout consumer can replace `find_package` with
+`add_subdirectory(/path/to/mcubsp mcubsp EXCLUDE_FROM_ALL)`. The public helper is
+available automatically in both modes.
+
+`STARTUP external` defines `MCUBSP_EXTERNAL_STARTUP` and adds no startup
+sources or linker script. Supply the existing BSP's startup, linker options,
+clock configuration and interrupt routing yourself. Its clocks must match the
+selected C++ profile. Generic drivers never take ownership of these services.
+
+## Hardware procedures
+
+Building never flashes. The [hardware guide](hardware.md) documents the shared
+runner's dry-run/flash commands, exact probe/port selection, image-region and
+checksum checks, and board-owned capture scripts. Read the board's wiring and
+recovery notes before running its physical procedure. Existing observations
+retain their original firmware/fixture identity; current software checks do not
+refresh them. The [support matrix](../reference/support-matrix.md) lists pending
+physical qualification.

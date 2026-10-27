@@ -97,9 +97,9 @@ class operation_pool;
 
 // Move-only consumer for one stable operation-pool slot. Moving this handle
 // never moves the state observed by completion/ISR code.
-// @req REQ-0017 REQ-0018 REQ-0020
 template<typename T, typename Error, std::size_t Capacity,
          typename ExecutionPolicy>
+// @req REQ-0017 REQ-0018 REQ-0020
 class transfer {
 public:
     using pool_type = operation_pool<T, Error, Capacity, ExecutionPolicy>;
@@ -149,9 +149,9 @@ private:
 
 // Fixed operation storage and the single publication point shared by polling,
 // blocking and ISR completion paths.
-// @req REQ-0014 REQ-0016 REQ-0017 REQ-0018 REQ-0019
 template<typename T, typename Error, std::size_t Capacity,
          typename ExecutionPolicy>
+// @req REQ-0014 REQ-0016 REQ-0017 REQ-0018 REQ-0019
 class operation_pool {
     static_assert(Capacity > 0U);
     static_assert(Capacity
@@ -313,6 +313,7 @@ private:
     [[nodiscard]] static error_type state_error(const slot& current) noexcept {
         switch (current.state) {
         case detail::operation_state::pending:
+            [[fallthrough]];
         case detail::operation_state::cancelling:
             return detail::make_transfer_error<Error>(
                 transfer_error_kind::pending);
@@ -328,6 +329,7 @@ private:
             return detail::make_transfer_error<Error>(
                 transfer_error_kind::quiesce_failed);
         case detail::operation_state::free:
+            [[fallthrough]];
         case detail::operation_state::retired:
             return detail::make_transfer_error<Error>(
                 transfer_error_kind::invalid_handle);

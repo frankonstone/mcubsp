@@ -3,6 +3,7 @@
 // @req-file REQ-0002 REQ-0014 REQ-0045
 #include <cstdint>
 #include <expected>
+#include <source_location>
 #include <type_traits>
 #include <utility>
 
@@ -111,6 +112,15 @@ template<class E>
     }
     return result;
 }
+
+// Passed to an optional execution-policy contract_violation(diagnostic) hook
+// before the mandatory trap. Strings and source location have static storage.
+struct contract_failure {
+    const char* component;
+    const char* reason;
+    core::operation_id operation{};
+    std::source_location location = std::source_location::current();
+};
 
 struct trap_failure {
     [[noreturn]] static void fail(error) noexcept { __builtin_trap(); }

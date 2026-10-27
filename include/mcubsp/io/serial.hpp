@@ -35,7 +35,7 @@ public:
 
     ~serial_port() {
         if (initialized_ && !shutdown()) {
-            context_.execution().active_transfer_destroyed();
+            context_.execution().fail({"serial", "live operation or failed cleanup during destruction"});
             __builtin_trap();
         }
     }

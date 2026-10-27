@@ -10,8 +10,8 @@ namespace mcubsp::core {
 enum class ownership_error : std::uint8_t { invalid_resource, busy };
 
 // Fixed-storage ownership for explicitly enumerated peripheral instances.
-// @req REQ-0014
 template<std::size_t ResourceCount, typename ExecutionPolicy>
+// @req REQ-0014
 class peripheral_ownership {
     static_assert(ResourceCount > 0U);
 

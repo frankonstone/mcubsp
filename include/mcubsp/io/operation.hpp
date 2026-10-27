@@ -23,7 +23,7 @@ public:
         // contract. Keep its context alive through that check.
         if (context_) {
             if (!transfer_.ready()) {
-                context_->execution().active_transfer_destroyed();
+                context_->execution().fail({"operation", "pending operation destroyed; finish or cancel before releasing buffers", transfer_.id()});
                 __builtin_trap();
             }
             context_->drop();

@@ -1,3 +1,3 @@
 # Board documentation moved
 
-See the [board-owned documentation](../../../board/waveshare/esp32p4_nano/doc/README.md).
+See the [board-owned documentation](../../../src/board/waveshare/esp32p4_nano/doc/README.md).

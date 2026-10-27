@@ -1,4 +1,4 @@
-build
+/build/
 doc/_vendor/
 doc/_generated/
 output
@@ -6,6 +6,6 @@ tmp
 *.pyc
 __pycache__/
 CMakeUserPresets.json
-# Preserve ignored local SDK configuration left at the former test-project path.
-/board/esp32p4_nano/baremetal_smoke/sdkconfig
-/board/esp32p4_nano/baremetal_smoke/sdkconfig.old
+# Local SDK-generated configuration.
+/src/board/*/*/test/firmware/sdkconfig
+/src/board/*/*/test/firmware/sdkconfig.old

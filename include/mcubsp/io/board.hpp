@@ -4,6 +4,8 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
+#include <mcubsp/io/composition.hpp>
 #include <mcubsp/core/direct_mmio.hpp>
 #include <mcubsp/io/detail/context.hpp>
 #include <mcubsp/io/digital.hpp>
@@ -16,6 +18,11 @@
 
 namespace mcubsp::io {
 namespace detail {
+// Named constraints keep construction policy checks constant expressions,
+// including when runtime decisions in member bodies are instrumented.
+template<bool Execution, bool Mmio> concept owned_policies = !Execution && !Mmio;
+template<bool Execution, bool Mmio> concept borrowed_execution = Execution && !Mmio;
+template<bool Execution, bool Mmio> concept borrowed_policies = Execution && Mmio;
 template<template<class> class Feature, class Context, bool Enabled>
 struct peripheral_storage {
     explicit peripheral_storage(Context&) noexcept {}
@@ -34,7 +41,7 @@ struct peripheral_storage<Feature, Context, true> : Feature<Context> {
 template<class Board, board_config Configuration = {},
          class Policy = typename Board::default_execution,
          class Mmio = core::direct_mmio,
-         bool BorrowExecution = false, bool BorrowMmio = false>
+         bool BorrowExecution = false, bool BorrowMmio = false, class... Selections>
 class board {
     static_assert((Configuration.dma & ~Board::dma_available) == 0U,
                   "selected DMA channels have no supported board backend");
@@ -64,21 +71,28 @@ public:
     [[no_unique_address]] detail::peripheral_storage<analog_input, context_type, Configuration.adc> analog;
     [[no_unique_address]] detail::peripheral_storage<pwm_output, context_type, Configuration.pwm> pwm;
 
-    board() noexcept requires (!BorrowExecution && !BorrowMmio)
+private:
+    [[no_unique_address]] std::tuple<detail::selected_peripheral<context_type, Selections>...> peripherals_;
+public:
+    template<std::size_t Index> [[nodiscard]] auto& peripheral() noexcept {
+        return std::get<Index>(peripherals_).peripheral;
+    }
+
+    board() noexcept requires detail::owned_policies<BorrowExecution, BorrowMmio>
         : policy_{}, mmio_{}, context_(mmio_.get(), policy_.get(), Board::ticks_per_second),
-          gpio_(mmio_.get()), serial(context_), i2c(context_), spi(context_), dma(context_), analog(context_), pwm(context_) {
+          gpio_(mmio_.get()), serial(context_), i2c(context_), spi(context_), dma(context_), analog(context_), pwm(context_), peripherals_(((void)sizeof(Selections), context_)...) {
         install_progress();
     }
     explicit board(Policy& policy, std::uint32_t frequency = Board::ticks_per_second) noexcept
-        requires (BorrowExecution && !BorrowMmio)
+        requires detail::borrowed_execution<BorrowExecution, BorrowMmio>
         : policy_(policy), mmio_{}, context_(mmio_.get(), policy_.get(), frequency),
-          gpio_(mmio_.get()), serial(context_), i2c(context_), spi(context_), dma(context_), analog(context_), pwm(context_) {
+          gpio_(mmio_.get()), serial(context_), i2c(context_), spi(context_), dma(context_), analog(context_), pwm(context_), peripherals_(((void)sizeof(Selections), context_)...) {
         install_progress();
     }
     board(Policy& policy, Mmio& mmio, std::uint32_t frequency = Board::ticks_per_second) noexcept
-        requires (BorrowExecution && BorrowMmio)
+        requires detail::borrowed_policies<BorrowExecution, BorrowMmio>
         : policy_(policy), mmio_(mmio), context_(mmio_.get(), policy_.get(), frequency),
-          gpio_(mmio_.get()), serial(context_), i2c(context_), spi(context_), dma(context_), analog(context_), pwm(context_) {
+          gpio_(mmio_.get()), serial(context_), i2c(context_), spi(context_), dma(context_), analog(context_), pwm(context_), peripherals_(((void)sizeof(Selections), context_)...) {
         install_progress();
     }
     board(const board&) = delete;
@@ -87,7 +101,7 @@ public:
     board& operator=(board&&) = delete;
     ~board() {
         if (context_.started() && !shutdown()) {
-            context_.execution().active_transfer_destroyed();
+            context_.execution().fail({"board", "live resources or failed cleanup during destruction"});
             __builtin_trap();
         }
     }
@@ -107,6 +121,11 @@ public:
         if (auto stopped = spi.shutdown(); !stopped) return stopped;
         if (auto stopped = analog.shutdown(); !stopped) return stopped;
         if (auto stopped = pwm.shutdown(); !stopped) return stopped;
+        result<void> extra{};
+        std::apply([&](auto&... selected) {
+            ((extra ? static_cast<void>(extra = selected.peripheral.shutdown()) : void()), ...);
+        }, peripherals_);
+        if (!extra) return extra;
         if (auto stopped = context_.deactivate(); !stopped) return stopped;
         Board::stop(mmio_.get());
         return {};
@@ -142,6 +161,7 @@ public:
         spi.poll();
         analog.poll();
         pwm.poll();
+        std::apply([](auto&... selected) { (selected.peripheral.poll(), ...); }, peripherals_);
     }
     template<class Rep, class Period>
     [[nodiscard]] result<void> delay(std::chrono::duration<Rep, Period> interval) noexcept {
@@ -171,15 +191,19 @@ private:
     }
 };
 
-template<class Board, board_config Configuration = {}, class Policy>
+template<class Board, board_config Configuration = {}, class... Selections>
+using composed_board = board<Board, Configuration, typename Board::default_execution,
+                             core::direct_mmio, false, false, Selections...>;
+
+template<class Board, board_config Configuration = {}, class... Selections, class Policy>
 [[nodiscard]] auto make_board(Policy& policy,
                              std::uint32_t frequency = Board::ticks_per_second) noexcept {
-    return board<Board, Configuration, Policy, core::direct_mmio, true, false>{policy, frequency};
+    return board<Board, Configuration, Policy, core::direct_mmio, true, false, Selections...>{policy, frequency};
 }
-template<class Board, board_config Configuration = {}, class Policy, class Mmio>
+template<class Board, board_config Configuration = {}, class... Selections, class Policy, class Mmio>
 [[nodiscard]] auto make_board(Policy& policy, Mmio& mmio,
                              std::uint32_t frequency = Board::ticks_per_second) noexcept {
-    return board<Board, Configuration, Policy, Mmio, true, true>{policy, mmio, frequency};
+    return board<Board, Configuration, Policy, Mmio, true, true, Selections...>{policy, mmio, frequency};
 }
 
 } // namespace mcubsp::io

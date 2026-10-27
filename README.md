@@ -21,6 +21,17 @@ The first accepted bare-metal target is the Arduino UNO R4 Minima and its
 Renesas RA4M1. The repository also contains STM32H753 and ESP32-P4 descriptions,
 backends, and board integrations at the acceptance levels documented below.
 
+## Start from your application
+
+If you already have a BSP/RTOS project, link `mcubsp::mcubsp`, `mcubsp::io` or
+`mcubsp::device` into your executable. You keep your toolchain and startup.
+If you are starting a supported-board application, use the public board
+toolchain and `mcubsp_add_firmware` to prepare its integration explicitly.
+
+Start with [the application guide](doc/getting-started/application.md) and the
+[copyable standalone Blink project](example/blink/README.md). They distinguish
+your application's build, tests and release from maintaining mcubsp itself.
+
 ## Architecture
 
 The library separates hardware facts from behavior and board wiring:
@@ -56,14 +67,13 @@ The main source layers are:
 | `include/mcubsp/mcu/` | Declarative, source-backed MCU descriptions |
 | `include/mcubsp/backend/` | MCU-specific peripheral sequencing |
 | `include/mcubsp/driver/` | Target-independent functional drivers and external-device drivers |
-| `include/mcubsp/io/` | Modern C++ application interface and explicit board profiles |
+| `include/mcubsp/io/` | Generic application interfaces, peripheral handles and board container |
 | `include/mcubsp/device/` | Attached-chip protocols using I2C/SPI device handles or supplied transports |
-| `include/mcubsp/board/` | Board identities, package selection, and connector/pin aliases |
+| `include/mcubsp/board/<vendor>/` | Named board types, lightweight pins and hardware bindings |
 | `include/mcubsp/execution/` | Bare-metal and test execution policies |
-| `include/mcubsp/integration/` | Optional integration boundaries such as MCUIP network devices |
-| `board/<vendor>/<name>/` | Local board build rules, runner configuration and procedures |
-| `mcu/`, `ip/`, `device/` | Component-owned documentation and fixtures |
-| `test/` | Native behavioral tests, compile checks, and compile-fail cases |
+| `src/` | Mirrors public-header modules; owns implementation resources and module-local `test/` folders |
+| `src/board/<vendor>/<name>/` | Board startup, build rules, physical tests and procedures |
+| `test/` | Project-wide workflows, compiler orchestration, shared runners and reporting |
 | `doc/` | Design notes, source manifests, board procedures, and acceptance records |
 
 ## Current support
@@ -73,6 +83,10 @@ The main source layers are:
 | Renesas RA4M1 / Arduino UNO R4 Minima | Accepted bare-metal startup, GPIO, basic PWM, UART, I2C, SPI, ADC, DMAC, and W5100 Ethernet through MCUIP |
 | STM32H753 / NUCLEO-H753ZI | Source-backed description and bare-metal clock, memory/cache, GPIO, timer, USART, I2C, SPI, ADC, DMA, and Ethernet implementation; native USB/Ethernet completion is tracked separately |
 | ESP32-P4 / Waveshare ESP32-P4-NANO | Production-v3.x description with GPIO, UART, I2C, I2S, SDMMC/SDIO, SPI, and Ethernet work; the connected v1.0 board provides development evidence rather than production-silicon acceptance |
+
+The [support matrix](doc/reference/support-matrix.md) separates source review,
+typed metadata, driver implementation and physical verification, including
+current gaps and required hardware refresh.
 
 Support is intentionally evidence-specific. A described peripheral is not
 automatically claimed as physically verified, and a successful cross-build is
@@ -86,7 +100,7 @@ boundaries.
 For an ordinary application, a C++23 compiler and the public headers suffice.
 CMake consumers additionally need CMake 3.25 or newer. Library consumption
 requires no sibling projects or board selection. Complete
-board applications use CMake, Ninja and the selected cross compiler; flashing
+board applications use CMake, Ninja, Python 3.10+ and the selected cross compiler; flashing
 tools are required only when flashing. See the
 [first-build guide](doc/getting-started/building.md) for pinned setup, SDK and
 host qualification details.
@@ -96,20 +110,23 @@ Board presets require Ninja and the matching cross compiler:
 - `arm-none-eabi-g++` for the Arduino UNO R4 Minima and NUCLEO-H753ZI;
 - an activated ESP-IDF toolchain containing `riscv32-esp-elf-g++` for ESP32-P4.
 
-The CMake packages for `mcutest`, `mcucov` and `mcujson` must also be
-discoverable by `find_package`.
+Board applications need no test dependencies. Optional UNO and NUCLEO test
+images require `mcutest`, `mcucov` and `mcujson`;
+see the [hardware build and capture guide](doc/getting-started/hardware.md).
 
-## Quick start
+## Try the repository's Blink
 
 Configure the repository for a supported board:
 
 ```sh
 cmake --preset arduino-uno-r4-minima
-cmake --build --preset arduino-uno-r4-minima
+cmake --build --preset arduino-uno-r4-minima --target firmware
 ```
 
-The UNO preset builds a separate `.elf` for every source in its `example/`
-and `test/` directories. For one image, build its named target, for example
+Each board has a `firmware` target that links Blink with supplied startup.
+All example applications live under [example/](example/README.md), grouped by
+topic. Build the `examples` target for the selected board's demos or choose a
+named target. Physical-test images are opt-in. For one image, build its named target, for example
 `arduino.uno_r4_minima.example.blink` or
 `arduino.uno_r4_minima.test.startup_gpio`. Flashing and running physical tests
 remain separate hardware procedures.
@@ -125,9 +142,10 @@ from the existing driver evidence below.
 The [components guide](doc/getting-started/components.md) shows how attached
 chips share buses through `hw.i2c.device(address)` and
 `hw.spi.device(configuration)`. TMP102 and W5100 drivers live under
-`mcubsp::device`; the W5100 exposes raw Ethernet through the generic MCUIP
-integration. Link `mcubsp::device` for device headers and `mcubsp::io` for the
-board facade.
+`mcubsp::device`. Link `mcubsp::device` for device headers and `mcubsp::io` for
+the board facade. MCUIP adapters, contract checks and combined Ethernet test
+applications live in the sibling [integration project](../integration/README.md).
+That project depends on mcubsp and MCUIP; mcubsp builds independently of it.
 
 ## Installation and use from another project
 
@@ -166,10 +184,13 @@ cmake -S . -B build -G Ninja \
 cmake --build build
 ```
 
-To install a package, configure a board preset, then run
-`cmake --install build/<preset> --prefix /path/to/prefix`. In the consumer,
+To install without board or test dependencies, run
+`cmake --preset library`, then `cmake --build --preset library` and
+`cmake --install output/build/library`. The package goes to `output/install`.
+In the consumer,
 replace `add_subdirectory` with `find_package(mcubsp 0.1 CONFIG REQUIRED)` and
-configure with `-DCMAKE_PREFIX_PATH=/path/to/prefix`. The same three targets
+configure with `-DCMAKE_PREFIX_PATH=/absolute/path/to/mcubsp/output/install`.
+An explicit install prefix remains supported. The same three targets
 are available: `mcubsp::mcubsp`, `mcubsp::io` and `mcubsp::device`. See
 [installation](doc/getting-started/installation.md) for package layout and
 [firmware integration](doc/getting-started/using-mcubsp.md) for startup ownership.
@@ -190,11 +211,11 @@ has established the board clock and memory environment:
 
 ```cpp
 #include <mcubsp/backend/ra4m1/gpio.hpp>
-#include <mcubsp/board/arduino_uno_r4_minima.hpp>
+#include <mcubsp/board/arduino/uno_r4_minima/bindings.hpp>
 #include <mcubsp/core/direct_mmio.hpp>
 #include <mcubsp/driver/gpio.hpp>
 
-namespace board = mcubsp::board::arduino_uno_r4_minima;
+using board = mcubsp::board::arduino::uno_r4_minima_bindings;
 
 mcubsp::core::direct_mmio mmio;
 mcubsp::backend::ra4m1::gpio_backend gpio_hardware{mmio};
@@ -217,7 +238,7 @@ bool set_led(bool enabled) {
 }
 ```
 
-The [examples guide](board/arduino/uno_r4_minima/doc/example/README.md) provides reader-facing UART, I2C,
+The [examples guide](src/board/arduino/uno_r4_minima/doc/example/README.md) provides reader-facing UART, I2C,
 SPI, ADC, DMA, PWM, and W5100 Ethernet examples with the code, wiring,
 lifecycle rules, and troubleshooting hints together on each page.
 
@@ -232,17 +253,19 @@ caller retains the handle until it consumes the result, cancels it, or waits to
 a deadline. Destroying an active handle is a contract violation rather than an
 implicit cancellation.
 
-## Build presets
+## Framework maintainer presets
 
-The host presets run the native suites in `test/` and cross-compile the target
-probes with the GNU Arm and ESP32-P4 RISC-V toolchains. Nothing in `test/`
-must run on a board. Board
-presets select a board and its required cross compiler. The optional
-`MCUBSP_COVERAGE` switch instruments Arduino UNO R4 Minima test images. Board
-revisions are not configurable in the top-level CMake build.
+The `host`, `macos` and `linux-x86_64` presets build and run native suites,
+compiler contracts and isolated-header checks. Native verification needs Python
+3.10+ and mcutest; cross compilers are optional. MCUIP compositions belong to
+the sibling integration project. Board presets select
+the matching cross compiler. `MCUBSP_BUILD_BOARD_TESTS=ON` opts into UNO physical
+test images and `MCUBSP_COVERAGE=ON` instruments them. Exact board revisions
+are selected with `MCUBSP_BOARD_REVISION`.
 
 | Preset | Board | Toolchain |
 | --- | --- | --- |
+| `host` | Portable host tests | Selected native compiler |
 | `macos` | Host tests | macOS Clang |
 | `linux-x86_64` | Host tests | Linux x86_64 GCC or Clang |
 | `arduino-uno-r4-minima` | Arduino UNO R4 Minima | ARM Cortex-M4 |
@@ -258,7 +281,7 @@ cmake --build --preset st-nucleo-h753zi
 ```
 
 The ESP32-P4 physical test image remains an independent ESP-IDF project under
-`board/waveshare/esp32p4_nano/test/firmware/`. Building or flashing any board
+`src/board/waveshare/esp32p4_nano/test/firmware/`. Building or flashing any board
 image requires the matching board procedure.
 
 ## Verification philosophy
@@ -288,18 +311,19 @@ already exist.
    assumptions. Do not copy pin mappings from a similar board without checking
    its exact assembly.
 2. **Add the board binding.** Create
-   `include/mcubsp/board/<board_name>.hpp`. Select the exact MCU/package and add
+   `include/mcubsp/board/<vendor>/<board_name>.hpp`. Select the exact MCU/package and add
    only board-level identities and connector aliases. Keep MCU register facts
    in `mcu/` and peripheral sequences in `backend/`.
-3. **Add the physical composition.** Create `board/<vendor>/<name>/` with the
+3. **Add the physical composition.** Create `src/board/<vendor>/<name>/` with the
    startup code, linker script, restricted runtime, execution hooks, interrupt
    dispatch, and focused test images required by the board.
 4. **Bind existing backends.** Form compile-time bindings from the selected
    peripheral instances and board pins. Invalid routes must fail at compile
    time rather than silently selecting another pin or mode.
 5. **Add a local build entry.** Configure the board's `board.cmake` with its
-   revision, architecture, profile, toolchain, examples and runner settings.
-   The common selection interface loads it from the board directory.
+   revision, architecture, profile, toolchain and runner settings.
+   The common selection interface loads it from the board directory. Add demos
+   under `example/<topic>/<vendor>/<name>.cpp`.
 6. **Verify in layers.** Compile the board binding on the host where possible,
    cross-build every public header and the linked image, then run board-native
    and directly connected tests. Document what was not electrically observed.

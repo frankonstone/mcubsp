@@ -4,6 +4,7 @@ include_guard(GLOBAL)
 # Callers own source/build directories; this helper never downloads SDK tools.
 function(mcubsp_idf_environment output)
     set(MCUBSP_IDF_PATH "$ENV{IDF_PATH}")
+    set(MCUBSP_IDF_PATH "${MCUBSP_IDF_PATH}" PARENT_SCOPE)
     set(MCUBSP_IDF_TOOLS_PATH "$ENV{IDF_TOOLS_PATH}")
     if(NOT EXISTS "${MCUBSP_IDF_PATH}/tools/cmake/project.cmake")
         message(FATAL_ERROR "${MCUBSP_BOARD} requires IDF_PATH pointing to ESP-IDF.")

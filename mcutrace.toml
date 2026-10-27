@@ -4,73 +4,33 @@ requirements = ["requirements.md"]
 plans = ["implementation-plan.md"]
 sources = [
   "include/mcubsp/**/*.hpp",
-  "board/*/*/example/**/*.cpp",
-  "board/*/*/bsp/**/*.?pp",
-  "board/*/*/test/**/*.?pp",
-  "board/*/*/bsp/*.S",
+  "example/**/*.cpp",
+  "src/board/*/*/startup/**/*.?pp",
+  "src/board/*/*/test/**/*.?pp",
+  "src/board/*/*/startup/*.S",
 ]
 build_files = [
   "CMakeLists.txt",
+  "Install.cmake",
+  "tool/*.py",
+  "tool/*.cmake",
+  "tool/*.sh",
+  "test/**/CMakeLists.txt",
+  "test/**/*.cmake",
   "cmake/**/*.cmake",
-  "board/*/*/*.cmake",
-  "board/**/CMakeLists.txt",
-  "board/*/*/test/*.sh",
-  "board/**/*.ld",
-  "tool/*",
-  "tool/mcubsplib/**/*.py",
+  "src/**/*.cmake",
+  "src/**/CMakeLists.txt",
+  "src/**/test/*.sh",
+  "src/**/*.ld",
+  "example/**/CMakeLists.txt",
 ]
 
+# The host build merges only reports in its explicit producer registry.
+# Historical physical records remain indexed in doc/acceptance, not imported
+# as current-tree evidence. Run the host build before loading this graph.
 [[artifacts]]
-path = "build/host/artifact/mcutest-native.json"
+path = "output/build/host/artifact/native.json"
 importer = "mcutest"
-
-[[artifacts]]
-path = "build/host/artifact/mcutest-tooling.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifact/mcutest-hardware.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifact/mcubsp_uno_r4_minima_all_tests.mcucov.json"
-importer = "mcucov"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_mcuip.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_metrics.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_metrics_fast6.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_metrics_fast12.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/uno-r4-minima/artifact/arduino.uno_r4_minima.test.ethernet_link_recovery.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/nucleo-h753zi/artifact/st.nucleo_h753zi.test.native_peripherals.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "build/nucleo-h753zi/artifact/st.nucleo_h753zi.test.native_peripherals.mcucov.json"
-importer = "mcucov"
-
-[[artifacts]]
-path = "board/waveshare/esp32p4_nano/test/firmware/build/artifact/esp32p4_native_smoke.mcutest.json"
-importer = "mcutest"
-
-[[artifacts]]
-path = "board/waveshare/esp32p4_nano/test/firmware/build/artifact/esp32p4_native_smoke.trace.mcucov.json"
-importer = "mcucov"
 
 [validation]
 fail_at_or_above = "error"

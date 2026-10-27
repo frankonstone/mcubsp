@@ -27,5 +27,8 @@ if(NOT EXPECT_SUCCESS AND compile_result EQUAL 0)
 endif()
 
 if(NOT EXPECT_SUCCESS)
+    if(NOT EXPECT_DIAGNOSTIC OR NOT "${compile_error}" MATCHES "${EXPECT_DIAGNOSTIC}")
+        message(FATAL_ERROR "Compiler rejected ${SOURCE} for an unexpected reason (expected ${EXPECT_DIAGNOSTIC}):\n${compile_error}")
+    endif()
     message(STATUS "Observed expected compiler rejection for ${SOURCE}")
 endif()

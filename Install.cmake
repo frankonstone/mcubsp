@@ -11,12 +11,35 @@ write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/mcubspConfigVersio
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/mcubspConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/mcubspConfigVersion.cmake"
     DESTINATION "${mcubsp_package_dir}")
-# Preserve one relocatable layout for headers and board metadata.
-# No build products, private references, vendor SDK or development dependencies.
-install(DIRECTORY include cmake board doc test
-    DESTINATION share/mcubsp
-    PATTERN build EXCLUDE PATTERN __pycache__ EXCLUDE
-    PATTERN _vendor EXCLUDE PATTERN _generated EXCLUDE
-    PATTERN ".DS_Store" EXCLUDE PATTERN "*.pyc" EXCLUDE
-    PATTERN "sdkconfig" EXCLUDE PATTERN "sdkconfig.old" EXCLUDE)
-install(FILES README.md requirements.md implementation-plan.md DESTINATION share/mcubsp)
+# Consumer package: explicit application resources, with the same relative layout
+# as the checkout. Test infrastructure and maintainer records stay in the source tree.
+install(DIRECTORY include/ DESTINATION share/mcubsp/include
+    FILES_MATCHING PATTERN "*.hpp")
+install(FILES cmake/Firmware.cmake cmake/FirmwareArtifact.cmake
+    cmake/board-toolchain.cmake
+    cmake/toolchain-arm-cortex-m4.cmake cmake/toolchain-arm-cortex-m7.cmake
+    cmake/toolchain-esp32p4.cmake cmake/toolchain-macos.cmake
+    cmake/toolchain-linux-x86_64.cmake
+    DESTINATION share/mcubsp/cmake)
+install(DIRECTORY cmake/arch cmake/esp-idf DESTINATION share/mcubsp/cmake
+    FILES_MATCHING PATTERN "*.cmake")
+
+file(GLOB board_entries CONFIGURE_DEPENDS "${MCUBSP_ROOT}/src/board/*/*/board.cmake")
+foreach(entry IN LISTS board_entries)
+    get_filename_component(board_directory "${entry}" DIRECTORY)
+    file(RELATIVE_PATH board_id "${MCUBSP_ROOT}/src/board" "${board_directory}")
+    set(board_destination "share/mcubsp/src/board/${board_id}")
+    install(FILES "${entry}" DESTINATION "${board_destination}")
+    if(EXISTS "${board_directory}/linker.ld")
+        install(FILES "${board_directory}/linker.ld" DESTINATION "${board_destination}")
+    endif()
+    install(DIRECTORY "${board_directory}/startup" DESTINATION "${board_destination}"
+        PATTERN build EXCLUDE PATTERN ".DS_Store" EXCLUDE)
+endforeach()
+
+install(FILES tool/firmware-inputs.py tool/hardware.py tool/RunnerInfo.cmake
+    DESTINATION share/mcubsp/tool)
+install(DIRECTORY example DESTINATION share/mcubsp
+    PATTERN output EXCLUDE PATTERN build EXCLUDE PATTERN ".DS_Store" EXCLUDE)
+install(FILES doc/package.md DESTINATION share/mcubsp/doc)
+install(FILES doc/package.md DESTINATION share/mcubsp RENAME README.md)

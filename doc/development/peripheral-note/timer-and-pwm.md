@@ -13,7 +13,7 @@ evaluated at compile time:
 ```cpp
 using binding = mcubsp::backend::ra4m1::gpt_binding<
     1, mcubsp::mcu::ra4m1::gpt_output::b,
-    mcubsp::board::arduino_uno_r4_minima::d3>;
+    mcubsp::board::arduino::uno_r4_minima_bindings::d3>;
 
 constexpr auto timing = mcubsp::backend::ra4m1::solve_pwm_timing({
     .clock_hz = 48'000'000,

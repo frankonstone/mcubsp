@@ -1,7 +1,7 @@
 {
   "cmake.useFolderPropertyInBuildTargetDropdown": true,
   "mcucov.coverageFiles": [
-    "build/uno-r4-minima/artifact/coverage.lcov",
-    "build/nucleo-h753zi/artifact/coverage.lcov"
+    "output/build/uno-r4-minima/artifact/coverage.lcov",
+    "output/build/nucleo-h753zi/artifact/coverage.lcov"
   ]
 }

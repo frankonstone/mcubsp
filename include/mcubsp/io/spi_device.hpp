@@ -85,6 +85,13 @@ public:
         return transaction(std::span{&segment, 1U}, timeout);
     }
     template<class Duration = std::chrono::milliseconds>
+    [[nodiscard]] result<driver::spi_transfer_result> transfer(
+        std::span<const std::uint8_t> transmit, std::span<std::uint8_t> receive,
+        Duration timeout = std::chrono::milliseconds{1000}) noexcept {
+        const auto segment = driver::byte_segment(transmit, receive);
+        return transaction(std::span{&segment, 1U}, timeout);
+    }
+    template<class Duration = std::chrono::milliseconds>
     [[nodiscard]] result<std::uint16_t> transfer(
         std::uint16_t value, Duration timeout = std::chrono::milliseconds{1000}) noexcept {
         std::uint16_t received{};

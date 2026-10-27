@@ -1,0 +1,26 @@
+# Public pre-project entry point. Select a board; its local entry owns the
+# architecture toolchain. No tests, SDK downloads or debugger discovery here.
+# @req REQ-0049 REQ-0050
+if(NOT MCUBSP_BOARD MATCHES "^[a-z0-9_-]+/[a-z0-9_-]+$")
+    message(FATAL_ERROR "Select -DMCUBSP_BOARD=vendor/name with board-toolchain.cmake")
+endif()
+get_filename_component(mcubsp_toolchain_root "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+set(mcubsp_board_entry "${mcubsp_toolchain_root}/src/board/${MCUBSP_BOARD}/board.cmake")
+if(NOT EXISTS "${mcubsp_board_entry}")
+    message(FATAL_ERROR "Unknown mcubsp board: ${MCUBSP_BOARD}")
+endif()
+include("${mcubsp_board_entry}")
+if(NOT MCUBSP_BOARD_REVISION)
+    set(MCUBSP_BOARD_REVISION "${MCUBSP_BOARD_DEFAULT_REVISION}" CACHE STRING
+        "Exact selected board revision" FORCE)
+endif()
+if(NOT MCUBSP_BOARD_REVISION IN_LIST MCUBSP_BOARD_REVISIONS)
+    message(FATAL_ERROR "Unsupported ${MCUBSP_BOARD} revision: ${MCUBSP_BOARD_REVISION}; supported: ${MCUBSP_BOARD_REVISIONS}")
+endif()
+if(DEFINED MCUBSP_CONFIGURED_BOARD AND NOT MCUBSP_CONFIGURED_BOARD STREQUAL MCUBSP_BOARD)
+    message(FATAL_ERROR "This build directory belongs to ${MCUBSP_CONFIGURED_BOARD}; use a fresh build directory for ${MCUBSP_BOARD}")
+endif()
+set(MCUBSP_CONFIGURED_BOARD "${MCUBSP_BOARD}" CACHE INTERNAL "Board owning this build directory")
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES MCUBSP_BOARD MCUBSP_BOARD_REVISION)
+list(REMOVE_DUPLICATES CMAKE_TRY_COMPILE_PLATFORM_VARIABLES)
+include("${mcubsp_toolchain_root}/${MCUBSP_BOARD_TOOLCHAIN}")

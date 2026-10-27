@@ -38,7 +38,7 @@ template<std::uint8_t Instance, mcu::ra4m1::gpt_output Output,
 struct gpt_binding {
     static_assert(Instance < mcu::ra4m1::gpt_instances.size());
     static_assert(Output == mcu::ra4m1::gpt_output::a
-                  || Output == mcu::ra4m1::gpt_output::b);
+                  || Output == mcu::ra4m1::gpt_output::b, "GPT output must be A or B");
     static_assert(core::route_exists(
         mcu::ra4m1::pin_routes, Pin,
         mcu::ra4m1::signal_id(detail::gpt_signal(Instance, Output))));
@@ -53,8 +53,8 @@ struct gpt_binding {
 // transfer to GTCCRA/GTCCRB only at overflow. Endpoint duty changes use the
 // dedicated GTUDDTYC mechanism, which is likewise synchronized at overflow
 // while running. Count stop always drives the selected output low.
-// @req REQ-0003 REQ-0004 REQ-0009 REQ-0011 REQ-0014 REQ-0022
 template<typename Binding, typename MmioPolicy, typename ExecutionPolicy>
+// @req REQ-0003 REQ-0004 REQ-0009 REQ-0011 REQ-0014 REQ-0022
 class gpt_pwm_backend {
 public:
     using transfer_pool = core::operation_pool<void, driver::pwm_error, 1,

@@ -24,8 +24,8 @@ loopback fixture connects D11 to D12; observe D10 and D13 with a logic analyzer
 to independently verify polarity, rate, and final-frame CS timing.
 
 ```sh
-cmake --preset arm-cortex-m4 -B build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
-cmake --build build/uno-r4-minima --target board-tests
+cmake --preset arm-cortex-m4 -B output/build/uno-r4-minima -DMCUBSP_BOARD_TESTS=arduino/uno_r4_minima
+cmake --build output/build/uno-r4-minima --target board-tests
 tool/run-uno-r4-minima-tests.sh spi
 ```
 
@@ -57,6 +57,6 @@ The runner writes separate RTT result and coverage artifacts for each image.
 Cross-building an image is not physical evidence; artifacts are registered only
 after the corresponding fixture runs successfully.
 
-The standalone [SPI](../../../board/arduino/uno_r4_minima/doc/example/spi.md) and
-[ADC](../../../board/arduino/uno_r4_minima/doc/example/adc.md) guides include their code, wiring, lifecycle, and
+The standalone [SPI](../../../src/board/arduino/uno_r4_minima/doc/example/spi.md) and
+[ADC](../../../src/board/arduino/uno_r4_minima/doc/example/adc.md) guides include their code, wiring, lifecycle, and
 bring-up hints. Native tests cover the corresponding success and failure paths.

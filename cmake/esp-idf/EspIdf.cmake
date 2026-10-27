@@ -1,6 +1,5 @@
 include_guard(GLOBAL)
 include(ExternalProject)
-include("${CMAKE_CURRENT_LIST_DIR}/Cache.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/EspIdfEnvironment.cmake")
 
 # ESP-IDF owns its platform image, cache/libc initialization and bootloader build.
@@ -8,8 +7,10 @@ include("${CMAKE_CURRENT_LIST_DIR}/EspIdfEnvironment.cmake")
 # @req REQ-0049
 function(mcubsp_add_idf_firmware target)
     mcubsp_idf_environment(sdk_environment)
+    set(MCUBSP_APPLICATION_VERSION "0.1.0" CACHE STRING
+        "Explicit SDK application version, independent of repository revision")
     set(sdk_source "${CMAKE_CURRENT_BINARY_DIR}/${target}-idf-project")
-    set(sdk_binary "${CMAKE_CURRENT_BINARY_DIR}/esp-idf-build")
+    set(sdk_binary "${CMAKE_CURRENT_BINARY_DIR}/${target}-idf-build")
     file(MAKE_DIRECTORY "${sdk_source}/main")
     file(MAKE_DIRECTORY "${sdk_source}/bootloader_components/main")
     # Track the custom policy's original files so direct cmake --build refreshes
@@ -25,14 +26,12 @@ function(mcubsp_add_idf_firmware target)
         string(APPEND sources "\n    [==[${source}]==]")
     endforeach()
     file(CONFIGURE OUTPUT "${sdk_source}/CMakeLists.txt" CONTENT
-        "cmake_minimum_required(VERSION 3.24)\ninclude([==[${MCUBSP_IDF_PATH}/tools/cmake/project.cmake]==])\nidf_build_set_property(MINIMAL_BUILD ON)\nproject(${target})\n" @ONLY)
+        "cmake_minimum_required(VERSION 3.24)\nset(PROJECT_VER [==[${MCUBSP_APPLICATION_VERSION}]==])\ninclude([==[${MCUBSP_IDF_PATH}/tools/cmake/project.cmake]==])\nidf_build_set_property(MINIMAL_BUILD ON)\nproject(${target})\ntarget_link_options(${target}.elf PRIVATE [==[LINKER:--dependency-file,${sdk_binary}/${target}.elf.link.d]==])\n" @ONLY)
     file(CONFIGURE OUTPUT "${sdk_source}/main/CMakeLists.txt" CONTENT
         "idf_component_register(SRCS ${sources}\n    [==[${MCUBSP_BOARD_IDF_START}]==]\n    INCLUDE_DIRS [==[${MCUBSP_ROOT}/include]==]\n    REQUIRES esp_hw_support esp_mm esp_rom esp_system)\ntarget_compile_features(\${COMPONENT_LIB} PRIVATE cxx_std_23)\ntarget_compile_options(\${COMPONENT_LIB} PRIVATE -Os -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit)\ntarget_compile_definitions(\${COMPONENT_LIB} PRIVATE main=mcubsp_application_main)\ntarget_link_options(\${COMPONENT_LIB} INTERFACE -Wl,--wrap=esp_startup_start_app)\n" @ONLY)
     find_program(MCUBSP_IDF_NINJA ninja REQUIRED)
-    mcubsp_prepare_sdk_flags(forward "${sdk_source}/parent-flags.cmake")
-    list(APPEND forward CMAKE_BUILD_TYPE CMAKE_EXPORT_COMPILE_COMMANDS)
     set(seed "${sdk_source}/compile-cache.cmake")
-    mcubsp_write_initial_cache("${seed}" ${forward})
+    file(WRITE "${seed}" "set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL \"\")\n")
     ExternalProject_Add(${target}
         SOURCE_DIR "${sdk_source}" BINARY_DIR "${sdk_binary}"
         DOWNLOAD_COMMAND "" UPDATE_COMMAND "" PATCH_COMMAND ""
@@ -47,28 +46,12 @@ function(mcubsp_add_idf_firmware target)
         INSTALL_COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${sdk_binary}/${target}.elf" "${sdk_binary}/${target}.bin" "${CMAKE_CURRENT_BINARY_DIR}"
         USES_TERMINAL_CONFIGURE TRUE USES_TERMINAL_BUILD TRUE)
-    ExternalProject_Add_StepDependencies(${target} configure "${seed}" "${sdk_source}/CMakeLists.txt" "${CMAKE_PROJECT_INCLUDE}")
+    ExternalProject_Add_Step(${target} artifact DEPENDEES install ALWAYS TRUE
+        COMMAND "${CMAKE_COMMAND}"
+            "-DFIRMWARE=${CMAKE_CURRENT_BINARY_DIR}/${target}.elf" "-Dsdk_build=${sdk_binary}" "-Dboard=${ARG_BOARD}"
+            "-Drevision=${ARG_REVISION}" "-Dstartup=supplied" "-Dcompiler=${CMAKE_CXX_COMPILER}"
+            "-Dgenerator=Ninja" "-Dbuild_root=${sdk_binary}" "-Dsource_root=${CMAKE_SOURCE_DIR}"
+            "-Dframework_root=${MCUBSP_ROOT}" "-Dninja=${MCUBSP_IDF_NINJA}" "-Dpython=${PYTHON}"
+            -P "${MCUBSP_ROOT}/cmake/FirmwareArtifact.cmake")
     set_target_properties(${target} PROPERTIES FOLDER "Application")
-    find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
-    mcubsp_firmware_artifact_command(artifact_command
-        "${CMAKE_CURRENT_BINARY_DIR}/${target}.elf" supplied SDK_BUILD "${sdk_binary}"
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}.build.json")
-    ExternalProject_Add_Step(${target} identity
-        DEPENDEES install ALWAYS TRUE
-        COMMAND "${Python3_EXECUTABLE}" "${MCUBSP_ROOT}/tool/mcubsplib/provenance.py"
-            --root "${MCUBSP_ROOT}" --build "${sdk_binary}" --target "${target}.elf"
-            --ninja "${MCUBSP_IDF_NINJA}"
-            --extra "${MCUBSP_BOARD_ENTRY}"
-            --extra "${sdk_source}/sdkconfig"
-            --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.identity.json"
-        COMMAND "${Python3_EXECUTABLE}" "${MCUBSP_ROOT}/tool/mcubsplib/provenance.py"
-            --root "${MCUBSP_ROOT}" --build "${sdk_binary}/bootloader" --target bootloader.elf
-            --ninja "${MCUBSP_IDF_NINJA}"
-            --extra "${MCUBSP_BOARD_ENTRY}" --extra "${sdk_source}/sdkconfig"
-            --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.bootloader.identity.json"
-        COMMAND "${Python3_EXECUTABLE}" "${MCUBSP_ROOT}/tool/mcubsplib/provenance.py"
-            --root "${MCUBSP_ROOT}" --build "${sdk_binary}"
-            --flash-manifest "${sdk_binary}/flasher_args.json"
-            --output "${CMAKE_CURRENT_BINARY_DIR}/${target}.flash.identity.json"
-        COMMAND ${artifact_command})
 endfunction()

@@ -35,7 +35,7 @@ public:
 
     ~i2c_bus() {
         if (initialized_ && !shutdown()) {
-            context_.execution().active_transfer_destroyed();
+            context_.execution().fail({"i2c", "live resources or failed cleanup during destruction"});
             __builtin_trap();
         }
     }
@@ -161,7 +161,7 @@ private:
     auto& execution() noexcept { return context_.execution(); }
     const auto& execution() const noexcept { return context_.execution(); }
     [[noreturn]] void ownership_violation() noexcept {
-        context_.execution().active_transfer_destroyed();
+        context_.execution().fail({"i2c", "live resources or failed cleanup during destruction"});
         __builtin_trap();
     }
     [[nodiscard]] bool has_devices() const noexcept {

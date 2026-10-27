@@ -47,6 +47,6 @@ Before using an interrupt-driven backend, read
 It shows the relationship between startup, `main()`, the execution policy,
 global backend lifetime, IRQ dispatch, deadlines, and transfer consumption.
 
-Then continue with the [examples index](../../board/arduino/uno_r4_minima/doc/example/README.md). The consumer
+Then continue with the [examples index](../../src/board/arduino/uno_r4_minima/doc/example/README.md). The consumer
 configuration and GPIO example are also shown in the repository
 [README](../../README.md#installation-and-use-from-another-project).

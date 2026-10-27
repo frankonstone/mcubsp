@@ -122,6 +122,13 @@ public:
         return transaction(std::span{&segment, 1U}, timeout);
     }
     template<class Duration = std::chrono::milliseconds>
+    [[nodiscard]] result<driver::spi_transfer_result> transfer(
+        std::span<const std::uint8_t> transmit, std::span<std::uint8_t> receive,
+        Duration timeout = std::chrono::milliseconds{1000}) noexcept {
+        const auto segment = driver::byte_segment(transmit, receive);
+        return transaction(std::span{&segment, 1U}, timeout);
+    }
+    template<class Duration = std::chrono::milliseconds>
     [[nodiscard]] result<std::uint16_t> transfer(
         std::uint16_t value, Duration timeout = std::chrono::milliseconds{1000}) noexcept {
         std::uint16_t received{};
@@ -204,7 +211,7 @@ private:
     void drop() noexcept { --operations_; context_.drop(); }
     typename Context::execution_type& execution() noexcept { return context_.execution(); }
     [[noreturn]] void lifetime_violation() noexcept {
-        context_.execution().active_transfer_destroyed(); __builtin_trap();
+        context_.execution().fail({"spi", "live resources or failed cleanup during destruction"}); __builtin_trap();
     }
     [[nodiscard]] static std::span<const core::pin_id> bus_pins() noexcept {
         return std::span{board_type::spi_pins}.first(3U);

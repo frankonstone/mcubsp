@@ -5,8 +5,8 @@ Start from the existing `include/mcubsp/mcu/` descriptions and
 revision, manuals and errata before adding register and route facts. Keep
 package differences explicit in C++ types.
 
-Add focused description tests under `test/mcu/<part>/` and backend tests under
-`test/backend/<part>/`. Add or reuse shared architecture definitions and
+Add focused description tests under `src/mcu/<part>/test/` and backend tests under
+`src/backend/<part>/test/`. Add or reuse shared architecture definitions and
 restricted runtime flags, then create a board binding through
 [the board guide](adding-a-board.md). Cross-build complete examples and run
 negative route and ownership checks. A successful host test or cross-build does

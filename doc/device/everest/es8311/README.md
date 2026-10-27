@@ -9,7 +9,7 @@ Public implementation: `include/mcubsp/device/audio/es8311.hpp`. Required transp
 
 Focused test sources:
 
-- `test/backend/esp32p4/test_i2s.cpp`
+- `src/backend/esp32p4/test/test_i2s.cpp`
 
 See [the device contribution guide](../../../doc/development/adding-a-device.md) for checks.
 

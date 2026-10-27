@@ -11,13 +11,12 @@
 
 namespace mcubsp::io {
 
-// The first board profile selects one physical analog input. A native scan
-// samples that input once; explicit DMA sampling can fill a longer buffer.
+// A native scan samples the selected physical inputs in binding order.
+// Explicit DMA sampling of a single-input binding can fill a longer buffer.
 // Single foreground owner; no concurrent dispatch of the native backend in ISRs.
 template<class Context>
 class analog_input {
     using board_type = typename Context::board_type;
-    static_assert(board_type::adc_channels.size() == 1U);
 
 public:
     using backend_type = typename board_type::template adc_backend<
@@ -33,7 +32,7 @@ public:
 
     ~analog_input() {
         if (initialized_ && !shutdown()) {
-            context_.execution().active_transfer_destroyed();
+            context_.execution().fail({"analog", "live resources or failed cleanup during destruction"});
             __builtin_trap();
         }
     }
@@ -70,7 +69,7 @@ public:
             board_type::poll_adc(context_.mmio(), backend_);
     }
 
-    // The output span must have one element and remain alive until completion.
+    // The output span contains one sample per selected channel, in binding order.
     [[nodiscard]] result<sample_operation>
     sample_async(std::span<std::uint16_t> samples) noexcept {
         if (context_.execution().in_isr()) return std::unexpected(error{errc::invalid_context});
@@ -79,7 +78,7 @@ public:
 
     template<class Duration = std::chrono::milliseconds>
     [[nodiscard]] result<std::uint16_t> read(
-        Duration timeout = std::chrono::milliseconds{1000}) noexcept {
+        Duration timeout = std::chrono::milliseconds{1000}) noexcept requires (board_type::adc_channels.size() == 1U) {
         const auto limit = context_.deadline_after(timeout);
         if (!limit) return std::unexpected(limit.error());
         std::uint16_t value{};
@@ -105,7 +104,7 @@ public:
     }
 
     template<class DmaSelection>
-        requires requires(backend_type& backend, DmaSelection selection,
+        requires (board_type::adc_channels.size() == 1U) && requires(backend_type& backend, DmaSelection selection,
                           std::span<std::uint16_t> samples) {
             backend.sample_dma(board_type::adc_channels[0], samples,
                                selection.channel.backend());
@@ -120,7 +119,7 @@ public:
     }
 
     template<class DmaSelection, class Duration = std::chrono::milliseconds>
-        requires requires(backend_type& backend, DmaSelection selection,
+        requires (board_type::adc_channels.size() == 1U) && requires(backend_type& backend, DmaSelection selection,
                           std::span<std::uint16_t> samples) {
             backend.sample_dma(board_type::adc_channels[0], samples,
                                selection.channel.backend());

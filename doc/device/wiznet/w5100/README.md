@@ -9,8 +9,8 @@ Public implementation: `include/mcubsp/device/ethernet/w5100.hpp`. Required tran
 
 Focused test sources:
 
-- `test/device/test_w5100.cpp`
-- `test/device/test_w5100_io.cpp`
+- `src/device/ethernet/test/test_w5100.cpp`
+- `src/device/ethernet/test/test_w5100_io.cpp`
 
 See [the device contribution guide](../../../doc/development/adding-a-device.md) for checks.
 

@@ -21,15 +21,27 @@ function(mcubsp_configure_native_suite target name)
         RUNTIME_OUTPUT_DIRECTORY "${MCUBSP_TEST_BINARY_DIR}")
     target_link_libraries(${target} PRIVATE mcubsp::io mcutest::mcutest)
     target_include_directories(${target} PRIVATE "${MCUBSP_TEST_SOURCE_DIR}")
-    if(MCUBSP_BUILD_MCUIP_CONTRACTS)
-        target_include_directories(${target} PRIVATE "${MCUBSP_MCUIP_SOURCE_DIR}/include")
-        target_compile_definitions(${target} PRIVATE MCUBSP_TEST_MCUIP_CONTRACTS=1)
-    endif()
     mcubsp_apply_restricted_runtime(${target})
     mcutest_configure_target(${target} MAX_TESTS 256 SOURCE_LOCATION ON)
+    if(MCUBSP_HOST_COVERAGE)
+        target_compile_definitions(${target} PRIVATE MCUBSP_HOST_COVERAGE=1)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            # MCUCOV can emit a switch helper used only by constant-evaluated
+            # functions. Preserve strict warnings on ordinary native builds.
+            target_compile_options(${target} PRIVATE -Wno-unneeded-internal-declaration)
+        endif()
+        target_compile_options(${target} PRIVATE -include "${MCUBSP_ROOT}/test/support/mcucov_compat.hpp")
+        mcucov_instrument_target(${target} PROFILE FULL BUILD_ID 0x4d420001
+            SOURCE_ROOT "${MCUBSP_ROOT}" OUTPUT_DIR "${MCUBSP_TEST_BINARY_DIR}/mcucov/${identifier}")
+        set_property(GLOBAL APPEND PROPERTY MCUBSP_COVERAGE_REPORTS
+            "${identifier}|${MCUBSP_TEST_ARTIFACT_DIR}/${identifier}.mcuv|${MCUBSP_TEST_BINARY_DIR}/mcucov/${identifier}")
+    endif()
     add_test(NAME "${target}" COMMAND "${CMAKE_COMMAND}"
         -DTEST_PROGRAM=$<TARGET_FILE:${target}>
         -DOUTPUT_FILE=${MCUBSP_TEST_ARTIFACT_DIR}/${identifier}.json
+        "-DCOVERAGE_FILE=$<$<BOOL:${MCUBSP_HOST_COVERAGE}>:${MCUBSP_TEST_ARTIFACT_DIR}/${identifier}.mcuv>"
         -P "${mcubsp_SOURCE_DIR}/test/support/CaptureMcutest.cmake")
+    set_property(GLOBAL APPEND PROPERTY MCUBSP_NATIVE_REPORTS
+        "${MCUBSP_TEST_ARTIFACT_DIR}/${identifier}.json")
     set_tests_properties("${target}" PROPERTIES LABELS "native;${category};${name}")
 endfunction()

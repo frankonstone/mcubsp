@@ -7,4 +7,4 @@ the initial RA4M1 peripheral work:
 - [UART and I2C](uart-and-i2c.md)
 - [SPI and ADC](spi-and-adc.md)
 
-For task-oriented usage, start with the [examples](../../../board/arduino/uno_r4_minima/doc/example/README.md).
+For task-oriented usage, start with the [examples](../../../src/board/arduino/uno_r4_minima/doc/example/README.md).

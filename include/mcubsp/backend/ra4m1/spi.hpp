@@ -628,28 +628,11 @@ private:
         }
         std::size_t total{};
         for (const auto& segment : segments) {
-            if (segment.transmit.empty() && segment.receive.empty()) {
-                return std::unexpected(driver::spi_error::empty_transfer);
-            }
-            if (!segment.transmit.empty() && !segment.receive.empty()
-                && segment.transmit.size() != segment.receive.size()) {
-                return std::unexpected(driver::spi_error::mismatched_segment);
-            }
-            const auto frames = segment.transmit.empty()
-                ? segment.receive.size() : segment.transmit.size();
-            if (frames > 65'535U - total) {
+            const auto checked = segment.validate(configuration_.frame_width);
+            if (!checked) return std::unexpected(checked.error());
+            const auto frames = *checked;
+            if (frames > 65'535U - total)
                 return std::unexpected(driver::spi_error::excessive_length);
-            }
-            if (configuration_.frame_width == driver::spi_frame_width::bits8) {
-                if (segment.transmit.empty() && segment.dummy > 0xFFU) {
-                    return std::unexpected(driver::spi_error::invalid_frame);
-                }
-                for (const auto frame : segment.transmit) {
-                    if (frame > 0xFFU) {
-                        return std::unexpected(driver::spi_error::invalid_frame);
-                    }
-                }
-            }
             total += frames;
         }
         return total;
@@ -657,11 +640,9 @@ private:
 
     [[nodiscard]] std::uint16_t transmit_frame(std::size_t flat) const noexcept {
         for (const auto& segment : segments_) {
-            const auto count = segment.transmit.empty()
-                ? segment.receive.size() : segment.transmit.size();
+            const auto count = segment.size();
             if (flat < count) {
-                return segment.transmit.empty() ? segment.dummy
-                                                : segment.transmit[flat];
+                return segment.frame(flat);
             }
             flat -= count;
         }
@@ -670,12 +651,9 @@ private:
 
     void store_receive_frame(std::size_t flat, std::uint16_t value) noexcept {
         for (const auto& segment : segments_) {
-            const auto count = segment.transmit.empty()
-                ? segment.receive.size() : segment.transmit.size();
+            const auto count = segment.size();
             if (flat < count) {
-                if (!segment.receive.empty()) {
-                    segment.receive[flat] = value;
-                }
+                segment.store(flat, value);
                 return;
             }
             flat -= count;

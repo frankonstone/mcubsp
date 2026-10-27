@@ -1,5 +1,9 @@
 # Three-MCU description gate
 
+The chapter totals below describe the historical source-review gate. They do
+not constitute a typed register/field completeness percentage. Current support
+is separated in the [support matrix](../reference/support-matrix.md).
+
 Gate review for `PLN-0013` and `PLN-0017`, 13 September 2026.
 
 ## Outcome
