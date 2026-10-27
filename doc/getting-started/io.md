@@ -241,6 +241,14 @@ bookkeeping and require application responsibility for its invariants.
 | `uno_r4_minima` | SCI2: D0 RX, D1 TX | SPI1: D10 CS, D11 MOSI, D12 MISO, D13 SCK | IIC1: A4 SDA, A5 SCL | A0 AN009 / D3 GPT1 B | Channels 0–3 |
 | `nucleo_h753zi` | USART3: PD9 RX, PD8 TX, ST-LINK VCP | SPI1: D10 PD14 CS, D11 PB5 MOSI, D12 PA6 MISO, D13 PA5 SCK | I2C1: D14 PB9 SDA, D15 PB8 SCL | A0 PA3 INP15 / PA8 TIM1 CH1 | Unavailable |
 | `esp32p4_nano` | UART0: GPIO38 RX, GPIO37 TX | SPI2: GPIO23 CS, GPIO21 MOSI, GPIO20 MISO, GPIO22 SCK | I2C0: GPIO7 SDA, GPIO8 SCL | Unavailable | Unavailable |
+| `promicro_nrf52840` | Unavailable; set `.serial = false` | Unavailable | Unavailable | Unavailable | Unavailable |
+
+The [Pro Micro profile](../../src/board/others/promicro_nrf52840/README.md)
+currently supplies GPIO and the active-high P0.15 LED only, using the existing
+UF2/S140-v6 bootloader layout and a 64 MHz CPU. Its cycle-clock limit is about
+33.6 seconds. UF2 upload and user-observed LED Blink are recorded on one board;
+broader physical verification, USB application serial and radio support remain
+separate work.
 
 UNO assumes the repository startup's 48 MHz ICLK/PCLKA and 24 MHz PCLKB.
 NUCLEO assumes 64 MHz HSI SYSCLK/HCLK/PCLK. Their default policies enable

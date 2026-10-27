@@ -37,6 +37,7 @@ application, include that board's header and use its type explicitly in your
 | `arduino/uno_r4_minima` | `r4` | Built-in D13 LED | Installed Arm GNU toolchain |
 | `st/nucleo_h753zi` | `mb1364-rev-e` | Built-in green LED | Installed Arm GNU toolchain |
 | `waveshare/esp32p4_nano` | `development-v1.0` | Expansion GPIO2: attach an LED and series resistor to ground | Activated ESP-IDF v6.1 environment and its Python/toolchain |
+| `others/promicro_nrf52840` | `uf2-s140-v6` | Active-high LED on P0.15 | Arm GNU; existing UF2/S140-v6 bootloader layout |
 
 Use a fresh build directory per board. Override `MCUBSP_BOARD_REVISION` only
 with a supported exact revision. No P4 built-in GPIO LED or production-v3
@@ -46,3 +47,8 @@ flash bundle is in `blink-idf-build/`, next to the resulting `blink.elf`.
 Building never flashes. For application setup, ownership choices and an explicit
 probe/port runner plan, read the
 [application package guide](../../doc/package.md).
+
+Pro Micro also generates `blink.elf.uf2`. Its GPIO-only profile selects
+`.serial = false`; USB serial and Bluetooth are not supplied by the application.
+See the [Pro Micro guide](../../src/board/others/promicro_nrf52840/README.md)
+for memory/handoff assumptions and the explicit mounted-drive UF2 upload.

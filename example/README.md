@@ -6,7 +6,7 @@ build targets use these same files.
 
 | Example | Boards | Behavior |
 | --- | --- | --- |
-| [Blink](blink/README.md) | UNO R4 Minima, NUCLEO-H753ZI, ESP32-P4-NANO | Toggle an LED every 500 ms |
+| [Blink](blink/README.md) | UNO R4 Minima, NUCLEO-H753ZI, ESP32-P4-NANO, Pro Micro nRF52840 | Toggle an LED every 500 ms |
 | [Recovery](recovery/README.md) | UNO R4 Minima | UART echo with timeout, cancellation and recovery |
 | [Serial echo](serial_echo/README.md) | UNO R4 Minima | Echo bytes over the physical UART |
 | [SPI DMA](spi_dma/README.md) | UNO R4 Minima | Transfer over SPI with explicit DMA channels |

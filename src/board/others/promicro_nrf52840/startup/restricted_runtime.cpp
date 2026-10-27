@@ -1,0 +1,19 @@
+#include <cstddef>
+
+// @req-file REQ-0053
+namespace {
+[[noreturn]] void runtime_trap() noexcept {
+    __builtin_trap();
+}
+}
+
+namespace std {
+__attribute__((noreturn)) void __glibcxx_assert_fail(
+    const char*, int, const char*, const char*) noexcept {
+    runtime_trap();
+}
+}
+
+void operator delete(void*) noexcept { runtime_trap(); }
+void operator delete(void*, std::size_t) noexcept { runtime_trap(); }
+extern "C" [[noreturn]] void __cxa_pure_virtual() noexcept { runtime_trap(); }

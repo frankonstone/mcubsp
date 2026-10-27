@@ -25,6 +25,20 @@ not refresh physical facade acceptance. The fixed-clock single-core assumptions
 and explicit ownership/lifetime contract remain in force. Generic MCUOS, camera,
 USB device stack and production-v3 P4 hardware acceptance are separate work.
 
+## Additional initial target: Pro Micro nRF52840
+
+The nice!nano-compatible Pro Micro family has a GPIO/core metadata slice, a
+GPIO backend and GPIO-only facade, bootloader-handoff startup and Blink with
+UF2/S140-v6 output. This does not claim the complete description gate used for
+the original three MCUs. UART/I2C/SPI/ADC/PWM/DMA, USB application classes, radio,
+low-power operation and complete silicon errata handling are not implemented.
+On 27 October 2026 the connected V1940-marked board reported nice!nano UF2 0.6.0
+and S140 6.1.1; UF2 upload completed and the user confirmed LED blinking.
+Independent timing, silicon/PCB identity and post-application double-reset
+recovery remain unverified. The [image-bound observation](../acceptance/promicro-nrf52840.md)
+records the exact ELF, UF2 and selected-input identities. See the
+[board guide](../../src/board/others/promicro_nrf52840/README.md).
+
 ## Required physical refresh
 
 - UNO W5100: rebuild the refactored path, record firmware/source identities,

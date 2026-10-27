@@ -51,6 +51,15 @@
       }
     },
     {
+      "name": "promicro-nrf52840",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/output/build/promicro-nrf52840",
+      "toolchainFile": "${sourceDir}/cmake/board-toolchain.cmake",
+      "cacheVariables": {
+        "MCUBSP_BOARD": "others/promicro_nrf52840"
+      }
+    },
+    {
       "name": "waveshare-esp32p4-nano",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/output/build/waveshare-esp32p4-nano",
@@ -83,6 +92,10 @@
     {
       "name": "waveshare-esp32p4-nano",
       "configurePreset": "waveshare-esp32p4-nano"
+    },
+    {
+      "name": "promicro-nrf52840",
+      "configurePreset": "promicro-nrf52840"
     }
   ],
   "testPresets": [

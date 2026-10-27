@@ -28,6 +28,7 @@ foreach(component IN ITEMS
     backend/esp32p4
     backend/ra4m1
     backend/stm32h753
+    backend/nrf52840
     device/audio
     device/sensor
     device/ethernet
@@ -55,6 +56,14 @@ add_test(NAME mcubsp.test.runner COMMAND "${CMAKE_COMMAND}"
     "-DOUTPUT_FILE=${MCUBSP_TEST_ARTIFACT_DIR}/hardware.json"
     -P "${CMAKE_CURRENT_SOURCE_DIR}/support/CaptureMcutest.cmake")
 set_tests_properties(mcubsp.test.runner PROPERTIES LABELS "workflow;runner")
+add_test(NAME mcubsp.test.uf2 COMMAND "${CMAKE_COMMAND}"
+    "-DTEST_PROGRAM=${Python3_EXECUTABLE}"
+    "-DTEST_ARGUMENTS=${CMAKE_CURRENT_SOURCE_DIR}/workflow/test_uf2.py"
+    "-DOUTPUT_FILE=${MCUBSP_TEST_ARTIFACT_DIR}/uf2.json"
+    -P "${CMAKE_CURRENT_SOURCE_DIR}/support/CaptureMcutest.cmake")
+set_tests_properties(mcubsp.test.uf2 PROPERTIES LABELS "workflow;uf2")
+set_property(GLOBAL APPEND PROPERTY MCUBSP_NATIVE_REPORTS
+    "${MCUBSP_TEST_ARTIFACT_DIR}/uf2.json")
 set_property(GLOBAL APPEND PROPERTY MCUBSP_NATIVE_REPORTS
     "${MCUBSP_TEST_ARTIFACT_DIR}/hardware.json")
 find_program(MCUBSP_TEST_NINJA ninja REQUIRED)

@@ -43,6 +43,18 @@ template<class Board, board_config Configuration = {},
          class Mmio = core::direct_mmio,
          bool BorrowExecution = false, bool BorrowMmio = false, class... Selections>
 class board {
+    static_assert(!Configuration.serial || [] {
+        if constexpr (requires { Board::serial_available; }) return Board::serial_available;
+        else return true;
+    }(), "this board profile has no supported serial backend; select .serial = false");
+    static_assert(!Configuration.i2c || [] {
+        if constexpr (requires { Board::i2c_available; }) return Board::i2c_available;
+        else return true;
+    }(), "this board profile has no supported I2C backend");
+    static_assert(!Configuration.spi || [] {
+        if constexpr (requires { Board::spi_available; }) return Board::spi_available;
+        else return true;
+    }(), "this board profile has no supported SPI backend");
     static_assert((Configuration.dma & ~Board::dma_available) == 0U,
                   "selected DMA channels have no supported board backend");
     static_assert(!Configuration.adc || Board::adc_available,

@@ -70,6 +70,34 @@ class Runner(unittest.TestCase):
         self.assertIn('123456789', plan['command'])
         self.assertIn(f'loadfile "{self.image.resolve().as_posix()}"', plan['command_file'])
         self.assertFalse((self.root / 'flash.jlink').exists())
+
+    def test_promicro_uf2_mount_identity_and_payload_are_checked_without_writes(self):
+        spec = importlib.util.spec_from_file_location('uf2', ROOT / 'tool/uf2.py')
+        uf2 = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(uf2)
+        elf(self.image, 0x26000)
+        self.record('others/promicro_nrf52840', 'uf2-s140-v6')
+        image = self.image.with_name(self.image.name + '.uf2')
+        image.write_bytes(uf2.encode(self.image.read_bytes(), family=0xADA52840,
+                                   start=0x26000, size=0xC6000))
+        mount = self.root / 'mounted UF2 drive'
+        mount.mkdir()
+        info = mount / 'INFO_UF2.TXT'
+        info.write_text('UF2 Bootloader\nBoard-ID: nRF52840-nicenano-v1\n')
+        args = self.args(board='others/promicro_nrf52840', probe=None, mount=str(mount))
+        plan = hardware.plan_flash(args)
+        self.assertEqual(plan['runner'], 'uf2')
+        self.assertIn(str(mount.resolve() / 'FIRMWARE.UF2'), plan['command'])
+        self.assertFalse((mount / 'FIRMWARE.UF2').exists())
+        with self.assertRaisesRegex(ValueError, 'explicitly mounted'):
+            hardware.plan_flash(self.args(board=args.board, probe=None))
+        info.write_text('Board-ID: SAMD21-other-v1\n')
+        with self.assertRaisesRegex(ValueError, 'Board-ID'):
+            hardware.plan_flash(args)
+        info.write_text('Board-ID: nRF52840-nicenano-v1\n')
+        image.write_bytes(image.read_bytes() + b'tampered')
+        with self.assertRaisesRegex(ValueError, 'stale UF2'):
+            hardware.plan_flash(args)
     def test_bootloader_and_wrong_architecture_are_rejected(self):
         elf(self.image, 0x2000)
         self.record()
@@ -261,7 +289,8 @@ if __name__ == '__main__':
     print(json.dumps({'format': 'mcutest-results', 'version': 1,
         'summary': {'tests': result.testsRun, 'failures': len(failed)},
         'tests': [{'name': 'runner/' + name, 'status': 'failed' if f'__main__.Runner.{name}' in failed else 'passed',
-                   'requirements': (['REQ-0048'] if name == 'test_board_selection_ignores_unrelated_board_rules'
+                   'requirements': (['REQ-0053'] if name.startswith('test_promicro_uf2')
+                       else ['REQ-0048'] if name == 'test_board_selection_ignores_unrelated_board_rules'
                        else ['REQ-0039', 'REQ-0052'] if name.startswith('test_manifest_split')
                        else ['REQ-0049', 'REQ-0050'])} for name in names]}))
     raise SystemExit(not result.wasSuccessful())

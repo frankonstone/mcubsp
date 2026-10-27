@@ -57,6 +57,7 @@ cmake --build output/build/uno --target blink
 | `arduino/uno_r4_minima` | `r4` | Arm GNU; built-in D13 LED |
 | `st/nucleo_h753zi` | `mb1364-rev-e` | Arm GNU; built-in green LED |
 | `waveshare/esp32p4_nano` | `development-v1.0` | ESP-IDF v6.1 with its Python and RISC-V compiler; external LED and series resistor on GPIO2 |
+| `others/promicro_nrf52840` | `uf2-s140-v6` | Arm GNU; active-high LED P0.15; initial GPIO-only support |
 
 Use a fresh build directory for each board. Board toolchain selection occurs
 before CMake's `project()`. Sources include and name their concrete board type;
@@ -88,6 +89,32 @@ boot area below it. NUCLEO uses its ST-LINK/SWD interface and flash beginning at
 `0x08000000`. ESP32-P4 uses the selected development board's complete bootloader,
 partition-table and application bundle; retain a compatible recovery image and
 use the board's ROM-download procedure when application startup is unavailable.
+
+## Pro Micro nRF52840 UF2 uploads
+
+For Pro Micro, the supplied startup is a handoff from an existing Adafruit UF2
+bootloader using the S140-v6 layout: application `0x26000..0xEC000`, storage
+`0xEC000..0xF4000`, bootloader/settings `0xF4000..0x100000`. It preserves those
+reserved regions and requires bootloader silicon initialization with SoftDevice
+disabled. It does not provide raw-reset startup, USB application serial or BLE.
+The CPU runs at 64 MHz; the default cycle-clock timeout limit is about 33.6 s.
+The user's V1940 marking does not establish PCB/silicon revision or physical
+acceptance. Confirm the actual `INFO_UF2.TXT` and boot layout before upload.
+
+The build emits `<target>.elf.uf2` as well as the ELF/input records. Enter the
+factory bootloader by bridging RST to GND twice quickly, explicitly mount its
+drive, and plan uploading with the installed runner:
+
+```sh
+python3 /path/to/prefix/share/mcubsp/tool/hardware.py flash \
+  --board others/promicro_nrf52840 --elf /path/to/blink.elf \
+  --mount /absolute/path/to/bootloader-drive --dry-run
+```
+
+The runner checks firmware provenance, nRF52840 Board-ID and UF2 payload/bounds.
+Remove `--dry-run` to write `FIRMWARE.UF2` to that mount. Mount identity checks do
+not establish the SoftDevice version. If bootloader recovery fails, use SWD and
+the exact clone's matching recovery image; erasure is a separate operation.
 
 ## Package contents
 

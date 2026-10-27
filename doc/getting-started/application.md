@@ -87,6 +87,7 @@ static mcubsp::io::board<mcubsp::board::arduino::uno_r4_minima> hw;
 | `arduino/uno_r4_minima` | `mcubsp::board::arduino::uno_r4_minima` |
 | `st/nucleo_h753zi` | `mcubsp::board::st::nucleo_h753zi` |
 | `waveshare/esp32p4_nano` | `mcubsp::board::waveshare::esp32p4_nano` |
+| `others/promicro_nrf52840` | `mcubsp::board::others::promicro_nrf52840` (GPIO-only; select `.serial = false`) |
 
 CMake selects the compiler and startup; application code names the matching
 board type. There is no generated board alias. The starter keeps each board's

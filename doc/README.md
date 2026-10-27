@@ -32,6 +32,8 @@ lifecycle, and bring-up guidance directly in the documentation.
 
 ## Boards
 
+- [Pro Micro nRF52840, initial GPIO / UF2](../src/board/others/promicro_nrf52840/README.md)
+
 - [Arduino UNO R4 Minima](../src/board/arduino/uno_r4_minima/doc/README.md)
   - [W5100 Ethernet](../src/board/arduino/uno_r4_minima/doc/ethernet-w5100.md)
 - [NUCLEO-H753ZI](../src/board/st/nucleo_h753zi/doc/README.md)
@@ -49,6 +51,8 @@ lifecycle, and bring-up guidance directly in the documentation.
 - [Peripheral implementation notes](development/peripheral-note/)
 
 ## Reference and acceptance
+
+- [Pro Micro nRF52840 software verification and physical Blink observation](acceptance/promicro-nrf52840.md)
 
 - [Support and evidence matrix](reference/support-matrix.md)
 - [MCU source baseline](reference/source-baseline.md)

@@ -2,6 +2,7 @@
 """Shared explicit board runner. Planning never opens a probe or serial port."""
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -157,6 +158,39 @@ def plan_flash(args):
                 '-c', f'adapter serial {tcl_quote(probe)}',
                 '-c', f'program {tcl_quote(elf.as_posix())} verify',
                 '-c', args.commands or 'reset run; shutdown']
+    # @req REQ-0053
+    elif runner['type'] == 'uf2':
+        if args.commands or args.probe or args.port or args.sdk_build:
+            raise ValueError('UF2 upload uses --mount, without probe/port/SDK/commands')
+        mount_arg = getattr(args, 'mount', None)
+        if not mount_arg:
+            raise ValueError('select the explicitly mounted UF2 drive with --mount')
+        mount = Path(mount_arg).resolve()
+        info_file = mount / 'INFO_UF2.TXT'
+        if not mount.is_dir() or not info_file.is_file():
+            raise ValueError('selected mount has no INFO_UF2.TXT; enter and mount the UF2 bootloader')
+        identity = info_file.read_text(encoding='utf-8', errors='replace')
+        board_id = re.search(r'^Board-ID:\s*(\S+)', identity, re.MULTILINE | re.IGNORECASE)
+        if not board_id or not board_id[1].lower().startswith(runner['board_id'].lower() + '-'):
+            raise ValueError('mounted UF2 Board-ID does not match the selected MCU family')
+        spec = importlib.util.spec_from_file_location('mcubsp_uf2', ROOT / 'tool/uf2.py')
+        uf2 = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(uf2)
+        if len(allowed) != 1:
+            raise ValueError('UF2 runner requires one application flash region')
+        start, size = allowed[0]
+        family = int(runner['family'], 0)
+        expected = uf2.encode(elf.read_bytes(), family=family, start=start, size=size)
+        image = elf.with_name(elf.name + '.uf2')
+        if not image.is_file() or image.read_bytes() != expected:
+            raise ValueError('missing or stale UF2 image; rebuild the selected application with --clean-first')
+        plan['mount'] = str(mount)
+        plan['board_id'] = board_id[1]
+        plan['uf2'] = str(image)
+        plan['uf2_sha256'] = digest(image)
+        plan['command'] = [sys.executable, str(ROOT / 'tool/uf2.py'), '--elf', str(elf),
+            '--output', str(mount / 'FIRMWARE.UF2'), '--family', hex(family),
+            '--start', hex(start), '--size', hex(size)]
     elif runner['type'] == 'esp-idf':
         if args.commands:
             raise ValueError('--commands is supported only by the OpenOCD runner')
@@ -228,6 +262,7 @@ def main():
     flash.add_argument('--elf', required=True)
     flash.add_argument('--probe')
     flash.add_argument('--port')
+    flash.add_argument('--mount', help='explicit mounted UF2 bootloader directory')
     flash.add_argument('--sdk-build')
     flash.add_argument('--commands')
     flash.add_argument('--tool-environment')

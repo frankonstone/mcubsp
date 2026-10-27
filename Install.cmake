@@ -37,7 +37,7 @@ foreach(entry IN LISTS board_entries)
         PATTERN build EXCLUDE PATTERN ".DS_Store" EXCLUDE)
 endforeach()
 
-install(FILES tool/firmware-inputs.py tool/hardware.py tool/RunnerInfo.cmake
+install(FILES tool/firmware-inputs.py tool/hardware.py tool/uf2.py tool/RunnerInfo.cmake
     DESTINATION share/mcubsp/tool)
 install(DIRECTORY example DESTINATION share/mcubsp
     PATTERN output EXCLUDE PATTERN build EXCLUDE PATTERN ".DS_Store" EXCLUDE)

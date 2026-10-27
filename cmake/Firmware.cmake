@@ -19,6 +19,7 @@ function(mcubsp_add_firmware target)
     if(NOT EXISTS "${entry}")
         message(FATAL_ERROR "Unknown mcubsp board: ${ARG_BOARD}")
     endif()
+    set(MCUBSP_BOARD_UF2_FAMILY "")
     include("${entry}")
     if(NOT MCUBSP_ARCH STREQUAL MCUBSP_BOARD_ARCHITECTURE)
         message(FATAL_ERROR "${ARG_BOARD} requires ${MCUBSP_BOARD_ARCHITECTURE}. Configure a fresh build with -DCMAKE_TOOLCHAIN_FILE=${MCUBSP_ROOT}/cmake/board-toolchain.cmake -DMCUBSP_BOARD=${ARG_BOARD} before project(), or supply its matching BSP toolchain.")
@@ -73,6 +74,18 @@ function(mcubsp_add_firmware target)
     endif()
     if(CMAKE_GENERATOR STREQUAL "Ninja")
         find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+    endif()
+    # @req REQ-0053
+    # Optional board-selected output format. Conversion never opens hardware.
+    if(MCUBSP_BOARD_UF2_FAMILY)
+        find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+        set_property(TARGET ${target} APPEND PROPERTY LINK_DEPENDS "${MCUBSP_ROOT}/tool/uf2.py")
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND "${Python3_EXECUTABLE}" "${MCUBSP_ROOT}/tool/uf2.py"
+                --elf "$<TARGET_FILE:${target}>" --output "$<TARGET_FILE:${target}>.uf2"
+                --family "${MCUBSP_BOARD_UF2_FAMILY}"
+                --start "${MCUBSP_BOARD_UF2_START}" --size "${MCUBSP_BOARD_UF2_SIZE}"
+            VERBATIM)
     endif()
     add_custom_command(TARGET ${target} POST_BUILD COMMAND "${CMAKE_COMMAND}"
         "-DFIRMWARE=$<TARGET_FILE:${target}>" "-Dboard=${ARG_BOARD}"

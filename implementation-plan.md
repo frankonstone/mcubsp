@@ -1034,3 +1034,33 @@ without integration coverage, and both runner dry runs validate selected inputs.
 mcubsp retains 43 passing CTest entries and 290 cases on GCC/AppleClang, 110
 standalone headers and independent source/package consumers. See the
 [integration extraction record](doc/acceptance/integration-extraction.md).
+
+## PLN-0040 Bring up Pro Micro nRF52840 GPIO and UF2 applications
+@status(done)
+@link(REQ-0053)
+
+Pin the Zephyr board/UF2 definitions and Nordic GPIO baseline. Add the nRF52840
+GPIO description/backend, a board profile with native pin names and P0.15 LED,
+and supplied Arm startup/linker integration for the UF2/S140-v6 partition.
+Reuse the existing CMake firmware workflow and provide deterministic UF2
+generation without flashing. Publish the initial scope and exact handoff and
+upload assumptions. Exercise native failure paths, UF2 format/bounds, and
+source/installed-package linked applications.
+
+Exit: the initial software path and documented procedures pass their stated
+checks. Physical Blink and double-reset recovery remain explicitly unobserved
+until exercised on the user's board; later peripheral backends are separate work.
+
+Verified locally on 27 October 2026: 49 CTest entries and 304 cases pass on
+AppleClang; 115 isolated headers pass on host and Cortex-M4 with architecture
+barrier checks. Repository and source/relocated-package Blink link and emit UF2;
+installed runner dry-run and the UNO firmware regression pass. That software
+stage made no physical or complete Nordic description/errata claim. See the
+[initial software record](doc/acceptance/promicro-nrf52840.md).
+
+Physical follow-up on 27 October 2026: the connected board reported UF2 0.6.0,
+Board-ID `nRF52840-nicenano` and S140 6.1.1. The explicitly authorized UF2 upload
+completed; the user confirmed LED Blink. The acceptance record binds that
+observation to the ELF/UF2 and selected-input hashes. Independent timing,
+post-application double-reset recovery and broader hardware qualification remain
+outstanding.

@@ -79,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [arduino-uno-r4-minima, st-nucleo-h753zi]
+        board: [arduino-uno-r4-minima, st-nucleo-h753zi, promicro-nrf52840]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -99,12 +99,17 @@ jobs:
           cmake --build --preset ${{ matrix.board }} --target firmware --parallel 2
       - name: Build the external application starter through the public interface
         run: |
-          if [ '${{ matrix.board }}' = arduino-uno-r4-minima ]; then board_id=arduino/uno_r4_minima; else board_id=st/nucleo_h753zi; fi
+          case '${{ matrix.board }}' in
+            arduino-uno-r4-minima) board_id=arduino/uno_r4_minima ;;
+            st-nucleo-h753zi) board_id=st/nucleo_h753zi ;;
+            promicro-nrf52840) board_id=others/promicro_nrf52840 ;;
+          esac
           cmake -S example/blink -B output/build/consumer -G Ninja -DMCUBSP_SOURCE_DIR="$PWD" -DCMAKE_TOOLCHAIN_FILE="$PWD/cmake/board-toolchain.cmake" -DMCUBSP_BOARD="$board_id"
           cmake --build output/build/consumer --target blink --parallel 2
       - name: Compile every header and architecture contracts
         run: |
-          cmake -S test/compile/target -B output/build/probes -G Ninja -DCMAKE_TOOLCHAIN_FILE="$PWD/cmake/$(test '${{ matrix.board }}' = arduino-uno-r4-minima && echo toolchain-arm-cortex-m4.cmake || echo toolchain-arm-cortex-m7.cmake)" -DMCUBSP_CHECK_HEADERS=ON
+          if [ '${{ matrix.board }}' = st-nucleo-h753zi ]; then arm_toolchain=toolchain-arm-cortex-m7.cmake; else arm_toolchain=toolchain-arm-cortex-m4.cmake; fi
+          cmake -S test/compile/target -B output/build/probes -G Ninja -DCMAKE_TOOLCHAIN_FILE="$PWD/cmake/$arm_toolchain" -DMCUBSP_CHECK_HEADERS=ON
           cmake --build output/build/probes --target check-compile --parallel 2
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

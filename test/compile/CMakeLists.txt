@@ -29,6 +29,7 @@ mcubsp_add_compile_case(io_devices_example src/io/test/io_devices_example.cpp TR
 mcubsp_add_compile_case(io_disabled_peripheral src/io/test/io_disabled_peripheral_forbidden.cpp FALSE "deleted")
 mcubsp_add_compile_case(io_unsupported_dma src/io/test/io_unsupported_dma_forbidden.cpp FALSE "selected DMA channels")
 mcubsp_add_compile_case(io_move_runtime src/io/test/io_move_runtime_forbidden.cpp FALSE "deleted")
+mcubsp_add_compile_case(nrf52840_serial_unavailable src/backend/nrf52840/test/serial_unavailable_forbidden.cpp FALSE "no supported serial backend")
 mcubsp_add_compile_case(exceptions_rejected test/compile/exceptions_forbidden.cpp FALSE "exception handling|exceptions disabled")
 mcubsp_add_compile_case(rtti_rejected test/compile/rtti_forbidden.cpp FALSE "not permitted.*rtti|requires.*rtti|not permitted.*RTTI|requires.*RTTI|RTTI.*disabled")
 mcubsp_add_compile_case(command_read_rejected src/core/test/command_read_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied|no matching member function")

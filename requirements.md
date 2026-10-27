@@ -667,3 +667,26 @@ include public-header and mixed-MCU checks.
 
 Acceptance: selected-source changes alter firmware identity, unrelated additions
 do not, and all evidence claims retain their observation scope.
+
+## REQ-0053 Pro Micro nRF52840 initial bare-metal integration
+@depends(REQ-0010, REQ-0021, REQ-0031, REQ-0049)
+
+Add the nice!nano-compatible Pro Micro nRF52840 board family identified by the
+Zephyr `promicro_nrf52840` board definition. Initial support shall provide
+source-backed GPIO metadata and sequencing, a GPIO-only I/O profile, an LED
+Blink application, and an explicit supplied-startup build using the documented
+UF2 / S140-v6 application partition. Preserve the SoftDevice, storage and UF2
+bootloader regions. Do not silently enable a radio stack, change UICR, or claim
+support for unimplemented peripherals or unverified clone revisions.
+
+Generate a bounded, nRF52840-family UF2 file from the linked application without
+accessing hardware. Document the bootloader handoff, fixed clock, pin identities,
+recovery and explicit upload procedure. V1940 is a user-reported marking, not a
+verified silicon or PCB revision.
+
+Acceptance: native tests exercise GPIO ownership, atomic writes, electrical
+configuration, failure handling and board composition. Cross-build and link
+Blink from the checkout and an installed package; inspect vector/load addresses
+and test UF2 payloads and partition rejection. Record physical LED observation
+and bootloader recovery separately when the exact board is connected; build
+success alone establishes no physical acceptance.
