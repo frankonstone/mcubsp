@@ -1,8 +1,9 @@
 #pragma once
 
-// @req-file REQ-0053
+// @req-file REQ-0053 REQ-0054
 #include <cstddef>
 #include <mcubsp/backend/nrf52840/gpio.hpp>
+#include <mcubsp/backend/nrf52840/i2c.hpp>
 #include <mcubsp/board/others/promicro_nrf52840/bindings.hpp>
 #include <mcubsp/io/detail/target_time.hpp>
 
@@ -12,7 +13,7 @@ extern "C" std::uint32_t mcubsp_promicro_startup_status;
 
 namespace mcubsp::board::others {
 
-// GPIO-only bring-up profile. Instantiate io::board with {.serial = false}.
+// GPIO/I2C profile. Serial remains unavailable; select {.serial = false}.
 struct promicro_nrf52840 : promicro_nrf52840_bindings {
     using target_identity = promicro_nrf52840;
     using pins_type = promicro_nrf52840_pins;
@@ -26,7 +27,16 @@ struct promicro_nrf52840 : promicro_nrf52840_bindings {
             ? static_cast<std::size_t>(pin.port) * 32U + pin.index : pin_slots;
     }
     static constexpr bool serial_available = false;
-    static constexpr bool i2c_available = false;
+    static constexpr bool i2c_available = true;
+    using i2c_binding = backend::nrf52840::i2c_binding<0, pins_type::scl, pins_type::sda>;
+    static constexpr std::array i2c_pins{pins_type::scl, pins_type::sda};
+    template<class Binding, class M, class E>
+    using i2c_backend_for = backend::nrf52840::i2c_controller_backend<Binding, M, E>;
+    template<class M, class E> using i2c_backend = i2c_backend_for<i2c_binding, M, E>;
+    static constexpr auto solve_i2c(std::uint32_t hz) noexcept {
+        return backend::nrf52840::solve_i2c_timing({mcu::nrf52840::twi_clock_hz, hz, 20'000U, 300U, 100U});
+    }
+    template<class M, class B> static void poll_i2c(M&, B& bus) noexcept { (void)bus.poll(); }
     static constexpr bool spi_available = false;
     static constexpr bool adc_available = false;
     static constexpr bool pwm_available = false;

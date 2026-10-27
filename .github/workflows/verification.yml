@@ -106,6 +106,9 @@ jobs:
           esac
           cmake -S example/blink -B output/build/consumer -G Ninja -DMCUBSP_SOURCE_DIR="$PWD" -DCMAKE_TOOLCHAIN_FILE="$PWD/cmake/board-toolchain.cmake" -DMCUBSP_BOARD="$board_id"
           cmake --build output/build/consumer --target blink --parallel 2
+      - name: Link the Pro Micro TMP102 application
+        if: matrix.board == 'promicro-nrf52840'
+        run: cmake --build --preset promicro-nrf52840 --target others.promicro_nrf52840.example.tmp102 --parallel 2
       - name: Compile every header and architecture contracts
         run: |
           if [ '${{ matrix.board }}' = st-nucleo-h753zi ]; then arm_toolchain=toolchain-arm-cortex-m7.cmake; else arm_toolchain=toolchain-arm-cortex-m4.cmake; fi

@@ -83,7 +83,7 @@ The main source layers are:
 | Renesas RA4M1 / Arduino UNO R4 Minima | Accepted bare-metal startup, GPIO, basic PWM, UART, I2C, SPI, ADC, DMAC, and W5100 Ethernet through MCUIP |
 | STM32H753 / NUCLEO-H753ZI | Source-backed description and bare-metal clock, memory/cache, GPIO, timer, USART, I2C, SPI, ADC, DMA, and Ethernet implementation; native USB/Ethernet completion is tracked separately |
 | ESP32-P4 / Waveshare ESP32-P4-NANO | Production-v3.x description with GPIO, UART, I2C, I2S, SDMMC/SDIO, SPI, and Ethernet work; the connected v1.0 board provides development evidence rather than production-silicon acceptance |
-| nRF52840 / Pro Micro (nice!nano-compatible family) | Initial GPIO/core metadata, GPIO-only facade and Blink with UF2/S140-v6 bootloader handoff; upload completed and LED blinking confirmed by the user on one board. [Board guide](src/board/others/promicro_nrf52840/README.md) |
+| nRF52840 / Pro Micro (nice!nano-compatible family) | GPIO/core/TWI metadata, GPIO and finite I2C, Blink/TMP102 applications with UF2/S140-v6 bootloader handoff; LED Blink confirmed by the user on one board, physical I2C pending. [Board guide](src/board/others/promicro_nrf52840/README.md) |
 
 The [support matrix](doc/reference/support-matrix.md) separates source review,
 typed metadata, driver implementation and physical verification, including

@@ -10,7 +10,7 @@ build targets use these same files.
 | [Recovery](recovery/README.md) | UNO R4 Minima | UART echo with timeout, cancellation and recovery |
 | [Serial echo](serial_echo/README.md) | UNO R4 Minima | Echo bytes over the physical UART |
 | [SPI DMA](spi_dma/README.md) | UNO R4 Minima | Transfer over SPI with explicit DMA channels |
-| [TMP102](tmp102/README.md) | UNO R4 Minima | Read a temperature sensor and indicate a threshold |
+| [TMP102](tmp102/README.md) | UNO R4 Minima, Pro Micro nRF52840 | Read a temperature sensor and indicate a threshold |
 | [W5100](w5100/README.md) | UNO R4 Minima | Receive raw Ethernet frames through an Ethernet Shield R3 |
 
 Build one application directly from this checkout:

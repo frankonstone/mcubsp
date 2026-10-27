@@ -57,7 +57,7 @@ cmake --build output/build/uno --target blink
 | `arduino/uno_r4_minima` | `r4` | Arm GNU; built-in D13 LED |
 | `st/nucleo_h753zi` | `mb1364-rev-e` | Arm GNU; built-in green LED |
 | `waveshare/esp32p4_nano` | `development-v1.0` | ESP-IDF v6.1 with its Python and RISC-V compiler; external LED and series resistor on GPIO2 |
-| `others/promicro_nrf52840` | `uf2-s140-v6` | Arm GNU; active-high LED P0.15; initial GPIO-only support |
+| `others/promicro_nrf52840` | `uf2-s140-v6` | Arm GNU; active-high LED P0.15; GPIO and finite I2C |
 
 Use a fresh build directory for each board. Board toolchain selection occurs
 before CMake's `project()`. Sources include and name their concrete board type;
@@ -115,6 +115,12 @@ The runner checks firmware provenance, nRF52840 Board-ID and UF2 payload/bounds.
 Remove `--dry-run` to write `FIRMWARE.UF2` to that mount. Mount identity checks do
 not establish the SoftDevice version. If bootloader recovery fails, use SWD and
 the exact clone's matching recovery image; erasure is a separate operation.
+
+The Pro Micro TMP102 starter enables `{.serial = false, .i2c = true}` and uses
+TWI0 SDA P1.00 (100) / SCL P0.11 (011), common ground and external 3.3 V pull-ups.
+I2C supports nominal 100/250/400 kHz, finite CPU-driven transfers and the existing
+device leases. It has host/cross-build verification; physical sensor and wire
+timing acceptance remain pending. USB application serial and radio are absent.
 
 ## Package contents
 

@@ -7,7 +7,7 @@
 
 namespace mcubsp::mcu::nrf52840 {
 
-// Initial GPIO/core slice; not a complete MCU description or silicon review.
+// Initial GPIO/core slice; TWI metadata is in twi.hpp. No complete MCU or silicon review.
 // Nordic nrfx v3.2.0 mdk/nrf52840.h and nrf52840_bitfields.h, GPIO and FICR.
 inline constexpr core::source_ref register_source{
     "Nordic nrfx MDK", "v3.2.0", "nrf52840.h; nrf52840_bitfields.h: GPIO/FICR"};

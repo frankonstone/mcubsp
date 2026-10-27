@@ -53,6 +53,7 @@ lifecycle, and bring-up guidance directly in the documentation.
 ## Reference and acceptance
 
 - [Pro Micro nRF52840 software verification and physical Blink observation](acceptance/promicro-nrf52840.md)
+- [nRF52840 I2C and TMP102 software verification](acceptance/nrf52840-i2c.md)
 
 - [Support and evidence matrix](reference/support-matrix.md)
 - [MCU source baseline](reference/source-baseline.md)

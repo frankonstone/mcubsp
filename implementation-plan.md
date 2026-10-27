@@ -1064,3 +1064,26 @@ completed; the user confirmed LED Blink. The acceptance record binds that
 observation to the ELF/UF2 and selected-input hashes. Independent timing,
 post-application double-reset recovery and broader hardware qualification remain
 outstanding.
+
+## PLN-0041 Add nRF52840 I2C and the Pro Micro sensor composition
+@status(done)
+@link(REQ-0054)
+
+Implement source-backed TWI0/TWI1 metadata, native bindings and CPU-driven finite
+transfers. Reuse operation pools and I/O device leases, preserve shared serial
+instance ownership, and fail closed on unsuccessful cleanup. Add Pro Micro I2C
+pin aliases, selector support and a standalone TMP102 example. Verify byte/STOP
+ordering, combined transactions, cancellation/errors and shared-bus behavior on
+the host; cross-build and check relocated installed consumption. Physical bus
+and sensor acceptance are separate from this software increment.
+
+Exit: focused and full native verification, isolated headers, board examples,
+and source/package sensor builds pass with explicit remaining hardware scope.
+
+Verified locally on 27 October 2026: all 52 CTest entries and 319 cases pass on
+AppleClang, including 15 I2C cases and three negative binding compilations.
+All 118 isolated headers compile on host and Cortex-M4; architecture barrier
+checks pass. Blink/TMP102 repository examples and source/relocated-package sensor
+applications link and emit UF2; installed runner planning passes without upload.
+See the [I2C software record](doc/acceptance/nrf52840-i2c.md). Physical sensor,
+bus timing and broader Nordic qualification remain outstanding.

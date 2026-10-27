@@ -48,7 +48,7 @@ Building never flashes. For application setup, ownership choices and an explicit
 probe/port runner plan, read the
 [application package guide](../../doc/package.md).
 
-Pro Micro also generates `blink.elf.uf2`. Its GPIO-only profile selects
+Pro Micro also generates `blink.elf.uf2`. Its Blink configuration selects only GPIO with
 `.serial = false`; USB serial and Bluetooth are not supplied by the application.
 See the [Pro Micro guide](../../src/board/others/promicro_nrf52840/README.md)
 for memory/handoff assumptions and the explicit mounted-drive UF2 upload.

@@ -690,3 +690,27 @@ Blink from the checkout and an installed package; inspect vector/load addresses
 and test UF2 payloads and partition rejection. Record physical LED observation
 and bootloader recovery separately when the exact board is connected; build
 success alone establishes no physical acceptance.
+
+## REQ-0054 Pro Micro nRF52840 finite I2C controller and shared devices
+@depends(REQ-0053, REQ-0024, REQ-0025, REQ-0026, REQ-0046)
+
+Extend the initial Pro Micro profile with source-backed CPU-driven TWI0/TWI1
+controller bindings, finite seven-bit writes, reads and repeated-START combined
+transactions. Preserve native pin selection and the shared TWI/SPI hardware
+instance identity. Support the documented 100/250/400 kHz encodings with explicit
+timing assumptions; reject unavailable or duplicate pins and invalid requests.
+
+Integrate with the existing I/O bus, device leases and TMP102 driver, without a
+heap, vendor HAL dependency or generic DMA claim. Report observable address/data
+NACK and transport errors, detect idle stuck lines, bound cancellation cleanup,
+and prohibit reuse after failed cleanup. Release hardware only after explicit
+successful shutdown; recovery then requires a fresh backend/runtime, preserving
+the existing retired-operation-slot contract. Do not pulse external bus lines automatically or claim
+multi-controller arbitration support.
+
+Acceptance: native traces and deterministic fake peripherals exercise initial
+configuration, repeated START, final-byte STOP, errors, stale events, ownership,
+timeout/cancel and MMIO failures. Test shared-address leases and a real TMP102
+composition with a simulated peripheral. Link complete sensor applications from
+source and a relocated installed package. Wire protocol, electrical timing and
+physical sensor results remain unverified until an actual fixture is exercised.
