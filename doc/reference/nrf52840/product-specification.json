@@ -1,0 +1,14 @@
+{
+  "document": "Nordic nRF52840 Product Specification",
+  "document_id": "4413_417",
+  "version": "1.11",
+  "publication_date": "2024-10-01",
+  "obtained": "2026-10-28",
+  "pages": 980,
+  "bytes": 18583008,
+  "sha256": "6e5950cc7e8272d1803279b8cfe3a6ea2c48be46735db3bc3b0a351e3665ecdf",
+  "local_path": "doc/_vendor/manual/nrf52840-ps-v1.11.pdf",
+  "vendor_reference": "https://docs.nordicsemi.com/r/bundle/ps_nrf52840/page/keyfeatures_html5.html",
+  "retrieved_from": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/6469/NRF52840-DK.pdf",
+  "identity_check": "Cover, revision, document ID and publication date match the Nordic specification; distributor hosts the vendor-authored PDF."
+}

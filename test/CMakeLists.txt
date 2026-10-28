@@ -36,6 +36,7 @@ foreach(component IN ITEMS
     mcu
     mcu/esp32p4
     mcu/ra4m1
+    mcu/nrf52840
     mcu/stm32h753
 )
     add_subdirectory("${MCUBSP_ROOT}/src/${component}/test"
@@ -78,6 +79,17 @@ set_property(GLOBAL APPEND PROPERTY MCUBSP_NATIVE_REPORTS
     "${MCUBSP_TEST_ARTIFACT_DIR}/provenance.json")
 set_property(GLOBAL APPEND PROPERTY MCUBSP_NATIVE_REPORTS
     "${MCUBSP_TEST_ARTIFACT_DIR}/build.json")
+find_program(MCUBSP_TEST_TCLSH tclsh)
+if(MCUBSP_TEST_TCLSH)
+    add_test(NAME mcubsp.test.nrf_debug COMMAND "${CMAKE_COMMAND}"
+        "-DTEST_PROGRAM=${Python3_EXECUTABLE}"
+        "-DTEST_ARGUMENTS=${CMAKE_CURRENT_SOURCE_DIR}/workflow/test_nrf_debug.py"
+        "-DOUTPUT_FILE=${MCUBSP_TEST_ARTIFACT_DIR}/nrf-debug.json"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/support/CaptureMcutest.cmake")
+    set_tests_properties(mcubsp.test.nrf_debug PROPERTIES LABELS "workflow;debugger")
+    set_property(GLOBAL APPEND PROPERTY MCUBSP_NATIVE_REPORTS
+        "${MCUBSP_TEST_ARTIFACT_DIR}/nrf-debug.json")
+endif()
 get_property(native_reports GLOBAL PROPERTY MCUBSP_NATIVE_REPORTS)
 list(JOIN native_reports "\n" native_registry)
 file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/artifact/native-results.txt"

@@ -1,6 +1,33 @@
-# mcubsp requirements
+# mcubsp common requirements
 
-Requirements baseline, 26 September 2026. Derived from [proposal.md](proposal.md), the supplied manuals, the local MCUOS and MCUIP projects, and the user's decisions below. All eighteen scope decisions are recorded. The first RA4M1 release is accepted using the connected UNO R4 Minima with direct-wired GPIO/PWM/UART, Grove I2C, Ethernet-shield SPI/DMAC and potentiometer ADC evidence. Subsequent decisions add UNO Ethernet through that shield, a modern C++ application interface, reusable attached devices, and repository/build workflows for broad adoption at hundreds of boards and thousands of devices. NUCLEO-H753ZI remains the STM32 carrier and MCUIP is the selected TCP/IP stack. This document specifies intended behavior; it does not claim implementation or verification. Detailed integration choices and measured resource budgets remain implementation milestones. The proposal's code snippets are illustrative API sketches, not verified register definitions or compilable specifications.
+## Common and board documents
+
+The root [requirements](requirements.md) and [implementation plan](implementation-plan.md)
+own shared contracts, cross-board milestones and the historical decision/source baseline.
+Each board owns the documents below beside its `board.cmake`. Shared MCU/backend code
+remains reusable; document ownership does not move that code into a board.
+
+| Scope | Requirements | Planning |
+| --- | --- | --- |
+| Common | [Requirements](requirements.md) | [Implementation plan](implementation-plan.md) |
+| Arduino UNO R4 Minima | [Requirements](src/board/arduino/uno_r4_minima/requirements.md) | [Implementation plan](src/board/arduino/uno_r4_minima/implementation-plan.md) |
+| ST NUCLEO-H753ZI | [Requirements](src/board/st/nucleo_h753zi/requirements.md) | [Implementation plan](src/board/st/nucleo_h753zi/implementation-plan.md) |
+| Waveshare ESP32-P4-NANO | [Requirements](src/board/waveshare/esp32p4_nano/requirements.md) | [Implementation plan](src/board/waveshare/esp32p4_nano/implementation-plan.md) |
+| Pro Micro nRF52840 | [Requirements](src/board/others/promicro_nrf52840/requirements.md) | [Implementation plan](src/board/others/promicro_nrf52840/implementation-plan.md) |
+
+Requirements and plan IDs remain globally unique across all documents. Define each
+ID once, reference common contracts from board documents, and retain explicit
+`@depends` / `@link` relationships across files. Apply common contracts to the
+peripherals selected by a board's scope; a shared API requirement does not promise
+that every board implements it. Plan completion never substitutes for evidence.
+
+Reorganized 27 October 2026: existing IDs, requirement bodies, relationships, plan
+statuses and historical observations are retained. This split adds no peripheral
+scope or hardware acceptance.
+
+## Baseline
+
+Requirements baseline, 26 September 2026. Derived from [proposal.md](proposal.md), the supplied manuals, the local MCUOS and MCUIP projects, and the user's decisions below. The scope decisions are recorded below. The first RA4M1 release is accepted using the connected UNO R4 Minima with direct-wired GPIO/PWM/UART, Grove I2C, Ethernet-shield SPI/DMAC and potentiometer ADC evidence. Subsequent decisions add UNO Ethernet through that shield, a modern C++ application interface, reusable attached devices, and repository/build workflows for broad adoption at hundreds of boards and thousands of devices. NUCLEO-H753ZI remains the STM32 carrier and MCUIP is the selected TCP/IP stack. This document specifies intended behavior; it does not claim implementation or verification. Detailed integration choices and measured resource budgets remain implementation milestones. The proposal's code snippets are illustrative API sketches, not verified register definitions or compilable specifications.
 
 ## Decisions and scope
 
@@ -25,6 +52,7 @@ Requirements baseline, 26 September 2026. Derived from [proposal.md](proposal.md
 | D17 | Introduce reusable attached-device drivers with shared I2C address and SPI chip-select handles supplied by `io`. Keep chip protocols independent of board composition, preserve checked fast transfers, and supply TMP102 and W5100 components plus generic MCUIP integration. Use explicit storage, ownership, deadlines and bounded polling; RTOS concurrency remains a later stage. | Accepted by user, 26 September 2026 |
 | D18 | Make ease of use, building and contribution a first-class adoption requirement for hundreds of boards and thousands of devices. Keep one modular repository, independently consumable CMake/header interfaces, locally defined hardware components, selected-board builds, reproducible setup, searchable support information and dependency-scoped verification. Schedule the repository adoption work immediately after PLN-0026, before deferred MCUOS integration; preserve existing hardware and evidence boundaries. | Accepted for requirements and planning by user, 26 September 2026 |
 | D19 | Configure the architecture once and expose board task groups only for a configurable active-board set. Persist the local selection, keep examples as separate firmware images beneath an aggregate, and isolate board/revision artifacts and optional test dependencies. | Accepted by user, 26 September 2026 |
+| D20 | Extend the Pro Micro nRF52840 target from its initial GPIO/I2C increments to working implementations for every documented nRF52840 peripheral, all valid instances and hardware-supported modes. Include system/event/timing, DMA, serial master/slave, analog/PWM, memory, audio, USB, radio/NFC, crypto and protection/core services. Preserve initial acceptance, explicit boot layout and independently reported physical verification. Full radio protocol stacks remain separate software integrations. | Requested by user, 27 October 2026 |
 
 Existing proposal decisions are retained: C++23; compile-time configuration and validation; metadata separate from drivers; functional abstraction with capabilities; RA4M1 as the first physical driver target after all three descriptions; `transfer<T>` as the async primitive; optional coroutine adapters.
 
@@ -313,26 +341,6 @@ Completion transport shall use explicit bounded storage and ownership: a dedicat
 
 Acceptance: first run actual MCUOS native tasks against simulated mcubsp peripherals, including completion-before-wait, simultaneous timeout/completion, stale wakeups, shared-bus contention and capacity exhaustion. Then execute the representative scenarios on UNO R4 Minima with an executable MCUOS RA4M1 target, using the same functional driver/backend sources as bare metal. The hardware RTOS claim remains outstanding until that target exists and passes; host tests and Cortex-M compilation do not satisfy it. Record exact source identity, kernel capacities, port/configuration identity and reserved resources.
 
-## REQ-0033 STM32H753 description and subsequent bare-metal port
-@depends(REQ-0003, REQ-0005)
-
-The initial description phase shall select and record the STM32H753 device/package scope, review the locally available RM0433 reference manual, DS12117 datasheet and ES0392 errata, and implement the documented hardware in the shared model. Describe memory/cache/MPU properties, register semantics, clock/reset domains, pin routes, interrupt sources and DMA reachability without inheriting RA4M1 layout assumptions. PM0253 alone is insufficient for peripheral definitions.
-
-After the common gate, the driver phase shall select a physical board and implement STM32 backends for the agreed functional driver set. Board bring-up, live cache/MPU operations and runtime driver verification belong to that later phase, not description validation. MCUOS is not a prerequisite for either.
-
-STM32 backend implementation and board-native bring-up shall use ST-LINK debug/trace and virtual COM, built-in LEDs/buttons, documented solder bridges or point-to-point jumpers, the on-board Ethernet PHY/connector with an ordinary network peer, native connectors, and internal memory/peripheral known-answer tests. Ethernet work in this phase covers source-backed clock/pin setup, MDIO/PHY control, link-state verification and raw MAC-frame exchange, followed by the explicit MCUIP integration required by REQ-0043. Every physical board modification shall be recorded with its schematic designator, original state, resulting state, purpose and restoration procedure. Claims remain limited to the behavior independently observed by those target-specific procedures.
-
-Acceptance: the same description contract tests used for RA4M1 and ESP32-P4 instantiate real STM32H753 definitions before any driver work. Later, common driver contract tests, cross-builds and bare-metal target examples pass after hardware/board binding changes. Target evidence is reported under REQ-0036 with its actual observation path and without claiming unmeasured electrical behavior.
-
-## REQ-0034 ESP32-P4 description and subsequent bare-metal port
-@depends(REQ-0003, REQ-0005)
-
-The initial description phase shall pin reviewed documentation and silicon/package scope and implement ESP32-P4 in the shared model. Describe HP/LP domains and CPU ownership constraints, GPIO matrix/IO MUX routing, interrupt matrix, clock/reset relations, memory/cache properties, DMA engines and actual timer/PWM capabilities without mimicking RA4M1 GPT or Arm core registers. Preliminary or missing definitions shall remain explicit source gaps.
-
-After the common gate, select a physical board, boot/toolchain integration and initial core-ownership model, then implement the agreed functional driver set through Espressif-specific backends on bare metal. Hardware multicore/LP concurrency is a separate validated capability. MCUOS availability is not a prerequisite.
-
-Acceptance: real ESP32-P4 definitions satisfy the common description tests before any driver work. Later, common driver tests and physical bare-metal examples pass using target bindings. Description-only success shall not imply verified boot, cache, DMA or multicore execution.
-
 ## Verification and delivery
 
 ## REQ-0035 Deterministic host verification
@@ -426,47 +434,6 @@ raw minimum/maximum-MTU frames plus at least one MCUIP-driven protocol path
 (ARP followed by ICMP echo or UDP) with an independent Ethernet peer. Exercise
 link down/up, descriptor exhaustion, completion ordering and cache maintenance
 with data cache enabled, and record both mcubsp and MCUIP source identities.
-
-## REQ-0044 Arduino UNO R4 Minima W5100 Ethernet connectivity
-@depends(REQ-0002, REQ-0003, REQ-0009, REQ-0015, REQ-0017, REQ-0018, REQ-0019, REQ-0028, REQ-0030, REQ-0031, REQ-0035, REQ-0036, REQ-0037, REQ-0038, REQ-0041)
-
-The Arduino UNO R4 Minima shall provide Ethernet connectivity through the
-connected Arduino Ethernet Shield R3 and its WIZnet W5100. The board binding
-shall use the source-backed UNO SPI route, D10/P112 chip select, D4 held
-inactive for the shield's microSD device, and the existing interrupt-driven
-SPI and selected DMAC transfer paths. The implementation shall pin the reviewed
-W5100 datasheet and shield schematic identities rather than treating the
-earlier register smoke test as a complete network driver specification.
-
-The W5100 device driver shall use fixed caller-owned or statically bounded
-storage, explicit ownership and typed timeout/error recovery. It shall support
-reset and common-register configuration, MACRAW socket initialization,
-interrupt/status handling, circular RX/TX buffer accounting including wrap,
-frame submission and receipt, malformed/oversize rejection, command timeout,
-cancellation and clean reinitialization. SPI chip select and any paired DMAC
-operations shall be quiescent before buffers or operation slots are released.
-
-Expose the raw-frame path through a thin adapter satisfying the actual sibling
-MCUIP `NetworkDevice` contract so MCUIP owns Ethernet/ARP/IP transport policy.
-The adapter and combined test application shall reside in `../integration`,
-with no dependency from mcubsp back to that project.
-The SPI-attached W5100 is an external network device, not an RA4M1 native MAC;
-the adapter shall not invent MDIO, PHY-register or native Ethernet-DMA
-facilities. The initial increment does not expose the W5100 hardware TCP/UDP
-socket API and shall not depend on the Arduino Ethernet library or lwIP.
-
-Acceptance: native tests cover register and buffer commands, ring wrap,
-backpressure, malformed/oversize frames, timeout/cancellation, stale status and
-SPI/DMAC cleanup; public headers and a complete MCUIP composition cross-build
-and link for Cortex-M4 without heap allocation, exceptions or RTTI. On the
-connected UNO and shield, firmware resets and identifies the W5100, configures
-MACRAW mode, exchanges representative small and MTU-sized raw frames with an
-independent local-network peer, and completes at least ARP plus either ICMP echo
-or a UDP datagram through MCUIP. Unplug/reconnect or peer-loss recovery returns
-to successful traffic without leaking ownership. Record board/shield revision,
-MAC/IP configuration, firmware/toolchain, W5100 and MCUIP source identities,
-SPI/DMAC mode, image sizes, bounded storage, throughput/latency and reproducible
-peer commands.
 
 ## REQ-0045 Modern C++ application interface
 @depends(REQ-0002, REQ-0014, REQ-0015, REQ-0018, REQ-0037, REQ-0038)
@@ -667,50 +634,3 @@ include public-header and mixed-MCU checks.
 
 Acceptance: selected-source changes alter firmware identity, unrelated additions
 do not, and all evidence claims retain their observation scope.
-
-## REQ-0053 Pro Micro nRF52840 initial bare-metal integration
-@depends(REQ-0010, REQ-0021, REQ-0031, REQ-0049)
-
-Add the nice!nano-compatible Pro Micro nRF52840 board family identified by the
-Zephyr `promicro_nrf52840` board definition. Initial support shall provide
-source-backed GPIO metadata and sequencing, a GPIO-only I/O profile, an LED
-Blink application, and an explicit supplied-startup build using the documented
-UF2 / S140-v6 application partition. Preserve the SoftDevice, storage and UF2
-bootloader regions. Do not silently enable a radio stack, change UICR, or claim
-support for unimplemented peripherals or unverified clone revisions.
-
-Generate a bounded, nRF52840-family UF2 file from the linked application without
-accessing hardware. Document the bootloader handoff, fixed clock, pin identities,
-recovery and explicit upload procedure. V1940 is a user-reported marking, not a
-verified silicon or PCB revision.
-
-Acceptance: native tests exercise GPIO ownership, atomic writes, electrical
-configuration, failure handling and board composition. Cross-build and link
-Blink from the checkout and an installed package; inspect vector/load addresses
-and test UF2 payloads and partition rejection. Record physical LED observation
-and bootloader recovery separately when the exact board is connected; build
-success alone establishes no physical acceptance.
-
-## REQ-0054 Pro Micro nRF52840 finite I2C controller and shared devices
-@depends(REQ-0053, REQ-0024, REQ-0025, REQ-0026, REQ-0046)
-
-Extend the initial Pro Micro profile with source-backed CPU-driven TWI0/TWI1
-controller bindings, finite seven-bit writes, reads and repeated-START combined
-transactions. Preserve native pin selection and the shared TWI/SPI hardware
-instance identity. Support the documented 100/250/400 kHz encodings with explicit
-timing assumptions; reject unavailable or duplicate pins and invalid requests.
-
-Integrate with the existing I/O bus, device leases and TMP102 driver, without a
-heap, vendor HAL dependency or generic DMA claim. Report observable address/data
-NACK and transport errors, detect idle stuck lines, bound cancellation cleanup,
-and prohibit reuse after failed cleanup. Release hardware only after explicit
-successful shutdown; recovery then requires a fresh backend/runtime, preserving
-the existing retired-operation-slot contract. Do not pulse external bus lines automatically or claim
-multi-controller arbitration support.
-
-Acceptance: native traces and deterministic fake peripherals exercise initial
-configuration, repeated START, final-byte STOP, errors, stale events, ownership,
-timeout/cancel and MMIO failures. Test shared-address leases and a real TMP102
-composition with a simulated peripheral. Link complete sensor applications from
-source and a relocated installed package. Wire protocol, electrical timing and
-physical sensor results remain unverified until an actual fixture is exercised.

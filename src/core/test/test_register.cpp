@@ -156,4 +156,27 @@ TEST(register_access, reserved_preserve_disables_unsafe_direct_write,
     EXPECT_TRUE(true);
 }
 
+TEST(register_access, read_write_data_port_requires_explicit_side_effect_read,
+     "REQ-0007", "REQ-0008") {
+    using data_port = core::register_descriptor<
+        std::uint32_t, 0, core::access_semantics::read_write_side_effect,
+        0xFFU, true>; // Even an erroneous RMW-safe flag must not permit modify.
+    using reference = core::register_ref<data_port, host_policy>;
+    static_assert(!supports_read<reference>);
+    static_assert(!supports_modify<reference>);
+    static_assert(supports_write<reference>);
+    constexpr std::uintptr_t base = 0x5002BF00;
+    host_policy policy{base};
+    reference data{policy, base};
+    ASSERT_TRUE(data.write(0xA5).has_value());
+    EXPECT_FALSE(data.write(0x100).has_value());
+    auto value = data.read_with_side_effect();
+    ASSERT_TRUE(value.has_value());
+    EXPECT_EQ(*value, 0xA5U);
+    ASSERT_EQ(policy.operations().size(), 2U);
+    EXPECT_TRUE(policy.operations()[0].kind == testing::mmio_operation_kind::write);
+    EXPECT_TRUE(policy.operations()[1].kind == testing::mmio_operation_kind::read);
+    EXPECT_EQ(policy.operations()[1].width, 4U);
+}
+
 } // namespace

@@ -41,6 +41,8 @@ lifecycle, and bring-up guidance directly in the documentation.
 
 ## Development
 
+- [Common requirements and board requirements index](../requirements.md)
+- [Common implementation plan and board planning index](../implementation-plan.md)
 - [Repository ownership and source migration](development/structure.md)
 - [Adding a board](development/adding-a-board.md)
 - [Adding an external device](development/adding-a-device.md)
@@ -49,11 +51,13 @@ lifecycle, and bring-up guidance directly in the documentation.
 - [Selected firmware inputs and provenance](development/firmware-inputs.md)
 - [Description coverage](development/coverage.md)
 - [Peripheral implementation notes](development/peripheral-note/)
+- [Nordic source baseline and native system services](reference/nrf52840/README.md)
 
 ## Reference and acceptance
 
 - [Pro Micro nRF52840 software verification and physical Blink observation](acceptance/promicro-nrf52840.md)
 - [nRF52840 I2C and TMP102 software verification](acceptance/nrf52840-i2c.md)
+- [nRF52840 system-service checkpoint and hardware LED observation](acceptance/nrf52840-system.md)
 
 - [Support and evidence matrix](reference/support-matrix.md)
 - [MCU source baseline](reference/source-baseline.md)

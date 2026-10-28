@@ -91,8 +91,9 @@ current gaps and required hardware refresh.
 
 Support is intentionally evidence-specific. A described peripheral is not
 automatically claimed as physically verified, and a successful cross-build is
-not treated as an electrical test. See [requirements.md](requirements.md),
-[implementation-plan.md](implementation-plan.md), and the
+not treated as an electrical test. See the [common requirements](requirements.md),
+[common implementation plan](implementation-plan.md), their indexes of board-specific
+requirements/plans, and the
 [documentation index](doc/README.md) for the exact status and acceptance
 boundaries.
 

@@ -17,6 +17,15 @@ integration explicitly. Keep startup sources under `startup/`, Arm linker script
 beside `board.cmake`, and physical fixtures
 under `test/`.
 
+Create `requirements.md` and `implementation-plan.md` beside `board.cmake`.
+Reference the applicable [common requirements](../../requirements.md), then
+define the board-specific scope, source/revision assumptions and observable
+acceptance criteria. Keep shared contracts in the common document. The board
+plan records target work, explicit requirement links, prerequisites and status;
+shared milestones stay in the [common plan](../../implementation-plan.md).
+Use globally unique requirement/plan IDs and register both paths in
+`mcutrace.toml`. Link the pair from the board README and the common indexes.
+
 Add pin aliases under `include/mcubsp/board/` and the application profile under
 `include/mcubsp/board/<vendor>/<board>.hpp`, with lightweight `pins.hpp` and
 `bindings.hpp` beside it under `<vendor>/<board>/`. MCU register facts stay in `mcu/`, sequencing in

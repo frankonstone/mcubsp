@@ -1,0 +1,647 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-27",
+  "baseline": "nrfx v3.2.0",
+  "commit": "7ef620bedd3fd41828e0f81523a1d08a986b8a0e",
+  "sources": [
+    {
+      "file": "nrf52840_bitfields.h",
+      "bytes": 1027712,
+      "sha256": "cc1dbd5a0f797f8c8d53771d8c0ea8aac8b8e89710c7974b2f2ee8005eef6697"
+    },
+    {
+      "file": "nrf52840.h",
+      "bytes": 229537,
+      "sha256": "34a00fc4e140c9692eadb324ad4e6bf5b7137b911b0552a83b7e2af99d147ed8"
+    },
+    {
+      "file": "nrf52_erratas.h",
+      "bytes": 450906,
+      "sha256": "3a78e02923587f03922b9939b3470cac2ca6002f138aece0bbb1c72cef3f5ef4"
+    },
+    {
+      "file": "core_cm4.h",
+      "bytes": 120975,
+      "sha256": "f5b63d52dd1557b15ca414cb59c264f595a7b5669db2a5878dffe22f4caedc8c"
+    },
+    {
+      "file": "system_nrf52840.c",
+      "bytes": 1600,
+      "sha256": "04f9af048d8c24607bcbd74a6062a57474ae851f823d39f8e6fcf4997d442362"
+    },
+    {
+      "file": "system_nrf52.c",
+      "bytes": 15378,
+      "sha256": "8fe90550dc7dedef493b3ede92c11cb22ab8c9f7f2f95cf12b31dac87fa1975c"
+    },
+    {
+      "file": "nrf52840.dtsi",
+      "bytes": 13935,
+      "sha256": "9c820245f2007b51ded88220f10a0fea5a647517a646199a4560de650d1479d4"
+    },
+    {
+      "file": "nrf52840.svd",
+      "bytes": 2096944,
+      "sha256": "40dfd60c34231112d0b03a06bd8ed47b829c318567a157b5e43a24779cbb7569"
+    }
+  ],
+  "instances": [
+    {
+      "name": "FICR",
+      "type": "FICR",
+      "base": 268435456,
+      "irq": -1,
+      "registers": 52,
+      "fields": 64
+    },
+    {
+      "name": "UICR",
+      "type": "UICR",
+      "base": 268439552,
+      "irq": -1,
+      "registers": 63,
+      "fields": 68
+    },
+    {
+      "name": "APPROTECT",
+      "type": "APPROTECT",
+      "base": 1073741824,
+      "irq": -1,
+      "registers": 2,
+      "fields": 2
+    },
+    {
+      "name": "CLOCK",
+      "type": "CLOCK",
+      "base": 1073741824,
+      "irq": 0,
+      "registers": 25,
+      "fields": 41
+    },
+    {
+      "name": "POWER",
+      "type": "POWER",
+      "base": 1073741824,
+      "irq": 0,
+      "registers": 47,
+      "fields": 908
+    },
+    {
+      "name": "P0",
+      "type": "P0",
+      "base": 1342177280,
+      "irq": -1,
+      "registers": 41,
+      "fields": 417
+    },
+    {
+      "name": "P1",
+      "type": "P0",
+      "base": 1342178048,
+      "irq": -1,
+      "registers": 41,
+      "fields": 417
+    },
+    {
+      "name": "RADIO",
+      "type": "RADIO",
+      "base": 1073745920,
+      "irq": 1,
+      "registers": 89,
+      "fields": 197
+    },
+    {
+      "name": "UART0",
+      "type": "UART0",
+      "base": 1073750016,
+      "irq": 2,
+      "registers": 24,
+      "fields": 48
+    },
+    {
+      "name": "UARTE0",
+      "type": "UARTE0",
+      "base": 1073750016,
+      "irq": 2,
+      "registers": 34,
+      "fields": 78
+    },
+    {
+      "name": "SPI0",
+      "type": "SPI0",
+      "base": 1073754112,
+      "irq": 3,
+      "registers": 11,
+      "fields": 19
+    },
+    {
+      "name": "SPIM0",
+      "type": "SPIM0",
+      "base": 1073754112,
+      "irq": 3,
+      "registers": 34,
+      "fields": 55
+    },
+    {
+      "name": "SPIS0",
+      "type": "SPIS0",
+      "base": 1073754112,
+      "irq": 3,
+      "registers": 26,
+      "fields": 41
+    },
+    {
+      "name": "TWI0",
+      "type": "TWI0",
+      "base": 1073754112,
+      "irq": 3,
+      "registers": 22,
+      "fields": 39
+    },
+    {
+      "name": "TWIM0",
+      "type": "TWIM0",
+      "base": 1073754112,
+      "irq": 3,
+      "registers": 30,
+      "fields": 59
+    },
+    {
+      "name": "TWIS0",
+      "type": "TWIS0",
+      "base": 1073754112,
+      "irq": 3,
+      "registers": 32,
+      "fields": 55
+    },
+    {
+      "name": "SPI1",
+      "type": "SPI0",
+      "base": 1073758208,
+      "irq": 4,
+      "registers": 11,
+      "fields": 19
+    },
+    {
+      "name": "SPIM1",
+      "type": "SPIM0",
+      "base": 1073758208,
+      "irq": 4,
+      "registers": 34,
+      "fields": 55
+    },
+    {
+      "name": "SPIS1",
+      "type": "SPIS0",
+      "base": 1073758208,
+      "irq": 4,
+      "registers": 26,
+      "fields": 41
+    },
+    {
+      "name": "TWI1",
+      "type": "TWI0",
+      "base": 1073758208,
+      "irq": 4,
+      "registers": 22,
+      "fields": 39
+    },
+    {
+      "name": "TWIM1",
+      "type": "TWIM0",
+      "base": 1073758208,
+      "irq": 4,
+      "registers": 30,
+      "fields": 59
+    },
+    {
+      "name": "TWIS1",
+      "type": "TWIS0",
+      "base": 1073758208,
+      "irq": 4,
+      "registers": 32,
+      "fields": 55
+    },
+    {
+      "name": "NFCT",
+      "type": "NFCT",
+      "base": 1073762304,
+      "irq": 5,
+      "registers": 46,
+      "fields": 115
+    },
+    {
+      "name": "GPIOTE",
+      "type": "GPIOTE",
+      "base": 1073766400,
+      "irq": 6,
+      "registers": 43,
+      "fields": 91
+    },
+    {
+      "name": "SAADC",
+      "type": "SAADC",
+      "base": 1073770496,
+      "irq": 7,
+      "registers": 69,
+      "fields": 189
+    },
+    {
+      "name": "TIMER0",
+      "type": "TIMER0",
+      "base": 1073774592,
+      "irq": 8,
+      "registers": 29,
+      "fields": 50
+    },
+    {
+      "name": "TIMER1",
+      "type": "TIMER0",
+      "base": 1073778688,
+      "irq": 9,
+      "registers": 29,
+      "fields": 50
+    },
+    {
+      "name": "TIMER2",
+      "type": "TIMER0",
+      "base": 1073782784,
+      "irq": 10,
+      "registers": 29,
+      "fields": 50
+    },
+    {
+      "name": "RTC0",
+      "type": "RTC0",
+      "base": 1073786880,
+      "irq": 11,
+      "registers": 21,
+      "fields": 46
+    },
+    {
+      "name": "TEMP",
+      "type": "TEMP",
+      "base": 1073790976,
+      "irq": 12,
+      "registers": 23,
+      "fields": 23
+    },
+    {
+      "name": "RNG",
+      "type": "RNG",
+      "base": 1073795072,
+      "irq": 13,
+      "registers": 8,
+      "fields": 8
+    },
+    {
+      "name": "ECB",
+      "type": "ECB",
+      "base": 1073799168,
+      "irq": 14,
+      "registers": 7,
+      "fields": 9
+    },
+    {
+      "name": "AAR",
+      "type": "AAR",
+      "base": 1073803264,
+      "irq": 15,
+      "registers": 13,
+      "fields": 17
+    },
+    {
+      "name": "CCM",
+      "type": "CCM",
+      "base": 1073803264,
+      "irq": 15,
+      "registers": 19,
+      "fields": 25
+    },
+    {
+      "name": "WDT",
+      "type": "WDT",
+      "base": 1073807360,
+      "irq": 16,
+      "registers": 17,
+      "fields": 32
+    },
+    {
+      "name": "RTC1",
+      "type": "RTC0",
+      "base": 1073811456,
+      "irq": 17,
+      "registers": 21,
+      "fields": 46
+    },
+    {
+      "name": "QDEC",
+      "type": "QDEC",
+      "base": 1073815552,
+      "irq": 18,
+      "registers": 27,
+      "fields": 47
+    },
+    {
+      "name": "COMP",
+      "type": "COMP",
+      "base": 1073819648,
+      "irq": 19,
+      "registers": 19,
+      "fields": 34
+    },
+    {
+      "name": "LPCOMP",
+      "type": "LPCOMP",
+      "base": 1073819648,
+      "irq": 19,
+      "registers": 17,
+      "fields": 27
+    },
+    {
+      "name": "EGU0",
+      "type": "EGU0",
+      "base": 1073823744,
+      "irq": 20,
+      "registers": 35,
+      "fields": 80
+    },
+    {
+      "name": "SWI0",
+      "type": "SWI0",
+      "base": 1073823744,
+      "irq": 20,
+      "registers": 1,
+      "fields": 0
+    },
+    {
+      "name": "EGU1",
+      "type": "EGU0",
+      "base": 1073827840,
+      "irq": 21,
+      "registers": 35,
+      "fields": 80
+    },
+    {
+      "name": "SWI1",
+      "type": "SWI0",
+      "base": 1073827840,
+      "irq": 21,
+      "registers": 1,
+      "fields": 0
+    },
+    {
+      "name": "EGU2",
+      "type": "EGU0",
+      "base": 1073831936,
+      "irq": 22,
+      "registers": 35,
+      "fields": 80
+    },
+    {
+      "name": "SWI2",
+      "type": "SWI0",
+      "base": 1073831936,
+      "irq": 22,
+      "registers": 1,
+      "fields": 0
+    },
+    {
+      "name": "EGU3",
+      "type": "EGU0",
+      "base": 1073836032,
+      "irq": 23,
+      "registers": 35,
+      "fields": 80
+    },
+    {
+      "name": "SWI3",
+      "type": "SWI0",
+      "base": 1073836032,
+      "irq": 23,
+      "registers": 1,
+      "fields": 0
+    },
+    {
+      "name": "EGU4",
+      "type": "EGU0",
+      "base": 1073840128,
+      "irq": 24,
+      "registers": 35,
+      "fields": 80
+    },
+    {
+      "name": "SWI4",
+      "type": "SWI0",
+      "base": 1073840128,
+      "irq": 24,
+      "registers": 1,
+      "fields": 0
+    },
+    {
+      "name": "EGU5",
+      "type": "EGU0",
+      "base": 1073844224,
+      "irq": 25,
+      "registers": 35,
+      "fields": 80
+    },
+    {
+      "name": "SWI5",
+      "type": "SWI0",
+      "base": 1073844224,
+      "irq": 25,
+      "registers": 1,
+      "fields": 0
+    },
+    {
+      "name": "TIMER3",
+      "type": "TIMER0",
+      "base": 1073848320,
+      "irq": 26,
+      "registers": 29,
+      "fields": 50
+    },
+    {
+      "name": "TIMER4",
+      "type": "TIMER0",
+      "base": 1073852416,
+      "irq": 27,
+      "registers": 29,
+      "fields": 50
+    },
+    {
+      "name": "PWM0",
+      "type": "PWM0",
+      "base": 1073856512,
+      "irq": 28,
+      "registers": 33,
+      "fields": 64
+    },
+    {
+      "name": "PDM",
+      "type": "PDM",
+      "base": 1073860608,
+      "irq": 29,
+      "registers": 18,
+      "fields": 29
+    },
+    {
+      "name": "ACL",
+      "type": "ACL",
+      "base": 1073864704,
+      "irq": -1,
+      "registers": 24,
+      "fields": 32
+    },
+    {
+      "name": "NVMC",
+      "type": "NVMC",
+      "base": 1073864704,
+      "irq": -1,
+      "registers": 13,
+      "fields": 14
+    },
+    {
+      "name": "PPI",
+      "type": "PPI",
+      "base": 1073868800,
+      "irq": -1,
+      "registers": 93,
+      "fields": 372
+    },
+    {
+      "name": "MWU",
+      "type": "MWU",
+      "base": 1073872896,
+      "irq": 32,
+      "registers": 39,
+      "fields": 324
+    },
+    {
+      "name": "PWM1",
+      "type": "PWM0",
+      "base": 1073876992,
+      "irq": 33,
+      "registers": 33,
+      "fields": 64
+    },
+    {
+      "name": "PWM2",
+      "type": "PWM0",
+      "base": 1073881088,
+      "irq": 34,
+      "registers": 33,
+      "fields": 64
+    },
+    {
+      "name": "SPI2",
+      "type": "SPI0",
+      "base": 1073885184,
+      "irq": 35,
+      "registers": 11,
+      "fields": 19
+    },
+    {
+      "name": "SPIM2",
+      "type": "SPIM0",
+      "base": 1073885184,
+      "irq": 35,
+      "registers": 34,
+      "fields": 55
+    },
+    {
+      "name": "SPIS2",
+      "type": "SPIS0",
+      "base": 1073885184,
+      "irq": 35,
+      "registers": 26,
+      "fields": 41
+    },
+    {
+      "name": "RTC2",
+      "type": "RTC0",
+      "base": 1073889280,
+      "irq": 36,
+      "registers": 21,
+      "fields": 46
+    },
+    {
+      "name": "I2S",
+      "type": "I2S",
+      "base": 1073893376,
+      "irq": 37,
+      "registers": 27,
+      "fields": 43
+    },
+    {
+      "name": "FPU",
+      "type": "FPU",
+      "base": 1073897472,
+      "irq": 38,
+      "registers": 1,
+      "fields": 0
+    },
+    {
+      "name": "USBD",
+      "type": "USBD",
+      "base": 1073901568,
+      "irq": 39,
+      "registers": 154,
+      "fields": 287
+    },
+    {
+      "name": "UARTE1",
+      "type": "UARTE0",
+      "base": 1073905664,
+      "irq": 40,
+      "registers": 34,
+      "fields": 78
+    },
+    {
+      "name": "QSPI",
+      "type": "QSPI",
+      "base": 1073909760,
+      "irq": 41,
+      "registers": 34,
+      "fields": 74
+    },
+    {
+      "name": "CC_HOST_RGF",
+      "type": "CC_HOST_RGF",
+      "base": 1342349312,
+      "irq": -1,
+      "registers": 7,
+      "fields": 8
+    },
+    {
+      "name": "CRYPTOCELL",
+      "type": "CRYPTOCELL",
+      "base": 1342349312,
+      "irq": 42,
+      "registers": 1,
+      "fields": 1
+    },
+    {
+      "name": "PWM3",
+      "type": "PWM0",
+      "base": 1073926144,
+      "irq": 45,
+      "registers": 33,
+      "fields": 64
+    },
+    {
+      "name": "SPIM3",
+      "type": "SPIM0",
+      "base": 1073934336,
+      "irq": 47,
+      "registers": 34,
+      "fields": 55
+    }
+  ],
+  "open_gaps": [
+    "This legacy SVD lacks 192 product-specification CryptoCell registers. product.hpp supplies the current definitions; product-register-audit.json reconciles the seven older CC_HOST_RGF absolute addresses. Full product field/mode/core/pin/errata review remains open.",
+    "Actual connected silicon build/package and revision-specific physical observations are unavailable without SWD.",
+    "Not all documented modes and routes have independent product-specification review."
+  ]
+}

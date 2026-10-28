@@ -1,4 +1,4 @@
-# @req REQ-0053
+# @req REQ-0053 REQ-0057 REQ-0073
 # Profile identity describes the documented boot layout, not a PCB revision.
 set(MCUBSP_BOARD_DEFAULT_REVISION uf2-s140-v6)
 set(MCUBSP_BOARD_REVISIONS uf2-s140-v6)
@@ -8,6 +8,7 @@ set(MCUBSP_BOARD_PROFILE_HEADER include/mcubsp/board/others/promicro_nrf52840.hp
 set(MCUBSP_BOARD_STARTUP
     "${CMAKE_CURRENT_LIST_DIR}/startup/startup.S"
     "${CMAKE_CURRENT_LIST_DIR}/startup/early_init.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/startup/interrupts.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/startup/restricted_runtime.cpp")
 set(MCUBSP_BOARD_LINKER "${CMAKE_CURRENT_LIST_DIR}/linker.ld")
 set(MCUBSP_BOARD_UF2_FAMILY 0xADA52840)

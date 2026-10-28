@@ -1,7 +1,19 @@
 [project]
 root = "."
-requirements = ["requirements.md"]
-plans = ["implementation-plan.md"]
+requirements = [
+  "requirements.md",
+  "src/board/arduino/uno_r4_minima/requirements.md",
+  "src/board/st/nucleo_h753zi/requirements.md",
+  "src/board/waveshare/esp32p4_nano/requirements.md",
+  "src/board/others/promicro_nrf52840/requirements.md",
+]
+plans = [
+  "implementation-plan.md",
+  "src/board/arduino/uno_r4_minima/implementation-plan.md",
+  "src/board/st/nucleo_h753zi/implementation-plan.md",
+  "src/board/waveshare/esp32p4_nano/implementation-plan.md",
+  "src/board/others/promicro_nrf52840/implementation-plan.md",
+]
 sources = [
   "include/mcubsp/**/*.hpp",
   "example/**/*.cpp",

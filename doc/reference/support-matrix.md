@@ -27,15 +27,32 @@ USB device stack and production-v3 P4 hardware acceptance are separate work.
 
 ## Additional initial target: Pro Micro nRF52840
 
-The nice!nano-compatible Pro Micro family has a GPIO/core/TWI metadata slice,
+Full-peripheral implementation is now the intended target in the
+[board requirements](../../src/board/others/promicro_nrf52840/requirements.md)
+(REQ-0055–REQ-0074), with delivery stages in the
+[board plan](../../src/board/others/promicro_nrf52840/implementation-plan.md)
+(PLN-0042–PLN-0053). Those additions are planned scope; the implemented/evidence
+state remains as described below.
+
+The nice!nano-compatible Pro Micro family has a reproducible MDK register-facts
+catalogue, a PS v1.11 CryptoCell supplement and register-address audit, plus
 GPIO and finite I2C backends/facade, bootloader-handoff startup and Blink/TMP102
 applications with UF2/S140-v6 output. I2C0/I2C1 provide 100/250/400 kHz nominal
 rates, shared device leases and CPU-driven finite/repeated-START transfers;
 native simulation and linked applications do not establish physical I2C timing
 or sensor behavior. See the [I2C software record](../acceptance/nrf52840-i2c.md).
 This does not claim the complete description gate used for the original three
-MCUs. UART/SPI/ADC/PWM/DMA, USB application classes, radio,
-low-power operation and complete silicon errata handling are not implemented.
+MCUs. Explicit native system services now provide clock/power, GPIO events,
+all 32 PPI channels/groups/forks, POWER/CLOCK event interfaces, EGU/SWI,
+TIMER/RTC/watchdog and selected core/IRQ APIs,
+with native tests and linked example evidence. The user confirms the identified
+system example's hardware timer/PPI/GPIOTE LED behavior. RTC wake, low-power
+current, exact silicon identity and full system acceptance remain unverified.
+Optional FPB/DWT inspection and SWO/ETM-M4 debugger scripts pass software checks;
+physical debug/trace capture remains pending. UART/SPI/ADC/PWM/DMA, USB application
+classes, radio, complete core descriptions and exhaustive silicon errata handling
+remain unimplemented/incomplete. See the
+[system checkpoint](../acceptance/nrf52840-system.md) for exact limits.
 On 27 October 2026 the connected V1940-marked board reported nice!nano UF2 0.6.0
 and S140 6.1.1; UF2 upload completed and the user confirmed LED blinking.
 Independent timing, silicon/PCB identity and post-application double-reset

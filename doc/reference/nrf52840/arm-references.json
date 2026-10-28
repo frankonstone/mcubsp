@@ -1,0 +1,20 @@
+{
+  "sources": [
+    {
+      "file": "arm-cortex-m4.pdf",
+      "document": "100166_0001_04_en (2020-05-15)",
+      "url": "https://documentation-service.arm.com/static/5fce431be167456a35b36ade",
+      "bytes": 821467,
+      "sha256": "7415b77eeff5d0bfa1f8f43eb4fe3e97b22b34fe76baed21d0b791f3a238eb94",
+      "obtained": "2026-10-28"
+    },
+    {
+      "file": "arm-etm-m4.pdf",
+      "document": "ARM DDI 0440C ID070610",
+      "url": "https://documentation-service.arm.com/static/5e8ecc36c5ee7d4a00693f2f",
+      "bytes": 456972,
+      "sha256": "6cd7b6c6b4c40ff5d62d75055b22a349887d021c6ef8f20758f44e26a51c73e5",
+      "obtained": "2026-10-28"
+    }
+  ]
+}

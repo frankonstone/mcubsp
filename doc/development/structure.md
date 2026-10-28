@@ -18,6 +18,8 @@ include/mcubsp/                    src/
   io/detail/                        io/detail/test/
   board/<vendor>/<board>/           board/<vendor>/<board>/
                                       board.cmake
+                                      requirements.md
+                                      implementation-plan.md
                                       startup/
                                       linker.ld
                                       test/
@@ -46,6 +48,14 @@ Board startup, linker resources, runner settings and physical tests live in
 under `src/backend/<mcu>/test/`; physical fixtures remain with their concrete
 board. Examples live exclusively under `example/` and use the same sources for
 standalone projects and repository targets.
+
+The root [requirements](../../requirements.md) and
+[implementation plan](../../implementation-plan.md) own common contracts and
+cross-board work. Each board owns a requirements document and implementation
+plan beside `board.cmake`, referencing the shared contracts and defining its
+target-specific scope and work. IDs are globally unique and retain their
+identity when moved. `mcutrace.toml` registers the common and board documents; explicit
+dependencies and plan links can cross document boundaries.
 
 ## Header responsibilities
 

@@ -1,5 +1,8 @@
 # ST NUCLEO-H753ZI
 
+[Requirements](requirements.md) and [implementation plan](implementation-plan.md)
+record this board's scope, work and acceptance boundaries.
+
 
 The local `board.cmake` owns build selection, startup and runner settings.
 The public board type is `mcubsp::board::st::nucleo_h753zi`, defined in

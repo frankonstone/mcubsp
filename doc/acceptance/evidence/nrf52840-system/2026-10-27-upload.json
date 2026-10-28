@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-27",
+  "board": "V1940-marked nice!nano-compatible Pro Micro; silicon/PCB revision unverified",
+  "bootloader": {
+    "version": "0.6.0",
+    "board_id": "nRF52840-nicenano",
+    "softdevice": "S140 6.1.1"
+  },
+  "upload": {
+    "method": "tool/hardware.py flash; UF2 application partition only",
+    "exit_code": 0,
+    "elf_sha256": "4ff2cd94126d9b191160bf775e9ed00b8dd026207fde3015449a0afe573d0119",
+    "uf2_sha256": "f621c6e70c8d143874af74b657b67d9ebe0730e33cae20be71ce819c5e77ee29",
+    "selected_inputs_identity_sha256": "1cd86b82f7454ea0a43200f2b72e644da603b0d7ec5db3473cf1d10204600204",
+    "selected_inputs_sidecar_sha256": "16c840f8d926109718fd9645416087b6f10d06be17c6d4d9efa41bebdf84c3f9"
+  },
+  "observation": {
+    "observer": "user",
+    "question": "Is the onboard LED now blinking regularly, roughly twice per second as it changes state every 500 ms?",
+    "answer": "Yes, regular blinking",
+    "scope": "TIMER2 -> programmable PPI0 -> GPIOTE0 -> P0.15 LED for the identified image"
+  },
+  "not_observed": [
+    "independent timing measurement",
+    "RTC alarm/overflow/wake readback",
+    "factory chip identity readback",
+    "watchdog reset",
+    "MPU/FPU/fault behavior",
+    "System OFF wake and RAM retention",
+    "power/current measurement",
+    "debug/trace capture",
+    "post-application bootloader recovery"
+  ]
+}

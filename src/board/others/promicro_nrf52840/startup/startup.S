@@ -1,4 +1,4 @@
-    /* @req-file REQ-0053 */
+    /* @req-file REQ-0053 REQ-0057 REQ-0073 */
     .syntax unified
     .cpu cortex-m4
     .fpu fpv4-sp-d16
@@ -10,21 +10,21 @@
 __isr_vector:
     .word __stack
     .word Reset_Handler
-    .word Default_Handler /* NMI */
-    .word Default_Handler /* HardFault */
-    .word Default_Handler /* MemManage */
-    .word Default_Handler /* BusFault */
-    .word Default_Handler /* UsageFault */
+    .word NMI_Handler /* NMI */
+    .word HardFault_Handler /* HardFault */
+    .word MemManage_Handler /* MemManage */
+    .word BusFault_Handler /* BusFault */
+    .word UsageFault_Handler /* UsageFault */
     .word 0, 0, 0, 0
-    .word Default_Handler /* SVCall */
-    .word Default_Handler /* DebugMon */
+    .word SVC_Handler /* SVCall */
+    .word DebugMon_Handler /* DebugMon */
     .word 0
-    .word Default_Handler /* PendSV */
-    .word Default_Handler /* SysTick */
+    .word PendSV_Handler /* PendSV */
+    .word SysTick_Handler /* SysTick */
     /* All 48 nRF52840 external vector positions, including reserved slots.
-       GPIO-only startup enables no peripheral interrupt. */
+       Startup enables no peripheral source; explicit runtime subscriptions own IRQs. */
     .rept 48
-    .word Default_Handler
+    .word mcubsp_promicro_irq_trampoline
     .endr
 
     .section .text.Reset_Handler, "ax", %progbits
@@ -103,3 +103,36 @@ Reset_Handler:
     .global Default_Handler
 Default_Handler:
     b .
+
+    .align 2
+    .thumb_func
+mcubsp_promicro_irq_trampoline:
+    push {r4, lr}
+    mrs r0, ipsr
+    subs r0, #16
+    bl mcubsp_promicro_dispatch_irq
+    pop {r4, pc}
+
+    .align 2
+    .thumb_func
+mcubsp_promicro_fault_trampoline:
+    mrs r0, ipsr
+    b mcubsp_promicro_record_fault
+    .weak NMI_Handler
+    .thumb_set NMI_Handler, mcubsp_promicro_fault_trampoline
+    .weak HardFault_Handler
+    .thumb_set HardFault_Handler, mcubsp_promicro_fault_trampoline
+    .weak MemManage_Handler
+    .thumb_set MemManage_Handler, mcubsp_promicro_fault_trampoline
+    .weak BusFault_Handler
+    .thumb_set BusFault_Handler, mcubsp_promicro_fault_trampoline
+    .weak UsageFault_Handler
+    .thumb_set UsageFault_Handler, mcubsp_promicro_fault_trampoline
+    .weak SVC_Handler
+    .thumb_set SVC_Handler, Default_Handler
+    .weak DebugMon_Handler
+    .thumb_set DebugMon_Handler, Default_Handler
+    .weak PendSV_Handler
+    .thumb_set PendSV_Handler, Default_Handler
+    .weak SysTick_Handler
+    .thumb_set SysTick_Handler, Default_Handler

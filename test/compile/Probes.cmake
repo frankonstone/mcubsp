@@ -1,6 +1,7 @@
 # Target-toolchain compile probes. # @req REQ-0047 REQ-0052
 # @req REQ-0002 REQ-0015 REQ-0016 REQ-0017 REQ-0018 REQ-0019 REQ-0035 REQ-0038 REQ-0040 REQ-0041
 add_library(mcubsp_arch_probe OBJECT
+    "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/system_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/mcu/test/all_descriptions_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/io/test/composition_example.cpp"
     "${mcubsp_SOURCE_DIR}/src/testing/test/arch_probe.cpp"
@@ -13,6 +14,7 @@ add_library(mcubsp_arch_probe OBJECT
     "${mcubsp_SOURCE_DIR}/src/backend/ra4m1/test/dmac_example.cpp"
     "${mcubsp_SOURCE_DIR}/src/mcu/esp32p4/test/metadata_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/mcu/stm32h753/test/metadata_probe.cpp"
+    "${mcubsp_SOURCE_DIR}/src/mcu/nrf52840/test/metadata_probe.cpp"
 )
 target_link_libraries(mcubsp_arch_probe PRIVATE mcubsp::mcubsp)
 target_compile_definitions(mcubsp_arch_probe PRIVATE

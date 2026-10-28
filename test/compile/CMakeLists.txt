@@ -33,6 +33,11 @@ mcubsp_add_compile_case(nrf52840_serial_unavailable src/backend/nrf52840/test/se
 mcubsp_add_compile_case(nrf52840_i2c_duplicate_pin src/backend/nrf52840/test/i2c_duplicate_pin_forbidden.cpp FALSE "distinct pins")
 mcubsp_add_compile_case(nrf52840_i2c_reserved_pin src/backend/nrf52840/test/i2c_reserved_pin_forbidden.cpp FALSE "available GPIOs")
 mcubsp_add_compile_case(nrf52840_i2c_invalid_instance src/backend/nrf52840/test/i2c_invalid_instance_forbidden.cpp FALSE "instance must be 0 or 1")
+mcubsp_add_compile_case(nrf52840_timer_invalid_instance src/backend/nrf52840/test/timer_invalid_instance_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied")
+mcubsp_add_compile_case(nrf52840_rtc_invalid_instance src/backend/nrf52840/test/rtc_invalid_instance_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied")
+mcubsp_add_compile_case(nrf52840_gpiote_invalid_instance src/backend/nrf52840/test/gpiote_invalid_instance_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied")
+mcubsp_add_compile_case(nrf52840_fixed_ppi_invalid_instance src/backend/nrf52840/test/fixed_ppi_invalid_instance_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied")
+mcubsp_add_compile_case(side_effect_read_rejected src/core/test/side_effect_read_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied|no matching member function")
 mcubsp_add_compile_case(exceptions_rejected test/compile/exceptions_forbidden.cpp FALSE "exception handling|exceptions disabled")
 mcubsp_add_compile_case(rtti_rejected test/compile/rtti_forbidden.cpp FALSE "not permitted.*rtti|requires.*rtti|not permitted.*RTTI|requires.*RTTI|RTTI.*disabled")
 mcubsp_add_compile_case(command_read_rejected src/core/test/command_read_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied|no matching member function")
@@ -57,6 +62,7 @@ mcubsp_add_compile_case(esp32p4_i3c_capability_rejected src/mcu/esp32p4/test/i3c
 # Positive translation units are compiled as objects, so they require neither
 # startup code nor a linkable test executable.
 add_library(mcubsp_compile_probes OBJECT
+    "${mcubsp_compile_source_dir}/src/backend/nrf52840/test/system_probe.cpp"
     "${mcubsp_compile_source_dir}/src/mcu/test/all_descriptions_probe.cpp"
     "${mcubsp_compile_source_dir}/src/io/test/composition_example.cpp"
     "${mcubsp_compile_source_dir}/src/testing/test/arch_probe.cpp"
@@ -70,6 +76,7 @@ add_library(mcubsp_compile_probes OBJECT
     "${mcubsp_compile_source_dir}/src/io/test/io_example.cpp"
     "${mcubsp_compile_source_dir}/src/backend/ra4m1/test/spi_adc_example.cpp"
     "${mcubsp_compile_source_dir}/src/mcu/stm32h753/test/metadata_probe.cpp"
+    "${mcubsp_compile_source_dir}/src/mcu/nrf52840/test/metadata_probe.cpp"
     "${mcubsp_compile_source_dir}/src/backend/ra4m1/test/uart_i2c_example.cpp")
 target_link_libraries(mcubsp_compile_probes PRIVATE mcubsp::mcubsp)
 target_compile_features(mcubsp_compile_probes PRIVATE cxx_std_23)

@@ -1,0 +1,5418 @@
+{
+  "CC_AES": {
+    "instances": [
+      {
+        "name": "CC_AES",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "AES_KEY_0[0]",
+        "offset": 1024,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 227
+      },
+      {
+        "name": "AES_KEY_0[1]",
+        "offset": 1028,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 227
+      },
+      {
+        "name": "AES_KEY_0[2]",
+        "offset": 1032,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 227
+      },
+      {
+        "name": "AES_KEY_0[3]",
+        "offset": 1036,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 227
+      },
+      {
+        "name": "AES_KEY_0[4]",
+        "offset": 1040,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 228
+      },
+      {
+        "name": "AES_KEY_0[5]",
+        "offset": 1044,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 228
+      },
+      {
+        "name": "AES_KEY_0[6]",
+        "offset": 1048,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 228
+      },
+      {
+        "name": "AES_KEY_0[7]",
+        "offset": 1052,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 228
+      },
+      {
+        "name": "AES_IV_0[0]",
+        "offset": 1088,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 228
+      },
+      {
+        "name": "AES_IV_0[1]",
+        "offset": 1092,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 229
+      },
+      {
+        "name": "AES_IV_0[2]",
+        "offset": 1096,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 229
+      },
+      {
+        "name": "AES_IV_0[3]",
+        "offset": 1100,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 229
+      },
+      {
+        "name": "AES_CTR[0]",
+        "offset": 1120,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 230
+      },
+      {
+        "name": "AES_CTR[1]",
+        "offset": 1124,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 230
+      },
+      {
+        "name": "AES_CTR[2]",
+        "offset": 1128,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 230
+      },
+      {
+        "name": "AES_CTR[3]",
+        "offset": 1132,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 231
+      },
+      {
+        "name": "AES_BUSY",
+        "offset": 1136,
+        "page": 226,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 231
+      },
+      {
+        "name": "AES_SK",
+        "offset": 1144,
+        "page": 226,
+        "fields": [
+          {
+            "name": "AES_SK",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 231
+      },
+      {
+        "name": "AES_CMAC_INIT",
+        "offset": 1148,
+        "page": 226,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 231
+      },
+      {
+        "name": "AES_REMAINING_BYTES",
+        "offset": 1212,
+        "page": 226,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 232
+      },
+      {
+        "name": "AES_CONTROL",
+        "offset": 1216,
+        "page": 226,
+        "fields": [
+          {
+            "name": "DIRECT_ACCESS",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 31,
+            "width": 1
+          },
+          {
+            "name": "AES_XOR_CRYPTOKEY",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 29,
+            "width": 1
+          },
+          {
+            "name": "NK_KEY0",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "128Bits",
+                "value": 0
+              }
+            ],
+            "position": 12,
+            "width": 2
+          },
+          {
+            "name": "MODE_KEY0",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "ECB",
+                "value": 0
+              },
+              {
+                "name": "CBC",
+                "value": 1
+              },
+              {
+                "name": "CTR",
+                "value": 2
+              },
+              {
+                "name": "CBC_MAC",
+                "value": 3
+              },
+              {
+                "name": "CMAC",
+                "value": 7
+              }
+            ],
+            "position": 2,
+            "width": 3
+          },
+          {
+            "name": "DEC_KEY0",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Encrypt",
+                "value": 0
+              },
+              {
+                "name": "Decrypt",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 232
+      },
+      {
+        "name": "AES_HW_FLAGS",
+        "offset": 1224,
+        "page": 226,
+        "fields": [
+          {
+            "name": "DFA_CNTRMSR_EXIST",
+            "access": "R",
+            "enums": [],
+            "position": 12,
+            "width": 1
+          },
+          {
+            "name": "SECOND_REGS_SET_EXIST",
+            "access": "R",
+            "enums": [],
+            "position": 11,
+            "width": 1
+          },
+          {
+            "name": "AES_TUNNEL_EXIST",
+            "access": "R",
+            "enums": [],
+            "position": 10,
+            "width": 1
+          },
+          {
+            "name": "AES_SUPPORT_PREV_IV",
+            "access": "R",
+            "enums": [],
+            "position": 9,
+            "width": 1
+          },
+          {
+            "name": "USE_5_SBOXES",
+            "access": "R",
+            "enums": [],
+            "position": 8,
+            "width": 1
+          },
+          {
+            "name": "USE_SBOX_TABLE",
+            "access": "R",
+            "enums": [],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "ONLY_ENCRYPT",
+            "access": "R",
+            "enums": [],
+            "position": 4,
+            "width": 1
+          },
+          {
+            "name": "CTR_EXIST",
+            "access": "R",
+            "enums": [],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "DPA_CNTRMSR_EXIST",
+            "access": "R",
+            "enums": [],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "AES_LARGE_RKEK",
+            "access": "R",
+            "enums": [],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "SUPPORT_256_192_KEY",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 264,
+        "detail_page": 232
+      },
+      {
+        "name": "AES_CTR_NO_INCREMENT",
+        "offset": 1240,
+        "page": 226,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 233
+      },
+      {
+        "name": "AES_SW_RESET",
+        "offset": 1268,
+        "page": 226,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 233
+      },
+      {
+        "name": "AES_CMAC_SIZE0_KICK",
+        "offset": 1316,
+        "page": 227,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 233
+      }
+    ],
+    "page": 226
+  },
+  "CC_CHACHA": {
+    "instances": [
+      {
+        "name": "CC_CHACHA",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "CHACHA_CONTROL",
+        "offset": 896,
+        "page": 236,
+        "fields": [
+          {
+            "name": "USE_IV_96BIT",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 10,
+            "width": 1
+          },
+          {
+            "name": "RESET_BLOCK_CNT",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 9,
+            "width": 1
+          },
+          {
+            "name": "NUM_OF_ROUNDS",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Default",
+                "value": 0
+              },
+              {
+                "name": "12Rounds",
+                "value": 1
+              },
+              {
+                "name": "8Rounds",
+                "value": 2
+              }
+            ],
+            "position": 4,
+            "width": 2
+          },
+          {
+            "name": "KEY_LEN",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "256Bits",
+                "value": 0
+              },
+              {
+                "name": "128Bits",
+                "value": 1
+              }
+            ],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "GEN_KEY_POLY1305",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "INIT",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "CHACHA_OR_SALSA",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "ChaCha",
+                "value": 0
+              },
+              {
+                "name": "Salsa",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 237
+      },
+      {
+        "name": "CHACHA_VERSION",
+        "offset": 900,
+        "page": 236,
+        "fields": [
+          {
+            "name": "CHACHA_VERSION",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 1,
+        "detail_page": 237
+      },
+      {
+        "name": "CHACHA_KEY[0]",
+        "offset": 904,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 237
+      },
+      {
+        "name": "CHACHA_KEY[1]",
+        "offset": 908,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 238
+      },
+      {
+        "name": "CHACHA_KEY[2]",
+        "offset": 912,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 238
+      },
+      {
+        "name": "CHACHA_KEY[3]",
+        "offset": 916,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 238
+      },
+      {
+        "name": "CHACHA_KEY[4]",
+        "offset": 920,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 238
+      },
+      {
+        "name": "CHACHA_KEY[5]",
+        "offset": 924,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 239
+      },
+      {
+        "name": "CHACHA_KEY[6]",
+        "offset": 928,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 239
+      },
+      {
+        "name": "CHACHA_KEY[7]",
+        "offset": 932,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 239
+      },
+      {
+        "name": "CHACHA_IV[0]",
+        "offset": 936,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 239
+      },
+      {
+        "name": "CHACHA_IV[1]",
+        "offset": 940,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 240
+      },
+      {
+        "name": "CHACHA_BUSY",
+        "offset": 944,
+        "page": 236,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 240
+      },
+      {
+        "name": "CHACHA_HW_FLAGS",
+        "offset": 948,
+        "page": 236,
+        "fields": [
+          {
+            "name": "FAST_CHACHA",
+            "access": "R",
+            "enums": [],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "SALSA_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "CHACHA_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 240
+      },
+      {
+        "name": "CHACHA_BLOCK_CNT_LSB",
+        "offset": 952,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 241
+      },
+      {
+        "name": "CHACHA_BLOCK_CNT_MSB",
+        "offset": 956,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 241
+      },
+      {
+        "name": "CHACHA_SW_RESET",
+        "offset": 960,
+        "page": 236,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 241
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[0]",
+        "offset": 964,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 242
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[1]",
+        "offset": 968,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 242
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[2]",
+        "offset": 972,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 242
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[3]",
+        "offset": 976,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 242
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[4]",
+        "offset": 980,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 242
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[5]",
+        "offset": 984,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 243
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[6]",
+        "offset": 988,
+        "page": 236,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 243
+      },
+      {
+        "name": "CHACHA_POLY1305_KEY[7]",
+        "offset": 992,
+        "page": 237,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 243
+      },
+      {
+        "name": "CHACHA_ENDIANNESS",
+        "offset": 996,
+        "page": 237,
+        "fields": [
+          {
+            "name": "CHACHA_DOUT_BYTE_ORDER",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Default",
+                "value": 0
+              },
+              {
+                "name": "Reverse",
+                "value": 1
+              }
+            ],
+            "position": 4,
+            "width": 1
+          },
+          {
+            "name": "CHACHA_DOUT_WORD_ORDER",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Default",
+                "value": 0
+              },
+              {
+                "name": "Reverse",
+                "value": 1
+              }
+            ],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "CHACHA_CORE_MATRIX_LBE_ORDER",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Default",
+                "value": 0
+              },
+              {
+                "name": "Reverse",
+                "value": 1
+              }
+            ],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "CHACHA_DIN_BYTE_ORDER",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Default",
+                "value": 0
+              },
+              {
+                "name": "Reverse",
+                "value": 1
+              }
+            ],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "CHACHA_DIN_WORD_ORDER",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Default",
+                "value": 0
+              },
+              {
+                "name": "Reverse",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 243
+      },
+      {
+        "name": "CHACHA_DEBUG",
+        "offset": 1000,
+        "page": 237,
+        "fields": [
+          {
+            "name": "FSM_STATE",
+            "access": "R",
+            "enums": [
+              {
+                "name": "IDLE_STATE",
+                "value": 0
+              },
+              {
+                "name": "INIT_STATE",
+                "value": 1
+              },
+              {
+                "name": "ROUNDS_STATE",
+                "value": 2
+              },
+              {
+                "name": "FINAL_STATE",
+                "value": 3
+              }
+            ],
+            "position": 0,
+            "width": 2
+          }
+        ],
+        "reset": 0,
+        "detail_page": 244
+      }
+    ],
+    "page": 236
+  },
+  "CC_HASH": {
+    "instances": [
+      {
+        "name": "CC_HASH",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "HASH_H[0]",
+        "offset": 1600,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 247
+      },
+      {
+        "name": "HASH_H[1]",
+        "offset": 1604,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 248
+      },
+      {
+        "name": "HASH_H[2]",
+        "offset": 1608,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 248
+      },
+      {
+        "name": "HASH_H[3]",
+        "offset": 1612,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 248
+      },
+      {
+        "name": "HASH_H[4]",
+        "offset": 1616,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 248
+      },
+      {
+        "name": "HASH_H[5]",
+        "offset": 1620,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 249
+      },
+      {
+        "name": "HASH_H[6]",
+        "offset": 1624,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 249
+      },
+      {
+        "name": "HASH_H[7]",
+        "offset": 1628,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 249
+      },
+      {
+        "name": "HASH_PAD_AUTO",
+        "offset": 1668,
+        "page": 247,
+        "fields": [
+          {
+            "name": "HWPAD",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 249
+      },
+      {
+        "name": "HASH_INIT_STATE",
+        "offset": 1684,
+        "page": 247,
+        "fields": [
+          {
+            "name": "LOAD",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 250
+      },
+      {
+        "name": "HASH_VERSION",
+        "offset": 1968,
+        "page": 247,
+        "fields": [
+          {
+            "name": "MAJOR_VERSION_NUMBER",
+            "access": "R",
+            "enums": [],
+            "position": 12,
+            "width": 4
+          },
+          {
+            "name": "MINOR_VERSION_NUMBER",
+            "access": "R",
+            "enums": [],
+            "position": 8,
+            "width": 4
+          },
+          {
+            "name": "PATCH",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 8
+          }
+        ],
+        "reset": 0,
+        "detail_page": 250
+      },
+      {
+        "name": "HASH_CONTROL",
+        "offset": 1984,
+        "page": 247,
+        "fields": [
+          {
+            "name": "MODE",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "SHA1",
+                "value": 1
+              },
+              {
+                "name": "SHA256",
+                "value": 2
+              },
+              {
+                "name": "SHA224",
+                "value": 10
+              }
+            ],
+            "position": 0,
+            "width": 4
+          }
+        ],
+        "reset": 0,
+        "detail_page": 250
+      },
+      {
+        "name": "HASH_PAD",
+        "offset": 1988,
+        "page": 247,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 251
+      },
+      {
+        "name": "HASH_PAD_FORCE",
+        "offset": 1992,
+        "page": 247,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 2,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 251
+      },
+      {
+        "name": "HASH_CUR_LEN_0",
+        "offset": 1996,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 251
+      },
+      {
+        "name": "HASH_CUR_LEN_1",
+        "offset": 2000,
+        "page": 247,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 251
+      },
+      {
+        "name": "HASH_HW_FLAGS",
+        "offset": 2012,
+        "page": 247,
+        "fields": [
+          {
+            "name": "DUMP_HASH_TO_DOUT_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 18,
+            "width": 1
+          },
+          {
+            "name": "HASH_COMPARE_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 17,
+            "width": 1
+          },
+          {
+            "name": "SHA_256_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 16,
+            "width": 1
+          },
+          {
+            "name": "HMAC_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 15,
+            "width": 1
+          },
+          {
+            "name": "MD5_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 14,
+            "width": 1
+          },
+          {
+            "name": "PAD_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 13,
+            "width": 1
+          },
+          {
+            "name": "SHA_512_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 12,
+            "width": 1
+          },
+          {
+            "name": "DW",
+            "access": "R",
+            "enums": [
+              {
+                "name": "32Bits",
+                "value": 0
+              },
+              {
+                "name": "64Bits",
+                "value": 1
+              }
+            ],
+            "position": 8,
+            "width": 4
+          },
+          {
+            "name": "CH",
+            "access": "R",
+            "enums": [
+              {
+                "name": "One",
+                "value": 0
+              },
+              {
+                "name": "All",
+                "value": 1
+              }
+            ],
+            "position": 4,
+            "width": 4
+          },
+          {
+            "name": "CW",
+            "access": "R",
+            "enums": [
+              {
+                "name": "One",
+                "value": 1
+              },
+              {
+                "name": "Two",
+                "value": 2
+              }
+            ],
+            "position": 0,
+            "width": 4
+          }
+        ],
+        "reset": 73729,
+        "detail_page": 252
+      },
+      {
+        "name": "HASH_SW_RESET",
+        "offset": 2020,
+        "page": 247,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 252
+      },
+      {
+        "name": "HASH_ENDIANNESS",
+        "offset": 2024,
+        "page": 247,
+        "fields": [
+          {
+            "name": "ENDIAN",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "LittleEndian",
+                "value": 0
+              },
+              {
+                "name": "BigEndian",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 252
+      }
+    ],
+    "page": 247
+  },
+  "CC_PKA": {
+    "instances": [
+      {
+        "name": "CC_PKA",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "MEMORY_MAP[0]",
+        "offset": 0,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 260
+      },
+      {
+        "name": "MEMORY_MAP[1]",
+        "offset": 4,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 260
+      },
+      {
+        "name": "MEMORY_MAP[2]",
+        "offset": 8,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 260
+      },
+      {
+        "name": "MEMORY_MAP[3]",
+        "offset": 12,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 261
+      },
+      {
+        "name": "MEMORY_MAP[4]",
+        "offset": 16,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 261
+      },
+      {
+        "name": "MEMORY_MAP[5]",
+        "offset": 20,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 261
+      },
+      {
+        "name": "MEMORY_MAP[6]",
+        "offset": 24,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 261
+      },
+      {
+        "name": "MEMORY_MAP[7]",
+        "offset": 28,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 261
+      },
+      {
+        "name": "MEMORY_MAP[8]",
+        "offset": 32,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 262
+      },
+      {
+        "name": "MEMORY_MAP[9]",
+        "offset": 36,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 262
+      },
+      {
+        "name": "MEMORY_MAP[10]",
+        "offset": 40,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 262
+      },
+      {
+        "name": "MEMORY_MAP[11]",
+        "offset": 44,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 262
+      },
+      {
+        "name": "MEMORY_MAP[12]",
+        "offset": 48,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 263
+      },
+      {
+        "name": "MEMORY_MAP[13]",
+        "offset": 52,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 263
+      },
+      {
+        "name": "MEMORY_MAP[14]",
+        "offset": 56,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 263
+      },
+      {
+        "name": "MEMORY_MAP[15]",
+        "offset": 60,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 263
+      },
+      {
+        "name": "MEMORY_MAP[16]",
+        "offset": 64,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 263
+      },
+      {
+        "name": "MEMORY_MAP[17]",
+        "offset": 68,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 264
+      },
+      {
+        "name": "MEMORY_MAP[18]",
+        "offset": 72,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 264
+      },
+      {
+        "name": "MEMORY_MAP[19]",
+        "offset": 76,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 264
+      },
+      {
+        "name": "MEMORY_MAP[20]",
+        "offset": 80,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 264
+      },
+      {
+        "name": "MEMORY_MAP[21]",
+        "offset": 84,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 264
+      },
+      {
+        "name": "MEMORY_MAP[22]",
+        "offset": 88,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 265
+      },
+      {
+        "name": "MEMORY_MAP[23]",
+        "offset": 92,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 265
+      },
+      {
+        "name": "MEMORY_MAP[24]",
+        "offset": 96,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 265
+      },
+      {
+        "name": "MEMORY_MAP[25]",
+        "offset": 100,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 265
+      },
+      {
+        "name": "MEMORY_MAP[26]",
+        "offset": 104,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 266
+      },
+      {
+        "name": "MEMORY_MAP[27]",
+        "offset": 108,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 266
+      },
+      {
+        "name": "MEMORY_MAP[28]",
+        "offset": 112,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 266
+      },
+      {
+        "name": "MEMORY_MAP[29]",
+        "offset": 116,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 266
+      },
+      {
+        "name": "MEMORY_MAP[30]",
+        "offset": 120,
+        "page": 259,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 266
+      },
+      {
+        "name": "MEMORY_MAP[31]",
+        "offset": 124,
+        "page": 260,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 1,
+            "width": 9
+          }
+        ],
+        "reset": 0,
+        "detail_page": 267
+      },
+      {
+        "name": "OPCODE",
+        "offset": 128,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OPCODE",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Terminate",
+                "value": 0
+              },
+              {
+                "name": "AddInc",
+                "value": 4
+              },
+              {
+                "name": "SubDecNeg",
+                "value": 5
+              },
+              {
+                "name": "ModAddInc",
+                "value": 6
+              },
+              {
+                "name": "ModSubDecNeg",
+                "value": 7
+              },
+              {
+                "name": "ANDTST0CLR0",
+                "value": 8
+              },
+              {
+                "name": "ORCOPYSET0",
+                "value": 9
+              },
+              {
+                "name": "XORFLP0INVCMP",
+                "value": 10
+              },
+              {
+                "name": "SHR0",
+                "value": 12
+              },
+              {
+                "name": "SHR1",
+                "value": 13
+              },
+              {
+                "name": "SHL0",
+                "value": 14
+              },
+              {
+                "name": "SHL1",
+                "value": 15
+              },
+              {
+                "name": "MulLow",
+                "value": 16
+              },
+              {
+                "name": "ModMul",
+                "value": 17
+              },
+              {
+                "name": "ModMulN",
+                "value": 18
+              },
+              {
+                "name": "ModExp",
+                "value": 19
+              },
+              {
+                "name": "Division",
+                "value": 20
+              },
+              {
+                "name": "ModInv",
+                "value": 21
+              },
+              {
+                "name": "ModDiv",
+                "value": 22
+              },
+              {
+                "name": "MulHigh",
+                "value": 23
+              },
+              {
+                "name": "ModMLAC",
+                "value": 24
+              },
+              {
+                "name": "ModMLACNR",
+                "value": 25
+              },
+              {
+                "name": "Reduction",
+                "value": 27
+              }
+            ],
+            "position": 27,
+            "width": 5
+          },
+          {
+            "name": "LEN",
+            "access": "RW",
+            "enums": [],
+            "position": 24,
+            "width": 3
+          },
+          {
+            "name": "CONST_A",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Register",
+                "value": 0
+              },
+              {
+                "name": "Constant",
+                "value": 1
+              }
+            ],
+            "position": 23,
+            "width": 1
+          },
+          {
+            "name": "REG_A",
+            "access": "RW",
+            "enums": [],
+            "position": 18,
+            "width": 5
+          },
+          {
+            "name": "CONST_B",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Register",
+                "value": 0
+              },
+              {
+                "name": "Constant",
+                "value": 1
+              }
+            ],
+            "position": 17,
+            "width": 1
+          },
+          {
+            "name": "REG_B",
+            "access": "RW",
+            "enums": [],
+            "position": 12,
+            "width": 5
+          },
+          {
+            "name": "DISCARD_R",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Register",
+                "value": 0
+              },
+              {
+                "name": "Discard",
+                "value": 1
+              }
+            ],
+            "position": 11,
+            "width": 1
+          },
+          {
+            "name": "REG_R",
+            "access": "RW",
+            "enums": [],
+            "position": 6,
+            "width": 5
+          },
+          {
+            "name": "TAG",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 6
+          }
+        ],
+        "reset": 0,
+        "detail_page": 267
+      },
+      {
+        "name": "N_NP_T0_T1_ADDR",
+        "offset": 132,
+        "page": 260,
+        "fields": [
+          {
+            "name": "T1_VIRTUAL_ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 15,
+            "width": 5
+          },
+          {
+            "name": "T0_VIRTUAL_ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 10,
+            "width": 5
+          },
+          {
+            "name": "NP_VIRTUAL_ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 5,
+            "width": 5
+          },
+          {
+            "name": "N_VIRTUAL_ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 5
+          }
+        ],
+        "reset": 1046560,
+        "detail_page": 268
+      },
+      {
+        "name": "PKA_STATUS",
+        "offset": 136,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OPCODE",
+            "access": "R",
+            "enums": [],
+            "position": 16,
+            "width": 5
+          },
+          {
+            "name": "MODINV_OF_ZERO",
+            "access": "R",
+            "enums": [],
+            "position": 15,
+            "width": 1
+          },
+          {
+            "name": "DIV_BY_ZERO",
+            "access": "R",
+            "enums": [],
+            "position": 14,
+            "width": 1
+          },
+          {
+            "name": "ALU_MODOVRFLW",
+            "access": "R",
+            "enums": [],
+            "position": 13,
+            "width": 1
+          },
+          {
+            "name": "ALU_OUT_ZERO",
+            "access": "R",
+            "enums": [],
+            "position": 12,
+            "width": 1
+          },
+          {
+            "name": "ALU_SUB_IS_ZERO",
+            "access": "R",
+            "enums": [],
+            "position": 11,
+            "width": 1
+          },
+          {
+            "name": "ALU_CARRY_MOD",
+            "access": "R",
+            "enums": [],
+            "position": 10,
+            "width": 1
+          },
+          {
+            "name": "ALU_CARRY",
+            "access": "R",
+            "enums": [],
+            "position": 9,
+            "width": 1
+          },
+          {
+            "name": "ALU_SIGN_OUT",
+            "access": "R",
+            "enums": [],
+            "position": 8,
+            "width": 1
+          },
+          {
+            "name": "ALU_LSB_4BITS",
+            "access": "R",
+            "enums": [],
+            "position": 4,
+            "width": 4
+          },
+          {
+            "name": "ALU_MSB_4BITS",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 4
+          }
+        ],
+        "reset": 4096,
+        "detail_page": 268
+      },
+      {
+        "name": "PKA_SW_RESET",
+        "offset": 140,
+        "page": 260,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 269
+      },
+      {
+        "name": "PKA_L[0]",
+        "offset": 144,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 269
+      },
+      {
+        "name": "PKA_L[1]",
+        "offset": 148,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 269
+      },
+      {
+        "name": "PKA_L[2]",
+        "offset": 152,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 269
+      },
+      {
+        "name": "PKA_L[3]",
+        "offset": 156,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 269
+      },
+      {
+        "name": "PKA_L[4]",
+        "offset": 160,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 270
+      },
+      {
+        "name": "PKA_L[5]",
+        "offset": 164,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 270
+      },
+      {
+        "name": "PKA_L[6]",
+        "offset": 168,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 270
+      },
+      {
+        "name": "PKA_L[7]",
+        "offset": 172,
+        "page": 260,
+        "fields": [
+          {
+            "name": "OpSize",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 13
+          }
+        ],
+        "reset": 0,
+        "detail_page": 270
+      },
+      {
+        "name": "PKA_PIPE",
+        "offset": 176,
+        "page": 260,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "NotReady",
+                "value": 0
+              },
+              {
+                "name": "Ready",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 270
+      },
+      {
+        "name": "PKA_DONE",
+        "offset": 180,
+        "page": 260,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Processing",
+                "value": 0
+              },
+              {
+                "name": "Completed",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 271
+      },
+      {
+        "name": "PKA_VERSION",
+        "offset": 196,
+        "page": 260,
+        "fields": [
+          {
+            "name": "PKA_VERSION",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 370213397,
+        "detail_page": 271
+      },
+      {
+        "name": "PKA_SRAM_WADDR",
+        "offset": 212,
+        "page": 260,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 271
+      },
+      {
+        "name": "PKA_SRAM_WDATA",
+        "offset": 216,
+        "page": 260,
+        "fields": [
+          {
+            "name": "DATA",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 271
+      },
+      {
+        "name": "PKA_SRAM_RDATA",
+        "offset": 220,
+        "page": 260,
+        "fields": [
+          {
+            "name": "DATA",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 272
+      },
+      {
+        "name": "PKA_SRAM_WCLEAR",
+        "offset": 224,
+        "page": 260,
+        "fields": [
+          {
+            "name": "CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 272
+      },
+      {
+        "name": "PKA_SRAM_RADDR",
+        "offset": 228,
+        "page": 260,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 272
+      }
+    ],
+    "page": 259
+  },
+  "CC_RNG": {
+    "instances": [
+      {
+        "name": "CC_RNG",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "RNG_IMR",
+        "offset": 256,
+        "page": 276,
+        "fields": [
+          {
+            "name": "DMA_DONE_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "WATCHDOG_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 4,
+            "width": 1
+          },
+          {
+            "name": "VNC_ERR_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "CRNGT_ERR_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "AUTOCORR_ERR_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "EHR_VALID_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 63,
+        "detail_page": 277
+      },
+      {
+        "name": "RNG_ISR",
+        "offset": 260,
+        "page": 276,
+        "fields": [
+          {
+            "name": "DMA_DONE_INT",
+            "access": "R",
+            "enums": [],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "WATCHDOG_INT",
+            "access": "R",
+            "enums": [],
+            "position": 4,
+            "width": 1
+          },
+          {
+            "name": "VNC_ERR_INT",
+            "access": "R",
+            "enums": [],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "CRNGT_ERR_INT",
+            "access": "R",
+            "enums": [],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "AUTOCORR_ERR_INT",
+            "access": "R",
+            "enums": [],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "EHR_VALID_INT",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 278
+      },
+      {
+        "name": "RNG_ICR",
+        "offset": 264,
+        "page": 276,
+        "fields": [
+          {
+            "name": "DMA_DONE_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "WATCHDOG_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 4,
+            "width": 1
+          },
+          {
+            "name": "VNC_ERR_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "CRNGT_ERR_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "AUTOCORR_ERR_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "EHR_VALID_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 278
+      },
+      {
+        "name": "TRNG_CONFIG",
+        "offset": 268,
+        "page": 276,
+        "fields": [
+          {
+            "name": "ROSC_LEN",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "ROSC1",
+                "value": 0
+              },
+              {
+                "name": "ROSC2",
+                "value": 1
+              },
+              {
+                "name": "ROSC3",
+                "value": 2
+              },
+              {
+                "name": "ROSC4",
+                "value": 3
+              }
+            ],
+            "position": 0,
+            "width": 2
+          }
+        ],
+        "reset": 0,
+        "detail_page": 279
+      },
+      {
+        "name": "TRNG_VALID",
+        "offset": 272,
+        "page": 276,
+        "fields": [
+          {
+            "name": "EHR_DATA",
+            "access": "R",
+            "enums": [
+              {
+                "name": "NotValid",
+                "value": 0
+              },
+              {
+                "name": "Valid",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 279
+      },
+      {
+        "name": "EHR_DATA[0]",
+        "offset": 276,
+        "page": 277,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 279
+      },
+      {
+        "name": "EHR_DATA[1]",
+        "offset": 280,
+        "page": 277,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 280
+      },
+      {
+        "name": "EHR_DATA[2]",
+        "offset": 284,
+        "page": 277,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 280
+      },
+      {
+        "name": "EHR_DATA[3]",
+        "offset": 288,
+        "page": 277,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 280
+      },
+      {
+        "name": "EHR_DATA[4]",
+        "offset": 292,
+        "page": 277,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 280
+      },
+      {
+        "name": "EHR_DATA[5]",
+        "offset": 296,
+        "page": 277,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 281
+      },
+      {
+        "name": "NOISE_SOURCE",
+        "offset": 300,
+        "page": 277,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 281
+      },
+      {
+        "name": "SAMPLE_CNT",
+        "offset": 304,
+        "page": 277,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 65535,
+        "detail_page": 281
+      },
+      {
+        "name": "AUTOCORR_STATISTIC",
+        "offset": 308,
+        "page": 277,
+        "fields": [
+          {
+            "name": "AUTOCORR_FAILS",
+            "access": "RW",
+            "enums": [],
+            "position": 14,
+            "width": 8
+          },
+          {
+            "name": "AUTOCORR_TRYS",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 14
+          }
+        ],
+        "reset": 0,
+        "detail_page": 282
+      },
+      {
+        "name": "TRNG_DEBUG",
+        "offset": 312,
+        "page": 277,
+        "fields": [
+          {
+            "name": "AUTOCORR_BYPASS",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "CRNGT_BYPASS",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "VNC_BYPASS",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 1,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 282
+      },
+      {
+        "name": "RNG_SW_RESET",
+        "offset": 320,
+        "page": 277,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 282
+      },
+      {
+        "name": "RNG_BUSY",
+        "offset": 440,
+        "page": 277,
+        "fields": [
+          {
+            "name": "TRNG_STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 283
+      },
+      {
+        "name": "TRNG_RESET",
+        "offset": 444,
+        "page": 277,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 283
+      },
+      {
+        "name": "RNG_HW_FLAGS",
+        "offset": 448,
+        "page": 277,
+        "fields": [
+          {
+            "name": "RNG_USE_5_SBOXES",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 7,
+            "width": 1
+          },
+          {
+            "name": "RESEEDING_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 6,
+            "width": 1
+          },
+          {
+            "name": "KAT_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "PRNG_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 4,
+            "width": 1
+          },
+          {
+            "name": "BYPASS_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "AUTOCORR_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "CRNGT_EXISTS",
+            "access": "R",
+            "enums": [],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "EHR_WIDTH",
+            "access": "R",
+            "enums": [
+              {
+                "name": "128Bits",
+                "value": 0
+              },
+              {
+                "name": "192Bits",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 15,
+        "detail_page": 283
+      },
+      {
+        "name": "RNG_CLK",
+        "offset": 452,
+        "page": 277,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 284
+      },
+      {
+        "name": "RNG_DMA",
+        "offset": 456,
+        "page": 277,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 284
+      },
+      {
+        "name": "RNG_DMA_ROSC_LEN",
+        "offset": 460,
+        "page": 277,
+        "fields": [
+          {
+            "name": "ROSC4",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "ROSC3",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "ROSC2",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "ROSC1",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 284
+      },
+      {
+        "name": "RNG_DMA_SRAM_ADDR",
+        "offset": 464,
+        "page": 277,
+        "fields": [
+          {
+            "name": "RNG_SRAM_DMA_ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 11
+          }
+        ],
+        "reset": 0,
+        "detail_page": 285
+      },
+      {
+        "name": "RNG_DMA_SAMPLES_NUM",
+        "offset": 468,
+        "page": 277,
+        "fields": [
+          {
+            "name": "RNG_SAMPLES_NUM",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 8
+          }
+        ],
+        "reset": 0,
+        "detail_page": 285
+      },
+      {
+        "name": "RNG_WATCHDOG_VAL",
+        "offset": 472,
+        "page": 277,
+        "fields": [
+          {
+            "name": "RNG_WATCHDOG_VAL",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 285
+      },
+      {
+        "name": "RNG_DMA_BUSY",
+        "offset": 476,
+        "page": 277,
+        "fields": [
+          {
+            "name": "NUM_OF_SAMPLES",
+            "access": "R",
+            "enums": [],
+            "position": 3,
+            "width": 8
+          },
+          {
+            "name": "ROSC_LEN",
+            "access": "R",
+            "enums": [
+              {
+                "name": "ROSC1",
+                "value": 0
+              },
+              {
+                "name": "ROSC2",
+                "value": 1
+              },
+              {
+                "name": "ROSC3",
+                "value": 2
+              },
+              {
+                "name": "ROSC4",
+                "value": 3
+              }
+            ],
+            "position": 1,
+            "width": 2
+          },
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 286
+      }
+    ],
+    "page": 276
+  },
+  "CC_CTL": {
+    "instances": [
+      {
+        "name": "CC_CTL",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "CRYPTO_CTL",
+        "offset": 2304,
+        "page": 286,
+        "fields": [
+          {
+            "name": "MODE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Bypass",
+                "value": 0
+              },
+              {
+                "name": "AESActive",
+                "value": 1
+              },
+              {
+                "name": "AESToHashActive",
+                "value": 2
+              },
+              {
+                "name": "AESAndHashActive",
+                "value": 3
+              },
+              {
+                "name": "HashActive",
+                "value": 7
+              },
+              {
+                "name": "AESMACAndBypassActive",
+                "value": 9
+              },
+              {
+                "name": "AESToHashAndDOUTActive",
+                "value": 10
+              },
+              {
+                "name": "ChaChaActive",
+                "value": 16
+              }
+            ],
+            "position": 0,
+            "width": 5
+          }
+        ],
+        "reset": 0,
+        "detail_page": 286
+      },
+      {
+        "name": "CRYPTO_BUSY",
+        "offset": 2320,
+        "page": 286,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 287
+      },
+      {
+        "name": "HASH_BUSY",
+        "offset": 2332,
+        "page": 286,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 287
+      },
+      {
+        "name": "CONTEXT_ID",
+        "offset": 2352,
+        "page": 286,
+        "fields": [
+          {
+            "name": "CONTEXT_ID",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 8
+          }
+        ],
+        "reset": 0,
+        "detail_page": 287
+      }
+    ],
+    "page": 286
+  },
+  "CC_DIN": {
+    "instances": [
+      {
+        "name": "CC_DIN",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "DIN_BUFFER",
+        "offset": 3072,
+        "page": 288,
+        "fields": [
+          {
+            "name": "DATA",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 288
+      },
+      {
+        "name": "DIN_DMA_MEM_BUSY",
+        "offset": 3104,
+        "page": 288,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 289
+      },
+      {
+        "name": "SRC_MEM_ADDR",
+        "offset": 3112,
+        "page": 288,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 289
+      },
+      {
+        "name": "SRC_MEM_SIZE",
+        "offset": 3116,
+        "page": 288,
+        "fields": [
+          {
+            "name": "LAST",
+            "access": "W",
+            "enums": [],
+            "position": 31,
+            "width": 1
+          },
+          {
+            "name": "FIRST",
+            "access": "W",
+            "enums": [],
+            "position": 30,
+            "width": 1
+          },
+          {
+            "name": "SIZE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 30
+          }
+        ],
+        "reset": 0,
+        "detail_page": 289
+      },
+      {
+        "name": "SRC_SRAM_ADDR",
+        "offset": 3120,
+        "page": 288,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 289
+      },
+      {
+        "name": "SRC_SRAM_SIZE",
+        "offset": 3124,
+        "page": 288,
+        "fields": [
+          {
+            "name": "SIZE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 290
+      },
+      {
+        "name": "DIN_DMA_SRAM_BUSY",
+        "offset": 3128,
+        "page": 288,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 290
+      },
+      {
+        "name": "DIN_DMA_SRAM_ENDIANNESS",
+        "offset": 3132,
+        "page": 288,
+        "fields": [
+          {
+            "name": "ENDIAN",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "LittleEndian",
+                "value": 0
+              },
+              {
+                "name": "BigEndian",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 290
+      },
+      {
+        "name": "DIN_SW_RESET",
+        "offset": 3140,
+        "page": 288,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 290
+      },
+      {
+        "name": "DIN_CPU_DATA",
+        "offset": 3144,
+        "page": 288,
+        "fields": [
+          {
+            "name": "SIZE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 16
+          }
+        ],
+        "reset": 0,
+        "detail_page": 291
+      },
+      {
+        "name": "DIN_WRITE_ALIGN",
+        "offset": 3148,
+        "page": 288,
+        "fields": [
+          {
+            "name": "LAST",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Confirm",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 291
+      },
+      {
+        "name": "DIN_FIFO_EMPTY",
+        "offset": 3152,
+        "page": 288,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "NotEmpty",
+                "value": 0
+              },
+              {
+                "name": "Empty",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 291
+      },
+      {
+        "name": "DIN_FIFO_RESET",
+        "offset": 3160,
+        "page": 288,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 291
+      }
+    ],
+    "page": 288
+  },
+  "CC_DOUT": {
+    "instances": [
+      {
+        "name": "CC_DOUT",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "DOUT_BUFFER",
+        "offset": 3072,
+        "page": 292,
+        "fields": [
+          {
+            "name": "DATA",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 292
+      },
+      {
+        "name": "DOUT_DMA_MEM_BUSY",
+        "offset": 3360,
+        "page": 292,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 293
+      },
+      {
+        "name": "DST_MEM_ADDR",
+        "offset": 3368,
+        "page": 292,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 293
+      },
+      {
+        "name": "DST_MEM_SIZE",
+        "offset": 3372,
+        "page": 292,
+        "fields": [
+          {
+            "name": "LAST",
+            "access": "W",
+            "enums": [],
+            "position": 31,
+            "width": 1
+          },
+          {
+            "name": "FIRST",
+            "access": "W",
+            "enums": [],
+            "position": 30,
+            "width": 1
+          },
+          {
+            "name": "SIZE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 30
+          }
+        ],
+        "reset": 0,
+        "detail_page": 293
+      },
+      {
+        "name": "DST_SRAM_ADDR",
+        "offset": 3376,
+        "page": 292,
+        "fields": [
+          {
+            "name": "ADDR",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 293
+      },
+      {
+        "name": "DST_SRAM_SIZE",
+        "offset": 3380,
+        "page": 292,
+        "fields": [
+          {
+            "name": "SIZE",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 294
+      },
+      {
+        "name": "DOUT_DMA_SRAM_BUSY",
+        "offset": 3384,
+        "page": 292,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Idle",
+                "value": 0
+              },
+              {
+                "name": "Busy",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 294
+      },
+      {
+        "name": "DOUT_DMA_SRAM_ENDIANNESS",
+        "offset": 3388,
+        "page": 292,
+        "fields": [
+          {
+            "name": "ENDIAN",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "LittleEndian",
+                "value": 0
+              },
+              {
+                "name": "BigEndian",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 294
+      },
+      {
+        "name": "DOUT_READ_ALIGN",
+        "offset": 3396,
+        "page": 292,
+        "fields": [
+          {
+            "name": "LAST",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Flush",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 294
+      },
+      {
+        "name": "DOUT_FIFO_EMPTY",
+        "offset": 3408,
+        "page": 292,
+        "fields": [
+          {
+            "name": "STATUS",
+            "access": "R",
+            "enums": [
+              {
+                "name": "NotEmpty",
+                "value": 0
+              },
+              {
+                "name": "Empty",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 295
+      },
+      {
+        "name": "DOUT_SW_RESET",
+        "offset": 3416,
+        "page": 292,
+        "fields": [
+          {
+            "name": "RESET",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 295
+      }
+    ],
+    "page": 292
+  },
+  "CC_HOST_RGF": {
+    "instances": [
+      {
+        "name": "CC_HOST_RGF",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "IRR",
+        "offset": 2560,
+        "page": 296,
+        "fields": [
+          {
+            "name": "RNG_INT",
+            "access": "R",
+            "enums": [],
+            "position": 10,
+            "width": 1
+          },
+          {
+            "name": "PKA_INT",
+            "access": "R",
+            "enums": [],
+            "position": 9,
+            "width": 1
+          },
+          {
+            "name": "AHB_ERR_INT",
+            "access": "R",
+            "enums": [],
+            "position": 8,
+            "width": 1
+          },
+          {
+            "name": "DOUT_TO_MEM_INT",
+            "access": "R",
+            "enums": [],
+            "position": 7,
+            "width": 1
+          },
+          {
+            "name": "MEM_TO_DIN_INT",
+            "access": "R",
+            "enums": [],
+            "position": 6,
+            "width": 1
+          },
+          {
+            "name": "DOUT_TO_SRAM_INT",
+            "access": "R",
+            "enums": [],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "SRAM_TO_DIN_INT",
+            "access": "R",
+            "enums": [],
+            "position": 4,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 296
+      },
+      {
+        "name": "IMR",
+        "offset": 2564,
+        "page": 296,
+        "fields": [
+          {
+            "name": "RNG_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 10,
+            "width": 1
+          },
+          {
+            "name": "PKA_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 9,
+            "width": 1
+          },
+          {
+            "name": "AHB_ERR_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 8,
+            "width": 1
+          },
+          {
+            "name": "DOUT_TO_MEM_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 7,
+            "width": 1
+          },
+          {
+            "name": "MEM_TO_DIN_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 6,
+            "width": 1
+          },
+          {
+            "name": "DOUT_TO_SRAM_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "SRAM_TO_DIN_MASK",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "IRQEnable",
+                "value": 0
+              },
+              {
+                "name": "IRQDisable",
+                "value": 1
+              }
+            ],
+            "position": 4,
+            "width": 1
+          }
+        ],
+        "reset": 33554431,
+        "detail_page": 296
+      },
+      {
+        "name": "ICR",
+        "offset": 2568,
+        "page": 296,
+        "fields": [
+          {
+            "name": "RNG_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 10,
+            "width": 1
+          },
+          {
+            "name": "PKA_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 9,
+            "width": 1
+          },
+          {
+            "name": "AHB_ERR_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 8,
+            "width": 1
+          },
+          {
+            "name": "DOUT_TO_MEM_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 7,
+            "width": 1
+          },
+          {
+            "name": "MEM_TO_DIN_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 6,
+            "width": 1
+          },
+          {
+            "name": "DOUT_TO_SRAM_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "SRAM_TO_DIN_CLEAR",
+            "access": "W",
+            "enums": [],
+            "position": 4,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 297
+      },
+      {
+        "name": "ENDIANNESS",
+        "offset": 2572,
+        "page": 296,
+        "fields": [
+          {
+            "name": "DIN_RD_WBG",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "LittleEndian",
+                "value": 0
+              },
+              {
+                "name": "BigEndian",
+                "value": 1
+              }
+            ],
+            "position": 15,
+            "width": 1
+          },
+          {
+            "name": "DOUT_WR_WBG",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "LittleEndian",
+                "value": 0
+              },
+              {
+                "name": "BigEndian",
+                "value": 1
+              }
+            ],
+            "position": 11,
+            "width": 1
+          },
+          {
+            "name": "DIN_RD_BG",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "LittleEndian",
+                "value": 0
+              },
+              {
+                "name": "BigEndian",
+                "value": 1
+              }
+            ],
+            "position": 7,
+            "width": 1
+          },
+          {
+            "name": "DOUT_WR_BG",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "LittleEndian",
+                "value": 0
+              },
+              {
+                "name": "BigEndian",
+                "value": 1
+              }
+            ],
+            "position": 3,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 297
+      },
+      {
+        "name": "HOST_SIGNATURE",
+        "offset": 2596,
+        "page": 296,
+        "fields": [
+          {
+            "name": "VALUE",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 551550976,
+        "detail_page": 298
+      },
+      {
+        "name": "HOST_BOOT",
+        "offset": 2600,
+        "page": 296,
+        "fields": [
+          {
+            "name": "SUPPORT_256_192_KEY_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 28,
+            "width": 1
+          },
+          {
+            "name": "TUNNELING_ENB_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 27,
+            "width": 1
+          },
+          {
+            "name": "AES_DIN_BYTE_RESOLUTION_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 26,
+            "width": 1
+          },
+          {
+            "name": "CTR_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 25,
+            "width": 1
+          },
+          {
+            "name": "AES_XEX_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 24,
+            "width": 1
+          },
+          {
+            "name": "AES_XEX_HW_T_CALC_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 23,
+            "width": 1
+          },
+          {
+            "name": "AES_CCM_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 22,
+            "width": 1
+          },
+          {
+            "name": "AES_CMAC_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 21,
+            "width": 1
+          },
+          {
+            "name": "AES_XCBC_MAC_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 20,
+            "width": 1
+          },
+          {
+            "name": "DES_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 19,
+            "width": 1
+          },
+          {
+            "name": "C2_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 18,
+            "width": 1
+          },
+          {
+            "name": "HASH_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 17,
+            "width": 1
+          },
+          {
+            "name": "MD5_PRSNT_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 16,
+            "width": 1
+          },
+          {
+            "name": "SHA_256_PRSNT_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 15,
+            "width": 1
+          },
+          {
+            "name": "SHA_512_PRSNT_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 14,
+            "width": 1
+          },
+          {
+            "name": "RC4_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 13,
+            "width": 1
+          },
+          {
+            "name": "PKA_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 12,
+            "width": 1
+          },
+          {
+            "name": "RNG_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 11,
+            "width": 1
+          },
+          {
+            "name": "PAU_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 10,
+            "width": 1
+          },
+          {
+            "name": "DSCRPTR_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 9,
+            "width": 1
+          },
+          {
+            "name": "SRAM_SIZE_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 6,
+            "width": 3
+          },
+          {
+            "name": "RKEK_ECC_EXISTS_LOCAL_N",
+            "access": "R",
+            "enums": [],
+            "position": 5,
+            "width": 1
+          },
+          {
+            "name": "EXT_MEM_SECURED_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "HASH_IN_FUSES_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "LARGE_RKEK_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 1,
+            "width": 1
+          },
+          {
+            "name": "POWER_GATING_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1176672300,
+        "detail_page": 298
+      },
+      {
+        "name": "HOST_CRYPTOKEY_SEL",
+        "offset": 2616,
+        "page": 296,
+        "fields": [
+          {
+            "name": "HOST_CRYPTOKEY_SEL",
+            "access": "RW",
+            "enums": [
+              {
+                "name": "K_DR",
+                "value": 0
+              },
+              {
+                "name": "K_PRTL",
+                "value": 1
+              },
+              {
+                "name": "Session",
+                "value": 2
+              }
+            ],
+            "position": 0,
+            "width": 2
+          }
+        ],
+        "reset": 0,
+        "detail_page": 299
+      },
+      {
+        "name": "HOST_IOT_KPRTL_LOCK",
+        "offset": 2636,
+        "page": 296,
+        "fields": [
+          {
+            "name": "HOST_IOT_KPRTL_LOCK",
+            "access": "RW1",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 299
+      },
+      {
+        "name": "HOST_IOT_KDR0",
+        "offset": 2640,
+        "page": 296,
+        "fields": [
+          {
+            "name": "HOST_IOT_KDR0",
+            "access": "RW1",
+            "enums": [
+              {
+                "name": "NotRetained",
+                "value": 0
+              },
+              {
+                "name": "Retained",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 300
+      },
+      {
+        "name": "HOST_IOT_KDR1",
+        "offset": 2644,
+        "page": 296,
+        "fields": [
+          {
+            "name": "HOST_IOT_KDR1",
+            "access": "W1",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 300
+      },
+      {
+        "name": "HOST_IOT_KDR2",
+        "offset": 2648,
+        "page": 296,
+        "fields": [
+          {
+            "name": "HOST_IOT_KDR2",
+            "access": "W1",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 300
+      },
+      {
+        "name": "HOST_IOT_KDR3",
+        "offset": 2652,
+        "page": 296,
+        "fields": [
+          {
+            "name": "HOST_IOT_KDR3",
+            "access": "W1",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 300
+      },
+      {
+        "name": "HOST_IOT_LCS",
+        "offset": 2656,
+        "page": 296,
+        "fields": [
+          {
+            "name": "LCS_IS_VALID",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Invalid",
+                "value": 0
+              },
+              {
+                "name": "Valid",
+                "value": 1
+              }
+            ],
+            "position": 8,
+            "width": 1
+          },
+          {
+            "name": "LCS",
+            "access": "RW1",
+            "enums": [
+              {
+                "name": "DebugEnable",
+                "value": 0
+              },
+              {
+                "name": "Secure",
+                "value": 2
+              }
+            ],
+            "position": 0,
+            "width": 3
+          }
+        ],
+        "reset": 2,
+        "detail_page": 301
+      }
+    ],
+    "page": 295
+  },
+  "CC_RNG_SRAM": {
+    "instances": [
+      {
+        "name": "CC_RNG_SRAM",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "SRAM_DATA",
+        "offset": 3840,
+        "page": 301,
+        "fields": [
+          {
+            "name": "SRAM_DATA",
+            "access": "RW",
+            "enums": [],
+            "position": 0,
+            "width": 32
+          }
+        ],
+        "reset": 0,
+        "detail_page": 301
+      },
+      {
+        "name": "SRAM_ADDR",
+        "offset": 3844,
+        "page": 301,
+        "fields": [
+          {
+            "name": "SRAM_ADDR",
+            "access": "W",
+            "enums": [],
+            "position": 0,
+            "width": 15
+          }
+        ],
+        "reset": 0,
+        "detail_page": 302
+      },
+      {
+        "name": "SRAM_DATA_READY",
+        "offset": 3848,
+        "page": 301,
+        "fields": [
+          {
+            "name": "SRAM_READY",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Busy",
+                "value": 0
+              },
+              {
+                "name": "Idle",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 1,
+        "detail_page": 302
+      }
+    ],
+    "page": 301
+  },
+  "CC_MISC": {
+    "instances": [
+      {
+        "name": "CC_MISC",
+        "base": 1342353408
+      }
+    ],
+    "registers": [
+      {
+        "name": "AES_CLK",
+        "offset": 2064,
+        "page": 302,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 303
+      },
+      {
+        "name": "HASH_CLK",
+        "offset": 2072,
+        "page": 302,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 303
+      },
+      {
+        "name": "PKA_CLK",
+        "offset": 2076,
+        "page": 302,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 303
+      },
+      {
+        "name": "DMA_CLK",
+        "offset": 2080,
+        "page": 302,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 303
+      },
+      {
+        "name": "CLK_STATUS",
+        "offset": 2084,
+        "page": 302,
+        "fields": [
+          {
+            "name": "DMA_CLK",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 8,
+            "width": 1
+          },
+          {
+            "name": "CHACHA_CLK",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 7,
+            "width": 1
+          },
+          {
+            "name": "PKA_CLK",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 3,
+            "width": 1
+          },
+          {
+            "name": "HASH_CLK",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 2,
+            "width": 1
+          },
+          {
+            "name": "AES_CLK",
+            "access": "R",
+            "enums": [
+              {
+                "name": "Disabled",
+                "value": 0
+              },
+              {
+                "name": "Enabled",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 256,
+        "detail_page": 304
+      },
+      {
+        "name": "CHACHA_CLK",
+        "offset": 2136,
+        "page": 302,
+        "fields": [
+          {
+            "name": "ENABLE",
+            "access": "W",
+            "enums": [
+              {
+                "name": "Disable",
+                "value": 0
+              },
+              {
+                "name": "Enable",
+                "value": 1
+              }
+            ],
+            "position": 0,
+            "width": 1
+          }
+        ],
+        "reset": 0,
+        "detail_page": 304
+      }
+    ],
+    "page": 302
+  }
+}

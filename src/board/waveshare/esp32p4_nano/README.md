@@ -1,5 +1,8 @@
 # Waveshare ESP32-P4-NANO
 
+[Requirements](requirements.md) and [implementation plan](implementation-plan.md)
+record this board's scope, work and acceptance boundaries.
+
 
 The local `board.cmake` owns build selection, startup and runner settings.
 The public board type is `mcubsp::board::waveshare::esp32p4_nano`, defined in

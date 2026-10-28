@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "kind": "software_verification",
+  "plans": [
+    "PLN-0042",
+    "PLN-0043"
+  ],
+  "plan_completion_claim": false,
+  "native": {
+    "ctest_passed": 59,
+    "ctest_total": 59,
+    "report": "output/artifact/native.json",
+    "report_sha256": "b29d779dfa4b3d2053d0e90aa909a3675c8eba77a9a30094c1c291eb4ece69f1",
+    "tests": 369,
+    "failures": 0
+  },
+  "public_headers": {
+    "count": 182,
+    "targets": [
+      "AppleClang 21 macOS arm64",
+      "Arm GNU 15.2.1 Cortex-M4F",
+      "Arm GNU 15.2.1 Cortex-M7",
+      "ESP32-P4 RISC-V"
+    ],
+    "result": "passed"
+  },
+  "imports": {
+    "mdk": "byte-for-byte --check passed",
+    "product_specification": "byte-for-byte --check passed",
+    "product_register_overview_classifications": {
+      "debug_access_port_not_cpu_mmio": 5,
+      "mdk_absolute_address_matches": 1366,
+      "product_supplement": 192,
+      "reserved_not_a_usable_register": 4
+    },
+    "cryptocell_blocks": 11,
+    "cryptocell_registers": 199,
+    "cryptocell_fields": 343
+  },
+  "composition": {
+    "repository_examples": [
+      "Blink",
+      "TMP102",
+      "system"
+    ],
+    "source_consumer": "linked",
+    "relocated_installed_consumer": "linked",
+    "reset_handler_count": 1,
+    "debug_resources_installed": true,
+    "uf2_runner": "fake mount dry-run passed"
+  },
+  "system_image": {
+    "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.system.elf",
+    "elf_sha256": "62dc49f7ab91a1ba7c407fb3301c57501b8a9b728f25014c7aba266e5f4adb03",
+    "uf2_sha256": "2b9cab3ff72b4c3655d605208d9d8e1fe6e691867868a7622d5196c49a1b39f4",
+    "selected_input_identity": "463b361c5ca696d7f337d2eb9ce160a96b7b650211e9fdfaeef754626d1ddebe",
+    "inputs_sha256": "2be7287dd7fc527ddb6f4f5b8dfd4529f5233e9e5a770f5bc91b8cb68a1d09c7",
+    "text_bytes": 8032,
+    "data_bytes": 16,
+    "bss_bytes": 1144,
+    "uploaded": false,
+    "physical_result": null
+  },
+  "debugger": {
+    "tcl_mock_cases": 6,
+    "result": "passed",
+    "openocd_version": "0.12.0",
+    "configuration_parse": "passed without init/probe access",
+    "jim_mock_parallel_session": "passed without init/probe access",
+    "physical_capture": "not run"
+  },
+  "logs": {
+    "native": {
+      "local_path": "/private/tmp/mcubsp-nrf-system-followup-native.log",
+      "sha256": "222bd437afc0d347cab24a7dbcec0d5f930c6d1c8054204390da5af71700711b"
+    },
+    "cortex_m4": {
+      "local_path": "/private/tmp/mcubsp-nrf-system-followup-m4.log",
+      "sha256": "888c0a4cf513e386acd9ccac47f7492010c8fe17da0c91608a1e64a3df9542c4"
+    },
+    "cortex_m7": {
+      "local_path": "/private/tmp/mcubsp-nrf-system-followup-m7.log",
+      "sha256": "cf21dbf519c45823c26e63597b09596f851274f705b84aed83a06269489153e5"
+    },
+    "esp32_p4": {
+      "local_path": "/private/tmp/mcubsp-nrf-system-followup-p4.log",
+      "sha256": "c50f658f108923ad8b78bc7f518464c6b11f616ef0a0c3a019e55362e198ab2f"
+    },
+    "board_examples": {
+      "local_path": "/private/tmp/mcubsp-nrf-system-followup-board.log",
+      "sha256": "d79e7796647edf8dd4264458960841df86d19f55c183b04cd4f122c80f011331"
+    },
+    "mdk_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-mdk-check.log",
+      "sha256": "457500bbe6d445edbd002c557d80d14acc202371b8b4ad9e04d96fc578811001"
+    },
+    "product_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-product-check.log",
+      "sha256": "c8f4e5fedab7c3fbae8c93cc25ff24642ed99d0bfc7906375014c98e40f482f6"
+    },
+    "openocd_configuration_parse": {
+      "local_path": "/private/tmp/mcubsp-nrf-debug-parse.log",
+      "sha256": "9a11c8344a3e63fef7b8c81cdc203b88bbd12b35f6fc647e5c67483e778cd7f1"
+    },
+    "openocd_mock_jim": {
+      "local_path": "/private/tmp/mcubsp-nrf-debug-jim.log",
+      "sha256": "2a1bbd61e2d6722ec3b25c0c625a376c1ee8915912f594085b307ab970daf32e"
+    },
+    "source_and_installed_consumers": {
+      "local_path": "/var/folders/4r/zl71gz153yn3gcf0_gy5lhxm0000gn/T/mcubsp-nrf-system-consumers-k9wt9twf/checks.log",
+      "sha256": "4a2382e4fc88af5e23192f208573d7d8f05deeb786b070033160678cc4412091"
+    }
+  },
+  "physical_baseline": "2026-10-27-upload.json (historical image only)",
+  "not_established": [
+    "complete field/mode/core/pin/package and stepping-specific errata gate",
+    "actual FICR/ROM identity readback on this board",
+    "physical acceptance beyond the identified 27 October LED observation",
+    "current firmware upload",
+    "coverage refresh",
+    "hosted CI"
+  ]
+}

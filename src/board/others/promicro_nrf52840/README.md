@@ -1,8 +1,15 @@
-# Pro Micro nRF52840: GPIO and I2C support
+# Pro Micro nRF52840: GPIO, I2C and native system services
+
+[Requirements](requirements.md) and [implementation plan](implementation-plan.md)
+record this board's scope, work and acceptance boundaries. Full-peripheral support
+is now required by REQ-0055–REQ-0074 and planned in PLN-0042–PLN-0053; the
+board facade described below remains GPIO and finite I2C. Native system services
+and their current limits are described in the [system guide](../../../../doc/reference/nrf52840/README.md).
 
 This profile targets the nice!nano-compatible Pro Micro / SuperMini board family
 described by [Zephyr](https://docs.zephyrproject.org/latest/boards/others/promicro_nrf52840/doc/index.html).
-It supplies GPIO and finite I2C through `mcubsp::io`, a P0.15 active-high LED,
+It supplies GPIO and finite I2C through `mcubsp::io`, explicit native system services,
+a P0.15 active-high LED,
 bootloader-handoff startup, and a linked Blink application with UF2 output.
 It has no dependency on Zephyr, Nordic HAL libraries or a radio stack.
 
@@ -133,7 +140,9 @@ If a different SoftDevice/layout is installed, use a separately reviewed profile
 changing only the flash origin is insufficient.
 
 The CPU is fixed at 64 MHz. The default DWT cycle clock supports intervals up
-to about 33.6 seconds and busy polling; low-power operation is not qualified.
+to about 33.6 seconds and busy polling; low-power operation is not physically qualified. The native system APIs provide
+a separately initialized RTC time source and guarded idle/retention operations;
+see the system guide for ownership, errata and remaining scope.
 Use an explicitly initialized borrowed policy/monotonic clock for other timing
 or sleep behavior. With `STARTUP external`, the BSP owns silicon initialization,
 the fixed-clock contract, vectors and its startup checks.
@@ -203,3 +212,9 @@ protected partitions and mounted-drive planning. These establish software
 behavior only. The separate physical observation establishes LED Blink on the
 connected board; wire timing, current, other GPIO modes and clone-revision
 qualification remain unverified.
+
+The 28 October system-service follow-up adds the current CryptoCell register
+supplement, all 32 PPI channels, clock/power event interfaces and optional
+[debugger procedures](debug/README.md). See the [source/runtime guide](../../../../doc/reference/nrf52840/README.md)
+and [acceptance record](../../../../doc/acceptance/nrf52840-system.md) for
+software evidence and the separate pending hardware checks.

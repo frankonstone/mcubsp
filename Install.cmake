@@ -35,6 +35,9 @@ foreach(entry IN LISTS board_entries)
     endif()
     install(DIRECTORY "${board_directory}/startup" DESTINATION "${board_destination}"
         PATTERN build EXCLUDE PATTERN ".DS_Store" EXCLUDE)
+    if(EXISTS "${board_directory}/debug")
+        install(DIRECTORY "${board_directory}/debug" DESTINATION "${board_destination}")
+    endif()
 endforeach()
 
 install(FILES tool/firmware-inputs.py tool/hardware.py tool/uf2.py tool/RunnerInfo.cmake
@@ -43,3 +46,7 @@ install(DIRECTORY example DESTINATION share/mcubsp
     PATTERN output EXCLUDE PATTERN build EXCLUDE PATTERN ".DS_Store" EXCLUDE)
 install(FILES doc/package.md DESTINATION share/mcubsp/doc)
 install(FILES doc/package.md DESTINATION share/mcubsp RENAME README.md)
+
+# Retain the Nordic BSD notice with redistributed derived register facts.
+install(FILES doc/reference/nrf52840/NORDIC-LICENSE.txt
+    DESTINATION share/mcubsp/doc/licenses)

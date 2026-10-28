@@ -23,6 +23,9 @@ enum class access_semantics : std::uint8_t {
     command,
     set_alias,
     clear_alias,
+    // Read and write are both legal, but a read advances hardware state.
+    // Examples include auto-incrementing memory/FIFO data ports.
+    read_write_side_effect,
 };
 
 // @req REQ-0007 REQ-0008
@@ -170,7 +173,8 @@ concept readable = Register::access == access_semantics::read_only
 template<typename Register>
 concept directly_writable =
     (Register::access == access_semantics::write_only
-     || Register::access == access_semantics::read_write)
+     || Register::access == access_semantics::read_write
+     || Register::access == access_semantics::read_write_side_effect)
     && (Register::reserved_bits == reserved_bit_policy::write_zero
         || static_cast<typename Register::value_type>(Register::writable_mask
                                                      | Register::required_one_mask)
@@ -204,6 +208,13 @@ public:
 
     [[nodiscard]] constexpr std::uintptr_t address() const noexcept {
         return block_base_ + Register::offset;
+    }
+
+    [[nodiscard]] std::expected<value_type, mmio_error>
+    read_with_side_effect() noexcept
+        requires(Register::access == access_semantics::read_write_side_effect)
+    {
+        return policy_.template read<value_type>(address());
     }
 
     [[nodiscard]] std::expected<value_type, mmio_error> read() noexcept
