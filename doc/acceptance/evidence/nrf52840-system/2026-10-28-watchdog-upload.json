@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "uploaded_at_utc": "2026-10-28T15:59:04.427897+00:00",
+  "board": "V1940-marked nice!nano-compatible Pro Micro; silicon/PCB revision unverified",
+  "bootloader": {
+    "version": "0.6.0",
+    "board_id": "nRF52840-nicenano",
+    "softdevice": "S140 6.1.1"
+  },
+  "image": "system-watchdog: deliberate three-second watchdog feed withholding/reset test",
+  "software_record": "2026-10-28-audit-software.json",
+  "upload": {
+    "method": "tool/hardware.py flash; UF2 application partition only",
+    "mount": "/Volumes/NICENANO",
+    "exit_code": 0,
+    "elf_sha256": "e992daa68616e6fe20751e47e768d25dfaf0d21ac165147b8e83e8043ca34111",
+    "uf2_sha256": "3c02a03322a33f3caab01e8a6c097356edae35ac6d98c7a9815fed50c4a769e6",
+    "selected_inputs_identity_sha256": "469586e6bab14c9ec8cd2ded1cae185b983a3af7b93f70274d26e293b2df41b1",
+    "selected_inputs_sidecar_sha256": "fa6227b5f0057dacead9df62fca7d44d2e5c33617b508eebb486aaf71012fad1"
+  },
+  "pre_upload": {
+    "hashes_match_software_record": true,
+    "runner_dry_run": "passed",
+    "uf2_entry": "User double-reset after the regular RTC/watchdog-feeding test; compatible mounted bootloader read successfully"
+  },
+  "observation": {
+    "status": "observed",
+    "question": "What happens over about 30 seconds? After three short-flash groups, the watchdog test should hold the LED on briefly and restart the regular startup blinking. After a restart, the short-flash groups may change from two to three flashes.",
+    "answer": "Restarts; later groups have three flashes",
+    "observer": "user",
+    "result": "expected restart and captured DOG-reason indicator observed",
+    "scope": [
+      "Restart follows deliberate withholding of feeds from the configured watchdog",
+      "Later triple-pulse groups indicate RESETREAS.DOG captured by this firmware after restart"
+    ],
+    "timing": "Qualitative observation requested over about 30 seconds; timeout not independently measured"
+  },
+  "post_upload": {
+    "uf2_drive_disconnected": true,
+    "application_behavior": "user confirms restart and later triple-flash groups",
+    "bootloader_reentry": {
+      "user_report": "Board is in UF2 mode",
+      "compatible_drive_read": true,
+      "scope": "UF2 re-entry after deliberate watchdog reset-test image"
+    }
+  },
+  "not_established": [
+    "independent timeout measurement",
+    "complete PLN-0042 or PLN-0043 acceptance",
+    "all watchdog reload channels, alternate configurations and fault paths on hardware"
+  ],
+  "restore_regular_image": {
+    "uploaded_at_utc": "2026-10-28T16:11:17.078672+00:00",
+    "method": "tool/hardware.py flash; UF2 application partition only",
+    "mount": "/Volumes/NICENANO",
+    "hashes_match_software_record": true,
+    "runner_dry_run": "passed",
+    "exit_code": 0,
+    "elf_sha256": "39d62a5d7816ec6336c68d026008da9263aaa5396dc4fde49281f12ed213d12d",
+    "uf2_sha256": "e3c3b5e7d16d1239113754c003124b40c185f7c3c4686636f832c0db3eeafd1a",
+    "selected_inputs_identity_sha256": "b4eb17550bb0c415b2f3c5c7781abd84a9e257504675d9a5504bdcbd4d50c22f",
+    "selected_inputs_sidecar_sha256": "cf4dac9766ffa22b50163c4bbf21f33f3f6c5a6afe8290f59fe9c100fe385304",
+    "uf2_drive_disconnected": true,
+    "application_observation": "Not separately requested after restoration; identical regular image was previously observed."
+  }
+}

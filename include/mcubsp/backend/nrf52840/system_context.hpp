@@ -1,9 +1,10 @@
 #pragma once
-// @req-file REQ-0056 REQ-0057 REQ-0058 REQ-0073
+// @req-file REQ-0056 REQ-0057 REQ-0058 REQ-0062 REQ-0073
 #include <array>
 #include <cstdint>
 #include <expected>
 #include <limits>
+#include <optional>
 #include <mcubsp/arch/barrier.hpp>
 #include <mcubsp/backend/nrf52840/gpio.hpp>
 #include <mcubsp/mcu/nrf52840/system.hpp>
@@ -51,10 +52,11 @@ template <class Mmio, class Execution> class system_context {
     Mmio &mmio;
     Execution &execution;
     gpio_backend<Mmio> &gpio;
+    resource_registry &resources;
     const core_reservations reserved;
     explicit system_context(Mmio &m, Execution &e, gpio_backend<Mmio> &g,
                             core_reservations owned_by_bsp = {}) noexcept
-        : mmio(m), execution(e), gpio(g), reserved(owned_by_bsp) {}
+        : mmio(m), execution(e), gpio(g), resources(g.resources()), reserved(owned_by_bsp) {}
     system_context(const system_context &) = delete;
     system_context &operator=(const system_context &) = delete;
     [[nodiscard]] system_result claim(unsigned id,
@@ -69,6 +71,12 @@ template <class Mmio, class Execution> class system_context {
                 return std::unexpected(system_error::busy);
             if (generation_[id] == std::numeric_limits<std::uint32_t>::max())
                 return std::unexpected(system_error::faulted);
+            if (auto p = coordinated_resource(id,domain)) {
+                auto shared = resources.claim(execution,*p,this);
+                if (!shared) return std::unexpected(shared.error()==coordination_error::busy
+                                                    ? system_error::busy : system_error::faulted);
+                coordinated_[id]=*shared;
+            }
             domains_[id] = domain;
             owned_[id] = true;
             published_[id] = false;
@@ -85,6 +93,11 @@ template <class Mmio, class Execution> class system_context {
                 return std::unexpected(system_error::not_initialized);
             if (references_[id])
                 return std::unexpected(system_error::busy);
+            if (coordinated_[id]) {
+                auto shared=resources.release(execution,*coordinated_[id]);
+                if (!shared) return std::unexpected(system_error::busy);
+                coordinated_[id].reset();
+            }
             owned_[id] = false;
             published_[id] = false;
             return {};
@@ -268,10 +281,22 @@ template <class Mmio, class Execution> class system_context {
     }
 
   private:
+    static constexpr std::optional<peripheral> coordinated_resource(unsigned id, endpoint_domain domain) noexcept {
+        if (id<5) return static_cast<peripheral>(static_cast<unsigned>(peripheral::timer0)+id);
+        if (id<8) return static_cast<peripheral>(static_cast<unsigned>(peripheral::rtc0)+id-5);
+        if (id==8) return peripheral::wdt;
+        if (id<15) return static_cast<peripheral>(static_cast<unsigned>(peripheral::egu0)+id-9);
+        if (id==61) return peripheral::clock;
+        if (id==62) return peripheral::power;
+        if (id==76) return peripheral::radio;
+        if (id==77) return domain==endpoint_domain::aar ? peripheral::aar : peripheral::ccm;
+        return std::nullopt; // channel/core reservations retain their existing finer-grained identities
+    }
     std::array<bool, resource_count> owned_{}, published_{};
     std::array<std::uint8_t, resource_count> references_{};
     std::array<std::uint32_t, resource_count> generation_{};
     std::array<endpoint_domain, resource_count> domains_{};
+    std::array<std::optional<resource_token>, resource_count> coordinated_{};
     unsigned active_work_{};
 };
 } // namespace mcubsp::backend::nrf52840

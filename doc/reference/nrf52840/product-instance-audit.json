@@ -1,0 +1,777 @@
+{
+  "document": "4413_417 v1.11",
+  "section": "4.2.4",
+  "notes": [
+    "Fabric IDs are not necessarily CPU IRQs.",
+    "FPU at 0x40026000 names IRQ 38; its MDK UNUSED placeholder is not a usable peripheral register.",
+    "GPIO is a deprecated alias of P0; SWI aliases use the corresponding EGU interrupt.",
+    "Shared base addresses alone do not establish exclusive ownership."
+  ],
+  "instances": [
+    {
+      "name": "APPROTECT",
+      "base": 1073741824,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "APPROTECT",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "CLOCK",
+      "base": 1073741824,
+      "fabric_id": 0,
+      "irq": 0,
+      "family": "CLOCK",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "POWER",
+      "base": 1073741824,
+      "fabric_id": 0,
+      "irq": 0,
+      "family": "POWER",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "GPIO",
+      "base": 1342177280,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "GPIO",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "P0",
+      "base": 1342177280,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "GPIO",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "P1",
+      "base": 1342178048,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "GPIO",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "RADIO",
+      "base": 1073745920,
+      "fabric_id": 1,
+      "irq": 1,
+      "family": "RADIO",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "UART0",
+      "base": 1073750016,
+      "fabric_id": 2,
+      "irq": 2,
+      "family": "UART0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "UARTE0",
+      "base": 1073750016,
+      "fabric_id": 2,
+      "irq": 2,
+      "family": "UARTE0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SPI0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "SPI0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SPIM0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SPIS0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "SPIS0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TWI0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "TWI0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TWIM0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "TWIM0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TWIS0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "TWIS0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SPI1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "SPI0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SPIM1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SPIS1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "SPIS0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TWI1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "TWI0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TWIM1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "TWIM0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TWIS1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "TWIS0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "NFCT",
+      "base": 1073762304,
+      "fabric_id": 5,
+      "irq": 5,
+      "family": "NFCT",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "GPIOTE",
+      "base": 1073766400,
+      "fabric_id": 6,
+      "irq": 6,
+      "family": "GPIOTE",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SAADC",
+      "base": 1073770496,
+      "fabric_id": 7,
+      "irq": 7,
+      "family": "SAADC",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TIMER0",
+      "base": 1073774592,
+      "fabric_id": 8,
+      "irq": 8,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TIMER1",
+      "base": 1073778688,
+      "fabric_id": 9,
+      "irq": 9,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TIMER2",
+      "base": 1073782784,
+      "fabric_id": 10,
+      "irq": 10,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "RTC0",
+      "base": 1073786880,
+      "fabric_id": 11,
+      "irq": 11,
+      "family": "RTC0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "TEMP",
+      "base": 1073790976,
+      "fabric_id": 12,
+      "irq": 12,
+      "family": "TEMP",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "RNG",
+      "base": 1073795072,
+      "fabric_id": 13,
+      "irq": 13,
+      "family": "RNG",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "ECB",
+      "base": 1073799168,
+      "fabric_id": 14,
+      "irq": 14,
+      "family": "ECB",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "AAR",
+      "base": 1073803264,
+      "fabric_id": 15,
+      "irq": 15,
+      "family": "AAR",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "CCM",
+      "base": 1073803264,
+      "fabric_id": 15,
+      "irq": 15,
+      "family": "CCM",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "WDT",
+      "base": 1073807360,
+      "fabric_id": 16,
+      "irq": 16,
+      "family": "WDT",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "RTC1",
+      "base": 1073811456,
+      "fabric_id": 17,
+      "irq": 17,
+      "family": "RTC0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "QDEC",
+      "base": 1073815552,
+      "fabric_id": 18,
+      "irq": 18,
+      "family": "QDEC",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "COMP",
+      "base": 1073819648,
+      "fabric_id": 19,
+      "irq": 19,
+      "family": "COMP",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "LPCOMP",
+      "base": 1073819648,
+      "fabric_id": 19,
+      "irq": 19,
+      "family": "LPCOMP",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "EGU0",
+      "base": 1073823744,
+      "fabric_id": 20,
+      "irq": 20,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SWI0",
+      "base": 1073823744,
+      "fabric_id": 20,
+      "irq": 20,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 24
+    },
+    {
+      "name": "EGU1",
+      "base": 1073827840,
+      "fabric_id": 21,
+      "irq": 21,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 24
+    },
+    {
+      "name": "SWI1",
+      "base": 1073827840,
+      "fabric_id": 21,
+      "irq": 21,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 24
+    },
+    {
+      "name": "EGU2",
+      "base": 1073831936,
+      "fabric_id": 22,
+      "irq": 22,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SWI2",
+      "base": 1073831936,
+      "fabric_id": 22,
+      "irq": 22,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25
+    },
+    {
+      "name": "EGU3",
+      "base": 1073836032,
+      "fabric_id": 23,
+      "irq": 23,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SWI3",
+      "base": 1073836032,
+      "fabric_id": 23,
+      "irq": 23,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25
+    },
+    {
+      "name": "EGU4",
+      "base": 1073840128,
+      "fabric_id": 24,
+      "irq": 24,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SWI4",
+      "base": 1073840128,
+      "fabric_id": 24,
+      "irq": 24,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25
+    },
+    {
+      "name": "EGU5",
+      "base": 1073844224,
+      "fabric_id": 25,
+      "irq": 25,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SWI5",
+      "base": 1073844224,
+      "fabric_id": 25,
+      "irq": 25,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25
+    },
+    {
+      "name": "TIMER3",
+      "base": 1073848320,
+      "fabric_id": 26,
+      "irq": 26,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "TIMER4",
+      "base": 1073852416,
+      "fabric_id": 27,
+      "irq": 27,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "PWM0",
+      "base": 1073856512,
+      "fabric_id": 28,
+      "irq": 28,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "PDM",
+      "base": 1073860608,
+      "fabric_id": 29,
+      "irq": 29,
+      "family": "PDM",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "ACL",
+      "base": 1073864704,
+      "fabric_id": 30,
+      "irq": -1,
+      "family": "ACL",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "NVMC",
+      "base": 1073864704,
+      "fabric_id": 30,
+      "irq": -1,
+      "family": "NVMC",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "PPI",
+      "base": 1073868800,
+      "fabric_id": 31,
+      "irq": -1,
+      "family": "PPI",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "MWU",
+      "base": 1073872896,
+      "fabric_id": 32,
+      "irq": 32,
+      "family": "MWU",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "PWM1",
+      "base": 1073876992,
+      "fabric_id": 33,
+      "irq": 33,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "PWM2",
+      "base": 1073881088,
+      "fabric_id": 34,
+      "irq": 34,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SPI2",
+      "base": 1073885184,
+      "fabric_id": 35,
+      "irq": 35,
+      "family": "SPI0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SPIM2",
+      "base": 1073885184,
+      "fabric_id": 35,
+      "irq": 35,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SPIS2",
+      "base": 1073885184,
+      "fabric_id": 35,
+      "irq": 35,
+      "family": "SPIS0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "RTC2",
+      "base": 1073889280,
+      "fabric_id": 36,
+      "irq": 36,
+      "family": "RTC0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "I2S",
+      "base": 1073893376,
+      "fabric_id": 37,
+      "irq": 37,
+      "family": "I2S",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "FPU",
+      "base": 1073897472,
+      "fabric_id": 38,
+      "irq": 38,
+      "family": null,
+      "role": "interrupt_only",
+      "page": 25
+    },
+    {
+      "name": "USBD",
+      "base": 1073901568,
+      "fabric_id": 39,
+      "irq": 39,
+      "family": "USBD",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "UARTE1",
+      "base": 1073905664,
+      "fabric_id": 40,
+      "irq": 40,
+      "family": "UARTE0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "QSPI",
+      "base": 1073909760,
+      "fabric_id": 41,
+      "irq": 41,
+      "family": "QSPI",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CRYPTOCELL",
+      "base": 1342349312,
+      "fabric_id": 42,
+      "irq": 42,
+      "family": "CRYPTOCELL",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_AES",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_AES",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_CHACHA",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_CHACHA",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_CTL",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_CTL",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_DIN",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_DIN",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_DOUT",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_DOUT",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_HASH",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_HASH",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_HOST_RGF",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_HOST_RGF",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_MISC",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_MISC",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_PKA",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_PKA",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_RNG",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_RNG",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "CC_RNG_SRAM",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_RNG_SRAM",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "PWM3",
+      "base": 1073926144,
+      "fabric_id": 45,
+      "irq": 45,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "SPIM3",
+      "base": 1073934336,
+      "fabric_id": 47,
+      "irq": 47,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "FICR",
+      "base": 268435456,
+      "fabric_id": -1,
+      "irq": -1,
+      "family": "FICR",
+      "role": "registers",
+      "page": 25
+    },
+    {
+      "name": "UICR",
+      "base": 268439552,
+      "fabric_id": -1,
+      "irq": -1,
+      "family": "UICR",
+      "role": "registers",
+      "page": 25
+    }
+  ]
+}

@@ -135,6 +135,20 @@ Extend identity readout with the ROM fields used by Nordic's errata predicates.
 Complete product field/mode/core/pin/package and stepping-specific errata review,
 and actual board identity readback, remain open; this is not gate acceptance.
 
+Further audit, 28 October 2026: import all 53 current peripheral register
+families (1,563 detailed registers / 4,476 fields), reconcile all fields against
+the MDK or reviewed supplementary/access classifications, and import the 85-row
+instance table. Correct the writable CLOCK.LFRCMODE mask and recover two omitted
+HOST_BOOT fields (the CryptoCell subset now has 345 fields). Add checked literal
+enums, three package bonding/electrical inventories, RAM aliases/EasyDMA span
+constraints and GPIO high-drive rejection on restricted die pads. Add 12 selected
+Arm core components with 382 register views / 729 fields, including keyed writes,
+read side effects and comparator-specific restrictions, with pinned Arm sources
+and package licensing. Reproduction, native tests and four-target compilation
+are recorded in the [audit checkpoint](../../../../doc/acceptance/nrf52840-system.md).
+These table inventories do not close instance/mode/errata sequencing, board
+wiring, actual identity or revision-applicable errata acceptance.
+
 ## PLN-0043 Implement power, event routing, core services and time
 @status(in_progress)
 @link(REQ-0056, REQ-0057, REQ-0058, REQ-0073)
@@ -173,8 +187,34 @@ and OpenOCD parsing/Jim Tcl execution pass. Complete source/errata review and
 independent physical timing/wake/watchdog/core/power/debug/trace acceptance remain
 open; no current image upload or hardware result is inferred from software tests.
 
+Further preparation, 28 October 2026: the regular system example now ends its
+autonomous LED route after four seconds, requires RTC ISR/alarm progress for
+subsequent pulses, uses TIMER2 as an independent wake/timeout guard and feeds a
+three-second watchdog only after completed RTC cycles. Handle the completed-alarm
+sleep-predicate race normally. A separate `system-watchdog` example deliberately
+withholds feeding, indicates a preserved DOG reset reason using triple pulses,
+and leaves a bootloader-consumed reason inconclusive. Source/installed builds
+produce both UF2 variants; physical records remain specific to the uploaded
+image. These examples do not measure low-power current or complete the plan.
+
+Physical follow-up, 28 October 2026: upload the regular audit image after
+verifying its software-record hashes and mounted bootloader. The user confirms
+repeating double pulses, supporting RTC1 alarm/ISR progress and watchdog-feeding
+application progress around native System ON idle. Independent timing/current,
+RTC overflow and deliberate watchdog timeout/reset were still unobserved at that
+regular-image checkpoint. Keep the
+plan in progress; see the image-bound acceptance record.
+
+The user then re-entered the compatible UF2 bootloader from that regular image.
+The separate watchdog timeout image passed hash/runner checks and uploaded
+successfully. The user then confirmed restarts and later triple-pulse groups,
+observing the no-feed watchdog reset path and the firmware's captured DOG reason.
+Independent timeout accuracy and other watchdog configurations remain open.
+UF2 re-entry after the timeout image was then observed and the same regular
+image was verified and restored successfully. The plan remains in progress.
+
 ## PLN-0044 Implement peripheral DMA and resource coordination
-@status(planned)
+@status(in_progress)
 @link(REQ-0062)
 
 Prerequisite: PLN-0042; integrate clocks/interrupts from PLN-0043 as needed.
@@ -190,8 +230,19 @@ Exit: alias/resource and invalid-buffer tests pass; each later DMA driver links
 to this contract and supplies its own completion/quiescence evidence. This stage
 alone does not establish all peripherals' DMA implementation or physical timing.
 
+Implementation checkpoint, 28 October 2026: add an explicit fixed resource
+registry, generation-stamped configuration claims and pin reservations, and
+bridge existing TWI/GPIO/native system clients. Add bounded buffer leases with
+overlap/count/alignment/memory checks, quiescence-gated release, stale-callback
+protection and faulted ownership retention. Keep CryptoCell size/start/busy
+contracts separate from serial EasyDMA. Native tests cover these contracts and
+legacy cleanup regressions; cross-target probes and linked source/package
+compositions qualify the software slice. Concrete peripheral DMA sequencing
+and remaining driver integrations stay in their owning stages. See the
+[checkpoint](../../../../doc/acceptance/nrf52840-dma-uart.md).
+
 ## PLN-0045 Complete UART, SPI and I2C master/slave families
-@status(planned)
+@status(in_progress)
 @link(REQ-0059, REQ-0060, REQ-0061, REQ-0062)
 
 Prerequisite: PLN-0042 through PLN-0044 for the relevant resources; preserve
@@ -206,6 +257,22 @@ Keep every instance usable through explicit board selections.
 Exit: per-instance native/negative-binding tests, linked examples and package
 consumers pass. Physical peers verify UART TX/RX/flow control, SPI master/slave
 and I2C master/target paths; independent wire timing is recorded separately.
+
+Initial UART checkpoint, 28 October 2026: preserve the distinct UART/UARTE baud
+encodings and actual-rate tolerances, validate native format/pin/CTS/RTS limits,
+and implement explicit native CPU-driven UART0 finite TX/RX, simultaneous
+directions, flow control, polling/IRQ service and bounded cancellation/recovery.
+Add a linked binary-pattern loopback example. Host tests cover final-byte and
+RXTO ordering, errors, FIFO tails, flow stalls, wrap deadlines and late stop
+acknowledgments. UARTE DMA/streaming, SPI families, TWIM/TWIS and full facade
+integration remain software work; physical UART/peer/timing results are pending.
+
+Software verification for this checkpoint: all 65 CTest entries / 418 native
+cases and 245 isolated headers on four targets pass, with actual UART/DMA
+service-body probes. Repository and source/relocated-package UART loopback
+builds link and emit UF2; installed runner planning passes without hardware.
+Current images have no new physical result; the previous RTC/watchdog records
+retain their original hashes. Both PLN-0044 and PLN-0045 remain in progress.
 
 ## PLN-0046 Implement PWM, analog and quadrature decoding
 @status(planned)

@@ -49,4 +49,5 @@ install(FILES doc/package.md DESTINATION share/mcubsp RENAME README.md)
 
 # Retain the Nordic BSD notice with redistributed derived register facts.
 install(FILES doc/reference/nrf52840/NORDIC-LICENSE.txt
+    doc/reference/nrf52840/ARM-LICENSE.txt
     DESTINATION share/mcubsp/doc/licenses)

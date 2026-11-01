@@ -9,9 +9,15 @@ Requirements and exit criteria retain their original meaning.
 - Reproducible, content-identified Nordic MDK register facts: 43 families, 74 SVD
   instances, 2,142 expanded register entries and 5,949 field entries. Safe task,
   alias, W1C/event and side-effecting read semantics have distinct types.
-- PS v1.11 CryptoCell supplement: 11 blocks, 199 registers and 343 fields. All
+- PS v1.11 tables: 53 families, 1,563 detailed registers and 4,476 fields,
+  including 11 CryptoCell blocks with 199 registers and 345 fields. All
   1,567 product register-overview entries have an address/reserved/CTRL-AP
   classification; 192 additional CryptoCell entries are absent from the MDK.
+- All 85 product instantiation rows, three package bonding/electrical tables,
+  checked literal enum encodings and CPU RAM alias/EasyDMA span constraints.
+- Selected Arm core descriptions: 12 components, 382 register views and 729
+  fields, with keyed writes, byte priorities, explicit read side effects and
+  debug comparator restrictions. These do not provide automatic debug ownership.
 - Explicit native clock/power, GPIOTE/port sensing, all 32 PPI channels and six
   groups/forks, EGU/SWI, TIMER0–4, RTC0–2 and watchdog APIs. Fixed channels retain
   their immutable endpoint owners, including exclusive AAR/CCM personalities.
@@ -25,8 +31,9 @@ Requirements and exit criteria retain their original meaning.
   a RAM fault-status record. External startup retains its own vector ownership.
 - Optional debugger inspection of FPB/DWT, faults and FICR/ROM identity, plus
   explicit OpenOCD ITM/SWO or ETM-M4/parallel-TPIU configuration and cleanup.
-- A standalone system application with a hardware timer/PPI/GPIOTE LED path and
-  a separate software RTC alarm/idle loop, using the existing UF2 partition.
+- A standalone system application whose initial timer/PPI/GPIOTE phase changes
+  to RTC ISR/alarm-dependent pulses and watchdog feeding. A separate timeout
+  variant deliberately resets; both use the existing UF2 partition.
 
 The [runtime/source guide](../reference/nrf52840/README.md) records sources,
 contracts, workarounds, interface limits and unresolved product-description gaps.
@@ -71,6 +78,32 @@ The changed system image contains 8,032 bytes text, 16 bytes data and 1,144
 bytes BSS. It has not been uploaded or physically verified. These are linked
 section sizes, not stack/current measurements.
 
+Further audit/software checkpoint on 28 October: the full product parser
+reconciles 4,122 MDK field matches, 346 supplementary fields and eight reviewed
+access differences with no unexplained field-shape/reset mismatch. It handles
+all 32 diagram IDs, including lower-case IDs that the prior CryptoCell parser
+missed. The corrected CryptoCell count is 345 fields. The CLOCK.LFRCMODE.STATUS
+prose establishes read-only access; both generated views now reject writes to
+it. Arm overlays correct the CMSIS TPI DEVTYPE shift and floating-point debug
+selector width, separate read-only/status fields and preserve required keys.
+The package GPIO restrictions are tested independently of unverified board
+connector exposure. Historical software and physical records above remain
+unchanged. Current verification and image hashes are in
+[the audit record](evidence/nrf52840-system/2026-10-28-audit-software.json).
+All 61 CTest entries and 385 merged native cases pass. All 239 public headers
+compile on host, Cortex-M4, Cortex-M7 and ESP32-P4. MDK/product/core imports
+reproduce; repository, source and relocated-package builds pass, including an
+installed Cortex-M4 metadata probe and both system variants. Focused mcutrace
+validation reports no diagnostics; it does not execute physical tests.
+
+The new regular image removes the autonomous LED route after four seconds.
+Its repeating double pulses require RTC alarm time progress and ISR delivery;
+TIMER2 supplies independent timeout/wake interrupts. A watchdog is fed only
+after complete pulse cycles. The timeout variant stops feeding and attempts
+reset, using triple pulses after a captured DOG reason. A reason consumed by
+the bootloader remains inconclusive. Neither image has a physical result in
+this software record. See the [test procedure](../../example/system/README.md).
+
 ## Physical observation
 
 The user put the board into UF2 mode. The mounted drive reported UF2 Bootloader
@@ -95,16 +128,48 @@ reset, MPU/FPU fault, System OFF retention or debug/trace observation. The user
 has UF2/USB access only; no SWD probe was available. Exact chip/PCB revision and
 post-application bootloader recovery remain unverified.
 
+New upload on 28 October: the user reported UF2 mode and the compatible
+NICENANO drive mounted. The regular RTC/watchdog-feeding test matched all hashes
+in the audit software record, passed runner planning and uploaded successfully
+(exit code zero). The UF2 drive subsequently disconnected. The
+[new upload record](evidence/nrf52840-system/2026-10-28-audit-upload.json) binds
+this action to ELF `39d62a5d7816ec6336c68d026008da9263aaa5396dc4fde49281f12ed213d12d`.
+The user subsequently confirmed **two short flashes, pause, repeating**, after
+being asked to watch for about 20 seconds. That matches the RTC1 alarm/ISR-driven
+post-startup pattern and supports progress through the watchdog start/feed path
+while native System ON idle is exercised. It does not measure timing, sleep
+residency or current; TIMER2 independently supplies wake/timeout interrupts.
+RTC overflow endurance and broader system acceptance remain open. The earlier
+physical LED observation remains tied to its old image.
+
+The user then double-reset the running regular audit image; the compatible UF2
+drive mounted and was read successfully, observing bootloader re-entry for that
+image. The separate watchdog timeout variant matched its audit hashes, passed
+runner planning and uploaded with exit code zero. Its
+[upload record](evidence/nrf52840-system/2026-10-28-watchdog-upload.json) binds
+the action to ELF `e992daa68616e6fe20751e47e768d25dfaf0d21ac165147b8e83e8043ca34111`.
+The user confirmed **restarts; later groups have three flashes**, after being
+asked to watch for about 30 seconds. This observes the deliberate no-feed reset
+path and the firmware's captured RESETREAS.DOG indicator after restart. Timeout
+accuracy was not independently measured; other reload channels/configurations
+remain unqualified. The user subsequently double-reset that image and the
+compatible UF2 drive mounted, observing recovery after the reset test. The
+original regular image was verified against its audit hashes and restored
+successfully (exit code zero); the drive disconnected. Its restored application
+behavior was not separately observed. Restoration hashes and recovery are
+recorded in the watchdog upload record.
+
 ## Remaining plan exits
 
-PLN-0042 still requires the complete field/mode/core/pin/package/errata audit and
-actual silicon identity readback. Current CryptoCell definitions and product
-register-address reconciliation are delivered; `complete_product_description`
+PLN-0042 still requires complete instance/mode/errata sequencing review,
+revision-applicable errata identity, board pin mapping and actual silicon
+identity readback. Current peripheral/core tables and package bonding are
+delivered; `complete_product_description`
 remains false. The old MDK facts and current-product supplement retain separate
 provenance.
 
 PLN-0043 still requires complete source/errata review and the independent
-physical timing, capture/counter, RTC, watchdog, core/fault, wake/retention,
+physical timing, capture/counter, broader RTC/watchdog coverage, core/fault, wake/retention,
 debug/trace and current procedures. The fixed PPI, clock/power event and optional
 debugger-script increments are implemented and software-tested. Exact board pin
 access and stepping remain unverified. Missing implementation review and

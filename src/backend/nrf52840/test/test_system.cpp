@@ -14,7 +14,8 @@ struct fixture {
     fixture() { mmio.poke(0x10000100, 0x52840); }
     nrf52840_test::fake_system mmio;
     execution::fake_policy execution;
-    gpio_backend<nrf52840_test::fake_system> gpio{mmio};
+    resource_registry resources;
+    gpio_backend<nrf52840_test::fake_system> gpio{mmio, resources};
     context_type context{mmio, execution, gpio};
 };
 TEST(nrf_system, identifies_factory_part_without_interpreting_board_marking, "REQ-0055") {

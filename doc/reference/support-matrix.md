@@ -35,7 +35,8 @@ Full-peripheral implementation is now the intended target in the
 state remains as described below.
 
 The nice!nano-compatible Pro Micro family has a reproducible MDK register-facts
-catalogue, a PS v1.11 CryptoCell supplement and register-address audit, plus
+catalogue, PS v1.11 peripheral/field/instance and package inventories, selected
+typed Arm core descriptions and reproducible source audits, plus
 GPIO and finite I2C backends/facade, bootloader-handoff startup and Blink/TMP102
 applications with UF2/S140-v6 output. I2C0/I2C1 provide 100/250/400 kHz nominal
 rates, shared device leases and CPU-driven finite/repeated-START transfers;
@@ -46,17 +47,35 @@ MCUs. Explicit native system services now provide clock/power, GPIO events,
 all 32 PPI channels/groups/forks, POWER/CLOCK event interfaces, EGU/SWI,
 TIMER/RTC/watchdog and selected core/IRQ APIs,
 with native tests and linked example evidence. The user confirms the identified
-system example's hardware timer/PPI/GPIOTE LED behavior. RTC wake, low-power
+system example's hardware timer/PPI/GPIOTE LED behavior. RTC sleep residency, low-power
 current, exact silicon identity and full system acceptance remain unverified.
 Optional FPB/DWT inspection and SWO/ETM-M4 debugger scripts pass software checks;
-physical debug/trace capture remains pending. UART/SPI/ADC/PWM/DMA, USB application
-classes, radio, complete core descriptions and exhaustive silicon errata handling
+physical debug/trace capture remains pending. Native legacy UART0 finite TX/RX
+and common DMA/resource coordination now have software support; their new
+physical tests remain pending. UARTE/SPI/ADC/PWM/concrete DMA, USB application
+classes, radio, complete core/runtime qualification and exhaustive silicon errata handling
 remain unimplemented/incomplete. See the
 [system checkpoint](../acceptance/nrf52840-system.md) for exact limits.
+The [coordination/UART checkpoint](../acceptance/nrf52840-dma-uart.md) records
+the new shared ownership contracts and initial native UART0 support.
+The current regular system test requires RTC-driven pulses and watchdog feeding;
+a separate timeout variant deliberately resets. Both have software build evidence;
+the earlier regular-blink observation does not qualify these new images.
+The regular test was uploaded on 28 October; the user confirmed repeating double
+pulses, supporting RTC1 alarm/ISR progress and the watchdog-feeding application
+path around System ON idle. The [upload record](../acceptance/evidence/nrf52840-system/2026-10-28-audit-upload.json)
+retains the image identity and limits. Independent timing/current measurements
+remain pending.
+UF2 bootloader re-entry after that regular image was observed. The separate
+watchdog timeout image was uploaded; the user confirmed restarts and subsequent
+triple pulses, observing the firmware's DOG reset-reason indication. The
+[watchdog record](../acceptance/evidence/nrf52840-system/2026-10-28-watchdog-upload.json)
+retains its exact image and remaining qualification scope.
 On 27 October 2026 the connected V1940-marked board reported nice!nano UF2 0.6.0
 and S140 6.1.1; UF2 upload completed and the user confirmed LED blinking.
-Independent timing, silicon/PCB identity and post-application double-reset
-recovery remain unverified. The [image-bound observation](../acceptance/promicro-nrf52840.md)
+Independent timing and silicon/PCB identity remain unverified. Double-reset
+re-entry is observed for both 28 October audit images, and the regular image was
+restored successfully after the watchdog test. The [image-bound observation](../acceptance/promicro-nrf52840.md)
 records the exact ELF, UF2 and selected-input identities. See the
 [board guide](../../src/board/others/promicro_nrf52840/README.md).
 

@@ -1,0 +1,89 @@
+{
+  "document": "4413_417 v1.11",
+  "scope": "All detailed peripheral field tables; not Arm core or revision/board qualification.",
+  "matched_mdk_fields": 4122,
+  "supplemental_fields": 346,
+  "reviewed_access_differences": [
+    {
+      "block": "CLOCK",
+      "register": "LFRCMODE",
+      "field": "STATUS",
+      "mdk_access": "RW",
+      "product_access": "R",
+      "page": 170,
+      "section": "5.4.3.25",
+      "resolution": "PS 5.4.3.25 p.170: STATUS is read-only; the RW column is inconsistent."
+    },
+    {
+      "block": "CC_HOST_RGF",
+      "register": "HOST_IOT_KPRTL_LOCK",
+      "field": "HOST_IOT_KPRTL_LOCK",
+      "mdk_access": "RW",
+      "product_access": "RW1",
+      "page": 299,
+      "section": "6.6.13.4.1.8",
+      "resolution": "Use current product table; retain legacy MDK provenance separately."
+    },
+    {
+      "block": "CC_HOST_RGF",
+      "register": "HOST_IOT_KDR0",
+      "field": "HOST_IOT_KDR0",
+      "mdk_access": "RW",
+      "product_access": "RW1",
+      "page": 300,
+      "section": "6.6.13.4.1.9",
+      "resolution": "Use current product table; retain legacy MDK provenance separately."
+    },
+    {
+      "block": "CC_HOST_RGF",
+      "register": "HOST_IOT_KDR1",
+      "field": "HOST_IOT_KDR1",
+      "mdk_access": "W",
+      "product_access": "W1",
+      "page": 300,
+      "section": "6.6.13.4.1.10",
+      "resolution": "Use current product table; retain legacy MDK provenance separately."
+    },
+    {
+      "block": "CC_HOST_RGF",
+      "register": "HOST_IOT_KDR2",
+      "field": "HOST_IOT_KDR2",
+      "mdk_access": "W",
+      "product_access": "W1",
+      "page": 300,
+      "section": "6.6.13.4.1.11",
+      "resolution": "Use current product table; retain legacy MDK provenance separately."
+    },
+    {
+      "block": "CC_HOST_RGF",
+      "register": "HOST_IOT_KDR3",
+      "field": "HOST_IOT_KDR3",
+      "mdk_access": "W",
+      "product_access": "W1",
+      "page": 300,
+      "section": "6.6.13.4.1.12",
+      "resolution": "Use current product table; retain legacy MDK provenance separately."
+    },
+    {
+      "block": "CC_HOST_RGF",
+      "register": "HOST_IOT_LCS",
+      "field": "LCS_IS_VALID",
+      "mdk_access": "RW",
+      "product_access": "R",
+      "page": 301,
+      "section": "6.6.13.4.1.13",
+      "resolution": "Use current product table; retain legacy MDK provenance separately."
+    },
+    {
+      "block": "CC_HOST_RGF",
+      "register": "HOST_IOT_LCS",
+      "field": "LCS",
+      "mdk_access": "RW",
+      "product_access": "RW1",
+      "page": 301,
+      "section": "6.6.13.4.1.13",
+      "resolution": "Use current product table; retain legacy MDK provenance separately."
+    }
+  ],
+  "unresolved_field_shape_or_reset_differences": []
+}

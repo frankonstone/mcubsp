@@ -241,7 +241,7 @@ TEST(nrf52840_i2c, rolls_back_initialization_and_poisoned_transfer_mmio_failures
     f.mmio.failed_address = base + 0x524; f.mmio.fail_once = true;
     EXPECT_FALSE(f.bus.initialize(*timing).has_value());
     EXPECT_EQ(f.mmio.peek(base + 0x500), 0U);
-    EXPECT_FALSE(backend::nrf52840::detail::serial_owner<0>::claimed);
+    EXPECT_FALSE(backend::nrf52840::default_resources.claimed(f.execution, backend::nrf52840::peripheral::twi0));
     backend_type replacement{f.mmio, f.execution};
     ASSERT_TRUE(replacement.initialize(*timing).has_value());
     std::array<std::uint8_t, 1> data{};
@@ -294,10 +294,10 @@ TEST(nrf52840_i2c, failed_disable_retains_owner_until_explicit_successful_shutdo
     EXPECT_FALSE(transfer->cancel().has_value());
     EXPECT_TRUE(transfer->take().error().kind == core::transfer_error_kind::quiesce_failed);
     EXPECT_FALSE(f.bus.shutdown().has_value());
-    EXPECT_TRUE(backend::nrf52840::detail::serial_owner<0>::claimed);
+    EXPECT_TRUE(backend::nrf52840::default_resources.claimed(f.execution, backend::nrf52840::peripheral::twi0));
     f.mmio.failed_address.reset();
     ASSERT_TRUE(f.bus.shutdown().has_value());
-    EXPECT_FALSE(backend::nrf52840::detail::serial_owner<0>::claimed);
+    EXPECT_FALSE(backend::nrf52840::default_resources.claimed(f.execution, backend::nrf52840::peripheral::twi0));
     backend_type fresh{f.mmio, f.execution};
     ASSERT_TRUE(fresh.initialize(*timing).has_value());
     ASSERT_TRUE(fresh.shutdown().has_value());

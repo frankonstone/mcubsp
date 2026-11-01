@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "kind": "software_verification",
+  "plans": [
+    "PLN-0042",
+    "PLN-0043"
+  ],
+  "plan_completion_claim": false,
+  "native": {
+    "ctest_passed": 61,
+    "ctest_total": 61,
+    "report": "output/artifact/native.json",
+    "report_sha256": "3b0318f7d816940bcbe9663c79163e490aa6bc72241503e47bc360073a51f944",
+    "tests": 385,
+    "failures": 0
+  },
+  "public_headers": {
+    "count": 239,
+    "targets": [
+      "AppleClang 21 macOS arm64",
+      "Arm GNU 15.2.1 Cortex-M4F",
+      "Arm GNU 15.2.1 Cortex-M7",
+      "ESP32-P4 RISC-V"
+    ],
+    "result": "passed"
+  },
+  "imports": {
+    "mdk": "byte-for-byte --check passed",
+    "product_specification": "byte-for-byte --check passed",
+    "selected_arm_core": "byte-for-byte --check passed",
+    "product_families": 53,
+    "product_detailed_registers": 1563,
+    "product_fields": 4476,
+    "mdk_field_matches": 4122,
+    "supplementary_fields": 346,
+    "reviewed_access_differences": 8,
+    "unresolved_field_shape_or_reset_differences": 0,
+    "product_instances": 85,
+    "packages": [
+      "aQFN73",
+      "QFN48",
+      "WLCSP94"
+    ],
+    "cryptocell_blocks": 11,
+    "cryptocell_registers": 199,
+    "cryptocell_fields": 345,
+    "core_components": 12,
+    "core_register_views": 382,
+    "core_fields": 729
+  },
+  "composition": {
+    "repository_examples": [
+      "Blink",
+      "TMP102",
+      "system",
+      "system-watchdog"
+    ],
+    "source_consumer": "system linked",
+    "relocated_installed_consumer": "system and system-watchdog linked",
+    "installed_metadata_probe": "Cortex-M4F passed",
+    "reset_handler_count": 1,
+    "licenses_installed": [
+      "Nordic BSD-3-Clause",
+      "Arm Apache-2.0"
+    ],
+    "uf2_runner": "fake mount dry-run passed"
+  },
+  "system_image": {
+    "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.system.elf",
+    "elf_sha256": "39d62a5d7816ec6336c68d026008da9263aaa5396dc4fde49281f12ed213d12d",
+    "uf2_sha256": "e3c3b5e7d16d1239113754c003124b40c185f7c3c4686636f832c0db3eeafd1a",
+    "selected_input_identity": "b4eb17550bb0c415b2f3c5c7781abd84a9e257504675d9a5504bdcbd4d50c22f",
+    "inputs_sha256": "cf4dac9766ffa22b50163c4bbf21f33f3f6c5a6afe8290f59fe9c100fe385304",
+    "text_bytes": 9636,
+    "data_bytes": 16,
+    "bss_bytes": 1176,
+    "uploaded": false,
+    "physical_result": null
+  },
+  "watchdog_timeout_image": {
+    "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.system-watchdog.elf",
+    "elf_sha256": "e992daa68616e6fe20751e47e768d25dfaf0d21ac165147b8e83e8043ca34111",
+    "uf2_sha256": "3c02a03322a33f3caab01e8a6c097356edae35ac6d98c7a9815fed50c4a769e6",
+    "selected_input_identity": "469586e6bab14c9ec8cd2ded1cae185b983a3af7b93f70274d26e293b2df41b1",
+    "inputs_sha256": "fa6227b5f0057dacead9df62fca7d44d2e5c33617b508eebb486aaf71012fad1",
+    "text_bytes": 9944,
+    "data_bytes": 16,
+    "bss_bytes": 1176,
+    "uploaded": false,
+    "physical_result": null
+  },
+  "logs": {
+    "native": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-native.log",
+      "sha256": "a8d8799eddeaf7f95dffa9e95c436db153c8da68bb3cfe6d31dfb280e5095bae"
+    },
+    "cortex_m4": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-m4.log",
+      "sha256": "907e4cdf20fc96331cc3eab03dd7e12a129b50b084a1188f5e77e94b9824bc74"
+    },
+    "cortex_m7": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-m7.log",
+      "sha256": "0a4a93d4cad6a918ff84b53f416ebb5686a2977bc0298f65ce884c28c79a47bc"
+    },
+    "esp32_p4": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-p4.log",
+      "sha256": "88586a0c44681ab5943635c4b50578349c8ffa1c84de16063900457d36c68a84"
+    },
+    "board_examples": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-board.log",
+      "sha256": "17a8ddea47571f34376db4b11146bc3290d90c122481419fb2ced279c105b859"
+    },
+    "mdk_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-mdk-check.log",
+      "sha256": "457500bbe6d445edbd002c557d80d14acc202371b8b4ad9e04d96fc578811001"
+    },
+    "product_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-reproduce.log",
+      "sha256": "423a76184b81b5dd0cb2efd1ca88ae364f2489ac71a15b230a804b2611f93897"
+    },
+    "core_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-audit-core-check.log",
+      "sha256": "4de7e9cf373cda0979e9bba5fe261454b451ff4d56f83a152f2748ba1d6caea9"
+    },
+    "source_and_installed_consumers": {
+      "local_path": "/var/folders/4r/zl71gz153yn3gcf0_gy5lhxm0000gn/T/mcubsp-nrf-system-consumers-z9i9cpui/checks.log",
+      "sha256": "75f34934b173f0f1007fb852f309dd7301f886d7526d63155ed5b38d9eb4257f"
+    }
+  },
+  "fact_identities": {
+    "source-manifest.json": "4770d83c15d8bbfb426cb6dbf19e2f6d660d7b4c1c5ba954e6ac95fd929a5f97",
+    "arm-references.json": "71cec817787f620145552f7b4d0770cbe595c9c192e945d87a3c3adfbc4e947c",
+    "product-facts.json": "466e5eea679fc2db324861477367a367604099b12a9e23c5f6e94626bf5eaf96",
+    "product-field-audit.json": "79bb4419904ba9af3c8801bb33a17a89d7c36bc2c0d7fdb4574af5a42a5c31a8",
+    "product-instance-audit.json": "b5dacb2126f4a652cb76bb370c6de8c1468efca04a7caac6904d11982c7b50d4",
+    "package-pins.json": "3e91ea461fa683c9ec170c72c64f592fdc3d84dd2b74e33819913b43877466cc",
+    "core-facts.json": "a9bd4b9cd996a36aeb4dbb4fb5582dcab2bfd754d9c8214f3fd8b6648a5c2ac5"
+  },
+  "physical_baseline": "2026-10-27-upload.json (historical image only)",
+  "not_established": [
+    "complete instance/mode/errata sequencing review",
+    "actual FICR/ROM identity and revision-applicable errata on this board",
+    "actual board connector mapping",
+    "physical RTC/wake/watchdog acceptance of either new image",
+    "power/current or debug/trace acceptance",
+    "coverage refresh",
+    "hosted CI"
+  ],
+  "trace_validation": {
+    "analysis_revision": "fdd7771d124fe6f6",
+    "filtered": true,
+    "complete": true,
+    "diagnostics": 0,
+    "requirements": [
+      "REQ-0007",
+      "REQ-0008",
+      "REQ-0053",
+      "REQ-0055",
+      "REQ-0056",
+      "REQ-0057",
+      "REQ-0058",
+      "REQ-0062",
+      "REQ-0073"
+    ]
+  }
+}

@@ -640,8 +640,19 @@
     }
   ],
   "open_gaps": [
-    "This legacy SVD lacks 192 product-specification CryptoCell registers. product.hpp supplies the current definitions; product-register-audit.json reconciles the seven older CC_HOST_RGF absolute addresses. Full product field/mode/core/pin/errata review remains open.",
-    "Actual connected silicon build/package and revision-specific physical observations are unavailable without SWD.",
+    "This legacy SVD lacks 192 product-specification CryptoCell registers. product.hpp supplies the current definitions; product-register-audit.json reconciles the seven older CC_HOST_RGF absolute addresses. Current product/core tables and package bonding are separate generated inventories. Complete instance/mode/errata sequencing and actual board/stepping qualification remain open.",
+    "Actual connected silicon build/package and revision-specific observations remain unavailable: no SWD probe or application USB readback is present.",
     "Not all documented modes and routes have independent product-specification review."
+  ],
+  "semantic_overlays": [
+    {
+      "block": "CLOCK",
+      "register": "LFRCMODE",
+      "field": "STATUS",
+      "access": "read-only",
+      "source": "4413_417 v1.11 5.4.3.25 p.170",
+      "source_identity": "product-specification.json",
+      "review_date": "2026-10-28"
+    }
   ]
 }

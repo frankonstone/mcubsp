@@ -21,7 +21,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 227
+        "detail_page": 227,
+        "section": "6.6.12.1.2.1"
       },
       {
         "name": "AES_KEY_0[1]",
@@ -37,7 +38,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 227
+        "detail_page": 227,
+        "section": "6.6.12.1.2.2"
       },
       {
         "name": "AES_KEY_0[2]",
@@ -53,7 +55,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 227
+        "detail_page": 227,
+        "section": "6.6.12.1.2.3"
       },
       {
         "name": "AES_KEY_0[3]",
@@ -69,7 +72,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 227
+        "detail_page": 227,
+        "section": "6.6.12.1.2.4"
       },
       {
         "name": "AES_KEY_0[4]",
@@ -85,7 +89,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 228
+        "detail_page": 228,
+        "section": "6.6.12.1.2.5"
       },
       {
         "name": "AES_KEY_0[5]",
@@ -101,7 +106,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 228
+        "detail_page": 228,
+        "section": "6.6.12.1.2.6"
       },
       {
         "name": "AES_KEY_0[6]",
@@ -117,7 +123,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 228
+        "detail_page": 228,
+        "section": "6.6.12.1.2.7"
       },
       {
         "name": "AES_KEY_0[7]",
@@ -133,7 +140,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 228
+        "detail_page": 228,
+        "section": "6.6.12.1.2.8"
       },
       {
         "name": "AES_IV_0[0]",
@@ -149,7 +157,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 228
+        "detail_page": 228,
+        "section": "6.6.12.1.2.9"
       },
       {
         "name": "AES_IV_0[1]",
@@ -165,7 +174,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 229
+        "detail_page": 229,
+        "section": "6.6.12.1.2.10"
       },
       {
         "name": "AES_IV_0[2]",
@@ -181,7 +191,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 229
+        "detail_page": 229,
+        "section": "6.6.12.1.2.11"
       },
       {
         "name": "AES_IV_0[3]",
@@ -197,7 +208,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 229
+        "detail_page": 229,
+        "section": "6.6.12.1.2.12"
       },
       {
         "name": "AES_CTR[0]",
@@ -213,7 +225,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 230
+        "detail_page": 230,
+        "section": "6.6.12.1.2.13"
       },
       {
         "name": "AES_CTR[1]",
@@ -229,7 +242,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 230
+        "detail_page": 230,
+        "section": "6.6.12.1.2.14"
       },
       {
         "name": "AES_CTR[2]",
@@ -245,7 +259,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 230
+        "detail_page": 230,
+        "section": "6.6.12.1.2.15"
       },
       {
         "name": "AES_CTR[3]",
@@ -261,7 +276,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 231
+        "detail_page": 231,
+        "section": "6.6.12.1.2.16"
       },
       {
         "name": "AES_BUSY",
@@ -286,7 +302,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 231
+        "detail_page": 231,
+        "section": "6.6.12.1.2.17"
       },
       {
         "name": "AES_SK",
@@ -302,7 +319,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 231
+        "detail_page": 231,
+        "section": "6.6.12.1.2.18"
       },
       {
         "name": "AES_CMAC_INIT",
@@ -323,7 +341,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 231
+        "detail_page": 231,
+        "section": "6.6.12.1.2.19"
       },
       {
         "name": "AES_REMAINING_BYTES",
@@ -339,7 +358,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 232
+        "detail_page": 232,
+        "section": "6.6.12.1.2.20"
       },
       {
         "name": "AES_CONTROL",
@@ -436,7 +456,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 232
+        "detail_page": 232,
+        "section": "6.6.12.1.2.21"
       },
       {
         "name": "AES_HW_FLAGS",
@@ -522,7 +543,8 @@
           }
         ],
         "reset": 264,
-        "detail_page": 232
+        "detail_page": 232,
+        "section": "6.6.12.1.2.22"
       },
       {
         "name": "AES_CTR_NO_INCREMENT",
@@ -547,7 +569,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 233
+        "detail_page": 233,
+        "section": "6.6.12.1.2.23"
       },
       {
         "name": "AES_SW_RESET",
@@ -568,7 +591,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 233
+        "detail_page": 233,
+        "section": "6.6.12.1.2.24"
       },
       {
         "name": "AES_CMAC_SIZE0_KICK",
@@ -593,7 +617,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 233
+        "detail_page": 233,
+        "section": "6.6.12.1.2.25"
       }
     ],
     "page": 226
@@ -729,7 +754,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 237
+        "detail_page": 237,
+        "section": "6.6.12.2.2.1"
       },
       {
         "name": "CHACHA_VERSION",
@@ -745,7 +771,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 237
+        "detail_page": 237,
+        "section": "6.6.12.2.2.2"
       },
       {
         "name": "CHACHA_KEY[0]",
@@ -761,7 +788,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 237
+        "detail_page": 237,
+        "section": "6.6.12.2.2.3"
       },
       {
         "name": "CHACHA_KEY[1]",
@@ -777,7 +805,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 238
+        "detail_page": 238,
+        "section": "6.6.12.2.2.4"
       },
       {
         "name": "CHACHA_KEY[2]",
@@ -793,7 +822,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 238
+        "detail_page": 238,
+        "section": "6.6.12.2.2.5"
       },
       {
         "name": "CHACHA_KEY[3]",
@@ -809,7 +839,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 238
+        "detail_page": 238,
+        "section": "6.6.12.2.2.6"
       },
       {
         "name": "CHACHA_KEY[4]",
@@ -825,7 +856,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 238
+        "detail_page": 238,
+        "section": "6.6.12.2.2.7"
       },
       {
         "name": "CHACHA_KEY[5]",
@@ -841,7 +873,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 239
+        "detail_page": 239,
+        "section": "6.6.12.2.2.8"
       },
       {
         "name": "CHACHA_KEY[6]",
@@ -857,7 +890,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 239
+        "detail_page": 239,
+        "section": "6.6.12.2.2.9"
       },
       {
         "name": "CHACHA_KEY[7]",
@@ -873,7 +907,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 239
+        "detail_page": 239,
+        "section": "6.6.12.2.2.10"
       },
       {
         "name": "CHACHA_IV[0]",
@@ -889,7 +924,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 239
+        "detail_page": 239,
+        "section": "6.6.12.2.2.11"
       },
       {
         "name": "CHACHA_IV[1]",
@@ -905,7 +941,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 240
+        "detail_page": 240,
+        "section": "6.6.12.2.2.12"
       },
       {
         "name": "CHACHA_BUSY",
@@ -930,7 +967,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 240
+        "detail_page": 240,
+        "section": "6.6.12.2.2.13"
       },
       {
         "name": "CHACHA_HW_FLAGS",
@@ -960,7 +998,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 240
+        "detail_page": 240,
+        "section": "6.6.12.2.2.14"
       },
       {
         "name": "CHACHA_BLOCK_CNT_LSB",
@@ -976,7 +1015,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 241
+        "detail_page": 241,
+        "section": "6.6.12.2.2.15"
       },
       {
         "name": "CHACHA_BLOCK_CNT_MSB",
@@ -992,7 +1032,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 241
+        "detail_page": 241,
+        "section": "6.6.12.2.2.16"
       },
       {
         "name": "CHACHA_SW_RESET",
@@ -1013,7 +1054,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 241
+        "detail_page": 241,
+        "section": "6.6.12.2.2.17"
       },
       {
         "name": "CHACHA_POLY1305_KEY[0]",
@@ -1029,7 +1071,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 242
+        "detail_page": 242,
+        "section": "6.6.12.2.2.18"
       },
       {
         "name": "CHACHA_POLY1305_KEY[1]",
@@ -1045,7 +1088,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 242
+        "detail_page": 242,
+        "section": "6.6.12.2.2.19"
       },
       {
         "name": "CHACHA_POLY1305_KEY[2]",
@@ -1061,7 +1105,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 242
+        "detail_page": 242,
+        "section": "6.6.12.2.2.20"
       },
       {
         "name": "CHACHA_POLY1305_KEY[3]",
@@ -1077,7 +1122,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 242
+        "detail_page": 242,
+        "section": "6.6.12.2.2.21"
       },
       {
         "name": "CHACHA_POLY1305_KEY[4]",
@@ -1093,7 +1139,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 242
+        "detail_page": 242,
+        "section": "6.6.12.2.2.22"
       },
       {
         "name": "CHACHA_POLY1305_KEY[5]",
@@ -1109,7 +1156,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 243
+        "detail_page": 243,
+        "section": "6.6.12.2.2.23"
       },
       {
         "name": "CHACHA_POLY1305_KEY[6]",
@@ -1125,7 +1173,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 243
+        "detail_page": 243,
+        "section": "6.6.12.2.2.24"
       },
       {
         "name": "CHACHA_POLY1305_KEY[7]",
@@ -1141,7 +1190,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 243
+        "detail_page": 243,
+        "section": "6.6.12.2.2.25"
       },
       {
         "name": "CHACHA_ENDIANNESS",
@@ -1230,7 +1280,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 243
+        "detail_page": 243,
+        "section": "6.6.12.2.2.26"
       },
       {
         "name": "CHACHA_DEBUG",
@@ -1263,7 +1314,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 244
+        "detail_page": 244,
+        "section": "6.6.12.2.2.27"
       }
     ],
     "page": 236
@@ -1290,7 +1342,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 247
+        "detail_page": 247,
+        "section": "6.6.12.3.2.1"
       },
       {
         "name": "HASH_H[1]",
@@ -1306,7 +1359,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 248
+        "detail_page": 248,
+        "section": "6.6.12.3.2.2"
       },
       {
         "name": "HASH_H[2]",
@@ -1322,7 +1376,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 248
+        "detail_page": 248,
+        "section": "6.6.12.3.2.3"
       },
       {
         "name": "HASH_H[3]",
@@ -1338,7 +1393,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 248
+        "detail_page": 248,
+        "section": "6.6.12.3.2.4"
       },
       {
         "name": "HASH_H[4]",
@@ -1354,7 +1410,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 248
+        "detail_page": 248,
+        "section": "6.6.12.3.2.5"
       },
       {
         "name": "HASH_H[5]",
@@ -1370,7 +1427,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 249
+        "detail_page": 249,
+        "section": "6.6.12.3.2.6"
       },
       {
         "name": "HASH_H[6]",
@@ -1386,7 +1444,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 249
+        "detail_page": 249,
+        "section": "6.6.12.3.2.7"
       },
       {
         "name": "HASH_H[7]",
@@ -1402,7 +1461,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 249
+        "detail_page": 249,
+        "section": "6.6.12.3.2.8"
       },
       {
         "name": "HASH_PAD_AUTO",
@@ -1427,7 +1487,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 249
+        "detail_page": 249,
+        "section": "6.6.12.3.2.9"
       },
       {
         "name": "HASH_INIT_STATE",
@@ -1452,7 +1513,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 250
+        "detail_page": 250,
+        "section": "6.6.12.3.2.10"
       },
       {
         "name": "HASH_VERSION",
@@ -1482,7 +1544,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 250
+        "detail_page": 250,
+        "section": "6.6.12.3.2.11"
       },
       {
         "name": "HASH_CONTROL",
@@ -1511,7 +1574,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 250
+        "detail_page": 250,
+        "section": "6.6.12.3.2.12"
       },
       {
         "name": "HASH_PAD",
@@ -1536,7 +1600,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 251
+        "detail_page": 251,
+        "section": "6.6.12.3.2.13"
       },
       {
         "name": "HASH_PAD_FORCE",
@@ -1561,7 +1626,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 251
+        "detail_page": 251,
+        "section": "6.6.12.3.2.14"
       },
       {
         "name": "HASH_CUR_LEN_0",
@@ -1577,7 +1643,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 251
+        "detail_page": 251,
+        "section": "6.6.12.3.2.15"
       },
       {
         "name": "HASH_CUR_LEN_1",
@@ -1593,7 +1660,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 251
+        "detail_page": 251,
+        "section": "6.6.12.3.2.16"
       },
       {
         "name": "HASH_HW_FLAGS",
@@ -1699,7 +1767,8 @@
           }
         ],
         "reset": 73729,
-        "detail_page": 252
+        "detail_page": 252,
+        "section": "6.6.12.3.2.17"
       },
       {
         "name": "HASH_SW_RESET",
@@ -1720,7 +1789,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 252
+        "detail_page": 252,
+        "section": "6.6.12.3.2.18"
       },
       {
         "name": "HASH_ENDIANNESS",
@@ -1745,7 +1815,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 252
+        "detail_page": 252,
+        "section": "6.6.12.3.2.19"
       }
     ],
     "page": 247
@@ -1772,7 +1843,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 260
+        "detail_page": 260,
+        "section": "6.6.12.4.6.1"
       },
       {
         "name": "MEMORY_MAP[1]",
@@ -1788,7 +1860,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 260
+        "detail_page": 260,
+        "section": "6.6.12.4.6.2"
       },
       {
         "name": "MEMORY_MAP[2]",
@@ -1804,7 +1877,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 260
+        "detail_page": 260,
+        "section": "6.6.12.4.6.3"
       },
       {
         "name": "MEMORY_MAP[3]",
@@ -1820,7 +1894,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 261
+        "detail_page": 261,
+        "section": "6.6.12.4.6.4"
       },
       {
         "name": "MEMORY_MAP[4]",
@@ -1836,7 +1911,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 261
+        "detail_page": 261,
+        "section": "6.6.12.4.6.5"
       },
       {
         "name": "MEMORY_MAP[5]",
@@ -1852,7 +1928,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 261
+        "detail_page": 261,
+        "section": "6.6.12.4.6.6"
       },
       {
         "name": "MEMORY_MAP[6]",
@@ -1868,7 +1945,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 261
+        "detail_page": 261,
+        "section": "6.6.12.4.6.7"
       },
       {
         "name": "MEMORY_MAP[7]",
@@ -1884,7 +1962,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 261
+        "detail_page": 261,
+        "section": "6.6.12.4.6.8"
       },
       {
         "name": "MEMORY_MAP[8]",
@@ -1900,7 +1979,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 262
+        "detail_page": 262,
+        "section": "6.6.12.4.6.9"
       },
       {
         "name": "MEMORY_MAP[9]",
@@ -1916,7 +1996,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 262
+        "detail_page": 262,
+        "section": "6.6.12.4.6.10"
       },
       {
         "name": "MEMORY_MAP[10]",
@@ -1932,7 +2013,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 262
+        "detail_page": 262,
+        "section": "6.6.12.4.6.11"
       },
       {
         "name": "MEMORY_MAP[11]",
@@ -1948,7 +2030,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 262
+        "detail_page": 262,
+        "section": "6.6.12.4.6.12"
       },
       {
         "name": "MEMORY_MAP[12]",
@@ -1964,7 +2047,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 263
+        "detail_page": 263,
+        "section": "6.6.12.4.6.13"
       },
       {
         "name": "MEMORY_MAP[13]",
@@ -1980,7 +2064,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 263
+        "detail_page": 263,
+        "section": "6.6.12.4.6.14"
       },
       {
         "name": "MEMORY_MAP[14]",
@@ -1996,7 +2081,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 263
+        "detail_page": 263,
+        "section": "6.6.12.4.6.15"
       },
       {
         "name": "MEMORY_MAP[15]",
@@ -2012,7 +2098,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 263
+        "detail_page": 263,
+        "section": "6.6.12.4.6.16"
       },
       {
         "name": "MEMORY_MAP[16]",
@@ -2028,7 +2115,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 263
+        "detail_page": 263,
+        "section": "6.6.12.4.6.17"
       },
       {
         "name": "MEMORY_MAP[17]",
@@ -2044,7 +2132,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 264
+        "detail_page": 264,
+        "section": "6.6.12.4.6.18"
       },
       {
         "name": "MEMORY_MAP[18]",
@@ -2060,7 +2149,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 264
+        "detail_page": 264,
+        "section": "6.6.12.4.6.19"
       },
       {
         "name": "MEMORY_MAP[19]",
@@ -2076,7 +2166,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 264
+        "detail_page": 264,
+        "section": "6.6.12.4.6.20"
       },
       {
         "name": "MEMORY_MAP[20]",
@@ -2092,7 +2183,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 264
+        "detail_page": 264,
+        "section": "6.6.12.4.6.21"
       },
       {
         "name": "MEMORY_MAP[21]",
@@ -2108,7 +2200,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 264
+        "detail_page": 264,
+        "section": "6.6.12.4.6.22"
       },
       {
         "name": "MEMORY_MAP[22]",
@@ -2124,7 +2217,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 265
+        "detail_page": 265,
+        "section": "6.6.12.4.6.23"
       },
       {
         "name": "MEMORY_MAP[23]",
@@ -2140,7 +2234,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 265
+        "detail_page": 265,
+        "section": "6.6.12.4.6.24"
       },
       {
         "name": "MEMORY_MAP[24]",
@@ -2156,7 +2251,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 265
+        "detail_page": 265,
+        "section": "6.6.12.4.6.25"
       },
       {
         "name": "MEMORY_MAP[25]",
@@ -2172,7 +2268,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 265
+        "detail_page": 265,
+        "section": "6.6.12.4.6.26"
       },
       {
         "name": "MEMORY_MAP[26]",
@@ -2188,7 +2285,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 266
+        "detail_page": 266,
+        "section": "6.6.12.4.6.27"
       },
       {
         "name": "MEMORY_MAP[27]",
@@ -2204,7 +2302,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 266
+        "detail_page": 266,
+        "section": "6.6.12.4.6.28"
       },
       {
         "name": "MEMORY_MAP[28]",
@@ -2220,7 +2319,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 266
+        "detail_page": 266,
+        "section": "6.6.12.4.6.29"
       },
       {
         "name": "MEMORY_MAP[29]",
@@ -2236,7 +2336,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 266
+        "detail_page": 266,
+        "section": "6.6.12.4.6.30"
       },
       {
         "name": "MEMORY_MAP[30]",
@@ -2252,7 +2353,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 266
+        "detail_page": 266,
+        "section": "6.6.12.4.6.31"
       },
       {
         "name": "MEMORY_MAP[31]",
@@ -2268,7 +2370,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 267
+        "detail_page": 267,
+        "section": "6.6.12.4.6.32"
       },
       {
         "name": "OPCODE",
@@ -2460,7 +2563,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 267
+        "detail_page": 267,
+        "section": "6.6.12.4.6.33"
       },
       {
         "name": "N_NP_T0_T1_ADDR",
@@ -2497,7 +2601,8 @@
           }
         ],
         "reset": 1046560,
-        "detail_page": 268
+        "detail_page": 268,
+        "section": "6.6.12.4.6.34"
       },
       {
         "name": "PKA_STATUS",
@@ -2583,7 +2688,8 @@
           }
         ],
         "reset": 4096,
-        "detail_page": 268
+        "detail_page": 268,
+        "section": "6.6.12.4.6.35"
       },
       {
         "name": "PKA_SW_RESET",
@@ -2604,7 +2710,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 269
+        "detail_page": 269,
+        "section": "6.6.12.4.6.36"
       },
       {
         "name": "PKA_L[0]",
@@ -2620,7 +2727,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 269
+        "detail_page": 269,
+        "section": "6.6.12.4.6.37"
       },
       {
         "name": "PKA_L[1]",
@@ -2636,7 +2744,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 269
+        "detail_page": 269,
+        "section": "6.6.12.4.6.38"
       },
       {
         "name": "PKA_L[2]",
@@ -2652,7 +2761,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 269
+        "detail_page": 269,
+        "section": "6.6.12.4.6.39"
       },
       {
         "name": "PKA_L[3]",
@@ -2668,7 +2778,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 269
+        "detail_page": 269,
+        "section": "6.6.12.4.6.40"
       },
       {
         "name": "PKA_L[4]",
@@ -2684,7 +2795,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 270
+        "detail_page": 270,
+        "section": "6.6.12.4.6.41"
       },
       {
         "name": "PKA_L[5]",
@@ -2700,7 +2812,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 270
+        "detail_page": 270,
+        "section": "6.6.12.4.6.42"
       },
       {
         "name": "PKA_L[6]",
@@ -2716,7 +2829,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 270
+        "detail_page": 270,
+        "section": "6.6.12.4.6.43"
       },
       {
         "name": "PKA_L[7]",
@@ -2732,7 +2846,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 270
+        "detail_page": 270,
+        "section": "6.6.12.4.6.44"
       },
       {
         "name": "PKA_PIPE",
@@ -2757,7 +2872,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 270
+        "detail_page": 270,
+        "section": "6.6.12.4.6.45"
       },
       {
         "name": "PKA_DONE",
@@ -2782,7 +2898,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 271
+        "detail_page": 271,
+        "section": "6.6.12.4.6.46"
       },
       {
         "name": "PKA_VERSION",
@@ -2798,7 +2915,8 @@
           }
         ],
         "reset": 370213397,
-        "detail_page": 271
+        "detail_page": 271,
+        "section": "6.6.12.4.6.47"
       },
       {
         "name": "PKA_SRAM_WADDR",
@@ -2814,7 +2932,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 271
+        "detail_page": 271,
+        "section": "6.6.12.4.6.48"
       },
       {
         "name": "PKA_SRAM_WDATA",
@@ -2830,7 +2949,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 271
+        "detail_page": 271,
+        "section": "6.6.12.4.6.49"
       },
       {
         "name": "PKA_SRAM_RDATA",
@@ -2846,7 +2966,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 272
+        "detail_page": 272,
+        "section": "6.6.12.4.6.50"
       },
       {
         "name": "PKA_SRAM_WCLEAR",
@@ -2862,7 +2983,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 272
+        "detail_page": 272,
+        "section": "6.6.12.4.6.51"
       },
       {
         "name": "PKA_SRAM_RADDR",
@@ -2878,7 +3000,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 272
+        "detail_page": 272,
+        "section": "6.6.12.4.6.52"
       }
     ],
     "page": 259
@@ -2994,7 +3117,8 @@
           }
         ],
         "reset": 63,
-        "detail_page": 277
+        "detail_page": 277,
+        "section": "6.6.12.5.5.1"
       },
       {
         "name": "RNG_ISR",
@@ -3045,7 +3169,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 278
+        "detail_page": 278,
+        "section": "6.6.12.5.5.2"
       },
       {
         "name": "RNG_ICR",
@@ -3096,7 +3221,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 278
+        "detail_page": 278,
+        "section": "6.6.12.5.5.3"
       },
       {
         "name": "TRNG_CONFIG",
@@ -3129,7 +3255,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 279
+        "detail_page": 279,
+        "section": "6.6.12.5.5.4"
       },
       {
         "name": "TRNG_VALID",
@@ -3154,7 +3281,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 279
+        "detail_page": 279,
+        "section": "6.6.12.5.5.5"
       },
       {
         "name": "EHR_DATA[0]",
@@ -3170,7 +3298,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 279
+        "detail_page": 279,
+        "section": "6.6.12.5.5.6"
       },
       {
         "name": "EHR_DATA[1]",
@@ -3186,7 +3315,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 280
+        "detail_page": 280,
+        "section": "6.6.12.5.5.7"
       },
       {
         "name": "EHR_DATA[2]",
@@ -3202,7 +3332,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 280
+        "detail_page": 280,
+        "section": "6.6.12.5.5.8"
       },
       {
         "name": "EHR_DATA[3]",
@@ -3218,7 +3349,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 280
+        "detail_page": 280,
+        "section": "6.6.12.5.5.9"
       },
       {
         "name": "EHR_DATA[4]",
@@ -3234,7 +3366,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 280
+        "detail_page": 280,
+        "section": "6.6.12.5.5.10"
       },
       {
         "name": "EHR_DATA[5]",
@@ -3250,7 +3383,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 281
+        "detail_page": 281,
+        "section": "6.6.12.5.5.11"
       },
       {
         "name": "NOISE_SOURCE",
@@ -3275,7 +3409,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 281
+        "detail_page": 281,
+        "section": "6.6.12.5.5.12"
       },
       {
         "name": "SAMPLE_CNT",
@@ -3291,7 +3426,8 @@
           }
         ],
         "reset": 65535,
-        "detail_page": 281
+        "detail_page": 281,
+        "section": "6.6.12.5.5.13"
       },
       {
         "name": "AUTOCORR_STATISTIC",
@@ -3314,7 +3450,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 282
+        "detail_page": 282,
+        "section": "6.6.12.5.5.14"
       },
       {
         "name": "TRNG_DEBUG",
@@ -3371,7 +3508,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 282
+        "detail_page": 282,
+        "section": "6.6.12.5.5.15"
       },
       {
         "name": "RNG_SW_RESET",
@@ -3392,7 +3530,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 282
+        "detail_page": 282,
+        "section": "6.6.12.5.5.16"
       },
       {
         "name": "RNG_BUSY",
@@ -3433,7 +3572,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 283
+        "detail_page": 283,
+        "section": "6.6.12.5.5.17"
       },
       {
         "name": "TRNG_RESET",
@@ -3454,7 +3594,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 283
+        "detail_page": 283,
+        "section": "6.6.12.5.5.18"
       },
       {
         "name": "RNG_HW_FLAGS",
@@ -3537,7 +3678,8 @@
           }
         ],
         "reset": 15,
-        "detail_page": 283
+        "detail_page": 283,
+        "section": "6.6.12.5.5.19"
       },
       {
         "name": "RNG_CLK",
@@ -3562,7 +3704,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 284
+        "detail_page": 284,
+        "section": "6.6.12.5.5.20"
       },
       {
         "name": "RNG_DMA",
@@ -3587,7 +3730,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 284
+        "detail_page": 284,
+        "section": "6.6.12.5.5.21"
       },
       {
         "name": "RNG_DMA_ROSC_LEN",
@@ -3660,7 +3804,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 284
+        "detail_page": 284,
+        "section": "6.6.12.5.5.22"
       },
       {
         "name": "RNG_DMA_SRAM_ADDR",
@@ -3676,7 +3821,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 285
+        "detail_page": 285,
+        "section": "6.6.12.5.5.23"
       },
       {
         "name": "RNG_DMA_SAMPLES_NUM",
@@ -3692,7 +3838,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 285
+        "detail_page": 285,
+        "section": "6.6.12.5.5.24"
       },
       {
         "name": "RNG_WATCHDOG_VAL",
@@ -3708,7 +3855,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 285
+        "detail_page": 285,
+        "section": "6.6.12.5.5.25"
       },
       {
         "name": "RNG_DMA_BUSY",
@@ -3764,7 +3912,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 286
+        "detail_page": 286,
+        "section": "6.6.12.5.5.26"
       }
     ],
     "page": 276
@@ -3824,7 +3973,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 286
+        "detail_page": 286,
+        "section": "6.6.13.1.1.1"
       },
       {
         "name": "CRYPTO_BUSY",
@@ -3849,7 +3999,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 287
+        "detail_page": 287,
+        "section": "6.6.13.1.1.2"
       },
       {
         "name": "HASH_BUSY",
@@ -3874,7 +4025,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 287
+        "detail_page": 287,
+        "section": "6.6.13.1.1.3"
       },
       {
         "name": "CONTEXT_ID",
@@ -3890,7 +4042,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 287
+        "detail_page": 287,
+        "section": "6.6.13.1.1.4"
       }
     ],
     "page": 286
@@ -3917,7 +4070,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 288
+        "detail_page": 288,
+        "section": "6.6.13.2.1.1"
       },
       {
         "name": "DIN_DMA_MEM_BUSY",
@@ -3942,7 +4096,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 289
+        "detail_page": 289,
+        "section": "6.6.13.2.1.2"
       },
       {
         "name": "SRC_MEM_ADDR",
@@ -3958,7 +4113,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 289
+        "detail_page": 289,
+        "section": "6.6.13.2.1.3"
       },
       {
         "name": "SRC_MEM_SIZE",
@@ -3988,7 +4144,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 289
+        "detail_page": 289,
+        "section": "6.6.13.2.1.4"
       },
       {
         "name": "SRC_SRAM_ADDR",
@@ -4004,7 +4161,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 289
+        "detail_page": 289,
+        "section": "6.6.13.2.1.5"
       },
       {
         "name": "SRC_SRAM_SIZE",
@@ -4020,7 +4178,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 290
+        "detail_page": 290,
+        "section": "6.6.13.2.1.6"
       },
       {
         "name": "DIN_DMA_SRAM_BUSY",
@@ -4045,7 +4204,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 290
+        "detail_page": 290,
+        "section": "6.6.13.2.1.7"
       },
       {
         "name": "DIN_DMA_SRAM_ENDIANNESS",
@@ -4070,7 +4230,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 290
+        "detail_page": 290,
+        "section": "6.6.13.2.1.8"
       },
       {
         "name": "DIN_SW_RESET",
@@ -4091,7 +4252,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 290
+        "detail_page": 290,
+        "section": "6.6.13.2.1.9"
       },
       {
         "name": "DIN_CPU_DATA",
@@ -4107,7 +4269,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 291
+        "detail_page": 291,
+        "section": "6.6.13.2.1.10"
       },
       {
         "name": "DIN_WRITE_ALIGN",
@@ -4128,7 +4291,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 291
+        "detail_page": 291,
+        "section": "6.6.13.2.1.11"
       },
       {
         "name": "DIN_FIFO_EMPTY",
@@ -4153,7 +4317,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 291
+        "detail_page": 291,
+        "section": "6.6.13.2.1.12"
       },
       {
         "name": "DIN_FIFO_RESET",
@@ -4174,7 +4339,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 291
+        "detail_page": 291,
+        "section": "6.6.13.2.1.13"
       }
     ],
     "page": 288
@@ -4201,7 +4367,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 292
+        "detail_page": 292,
+        "section": "6.6.13.3.1.1"
       },
       {
         "name": "DOUT_DMA_MEM_BUSY",
@@ -4226,7 +4393,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 293
+        "detail_page": 293,
+        "section": "6.6.13.3.1.2"
       },
       {
         "name": "DST_MEM_ADDR",
@@ -4242,7 +4410,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 293
+        "detail_page": 293,
+        "section": "6.6.13.3.1.3"
       },
       {
         "name": "DST_MEM_SIZE",
@@ -4272,7 +4441,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 293
+        "detail_page": 293,
+        "section": "6.6.13.3.1.4"
       },
       {
         "name": "DST_SRAM_ADDR",
@@ -4288,7 +4458,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 293
+        "detail_page": 293,
+        "section": "6.6.13.3.1.5"
       },
       {
         "name": "DST_SRAM_SIZE",
@@ -4304,7 +4475,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 294
+        "detail_page": 294,
+        "section": "6.6.13.3.1.6"
       },
       {
         "name": "DOUT_DMA_SRAM_BUSY",
@@ -4329,7 +4501,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 294
+        "detail_page": 294,
+        "section": "6.6.13.3.1.7"
       },
       {
         "name": "DOUT_DMA_SRAM_ENDIANNESS",
@@ -4354,7 +4527,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 294
+        "detail_page": 294,
+        "section": "6.6.13.3.1.8"
       },
       {
         "name": "DOUT_READ_ALIGN",
@@ -4375,7 +4549,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 294
+        "detail_page": 294,
+        "section": "6.6.13.3.1.9"
       },
       {
         "name": "DOUT_FIFO_EMPTY",
@@ -4400,7 +4575,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 295
+        "detail_page": 295,
+        "section": "6.6.13.3.1.10"
       },
       {
         "name": "DOUT_SW_RESET",
@@ -4421,7 +4597,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 295
+        "detail_page": 295,
+        "section": "6.6.13.3.1.11"
       }
     ],
     "page": 292
@@ -4490,7 +4667,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 296
+        "detail_page": 296,
+        "section": "6.6.13.4.1.1"
       },
       {
         "name": "IMR",
@@ -4611,7 +4789,8 @@
           }
         ],
         "reset": 33554431,
-        "detail_page": 296
+        "detail_page": 296,
+        "section": "6.6.13.4.1.2"
       },
       {
         "name": "ICR",
@@ -4669,7 +4848,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 297
+        "detail_page": 297,
+        "section": "6.6.13.4.1.3"
       },
       {
         "name": "ENDIANNESS",
@@ -4742,7 +4922,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 297
+        "detail_page": 297,
+        "section": "6.6.13.4.1.4"
       },
       {
         "name": "HOST_SIGNATURE",
@@ -4758,13 +4939,28 @@
           }
         ],
         "reset": 551550976,
-        "detail_page": 298
+        "detail_page": 298,
+        "section": "6.6.13.4.1.5"
       },
       {
         "name": "HOST_BOOT",
         "offset": 2600,
         "page": 296,
         "fields": [
+          {
+            "name": "AES_EXISTS_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 30,
+            "width": 1
+          },
+          {
+            "name": "ONLY_ENCRYPT_LOCAL",
+            "access": "R",
+            "enums": [],
+            "position": 29,
+            "width": 1
+          },
           {
             "name": "SUPPORT_256_192_KEY_LOCAL",
             "access": "R",
@@ -4949,7 +5145,8 @@
           }
         ],
         "reset": 1176672300,
-        "detail_page": 298
+        "detail_page": 298,
+        "section": "6.6.13.4.1.6"
       },
       {
         "name": "HOST_CRYPTOKEY_SEL",
@@ -4978,7 +5175,10 @@
           }
         ],
         "reset": 0,
-        "detail_page": 299
+        "detail_page": 299,
+        "section": "6.6.13.4.1.7",
+        "source_read_action": null,
+        "source_write_action": null
       },
       {
         "name": "HOST_IOT_KPRTL_LOCK",
@@ -5003,7 +5203,10 @@
           }
         ],
         "reset": 0,
-        "detail_page": 299
+        "detail_page": 299,
+        "section": "6.6.13.4.1.8",
+        "source_read_action": null,
+        "source_write_action": null
       },
       {
         "name": "HOST_IOT_KDR0",
@@ -5028,7 +5231,10 @@
           }
         ],
         "reset": 0,
-        "detail_page": 300
+        "detail_page": 300,
+        "section": "6.6.13.4.1.9",
+        "source_read_action": null,
+        "source_write_action": null
       },
       {
         "name": "HOST_IOT_KDR1",
@@ -5044,7 +5250,10 @@
           }
         ],
         "reset": 0,
-        "detail_page": 300
+        "detail_page": 300,
+        "section": "6.6.13.4.1.10",
+        "source_read_action": null,
+        "source_write_action": null
       },
       {
         "name": "HOST_IOT_KDR2",
@@ -5060,7 +5269,10 @@
           }
         ],
         "reset": 0,
-        "detail_page": 300
+        "detail_page": 300,
+        "section": "6.6.13.4.1.11",
+        "source_read_action": null,
+        "source_write_action": null
       },
       {
         "name": "HOST_IOT_KDR3",
@@ -5076,7 +5288,10 @@
           }
         ],
         "reset": 0,
-        "detail_page": 300
+        "detail_page": 300,
+        "section": "6.6.13.4.1.12",
+        "source_read_action": null,
+        "source_write_action": null
       },
       {
         "name": "HOST_IOT_LCS",
@@ -5117,7 +5332,10 @@
           }
         ],
         "reset": 2,
-        "detail_page": 301
+        "detail_page": 301,
+        "section": "6.6.13.4.1.13",
+        "source_read_action": null,
+        "source_write_action": null
       }
     ],
     "page": 295
@@ -5144,7 +5362,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 301
+        "detail_page": 301,
+        "section": "6.6.13.5.1.1"
       },
       {
         "name": "SRAM_ADDR",
@@ -5160,7 +5379,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 302
+        "detail_page": 302,
+        "section": "6.6.13.5.1.2"
       },
       {
         "name": "SRAM_DATA_READY",
@@ -5185,7 +5405,8 @@
           }
         ],
         "reset": 1,
-        "detail_page": 302
+        "detail_page": 302,
+        "section": "6.6.13.5.1.3"
       }
     ],
     "page": 301
@@ -5221,7 +5442,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 303
+        "detail_page": 303,
+        "section": "6.6.13.6.1.1"
       },
       {
         "name": "HASH_CLK",
@@ -5246,7 +5468,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 303
+        "detail_page": 303,
+        "section": "6.6.13.6.1.2"
       },
       {
         "name": "PKA_CLK",
@@ -5271,7 +5494,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 303
+        "detail_page": 303,
+        "section": "6.6.13.6.1.3"
       },
       {
         "name": "DMA_CLK",
@@ -5296,7 +5520,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 303
+        "detail_page": 303,
+        "section": "6.6.13.6.1.4"
       },
       {
         "name": "CLK_STATUS",
@@ -5385,7 +5610,8 @@
           }
         ],
         "reset": 256,
-        "detail_page": 304
+        "detail_page": 304,
+        "section": "6.6.13.6.1.5"
       },
       {
         "name": "CHACHA_CLK",
@@ -5410,7 +5636,8 @@
           }
         ],
         "reset": 0,
-        "detail_page": 304
+        "detail_page": 304,
+        "section": "6.6.13.6.1.6"
       }
     ],
     "page": 302

@@ -52,6 +52,14 @@ def field_bits(f):
     m = re.match('\\[(\\d+):(\\d+)\\]', f.findtext('bitRange'))
     return (int(m[2]), int(m[1]) - int(m[2]) + 1)
 
+def field_access(block, register, field, inherited):
+    # PS 4413_417 v1.11 5.4.3.25 p.170 explicitly makes STATUS read-only.
+    # The SVD and table's RW cell disagree with that statement; prefer the
+    # restrictive access, as in product/clock.hpp and product-field-audit.json.
+    if (block, register, field.findtext('name')) == ('CLOCK', 'LFRCMODE', 'STATUS'):
+        return 'read-only'
+    return field.findtext('access', inherited)
+
 def flatten(parent, prefix='', offset=0):
     for x in parent:
         if x.tag not in ['register', 'cluster']:
@@ -85,7 +93,7 @@ for name, p in ps.items():
             fs = list(fields_node) if fields_node is not None else []
             writable = 0
             for f in fs:
-                fa = f.findtext('access', access)
+                fa = field_access(name, rn, f, access)
                 pos, width = field_bits(f)
                 assert 0 <= pos < 32 and 0 < width <= 32 - pos
                 if fa != 'read-only':
@@ -122,7 +130,10 @@ for name, p in ps.items():
                     fn = ident(f.findtext('name'))
                     pos, width = field_bits(f)
                     assert 0 <= pos < 32 and 0 < width <= 32 - pos
-                    lines += [f'using {fn} = core::field_descriptor<{reg}, {pos}U, {width}U>;']
+                    fa = field_access(name, rn, f, access)
+                    field_semantics = 'read_only' if fa == 'read-only' and access != 'read-only' else a
+                    extra = f', core::access_semantics::{field_semantics}' if field_semantics != a else ''
+                    lines += [f'using {fn} = core::field_descriptor<{reg}, {pos}U, {width}U{extra}>;']
                     for evs in f.findall('enumeratedValues'):
                         for ev in evs.findall('enumeratedValue'):
                             try:
@@ -149,10 +160,13 @@ for x in inventory:
     lines += [f'struct {n} {{', f"    static constexpr std::uintptr_t base = 0x{x['base']:08X}U;", f"    static constexpr int irq = {x['irq']};", '};']
 lines += ['}', '}', '']
 (root / 'include/mcubsp/mcu/nrf52840/catalogue.hpp').write_text('\n'.join(lines))
-manifest = {'schema_version': 1, 'review_date': '2026-10-27', 'baseline': 'nrfx v3.2.0', 'commit': '7ef620bedd3fd41828e0f81523a1d08a986b8a0e', 'sources': [], 'instances': inventory, 'open_gaps': ['This legacy SVD lacks 192 product-specification CryptoCell registers. product.hpp supplies the current definitions; product-register-audit.json reconciles the seven older CC_HOST_RGF absolute addresses. Full product field/mode/core/pin/errata review remains open.', 'Actual connected silicon build/package and revision-specific physical observations are unavailable without SWD.', 'Not all documented modes and routes have independent product-specification review.']}
+manifest = {'schema_version': 1, 'review_date': '2026-10-27', 'baseline': 'nrfx v3.2.0', 'commit': '7ef620bedd3fd41828e0f81523a1d08a986b8a0e', 'sources': [], 'instances': inventory, 'open_gaps': ['This legacy SVD lacks 192 product-specification CryptoCell registers. product.hpp supplies the current definitions; product-register-audit.json reconciles the seven older CC_HOST_RGF absolute addresses. Current product/core tables and package bonding are separate generated inventories. Complete instance/mode/errata sequencing and actual board/stepping qualification remain open.', 'Actual connected silicon build/package and revision-specific observations remain unavailable: no SWD probe or application USB readback is present.', 'Not all documented modes and routes have independent product-specification review.']}
 for f in (source / e['file'] for e in expected['sources']):
     if f.is_file() and f.suffix in ['.h', '.c', '.svd', '.dtsi']:
         manifest['sources'].append({'file': f.name, 'bytes': f.stat().st_size, 'sha256': hashlib.sha256(f.read_bytes()).hexdigest()})
+manifest['semantic_overlays'] = [{'block': 'CLOCK', 'register': 'LFRCMODE', 'field': 'STATUS',
+    'access': 'read-only', 'source': '4413_417 v1.11 5.4.3.25 p.170',
+    'source_identity': 'product-specification.json', 'review_date': '2026-10-28'}]
 (notice / 'source-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
 print(len(types), 'register families;', len(inventory), 'instances;', sum((x['registers'] for x in inventory)), 'expanded registers;', sum((x['fields'] for x in inventory)), 'fields')
 if args.check:

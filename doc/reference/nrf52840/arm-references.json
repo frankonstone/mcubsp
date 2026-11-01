@@ -15,6 +15,30 @@
       "bytes": 456972,
       "sha256": "6cd7b6c6b4c40ff5d62d75055b22a349887d021c6ef8f20758f44e26a51c73e5",
       "obtained": "2026-10-28"
+    },
+    {
+      "file": "arm-m4-user-guide.pdf",
+      "document": "ARM DUI 0553B ID012616",
+      "url": "https://documentation-service.arm.com/static/5f2ac76d60a93e65927bbdc5",
+      "bytes": 1783188,
+      "sha256": "a388721e2c87fdf0a70c40545b6a72d390afdf87d47f654a6577e5e61cd92b30",
+      "obtained": "2026-10-28"
+    },
+    {
+      "file": "armv7m-architecture.pdf",
+      "document": "ARM DDI 0403E.b ID120114",
+      "url": "https://documentation-service.arm.com/static/5f8fef3af86e16515cdbf816",
+      "bytes": 7221023,
+      "sha256": "2d4af213859ed4650066b28937e3fc7a62974e521d0ff6df965bb3766d171f2c",
+      "obtained": "2026-10-28"
+    },
+    {
+      "file": "arm-etmv3-architecture.pdf",
+      "document": "ARM IHI 0014Q ID101211",
+      "url": "https://documentation-service.arm.com/static/5f90158b4966cd7c95fd5b5e",
+      "bytes": 3563703,
+      "sha256": "8093a1e74509a30fbc96ff0a70d4e61d6af6022a85f6d728d35ceb33add9ab8b",
+      "obtained": "2026-10-28"
     }
   ]
 }

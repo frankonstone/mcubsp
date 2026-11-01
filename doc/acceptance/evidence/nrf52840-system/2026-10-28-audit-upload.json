@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "uploaded_at_utc": "2026-10-28T15:54:58.010176+00:00",
+  "board": "V1940-marked nice!nano-compatible Pro Micro; silicon/PCB revision unverified",
+  "bootloader": {
+    "version": "0.6.0",
+    "board_id": "nRF52840-nicenano",
+    "softdevice": "S140 6.1.1"
+  },
+  "image": "regular system RTC/alarm/watchdog-feeding test; not the deliberate timeout variant",
+  "software_record": "2026-10-28-audit-software.json",
+  "upload": {
+    "method": "tool/hardware.py flash; UF2 application partition only",
+    "mount": "/Volumes/NICENANO",
+    "exit_code": 0,
+    "elf_sha256": "39d62a5d7816ec6336c68d026008da9263aaa5396dc4fde49281f12ed213d12d",
+    "uf2_sha256": "e3c3b5e7d16d1239113754c003124b40c185f7c3c4686636f832c0db3eeafd1a",
+    "selected_inputs_identity_sha256": "b4eb17550bb0c415b2f3c5c7781abd84a9e257504675d9a5504bdcbd4d50c22f",
+    "selected_inputs_sidecar_sha256": "cf4dac9766ffa22b50163c4bbf21f33f3f6c5a6afe8290f59fe9c100fe385304"
+  },
+  "pre_upload": {
+    "hashes_match_software_record": true,
+    "runner_dry_run": "passed",
+    "uf2_entry": "user reported double reset; compatible mounted drive read successfully"
+  },
+  "observation": {
+    "status": "observed",
+    "question": "After watching for about 20 seconds, what is the LED doing? The new test should switch from regular blinking to repeating groups of short flashes.",
+    "answer": "Two short flashes, pause, repeating",
+    "observer": "user",
+    "scope": [
+      "RTC1 alarm time and ISR progress control the post-startup LED pattern",
+      "System ON idle is exercised with independent TIMER2 wake/timeout guards",
+      "Regular application progresses through watchdog start/feed cycles"
+    ],
+    "timing": "Qualitative observation requested after about 20 seconds; no independent measurement",
+    "result": "expected regular test pattern observed"
+  },
+  "not_established": [
+    "watchdog timeout/reset (not exercised by this regular image)",
+    "independent timing or current measurement",
+    "actual FICR/ROM identity readback",
+    "complete PLN-0042 or PLN-0043 acceptance",
+    "RTC overflow endurance, all timer/RTC instances, and sleep residency",
+    "direct watchdog status/readback or independently measured feed interval"
+  ],
+  "post_upload": {
+    "uf2_drive_disconnected": true,
+    "application_behavior": "user confirms two short flashes, pause, repeating",
+    "bootloader_reentry": {
+      "user_report": "Board is in UF2 mode",
+      "compatible_drive_read": true,
+      "scope": "UF2 re-entry after regular audit image; before watchdog variant upload",
+      "subsequent_record": "2026-10-28-watchdog-upload.json"
+    }
+  },
+  "restored_after_watchdog_test": {
+    "result": "upload succeeded",
+    "record": "2026-10-28-watchdog-upload.json#restore_regular_image",
+    "same_elf_and_uf2": true
+  }
+}

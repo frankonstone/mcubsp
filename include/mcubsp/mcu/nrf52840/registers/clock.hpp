@@ -254,13 +254,13 @@ inline constexpr std::uint32_t tracemux_serial = 0x1U;
 inline constexpr std::uint32_t tracemux_parallel = 0x2U;
 }
 struct lfrcmode : core::register_descriptor<std::uint32_t, 0x5B4U,
-    core::access_semantics::read_write, 0x00010001U, false,
+    core::access_semantics::read_write, 0x00000001U, false,
     core::reserved_bit_policy::write_zero, 0U, 0x00000000U, 0xFFFFFFFFU> { static constexpr bool write_once = false; };
 namespace lfrcmode_fields {
 using mode = core::field_descriptor<lfrcmode, 0U, 1U>;
 inline constexpr std::uint32_t mode_normal = 0x0U;
 inline constexpr std::uint32_t mode_ulp = 0x1U;
-using status = core::field_descriptor<lfrcmode, 16U, 1U>;
+using status = core::field_descriptor<lfrcmode, 16U, 1U, core::access_semantics::read_only>;
 inline constexpr std::uint32_t status_normal = 0x0U;
 inline constexpr std::uint32_t status_ulp = 0x1U;
 }

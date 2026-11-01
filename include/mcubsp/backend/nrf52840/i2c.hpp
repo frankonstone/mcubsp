@@ -1,6 +1,6 @@
 #pragma once
 
-// @req-file REQ-0054
+// @req-file REQ-0054 REQ-0062
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -70,8 +70,9 @@ public:
     using start_result = std::expected<transfer_type, typename pool_type::error_type>;
     static constexpr std::size_t stop_poll_limit = 1024U;
 
-    i2c_controller_backend(Mmio& mmio, Execution& execution) noexcept
-        : mmio_(mmio), execution_(execution), operations_(execution) {}
+    i2c_controller_backend(Mmio& mmio, Execution& execution,
+                            resource_registry& resources = default_resources) noexcept
+        : mmio_(mmio), execution_(execution), operations_(execution), resources_(resources) {}
     i2c_controller_backend(const i2c_controller_backend&) = delete;
     i2c_controller_backend& operator=(const i2c_controller_backend&) = delete;
 
@@ -83,11 +84,11 @@ public:
             timing.error_ppm, timing.rise_time_ns, timing.fall_time_ns});
         if (!solved || solved->frequency != timing.frequency || solved->achieved_hz != timing.achieved_hz)
             return std::unexpected(solved ? invalid_rate : solved.error());
-        if (!execution_.critical([] {
-            if (detail::serial_owner<Binding::instance>::claimed) return false;
-            detail::serial_owner<Binding::instance>::claimed = true;
-            return true;
-        })) return std::unexpected(already_owned);
+        const std::array pins{Binding::scl_pin, Binding::sda_pin};
+        auto claim = resources_.claim(execution_, Binding::instance == 0 ? peripheral::twi0 : peripheral::twi1,
+                                      this, pins);
+        if (!claim) return std::unexpected(already_owned);
+        resource_ = *claim;
         owned_ = true;
         const auto enabled = read<reg::enable>();
         if (!enabled || *enabled != 0U) {
@@ -192,6 +193,7 @@ public:
     }
 
     [[nodiscard]] std::expected<void, driver::i2c_error> shutdown() noexcept {
+        if (execution_.in_isr()) return std::unexpected(driver::i2c_error::busy);
         if (!owned_) return {};
         if (id_) return std::unexpected(driver::i2c_error::busy);
         if (!disable() || !write<reg::psel_scl>(0x8000'0000U)
@@ -201,7 +203,7 @@ public:
         initialized_ = false;
         // A faulted operation pool deliberately retains its retired slot.
         // Shutdown releases hardware, but reconstruct the backend after a fault.
-        release_owner();
+        if (!release_owner()) return std::unexpected(driver::i2c_error::busy);
         return {};
     }
     [[nodiscard]] bool faulted() const noexcept { return faulted_; }
@@ -285,8 +287,11 @@ private:
         return operations_.fail(current, error);
     }
     void detach() noexcept { id_.reset(); output_ = {}; input_ = {}; pending_error_.reset(); }
-    void release_owner() noexcept {
-        execution_.critical([this] { detail::serial_owner<Binding::instance>::claimed = false; owned_ = false; });
+    bool release_owner() noexcept {
+        if (resource_ && resources_.release(execution_, *resource_)) {
+            resource_.reset(); owned_ = false; return true;
+        }
+        return false;
     }
     [[nodiscard]] std::expected<bool, driver::i2c_error> lines_idle() noexcept {
         const auto scl = mmio_.template read<std::uint32_t>(mcu::nrf52840::gpio_base(Binding::scl_pin) + 0x510U);
@@ -315,6 +320,8 @@ private:
     Mmio& mmio_;
     Execution& execution_;
     pool_type operations_;
+    resource_registry& resources_;
+    std::optional<resource_token> resource_;
     std::optional<core::operation_id> id_;
     std::optional<driver::i2c_error> pending_error_;
     std::span<const std::uint8_t> output_;

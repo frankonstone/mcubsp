@@ -19,7 +19,8 @@ static_assert(profile::led_builtin == core::pin_id{0, 15});
 
 TEST(nrf52840_gpio, sets_latch_before_direction_and_encodes_electrical_modes, "REQ-0053") {
     mmio_type mmio{0x5000'0000U};
-    backend_type backend{mmio};
+    backend::nrf52840::resource_registry resources;
+    backend_type backend{mmio, resources};
     driver::gpio_pin pin{backend, {0, 15}};
     ASSERT_TRUE(pin.initialize({.direction = driver::gpio_direction::output,
         .initial_level = driver::gpio_level::high,
@@ -37,7 +38,8 @@ TEST(nrf52840_gpio, sets_latch_before_direction_and_encodes_electrical_modes, "R
 
 TEST(nrf52840_gpio, uses_port_one_atomic_aliases_and_reads_input, "REQ-0053") {
     mmio_type mmio{0x5000'0000U};
-    backend_type backend{mmio};
+    backend::nrf52840::resource_registry resources;
+    backend_type backend{mmio, resources};
     driver::gpio_pin pin{backend, {1, 15}};
     ASSERT_TRUE(pin.initialize({.direction = driver::gpio_direction::output}).has_value());
     ASSERT_TRUE(mmio.write<std::uint32_t>(0x5000'0810U, 1U << 15U).has_value());
@@ -54,10 +56,26 @@ TEST(nrf52840_gpio, uses_port_one_atomic_aliases_and_reads_input, "REQ-0053") {
     EXPECT_EQ(trace[2].address, 0x5000'0810U);
     EXPECT_EQ(trace[0].value, 1U << 15U);
 }
+TEST(nrf52840_gpio, rejects_high_drive_on_restricted_die_pins_before_any_write,
+     "REQ-0053", "REQ-0055") {
+    mmio_type mmio{0x5000'0000U};
+    backend::nrf52840::resource_registry resources;
+    backend_type backend{mmio, resources};
+    driver::gpio_pin pin{backend, {1, 15}};
+    auto result = pin.initialize({.direction = driver::gpio_direction::output,
+                                  .initial_level = driver::gpio_level::high,
+                                  .drive = driver::gpio_drive::middle});
+    ASSERT_FALSE(result.has_value());
+    EXPECT_TRUE(result.error() == driver::gpio_error::unsupported_configuration);
+    EXPECT_EQ(mmio.operations().size(), 0U);
+    // Functional initialization released the failed claim; standard drive can retry.
+    ASSERT_TRUE(pin.initialize({.direction = driver::gpio_direction::output}).has_value());
+}
 
 TEST(nrf52840_gpio, rejects_unavailable_reserved_and_duplicate_pins_without_mmio, "REQ-0053") {
     mmio_type mmio{0x5000'0000U};
-    backend_type backend{mmio};
+    backend::nrf52840::resource_registry resources;
+    backend_type backend{mmio, resources};
     EXPECT_FALSE(backend.claim({1, 16}, driver::gpio_direction::output).has_value());
     EXPECT_FALSE(backend.claim({0, 32}, driver::gpio_direction::output).has_value());
     for (auto index : {0U, 1U, 9U, 10U, 18U})
@@ -71,7 +89,8 @@ TEST(nrf52840_gpio, rejects_unavailable_reserved_and_duplicate_pins_without_mmio
 
 TEST(nrf52840_gpio, input_configuration_and_release_preserve_ownership_rules, "REQ-0053") {
     mmio_type mmio{0x5000'0000U};
-    backend_type backend{mmio};
+    backend::nrf52840::resource_registry resources;
+    backend_type backend{mmio, resources};
     driver::gpio_pin input{backend, {0, 8}};
     ASSERT_TRUE(input.initialize({.pull = driver::gpio_pull::down}).has_value());
     EXPECT_EQ(mmio.operations()[0].value, 4U);
@@ -86,7 +105,8 @@ TEST(nrf52840_gpio, input_configuration_and_release_preserve_ownership_rules, "R
 TEST(nrf52840_gpio, configuration_failure_rolls_back_claim_and_does_not_enable_output, "REQ-0053") {
     // OUTSET fits, PIN_CNF does not: the functional driver must release its claim.
     testing::recording_mmio<0x510, 8> mmio{0x5000'0000U};
-    backend::nrf52840::gpio_backend backend{mmio};
+    backend::nrf52840::resource_registry resources;
+    backend::nrf52840::gpio_backend backend{mmio, resources};
     driver::gpio_pin pin{backend, {0, 15}};
     const auto configured = pin.initialize({.direction = driver::gpio_direction::output});
     ASSERT_FALSE(configured.has_value());
@@ -98,7 +118,8 @@ TEST(nrf52840_gpio, configuration_failure_rolls_back_claim_and_does_not_enable_o
 
 TEST(nrf52840_gpio, propagates_latch_and_input_access_failure, "REQ-0053") {
     testing::recording_mmio<4, 8> mmio{0x5000'0000U};
-    backend::nrf52840::gpio_backend backend{mmio};
+    backend::nrf52840::resource_registry resources;
+    backend::nrf52840::gpio_backend backend{mmio, resources};
     ASSERT_TRUE(backend.claim({0, 15}, driver::gpio_direction::output).has_value());
     const auto configured = backend.configure({0, 15}, {.direction = driver::gpio_direction::output});
     ASSERT_FALSE(configured.has_value());

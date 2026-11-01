@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-28",
+  "kind": "software_verification",
+  "plans": [
+    "PLN-0044",
+    "PLN-0045"
+  ],
+  "plan_completion_claim": false,
+  "scope": "shared resource/DMA bookkeeping and native finite CPU-driven UART0",
+  "native": {
+    "ctest_passed": 65,
+    "ctest_total": 65,
+    "report": "output/artifact/native.json",
+    "report_sha256": "963f0c9dca436cc7a7f0008f34822133f5be9259b230580a529759e135b00b8f",
+    "tests": 418,
+    "failures": 0,
+    "new_cases": 33,
+    "coordination_cases": 16,
+    "uart_configuration_cases": 3,
+    "native_uart_cases": 14
+  },
+  "public_headers": {
+    "count": 245,
+    "targets": [
+      "AppleClang 21 macOS arm64",
+      "Arm GNU 15.2.1 Cortex-M4F",
+      "Arm GNU 15.2.1 Cortex-M7",
+      "ESP32-P4 RISC-V"
+    ],
+    "result": "passed"
+  },
+  "imports": {
+    "mdk": "byte-for-byte --check passed",
+    "product": "byte-for-byte --check passed",
+    "core": "byte-for-byte --check passed",
+    "crypto_corrections": [
+      "DIN SRC_MEM_SIZE is a committing command",
+      "DIN/DOUT memory-size FIRST/LAST are reserved and excluded from writable masks"
+    ]
+  },
+  "composition": {
+    "repository_examples": [
+      "blink",
+      "tmp102",
+      "system",
+      "system-watchdog",
+      "uart-loopback"
+    ],
+    "source_consumers": [
+      "system",
+      "uart-loopback"
+    ],
+    "relocated_installed_consumers": [
+      "system",
+      "system-watchdog",
+      "uart-loopback"
+    ],
+    "installed_probes": [
+      "MCU/core metadata Cortex-M4F",
+      "system/DMA/UART bodies Cortex-M4F"
+    ],
+    "reset_handler_count": {
+      "installed_system": 1,
+      "installed_uart": 1
+    },
+    "uart_allocation_exception_runtime_symbols": "none in linked checked images",
+    "uf2_runner": "system and UART fake-mount dry-runs passed",
+    "license_notices_installed": [
+      "Nordic BSD-3-Clause",
+      "Arm Apache-2.0"
+    ]
+  },
+  "images": {
+    "blink": {
+      "elf": "output/build/promicro-nrf52840/src/board/firmware.elf",
+      "elf_sha256": "1e8359e581912d0d7428f5e6cf3b9788b8873bd07799992ded61cc0fca12b9c4",
+      "uf2_sha256": "e5beb0c8ce7aa4e929b57aca49fadcc752916f7be10c7950ce15719b45197118",
+      "selected_input_identity": "c55223ac5a4c054478e04d989e959b36c26200cb032efb71a9e884cbd819d1ce",
+      "inputs_sha256": "2cfc8c2f03de3842333207f818a8bbfbb3ba12a29ce8d80fb5e6e42f7fc6d4b8",
+      "text_bytes": 3548,
+      "data_bytes": 4,
+      "bss_bytes": 1684,
+      "uploaded": false,
+      "physical_result": null
+    },
+    "tmp102": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.tmp102.elf",
+      "elf_sha256": "ba33f94573b2c1427ac64cfb5907837fcbcfcd6ddd217bbffdbcf57a9fb657ba",
+      "uf2_sha256": "9dfda82648ab83d71137e299f971c799398496a0c232d45381971087244994ff",
+      "selected_input_identity": "3c6a2249d49db9aec8e074083cc7f06a996eca5147f7f9f4848ec1c6d3be3fbb",
+      "inputs_sha256": "b4fd139a55606d1dfcf0737a21673365938404d265676394e9e05518c55e114e",
+      "text_bytes": 10352,
+      "data_bytes": 4,
+      "bss_bytes": 1828,
+      "uploaded": false,
+      "physical_result": null
+    },
+    "system": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.system.elf",
+      "elf_sha256": "5be5d3ead9ef850f69aa021101410fb755d06a4cc244973677990196721d8239",
+      "uf2_sha256": "f393c31e860308dfa13267b58ee75357ee904455b6abd0a87ef6a246ef5f53f4",
+      "selected_input_identity": "0d0913ee3f1164c07608eaaf31aca67c875da7e92cf60462bbcbf20998ea8fc1",
+      "inputs_sha256": "7331cccbb356f90341144057c62be0003eb107f838a2ac9281587de8638a459a",
+      "text_bytes": 10700,
+      "data_bytes": 20,
+      "bss_bytes": 4688,
+      "uploaded": false,
+      "physical_result": null
+    },
+    "system-watchdog": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.system-watchdog.elf",
+      "elf_sha256": "98ef2146ae6318089fc409258132231f7ba274de5663191584268efd0eeea632",
+      "uf2_sha256": "d96d5e41ee951d6ed100c20b9d836b8207e36578073fa32707950ca3c14180dc",
+      "selected_input_identity": "4de0c8f9d50538e206bd8e60007702b65f312fbcb9611cfe23dd154468fd22e8",
+      "inputs_sha256": "07c4355e0b3cf404fa6b86c6a1460b8b4753c201e72f540ef475cbb5cca603c7",
+      "text_bytes": 10996,
+      "data_bytes": 20,
+      "bss_bytes": 4688,
+      "uploaded": false,
+      "physical_result": null
+    },
+    "uart-loopback": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.uart-loopback.elf",
+      "elf_sha256": "6f4fbd6f7a153782e849933d58501037e191d2f0b7b7dc4f7d250db5c1d0e769",
+      "uf2_sha256": "a24b804b619cb855be7110625ca1ade32a2aa7b07718f03771bfbb60120d163f",
+      "selected_input_identity": "1f13ed854ab2429c32d7e66d0498d807ecddb26b558a09e05c53a659b04790fd",
+      "inputs_sha256": "771adf775a43c1adf7871eaec01de1ae3354a612e0f69ee2497d08318e4bb179",
+      "text_bytes": 10448,
+      "data_bytes": 20,
+      "bss_bytes": 4548,
+      "uploaded": false,
+      "physical_result": null
+    }
+  },
+  "logs": {
+    "native": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-native.log",
+      "sha256": "dcbead5039ebd5f15ed692a84675e58f193b6ae19532d697aa28ce40720abddd"
+    },
+    "cortex_m4": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-m4.log",
+      "sha256": "21b834b03283367d0c047588e5a0d58167a23ff3efaa78c6dc13c0546757b5d3"
+    },
+    "cortex_m7": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-m7.log",
+      "sha256": "fd4fb9a4e116aa5d79d53cf03ba933f33db5fce872179e015a7def9eb3059b50"
+    },
+    "esp32_p4": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-p4.log",
+      "sha256": "32e2aa7a7e1441af79d6370eb32cb82473fa36a91c3d27debc4649283d412012"
+    },
+    "board_examples": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-board.log",
+      "sha256": "80478b5523a930db226a08ffc50cfa4d50de37df42fe6f5ceca2e28954be731b"
+    },
+    "product_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-product-check.log",
+      "sha256": "423a76184b81b5dd0cb2efd1ca88ae364f2489ac71a15b230a804b2611f93897"
+    },
+    "mdk_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-mdk-check.log",
+      "sha256": "457500bbe6d445edbd002c557d80d14acc202371b8b4ad9e04d96fc578811001"
+    },
+    "core_reproduction": {
+      "local_path": "/private/tmp/mcubsp-nrf-dma-core-check.log",
+      "sha256": "4de7e9cf373cda0979e9bba5fe261454b451ff4d56f83a152f2748ba1d6caea9"
+    },
+    "source_and_relocated_package": {
+      "local_path": "/var/folders/4r/zl71gz153yn3gcf0_gy5lhxm0000gn/T/mcubsp-nrf-system-consumers-8hf1mcq9/checks.log",
+      "sha256": "690207e121d3c8f33ec06c6168cd3b2489a4a825dd5dc82ba2a775108e6535cd"
+    }
+  },
+  "physical_baseline": "../nrf52840-system/2026-10-28-watchdog-upload.json; old regular image restored there, not these builds",
+  "not_established": [
+    "physical UART loopback/peer/flow-control or wire timing",
+    "UARTE runtime or bounded streaming receive",
+    "complete SPI/SPIM/SPIS and TWIM/TWIS runtime families",
+    "all concrete peripheral DMA paths including crypto/RNG-SRAM sequencing",
+    "full serial facade integration",
+    "exact silicon identity and complete revision-specific errata qualification",
+    "physical refresh of these newly rebuilt system images",
+    "coverage refresh",
+    "hosted CI"
+  ],
+  "trace_validation": {
+    "analysis_revision": "f8267e4b8d07851e",
+    "requirements": [
+      "REQ-0059",
+      "REQ-0062"
+    ],
+    "filtered": true,
+    "complete": true,
+    "diagnostics": 0
+  }
+}

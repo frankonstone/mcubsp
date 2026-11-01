@@ -48,9 +48,13 @@ are now pinned by [content identity](product-specification.json). The vendor-aut
 PDF was obtained from its distributor mirror; it is kept in the ignored local
 manual cache rather than distributed with the library.
 
-`mcu/nrf52840/product.hpp` adds the current CryptoCell definitions: 11 subblocks,
-199 registers and 343 fields, including 192 registers absent from the MDK. Use
-these types for current CryptoCell work. The seven legacy CC_HOST_RGF registers
+`mcu/nrf52840/product.hpp` now describes all 53 register families from the current
+product tables: 1,563 detailed registers and 4,476 fields, including CTRL-AP as a
+debug access port rather than CPU MMIO. The CryptoCell subset has 11 subblocks,
+199 registers and 345 fields, including 192 registers absent from the MDK. The
+expanded parser recovers the two high-order HOST_BOOT fields previously missed
+by the 343-field supplement. Use these types for current product work.
+The seven legacy CC_HOST_RGF registers
 use a different base/offset pair but resolve to the same absolute addresses.
 Mixed read-only/write-once fields and side-effecting data ports are explicit.
 `SRAM_DATA` permits writes and requires `read_with_side_effect()` for a read;
@@ -62,19 +66,72 @@ in the specification's register overview tables: 1,366 match MDK absolute
 addresses, 192 are supplied by the product supplement, four UICR addresses are
 reserved and five belong to CTRL-AP rather than CPU MMIO. This is an address
 reconciliation, not proof of every field, mode or revision-specific behavior.
-Reproduce it and the supplemental types from the pinned PDF/SVD:
+[The field audit](product-field-audit.json) reconciles 4,122 MDK field matches,
+346 supplementary fields and eight reviewed access differences, with no
+unresolved field-shape/reset differences. The differences cover seven older
+CryptoCell access descriptions and CLOCK.LFRCMODE.STATUS: its prose defines a
+read-only status bit despite the table's broad RW annotation. Both generated
+views exclude that status bit from writes. W1C classifications account for MDK
+`modifiedWriteValues` attributes rather than treating those as RW conflicts.
+Literal field enums have checked encoders that reject unlisted values; valid
+cross-field combinations and instance-specific modes still need driver review.
+Family types retain the source template layouts. A field's presence in a family
+does not establish availability on every shared-layout instance; package and
+instance restrictions remain separate constraints.
+Reproduce the tables and types from the pinned PDF/SVD:
 
 ```sh
 python3 tool/nrf52840-product.py --pdf doc/_vendor/manual/nrf52840-ps-v1.11.pdf \
   --source-dir /path/to/pinned-inputs --check
 ```
 
-Complete field/mode/core/pin/package review and revision-specific audit of the
-full product remain open. Accordingly,
+[The instance audit](product-instance-audit.json) covers all 85 instantiation
+table rows. The FPU row at `0x40026000` is IRQ 38 only; it does not describe an
+FPU register block there. Independent POWER/CLOCK and MWU/ACL controls are not
+collapsed into exclusive personalities merely because addresses coincide.
+
+`product/pins.hpp` and [package-pins.json](package-pins.json) describe aQFN73,
+QFN48 and WLCSP94 bonding, fixed functions and standard-drive/10 kHz-only pads.
+Package pin bindings reject unbonded pads; unknown FICR package codes stay unknown.
+These are chip/package facts, not a claim about this clone's connector exposure.
+The GPIO backend rejects high drive on restricted die pads before MMIO.
+`memory.hpp` separates the CPU code-RAM alias from Data RAM accepted by EasyDMA,
+checks spans/alignment without overflow and records the two/six-section RAM
+geometry. This does not implement peripheral-specific DMA sequencing.
+
+`core_registers.hpp` adds 12 selected Cortex-M4F components with 382 typed register
+views and 729 field entries. [core-facts.json](core-facts.json) records the CMSIS,
+M4, Armv7-M and ETMv3.5 sources and semantic overlays. These include keyed writes,
+byte priority registers, read-only NVIC active bits, read-clearing debug status,
+32 ITM ports with separate access widths, FPB code/literal comparator differences
+and the ETM-M4 inventory. The DCRSR selector includes floating-point registers;
+TPI DEVTYPE corrects a missing shift in CMSIS 5.9. DWT cycle/data matching is
+restricted to comparators 0/1, and LNK1ENA/FFCR.TrigIn are read-only.
+Unknown or integration-dependent reset bits remain unknown. Reproduce with
+the exact Arm PDFs and CMSIS header listed in the manifests (Poppler required):
+
+```sh
+python3 tool/nrf52840-core.py --source-dir /path/to/pinned-inputs --check
+```
+
+The [Arm Apache notice](ARM-LICENSE.txt) accompanies the derived core facts in
+the checkout and installed package. Declarative types do not take ownership of
+debug hardware or enforce cross-register programming sequences.
+
+Complete instance/mode/errata sequencing review and actual board/stepping
+qualification remain open. Accordingly,
 `complete_product_description` is explicitly false. The old three-MCU gate
 continues to cover its original targets only.
 
 ## Explicit native runtime
+
+The subsequent [coordination/UART checkpoint](../../acceptance/nrf52840-dma-uart.md)
+adds `backend/nrf52840/resources.hpp`, `dma_buffers.hpp` and the explicit native
+legacy `uart.hpp` backend. TWI/GPIO/system clients share resource and pin
+ownership; future DMA drivers use the bounded handoff/quiescence contract.
+`uart_config.hpp` preserves UART/UARTE timing differences. The board serial
+facade and UARTE/SPI/TWIM/TWIS runtimes remain pending. See the checkpoint for
+ownership, clock, cancellation and physical-evidence boundaries.
 
 `backend/nrf52840/system_context.hpp` borrows one MMIO object, execution policy
 and existing GPIO backend. Use one context per physical MCU and share it among
@@ -95,7 +152,10 @@ composition, not an RTOS concurrency adapter.
 The board facade still advertises GPIO and finite I2C. The additional APIs are
 explicit native services; they are not automatically initialized by `hw.begin()`.
 The [system example](../../../example/system/README.md) composes the services
-without starting USB, a radio stack, a watchdog, or a System OFF reset.
+without starting USB, a radio stack or a System OFF reset. Its current version
+requires RTC interrupt/alarm progress for the visible success pulses and starts
+a three-second watchdog fed only after a completed RTC cycle. A separate
+`system-watchdog` image deliberately withholds feeds to test reset behavior.
 
 Core reservations protect the default DWT execution clock and hard-float FPU
 ownership. Supply explicit `core_reservations` when an external BSP/RTOS owns
@@ -180,8 +240,10 @@ external startup must supply its own reviewed reset/errata contract.
 
 ## Outstanding scope
 
-PLN-0042 still requires the full current-product register/field/mode review,
-full core descriptions and actual board/silicon identity readback.
+PLN-0042 still requires complete instance/mode/errata sequencing review,
+revision-applicable errata identity and actual board/silicon identity readback.
+Product/core table imports and package bonding are delivered; this does not
+establish all runtime capability combinations, board wiring or silicon stepping.
 PLN-0043 still requires exhaustive source/errata review and any resulting
 sequencing corrections, alongside the specified physical tests and actual
 debugger/trace capture. The fixed PPI and debugger script increments are

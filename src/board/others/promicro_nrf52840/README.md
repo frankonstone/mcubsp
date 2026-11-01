@@ -50,12 +50,20 @@ GPIO supports input/output, read, atomic set/clear, pull-up/down, standard drive
 and high drive (`gpio_drive::middle`), and open drain. Output readback keeps the
 input buffer connected. Toggle is a foreground read/write operation, not an
 atomic hardware toggle. Pin release restores input with no pull or sensing.
-Follow Nordic's electrical limits and the actual board wiring.
+High drive is rejected on the standard-drive-only die pads described by the
+product tables. Package bonding and actual connector exposure are separate;
+follow Nordic's electrical limits and the actual board wiring.
 
 UART, SPI, ADC, PWM, generic DMA, USB serial and Bluetooth are not implemented
 by this profile. Set `.serial = false`; enabling an unsupported feature fails
 compilation. USB is used by the existing bootloader only. Blink intentionally
 does not enumerate a USB application device.
+
+An explicit native UART0 backend and loopback example are available through the
+[coordination/UART checkpoint](../../../../doc/acceptance/nrf52840-dma-uart.md).
+This initial native API borrows the shared system context and clock controller;
+it does not enable the board serial facade. UARTE and the other serial families
+remain separate runtime work.
 
 ## I2C and attached sensors
 

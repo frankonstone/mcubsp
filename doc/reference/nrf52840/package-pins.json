@@ -1,0 +1,1133 @@
+{
+  "document": "4413_417 v1.11",
+  "section": "7.1, tables 61-63",
+  "low_frequency_limit_hz": 10000,
+  "scope": "Silicon package bonds and fixed functions; no clone-board header exposure claim.",
+  "packages": {
+    "aqfn73": [
+      {
+        "ball": "A8",
+        "port": 0,
+        "pin": 31,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN7"
+        ]
+      },
+      {
+        "ball": "A10",
+        "port": 0,
+        "pin": 29,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN5"
+        ]
+      },
+      {
+        "ball": "A12",
+        "port": 0,
+        "pin": 2,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN0"
+        ]
+      },
+      {
+        "ball": "A14",
+        "port": 1,
+        "pin": 15,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "A16",
+        "port": 1,
+        "pin": 13,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "A20",
+        "port": 1,
+        "pin": 10,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "B9",
+        "port": 0,
+        "pin": 30,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN6"
+        ]
+      },
+      {
+        "ball": "B11",
+        "port": 0,
+        "pin": 28,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN4"
+        ]
+      },
+      {
+        "ball": "B13",
+        "port": 0,
+        "pin": 3,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN1"
+        ]
+      },
+      {
+        "ball": "B15",
+        "port": 1,
+        "pin": 14,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "B17",
+        "port": 1,
+        "pin": 12,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "B19",
+        "port": 1,
+        "pin": 11,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "D2",
+        "port": 0,
+        "pin": 0,
+        "page": 927,
+        "low_frequency_only": false,
+        "functions": [
+          "XL1"
+        ]
+      },
+      {
+        "ball": "F2",
+        "port": 0,
+        "pin": 1,
+        "page": 927,
+        "low_frequency_only": false,
+        "functions": [
+          "XL2"
+        ]
+      },
+      {
+        "ball": "G1",
+        "port": 0,
+        "pin": 26,
+        "page": 927,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "H2",
+        "port": 0,
+        "pin": 27,
+        "page": 927,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "J1",
+        "port": 0,
+        "pin": 4,
+        "page": 927,
+        "low_frequency_only": false,
+        "functions": [
+          "AIN2"
+        ]
+      },
+      {
+        "ball": "J24",
+        "port": 0,
+        "pin": 10,
+        "page": 927,
+        "low_frequency_only": true,
+        "functions": [
+          "NFC2"
+        ]
+      },
+      {
+        "ball": "K2",
+        "port": 0,
+        "pin": 5,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": [
+          "AIN3"
+        ]
+      },
+      {
+        "ball": "L1",
+        "port": 0,
+        "pin": 6,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "L24",
+        "port": 0,
+        "pin": 9,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": [
+          "NFC1"
+        ]
+      },
+      {
+        "ball": "M2",
+        "port": 0,
+        "pin": 7,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACECLK"
+        ]
+      },
+      {
+        "ball": "N1",
+        "port": 0,
+        "pin": 8,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "P2",
+        "port": 1,
+        "pin": 8,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "P23",
+        "port": 1,
+        "pin": 7,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "R1",
+        "port": 1,
+        "pin": 9,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA3"
+        ]
+      },
+      {
+        "ball": "R24",
+        "port": 1,
+        "pin": 6,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "T2",
+        "port": 0,
+        "pin": 11,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA2"
+        ]
+      },
+      {
+        "ball": "T23",
+        "port": 1,
+        "pin": 5,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "U1",
+        "port": 0,
+        "pin": 12,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA1"
+        ]
+      },
+      {
+        "ball": "U24",
+        "port": 1,
+        "pin": 4,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "V23",
+        "port": 1,
+        "pin": 3,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "W24",
+        "port": 1,
+        "pin": 2,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "Y23",
+        "port": 1,
+        "pin": 1,
+        "page": 928,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "AC9",
+        "port": 0,
+        "pin": 14,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AC11",
+        "port": 0,
+        "pin": 16,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AC13",
+        "port": 0,
+        "pin": 18,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": [
+          "nRESET"
+        ]
+      },
+      {
+        "ball": "AC15",
+        "port": 0,
+        "pin": 19,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AC17",
+        "port": 0,
+        "pin": 21,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AC19",
+        "port": 0,
+        "pin": 23,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AC21",
+        "port": 0,
+        "pin": 25,
+        "page": 928,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AD8",
+        "port": 0,
+        "pin": 13,
+        "page": 929,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AD10",
+        "port": 0,
+        "pin": 15,
+        "page": 929,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AD12",
+        "port": 0,
+        "pin": 17,
+        "page": 929,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AD16",
+        "port": 0,
+        "pin": 20,
+        "page": 929,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AD18",
+        "port": 0,
+        "pin": 22,
+        "page": 929,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AD20",
+        "port": 0,
+        "pin": 24,
+        "page": 929,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "AD22",
+        "port": 1,
+        "pin": 0,
+        "page": 929,
+        "low_frequency_only": false,
+        "functions": [
+          "SWO",
+          "TRACEDATA0"
+        ]
+      }
+    ],
+    "qfn48": [
+      {
+        "ball": "2",
+        "port": 0,
+        "pin": 0,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "XL1"
+        ]
+      },
+      {
+        "ball": "3",
+        "port": 0,
+        "pin": 1,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "XL2"
+        ]
+      },
+      {
+        "ball": "4",
+        "port": 0,
+        "pin": 4,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "AIN2"
+        ]
+      },
+      {
+        "ball": "5",
+        "port": 0,
+        "pin": 5,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "AIN3"
+        ]
+      },
+      {
+        "ball": "6",
+        "port": 0,
+        "pin": 7,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACECLK"
+        ]
+      },
+      {
+        "ball": "7",
+        "port": 0,
+        "pin": 8,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "8",
+        "port": 1,
+        "pin": 8,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "9",
+        "port": 1,
+        "pin": 9,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA3"
+        ]
+      },
+      {
+        "ball": "10",
+        "port": 0,
+        "pin": 11,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA2"
+        ]
+      },
+      {
+        "ball": "11",
+        "port": 0,
+        "pin": 12,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA1"
+        ]
+      },
+      {
+        "ball": "13",
+        "port": 0,
+        "pin": 13,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "14",
+        "port": 0,
+        "pin": 14,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "15",
+        "port": 0,
+        "pin": 17,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "16",
+        "port": 0,
+        "pin": 18,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "nRESET"
+        ]
+      },
+      {
+        "ball": "18",
+        "port": 0,
+        "pin": 19,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "19",
+        "port": 0,
+        "pin": 20,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "20",
+        "port": 0,
+        "pin": 21,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "21",
+        "port": 0,
+        "pin": 22,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "22",
+        "port": 0,
+        "pin": 23,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "23",
+        "port": 0,
+        "pin": 24,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "24",
+        "port": 1,
+        "pin": 0,
+        "page": 930,
+        "low_frequency_only": false,
+        "functions": [
+          "SWO",
+          "TRACEDATA0"
+        ]
+      },
+      {
+        "ball": "29",
+        "port": 0,
+        "pin": 9,
+        "page": 930,
+        "low_frequency_only": true,
+        "functions": [
+          "NFC1"
+        ]
+      },
+      {
+        "ball": "30",
+        "port": 0,
+        "pin": 10,
+        "page": 930,
+        "low_frequency_only": true,
+        "functions": [
+          "NFC2"
+        ]
+      },
+      {
+        "ball": "38",
+        "port": 1,
+        "pin": 15,
+        "page": 931,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "39",
+        "port": 0,
+        "pin": 3,
+        "page": 931,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN1"
+        ]
+      },
+      {
+        "ball": "40",
+        "port": 0,
+        "pin": 2,
+        "page": 931,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN0"
+        ]
+      },
+      {
+        "ball": "41",
+        "port": 0,
+        "pin": 28,
+        "page": 931,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN4"
+        ]
+      },
+      {
+        "ball": "42",
+        "port": 0,
+        "pin": 29,
+        "page": 931,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN5"
+        ]
+      },
+      {
+        "ball": "43",
+        "port": 0,
+        "pin": 30,
+        "page": 931,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN6"
+        ]
+      },
+      {
+        "ball": "44",
+        "port": 0,
+        "pin": 31,
+        "page": 931,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN7"
+        ]
+      }
+    ],
+    "wlcsp94": [
+      {
+        "ball": "A3",
+        "port": 1,
+        "pin": 11,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "A4",
+        "port": 1,
+        "pin": 13,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "A5",
+        "port": 0,
+        "pin": 3,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN1"
+        ]
+      },
+      {
+        "ball": "A6",
+        "port": 0,
+        "pin": 28,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN4"
+        ]
+      },
+      {
+        "ball": "A7",
+        "port": 0,
+        "pin": 30,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN6"
+        ]
+      },
+      {
+        "ball": "B4",
+        "port": 1,
+        "pin": 10,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "B5",
+        "port": 1,
+        "pin": 14,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "B6",
+        "port": 0,
+        "pin": 2,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN0"
+        ]
+      },
+      {
+        "ball": "B9",
+        "port": 0,
+        "pin": 0,
+        "page": 933,
+        "low_frequency_only": false,
+        "functions": [
+          "XL1"
+        ]
+      },
+      {
+        "ball": "B10",
+        "port": 0,
+        "pin": 1,
+        "page": 933,
+        "low_frequency_only": false,
+        "functions": [
+          "XL2"
+        ]
+      },
+      {
+        "ball": "C5",
+        "port": 1,
+        "pin": 12,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "C6",
+        "port": 1,
+        "pin": 15,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "C7",
+        "port": 0,
+        "pin": 29,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN5"
+        ]
+      },
+      {
+        "ball": "C8",
+        "port": 0,
+        "pin": 31,
+        "page": 933,
+        "low_frequency_only": true,
+        "functions": [
+          "AIN7"
+        ]
+      },
+      {
+        "ball": "C9",
+        "port": 0,
+        "pin": 26,
+        "page": 933,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "C10",
+        "port": 0,
+        "pin": 4,
+        "page": 933,
+        "low_frequency_only": false,
+        "functions": [
+          "AIN2"
+        ]
+      },
+      {
+        "ball": "D9",
+        "port": 0,
+        "pin": 27,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "D10",
+        "port": 0,
+        "pin": 5,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": [
+          "AIN3"
+        ]
+      },
+      {
+        "ball": "E2",
+        "port": 0,
+        "pin": 10,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": [
+          "NFC2"
+        ]
+      },
+      {
+        "ball": "E3",
+        "port": 1,
+        "pin": 6,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "E9",
+        "port": 0,
+        "pin": 6,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "E10",
+        "port": 0,
+        "pin": 8,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "F1",
+        "port": 0,
+        "pin": 9,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": [
+          "NFC1"
+        ]
+      },
+      {
+        "ball": "F3",
+        "port": 1,
+        "pin": 3,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "F9",
+        "port": 0,
+        "pin": 7,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACECLK"
+        ]
+      },
+      {
+        "ball": "F10",
+        "port": 1,
+        "pin": 9,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA3"
+        ]
+      },
+      {
+        "ball": "G1",
+        "port": 1,
+        "pin": 7,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "G2",
+        "port": 1,
+        "pin": 5,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "G3",
+        "port": 1,
+        "pin": 2,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "G9",
+        "port": 1,
+        "pin": 8,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "G10",
+        "port": 0,
+        "pin": 12,
+        "page": 934,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA1"
+        ]
+      },
+      {
+        "ball": "H1",
+        "port": 1,
+        "pin": 4,
+        "page": 934,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "H4",
+        "port": 0,
+        "pin": 24,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "H5",
+        "port": 0,
+        "pin": 23,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "H6",
+        "port": 0,
+        "pin": 16,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "H7",
+        "port": 0,
+        "pin": 13,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "H8",
+        "port": 0,
+        "pin": 11,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": [
+          "TRACEDATA2"
+        ]
+      },
+      {
+        "ball": "J1",
+        "port": 1,
+        "pin": 1,
+        "page": 935,
+        "low_frequency_only": true,
+        "functions": []
+      },
+      {
+        "ball": "J3",
+        "port": 1,
+        "pin": 0,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": [
+          "SWO",
+          "TRACEDATA0"
+        ]
+      },
+      {
+        "ball": "J4",
+        "port": 0,
+        "pin": 21,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "J5",
+        "port": 0,
+        "pin": 20,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "J6",
+        "port": 0,
+        "pin": 17,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "J7",
+        "port": 0,
+        "pin": 14,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "K2",
+        "port": 0,
+        "pin": 25,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "K3",
+        "port": 0,
+        "pin": 22,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "K4",
+        "port": 0,
+        "pin": 19,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      },
+      {
+        "ball": "K6",
+        "port": 0,
+        "pin": 18,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": [
+          "nRESET"
+        ]
+      },
+      {
+        "ball": "K7",
+        "port": 0,
+        "pin": 15,
+        "page": 935,
+        "low_frequency_only": false,
+        "functions": []
+      }
+    ]
+  }
+}

@@ -1,12 +1,14 @@
 #pragma once
 
-// @req-file REQ-0053
+// @req-file REQ-0053 REQ-0055
 #include <array>
 #include <cstdint>
 #include <expected>
 #include <mcubsp/arch/barrier.hpp>
 #include <mcubsp/driver/gpio.hpp>
+#include <mcubsp/backend/nrf52840/resources.hpp>
 #include <mcubsp/mcu/nrf52840/peripherals.hpp>
+#include <mcubsp/mcu/nrf52840/product/pins.hpp>
 
 namespace mcubsp::backend::nrf52840 {
 
@@ -14,7 +16,11 @@ namespace mcubsp::backend::nrf52840 {
 template<class Mmio>
 class gpio_backend {
 public:
-    explicit constexpr gpio_backend(Mmio& mmio) noexcept : mmio_(mmio) {}
+    explicit constexpr gpio_backend(Mmio& mmio, resource_registry& resources = default_resources) noexcept
+        : mmio_(mmio), resources_(resources) {}
+    gpio_backend(const gpio_backend&) = delete;
+    gpio_backend& operator=(const gpio_backend&) = delete;
+    [[nodiscard]] resource_registry& resources() noexcept { return resources_; }
 
     [[nodiscard]] std::expected<void, driver::gpio_error>
     claim(core::pin_id pin, driver::gpio_direction) noexcept {
@@ -22,16 +28,23 @@ public:
             return std::unexpected(driver::gpio_error::invalid_pin);
         if (!mcu::nrf52840::gpio_supported(pin))
             return std::unexpected(driver::gpio_error::unsupported_configuration);
-        if (owned(pin)) return std::unexpected(driver::gpio_error::already_owned);
+        if (owned(pin) || !resources_.claim_gpio(pin,this))
+            return std::unexpected(driver::gpio_error::already_owned);
         owned_[pin.port] |= mask(pin);
         return {};
     }
     void release(core::pin_id pin) noexcept {
-        if (mcu::nrf52840::valid_pin(pin)) owned_[pin.port] &= ~mask(pin);
+        if (owned(pin)) {
+            resources_.release_gpio(pin,this);
+            owned_[pin.port] &= ~mask(pin);
+        }
     }
     [[nodiscard]] std::expected<void, driver::gpio_error>
     configure(core::pin_id pin, driver::gpio_configuration config) noexcept {
         if (!owned(pin)) return std::unexpected(driver::gpio_error::invalid_pin);
+        if (config.drive == driver::gpio_drive::middle &&
+            mcu::nrf52840::product::silicon_low_frequency_only(pin))
+            return std::unexpected(driver::gpio_error::unsupported_configuration);
         const auto output = config.direction == driver::gpio_direction::output;
         // INPUT stays connected so read() works for output leases as well.
         std::uint32_t value = output ? 1U : 0U;
@@ -84,6 +97,7 @@ private:
         return {};
     }
     Mmio& mmio_;
+    resource_registry& resources_;
     std::array<std::uint32_t, 2> owned_{};
 };
 
