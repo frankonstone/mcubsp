@@ -54,11 +54,15 @@ def export(registry, tool, source_root, output):
         # Optional analyzed graph: ordinary consumption keeps coverage optional.
         # This snapshot imports the instrumented run, not another build's tests.
         text = (source_root / 'mcutrace.toml').read_text()
-        if 'root = "."' not in text or 'path = "output/artifact/native.json"' not in text:
+        if 'root = "."' not in text:
             raise ValueError('update coverage graph export for the current project configuration')
         text = text.replace('root = "."', 'root = ' + json.dumps(str(source_root.resolve())), 1)
-        text = text.replace('path = "output/artifact/native.json"',
-            'path = ' + json.dumps(str((registry.parent / 'native.json').resolve())), 1)
+        for index in range(8):
+            original = f'path = "output/artifact/native/{index}.json"'
+            local = (registry.parent / 'native-trace' / f'{index}.json').resolve()
+            if original not in text or not local.is_file():
+                raise ValueError('missing current-build native trace shard or project input')
+            text = text.replace(original, 'path = ' + json.dumps(str(local)), 1)
         text = text.replace('[validation]', '[[artifacts]]\npath = ' +
             json.dumps(str((output / 'native.mcucov.json').resolve())) +
             '\nimporter = "mcucov"\n\n[validation]', 1)

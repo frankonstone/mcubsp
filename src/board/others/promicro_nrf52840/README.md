@@ -62,8 +62,15 @@ does not enumerate a USB application device.
 An explicit native UART0 backend and loopback example are available through the
 [coordination/UART checkpoint](../../../../doc/acceptance/nrf52840-dma-uart.md).
 This initial native API borrows the shared system context and clock controller;
-it does not enable the board serial facade. UARTE and the other serial families
-remain separate runtime work.
+it does not enable the board serial facade. The subsequent
+[peripheral checkpoint](../../../../doc/acceptance/nrf52840-peripherals.md) adds
+finite native UARTE0/1, SPIM0–3 and TWIM0/1 DMA operations, die temperature,
+quadrature decoding, RNG and explicit-region NVMC word/page operations.
+The [UARTE](../../../../example/uarte-loopback/README.md),
+[SPIM](../../../../example/spim-loopback/README.md) and
+[native-services](../../../../example/native-services/README.md) examples build
+from the checkout and installed package. These additions have software evidence;
+their physical observations and remaining family/mode implementations are open.
 
 ## I2C and attached sensors
 

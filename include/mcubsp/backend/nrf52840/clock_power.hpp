@@ -392,6 +392,8 @@ template <class Context, class Sleep = cortex_m_sleep> class power_controller {
                    : system_endpoint{};
     }
     [[nodiscard]] system_value<bool> consume(power_event source) noexcept {
+        if (source == power_event::power_fail && pof_owner_)
+            return std::unexpected(system_error::busy);
         if (!owned_ || !ready_ || !event_bit(source))
             return std::unexpected(system_error::invalid);
         auto address = 0x40000100 + static_cast<unsigned>(source) * 4;
@@ -442,10 +444,52 @@ template <class Context, class Sleep = cortex_m_sleep> class power_controller {
     }
     [[nodiscard]] system_result power_fail(unsigned threshold, bool enabled,
                                            unsigned high_voltage_threshold = 0) noexcept {
+        if (pof_owner_)
+            return std::unexpected(system_error::busy);
         if (threshold < 4 || threshold > 15 || high_voltage_threshold > 15)
             return std::unexpected(system_error::invalid);
         return checked_write(0x40000510, (enabled ? 1U : 0U) | (threshold << 1) |
                                              (high_voltage_threshold << 8));
+    }
+    // Erratum 242: a flash owner temporarily disables POFWARN and restores
+    // the exact writable configuration after NVMC is ready and read-only.
+    // A failed write retains this handoff for explicit recovery.
+    [[nodiscard]] system_result suspend_power_fail(const void *owner) noexcept {
+        if (!owner || !owned_ || !ready_ || c_.execution.in_isr())
+            return std::unexpected(system_error::invalid);
+        return c_.execution.critical([&]() -> system_result {
+            if (pof_owner_ || c_.referenced(62))
+                return std::unexpected(system_error::busy);
+            auto warning = c_.read(0x40000108), config = c_.read(0x40000510);
+            if (!warning || !config)
+                return std::unexpected(system_error::mmio);
+            if (*warning)
+                return std::unexpected(system_error::busy);
+            pof_saved_ = *config & 0xF1FU;
+            pof_owner_ = owner;
+            if (!c_.write(0x40000510, pof_saved_ & ~1U))
+                return std::unexpected(system_error::mmio);
+            arch::data_synchronization_barrier();
+            warning = c_.read(0x40000108);
+            if (!warning)
+                return std::unexpected(system_error::mmio);
+            if (*warning)
+                return std::unexpected(system_error::busy);
+            return {};
+        });
+    }
+    [[nodiscard]] bool power_fail_suspended_by(const void *owner) const noexcept {
+        return owner && pof_owner_ == owner;
+    }
+    [[nodiscard]] system_result restore_power_fail(const void *owner) noexcept {
+        if (!owner || pof_owner_ != owner || c_.execution.in_isr())
+            return std::unexpected(system_error::invalid);
+        return c_.execution.critical([&]() -> system_result {
+            if (!c_.write(0x40000510, pof_saved_))
+                return std::unexpected(system_error::mmio);
+            pof_owner_ = nullptr;
+            return {};
+        });
     }
     template <class Ready> [[nodiscard]] system_result idle_if(Ready &&safe_to_sleep) noexcept {
         if (!owned_ || !ready_ || c_.execution.in_isr())
@@ -477,7 +521,7 @@ template <class Context, class Sleep = cortex_m_sleep> class power_controller {
     [[nodiscard]] system_result shutdown() noexcept {
         if (!owned_)
             return {};
-        if (c_.referenced(62))
+        if (c_.referenced(62) || pof_owner_)
             return std::unexpected(system_error::busy);
         if (interrupts_) {
             if (!c_.write(0x40000308, interrupts_))
@@ -508,6 +552,8 @@ template <class Context, class Sleep = cortex_m_sleep> class power_controller {
     Context &c_;
     clock_controller<Context> &clocks_;
     std::uint32_t interrupts_{};
+    std::uint32_t pof_saved_{};
+    const void *pof_owner_{};
     bool owned_{}, ready_{};
 };
 } // namespace mcubsp::backend::nrf52840

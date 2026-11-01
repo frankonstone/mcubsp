@@ -10,6 +10,9 @@ build targets use these same files.
 | [Recovery](recovery/README.md) | UNO R4 Minima | UART echo with timeout, cancellation and recovery |
 | [Serial echo](serial_echo/README.md) | UNO R4 Minima | Echo bytes over the physical UART |
 | [SPI DMA](spi_dma/README.md) | UNO R4 Minima | Transfer over SPI with explicit DMA channels |
+| [UARTE loopback](uarte-loopback/README.md) | Pro Micro nRF52840 | Finite EasyDMA serial TX/RX with a binary RAM pattern |
+| [SPIM loopback](spim-loopback/README.md) | Pro Micro nRF52840 | Native EasyDMA SPI loopback with explicit CS |
+| [Native services](native-services/README.md) | Pro Micro nRF52840 | Die temperature, bias-corrected RNG and QDEC snapshots |
 | [TMP102](tmp102/README.md) | UNO R4 Minima, Pro Micro nRF52840 | Read a temperature sensor and indicate a threshold |
 | [W5100](w5100/README.md) | UNO R4 Minima | Receive raw Ethernet frames through an Ethernet Shield R3 |
 

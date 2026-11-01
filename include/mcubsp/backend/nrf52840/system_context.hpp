@@ -200,6 +200,10 @@ template <class Mmio, class Execution> class system_context {
                 return (a == 0x4000F000 || a == 0x4000F008 ||
                         (e.domain == endpoint_domain::ccm && (a == 0x4000F004 || a == 0x4000F00C)));
         }
+        if (id == 78) {
+            return kind == endpoint_kind::event ? indexed(a, 0x40012100, 5)
+                 : kind == endpoint_kind::task && indexed(a, 0x40012000, 5);
+        }
         if (id == 61 || id == 62) {
             if (kind != endpoint_kind::event || !indexed(a, 0x40000100, 12))
                 return false;
@@ -290,6 +294,7 @@ template <class Mmio, class Execution> class system_context {
         if (id==62) return peripheral::power;
         if (id==76) return peripheral::radio;
         if (id==77) return domain==endpoint_domain::aar ? peripheral::aar : peripheral::ccm;
+        if (id==78) return peripheral::qdec;
         return std::nullopt; // channel/core reservations retain their existing finer-grained identities
     }
     std::array<bool, resource_count> owned_{}, published_{};

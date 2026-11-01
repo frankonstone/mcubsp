@@ -129,8 +129,11 @@ The subsequent [coordination/UART checkpoint](../../acceptance/nrf52840-dma-uart
 adds `backend/nrf52840/resources.hpp`, `dma_buffers.hpp` and the explicit native
 legacy `uart.hpp` backend. TWI/GPIO/system clients share resource and pin
 ownership; future DMA drivers use the bounded handoff/quiescence contract.
-`uart_config.hpp` preserves UART/UARTE timing differences. The board serial
-facade and UARTE/SPI/TWIM/TWIS runtimes remain pending. See the checkpoint for
+`uart_config.hpp` preserves UART/UARTE timing differences. The later
+[peripheral checkpoint](../../acceptance/nrf52840-peripherals.md) adds finite
+UARTE0/1, SPIM0–3 and TWIM0/1 DMA runtimes, TEMP/QDEC/RNG and bounded NVMC
+word/page operations. Board facade integration, streaming, legacy SPI and
+SPIS/TWIS runtime work remain pending. See these checkpoints for
 ownership, clock, cancellation and physical-evidence boundaries.
 
 `backend/nrf52840/system_context.hpp` borrows one MMIO object, execution policy

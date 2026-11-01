@@ -38,11 +38,41 @@ build_files = [
 ]
 
 # Native builds publish only reports in their explicit producer registry.
-# The shared report represents the latest successful native build.
+# The eight shared trace shards represent the latest successful native build.
+# output/artifact/native.json remains the complete human/tool summary; importing
+# bounded shards avoids the reader's fixed JSON arena without dropping cases.
 # Historical physical records remain indexed in doc/acceptance, not imported
 # as current-tree evidence. Run the host build before loading this graph.
 [[artifacts]]
-path = "output/artifact/native.json"
+path = "output/artifact/native/0.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "output/artifact/native/1.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "output/artifact/native/2.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "output/artifact/native/3.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "output/artifact/native/4.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "output/artifact/native/5.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "output/artifact/native/6.json"
+importer = "mcutest"
+
+[[artifacts]]
+path = "output/artifact/native/7.json"
 importer = "mcutest"
 
 [validation]

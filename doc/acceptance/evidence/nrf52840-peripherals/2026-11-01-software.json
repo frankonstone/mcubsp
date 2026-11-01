@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-01",
+  "kind": "software_verification",
+  "plans": [
+    "PLN-0044",
+    "PLN-0045",
+    "PLN-0046",
+    "PLN-0047",
+    "PLN-0050"
+  ],
+  "plan_completion_claim": false,
+  "mcutrace": {
+    "analysis_revision": "1f66dee5915027db",
+    "focused_validation_failed": false,
+    "focused_diagnostics": 0,
+    "project_validation_errors": 0,
+    "project_validation_warnings": 68
+  },
+  "scope": "Finite native UARTE/SPIM/TWIM DMA; TEMP/QDEC/RNG; explicit-region NVMC word/page operations; bounded trace-report publication",
+  "native": {
+    "ctest_passed": 68,
+    "ctest_total": 68,
+    "report": "output/artifact/native.json",
+    "report_sha256": "439f9e8d6087a1fee70b3eebd2aa345ab145db5a8f48a60e1ae8401dd039806b",
+    "tests": 488,
+    "failures": 0,
+    "added_cases": 70,
+    "new_native_cases": {
+      "nrf_uarte": 15,
+      "nrf_spim": 15,
+      "nrf_twim": 13,
+      "nrf_temperature": 5,
+      "nrf_rng": 5,
+      "nrf_qdec": 7,
+      "nrf_nvmc": 9
+    },
+    "new_workflow_cases": 1
+  },
+  "public_headers": {
+    "count": 254,
+    "targets": [
+      "AppleClang macOS arm64",
+      "Cortex-M4F",
+      "Cortex-M7",
+      "ESP32-P4 RISC-V"
+    ],
+    "result": "passed"
+  },
+  "service_body_probes": {
+    "host": true,
+    "cortex_m4": true,
+    "cortex_m7": true,
+    "esp32p4": true,
+    "relocated_package_cortex_m4": true
+  },
+  "trace_publication": {
+    "combined_report_retained": true,
+    "shards": [
+      {
+        "path": "output/artifact/native/0.json",
+        "sha256": "6e4cae18cd9bd9caa8d4874f66567de859e7df3ec03031f885bf821e4856ae5e",
+        "tests": 63
+      },
+      {
+        "path": "output/artifact/native/1.json",
+        "sha256": "f4c4f75c18f7985096f964747c3c0770d83789f6cb56d84280c3c7312cba8c40",
+        "tests": 62
+      },
+      {
+        "path": "output/artifact/native/2.json",
+        "sha256": "59e070a651c6cc96ee056c55a75e81dd369040836925e164c99957c029faa0ec",
+        "tests": 73
+      },
+      {
+        "path": "output/artifact/native/3.json",
+        "sha256": "67e5b1d266a83c1cac032a2ba84f81fdcc8f216cdd58b68639c65c66215efecd",
+        "tests": 58
+      },
+      {
+        "path": "output/artifact/native/4.json",
+        "sha256": "362ede7e33eeb3f99fa35636edb4604db42859ce6aa6463fcb4d3ec412c5cf21",
+        "tests": 59
+      },
+      {
+        "path": "output/artifact/native/5.json",
+        "sha256": "f904542e4b08424c0609dbb7065e9fca26da15d0827f107b221016937824fce4",
+        "tests": 47
+      },
+      {
+        "path": "output/artifact/native/6.json",
+        "sha256": "d85ccba1876f24fbe545c849d49d46487126804ee65933a0e41b713009658f7d",
+        "tests": 63
+      },
+      {
+        "path": "output/artifact/native/7.json",
+        "sha256": "30f7d80ce16bb803fdd33313af948e7f278e8e4352b5151db5dd57fff0d72758",
+        "tests": 63
+      }
+    ],
+    "all_cases_exactly_once": true,
+    "original_failure": "mcujson OOM with fixed 8192-node / 65534-byte string arena",
+    "evidence_expectations_changed": false
+  },
+  "composition": {
+    "repository_examples": [
+      "blink",
+      "tmp102",
+      "system",
+      "system-watchdog",
+      "uart-loopback",
+      "uarte-loopback",
+      "spim-loopback",
+      "native-services"
+    ],
+    "source_and_relocated_examples": [
+      "uarte-loopback",
+      "spim-loopback",
+      "native-services"
+    ],
+    "uf2_runner": "Nine simulated-mount dry-runs passed; no FIRMWARE.UF2 written to simulated mount",
+    "license_notices_installed": [
+      "Nordic BSD-3-Clause",
+      "Arm Apache-2.0"
+    ]
+  },
+  "images": {
+    "repository": {
+      "uarte-loopback": {
+        "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.uarte-loopback.elf",
+        "elf_sha256": "0b81fd01ee5f314541432c301f868d7ada1f2b97064198aaa4b9fc9e77793eb8",
+        "uf2_sha256": "70efb430be413a318014f3908f4a985036a7829dcc65bdd20fd054e927513ce8",
+        "selected_input_identity": "f1073637b693165e69b1b823eeb233a2f944e15871760845e5b0381a1fd4cbed",
+        "inputs_sha256": "7249707687a3a191edd95d669d0959118a9f86b2c3b83af2a848dac8bb253940",
+        "text_bytes": 12872,
+        "data_bytes": 28,
+        "bss_bytes": 4908,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "spim-loopback": {
+        "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.spim-loopback.elf",
+        "elf_sha256": "f8b43d5c370675522df31229cfe56f5756fa2170353410b78e734999cae780ac",
+        "uf2_sha256": "3ed49854637d4142803b53781d8aae6d59fcefb6ad7a312e5da3edef4211047a",
+        "selected_input_identity": "2e857143946867e351bae33d84e66582db32fa8fb17ab2ec71dfd4f49683266f",
+        "inputs_sha256": "edc3ee340180b1c876c020c3fdd402a563bee07a29f124c5e39d097b6a09ea7e",
+        "text_bytes": 10688,
+        "data_bytes": 28,
+        "bss_bytes": 5044,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "native-services": {
+        "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.native-services.elf",
+        "elf_sha256": "7d8c38109a791ffe14a0a912ab113d73348176f12f563d17d579d50ad7c9e0bc",
+        "uf2_sha256": "dc991214fb0f73405b94345b5fc5e2cf05650d5001d8cf252d4e87ef24faec5f",
+        "selected_input_identity": "f19940456372abc84a20f89e45cd003bd776da94d08731c4c2ec9e7351df2ec4",
+        "inputs_sha256": "387aa56a2044bcfba391ae8f8682c17f69dc01b27f4a30d0177dda590c808341",
+        "text_bytes": 9412,
+        "data_bytes": 20,
+        "bss_bytes": 4596,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      }
+    },
+    "source": {
+      "uarte-loopback": {
+        "elf": "/private/tmp/mcubsp-next10.XxiOrY/source-uarte-loopback/uarte_loopback.elf",
+        "elf_sha256": "0b81fd01ee5f314541432c301f868d7ada1f2b97064198aaa4b9fc9e77793eb8",
+        "uf2_sha256": "70efb430be413a318014f3908f4a985036a7829dcc65bdd20fd054e927513ce8",
+        "selected_input_identity": "c47099fb061cfdd3901ac65bb53a33b1b07047a94f9e096d7ba9832af49e91be",
+        "inputs_sha256": "7abf489931657121353456331d3db388c7e5d07aa4bd375f570be1b751a70608",
+        "text_bytes": 12872,
+        "data_bytes": 28,
+        "bss_bytes": 4908,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "spim-loopback": {
+        "elf": "/private/tmp/mcubsp-next10.XxiOrY/source-spim-loopback/spim_loopback.elf",
+        "elf_sha256": "f8b43d5c370675522df31229cfe56f5756fa2170353410b78e734999cae780ac",
+        "uf2_sha256": "3ed49854637d4142803b53781d8aae6d59fcefb6ad7a312e5da3edef4211047a",
+        "selected_input_identity": "9ddac788f71b33ed68eacf674c543a7bb8622cacd332120cde0d095a31723705",
+        "inputs_sha256": "4694ec1f7e7e309c1ba60b2eba61f00b0202148b269d867b661301f3122d00c7",
+        "text_bytes": 10688,
+        "data_bytes": 28,
+        "bss_bytes": 5044,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "native-services": {
+        "elf": "/private/tmp/mcubsp-next10.XxiOrY/source-native-services/native_services.elf",
+        "elf_sha256": "7d8c38109a791ffe14a0a912ab113d73348176f12f563d17d579d50ad7c9e0bc",
+        "uf2_sha256": "dc991214fb0f73405b94345b5fc5e2cf05650d5001d8cf252d4e87ef24faec5f",
+        "selected_input_identity": "b8c8cf098f95acc3c27bc8b4f6d0aeacab18da2f5d22dfe171b944ca83b1c73b",
+        "inputs_sha256": "d2f655e89bc412cf0ac7ec5aaf1ec061b2015f6658f8ecafc6d0f5f98381b28d",
+        "text_bytes": 9412,
+        "data_bytes": 20,
+        "bss_bytes": 4596,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      }
+    },
+    "installed": {
+      "uarte-loopback": {
+        "elf": "/private/tmp/mcubsp-next10.XxiOrY/installed-uarte-loopback/uarte_loopback.elf",
+        "elf_sha256": "0b81fd01ee5f314541432c301f868d7ada1f2b97064198aaa4b9fc9e77793eb8",
+        "uf2_sha256": "70efb430be413a318014f3908f4a985036a7829dcc65bdd20fd054e927513ce8",
+        "selected_input_identity": "1addf7e68f0043c60ce00820349c9eda2ede04427b972a9900b7d632a87c4028",
+        "inputs_sha256": "7fdcbcd2cb9bbd54b841fde037346f895c78a311b58f46aa55f79fcd81d774f5",
+        "text_bytes": 12872,
+        "data_bytes": 28,
+        "bss_bytes": 4908,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "spim-loopback": {
+        "elf": "/private/tmp/mcubsp-next10.XxiOrY/installed-spim-loopback/spim_loopback.elf",
+        "elf_sha256": "f8b43d5c370675522df31229cfe56f5756fa2170353410b78e734999cae780ac",
+        "uf2_sha256": "3ed49854637d4142803b53781d8aae6d59fcefb6ad7a312e5da3edef4211047a",
+        "selected_input_identity": "21009f478c6e694c15c0d250d52b4f689e862217d5ae61483be1a73d740b4a3a",
+        "inputs_sha256": "6a671a247be1115fbd1bd876cb8f5b2ad6ebdf3fee1ec66cde505fb58bae23fb",
+        "text_bytes": 10688,
+        "data_bytes": 28,
+        "bss_bytes": 5044,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "native-services": {
+        "elf": "/private/tmp/mcubsp-next10.XxiOrY/installed-native-services/native_services.elf",
+        "elf_sha256": "7d8c38109a791ffe14a0a912ab113d73348176f12f563d17d579d50ad7c9e0bc",
+        "uf2_sha256": "dc991214fb0f73405b94345b5fc5e2cf05650d5001d8cf252d4e87ef24faec5f",
+        "selected_input_identity": "f121415b42959bfc95dab3aa85fa473788eb635a3c6ca266affa244f0c018025",
+        "inputs_sha256": "80a4596887496ac24001ba905ad418c06480a26d68c54a2e98838bdbfe6d5e47",
+        "text_bytes": 9412,
+        "data_bytes": 20,
+        "bss_bytes": 4596,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      }
+    }
+  },
+  "implementation_input_sha256": {
+    "CMakeLists.txt": "0758cae0facd7a375c3d2dc44c7df363a4240bd55da66679c6ac53af24f586a7",
+    "example/native-services/CMakeLists.txt": "342698e039e5ebd04686906b2aa0705c3e549640aff8f21462de1103f52f8a2f",
+    "example/native-services/others/promicro_nrf52840.cpp": "c7b3667791a910a3a0c966f83d1617f25d54fd46bb147edc9d4f16cf11c6f827",
+    "example/spim-loopback/CMakeLists.txt": "b90f6ba5b79e1e14ed8a7969ae26337e8c26ec474e2a161cf971566b8b7c6dc7",
+    "example/spim-loopback/others/promicro_nrf52840.cpp": "f80d81ebb9953bf236655fba32a7d56dc80a41745097d27c9aa292abbcce9cee",
+    "example/uarte-loopback/CMakeLists.txt": "0acff0cdf6d1ba0928df6d68a7660e53299cbed60695cf52888edbc032bfe240",
+    "example/uarte-loopback/others/promicro_nrf52840.cpp": "19d12b7dc2e1166564c95eaafc79cc2bb3f183423ebe5bb3a94e75e1fe74a34d",
+    "include/mcubsp/backend/nrf52840/clock_power.hpp": "39350f618de69e828b8254f01ef37b9a42fa8e51f27d8b50b09f5ccf5a817236",
+    "include/mcubsp/backend/nrf52840/dma_address.hpp": "62fab4765e1ddbf465ad4aef7516e36aa53e95238bddcdfda53793e84aadac7f",
+    "include/mcubsp/backend/nrf52840/nvmc.hpp": "dac48962e688e962d4b1b1d0c60991bc0ae34aade68e66630950a4167b8ffd54",
+    "include/mcubsp/backend/nrf52840/qdec.hpp": "a5d9de3254d6948ce288b2088e44cc1c9df14fd7319ef158e31a5b4ca4f903de",
+    "include/mcubsp/backend/nrf52840/rng.hpp": "2e8c0a34d0a041b05bcf697fa24679e1a8722cae48af3d18bdaf76afce40ffa9",
+    "include/mcubsp/backend/nrf52840/spim.hpp": "461067a9dc04c7d6807e409ef45dca251f200e0290d449f48fe576cda2450ebb",
+    "include/mcubsp/backend/nrf52840/system_context.hpp": "26363a127f7edcb8428a7a10abdd401ff0325d356ac33292f69a3bd9ad96d307",
+    "include/mcubsp/backend/nrf52840/temperature.hpp": "0811856dcd8dac7b77bdf832ebfbbbdd8fedd81610f8320527890f81259a7c6f",
+    "include/mcubsp/backend/nrf52840/twim.hpp": "549a0058d60d56beea47817272156d8ee7ff3a0030fa0a794b5a73757b740bc1",
+    "include/mcubsp/backend/nrf52840/uarte.hpp": "ff71c8a6a1aede3fafa5fc4f9d37b8fc14ca63cf0b918db46bcbb6a49640ba63",
+    "include/mcubsp/mcu/nrf52840/serial_revision.hpp": "dc6d07fbf816ad41c9f9673fe5486f0e7964b4022409329d980f95f398645b2b",
+    "mcutrace.toml": "3ed74f86f6149b0c34e36306483839b7ba9dfb7d30c24bceb67f5139937f11f4",
+    "src/backend/nrf52840/test/CMakeLists.txt": "519811886cc6cbf30c93a53c0d50dae1f20649ca4836ce0910ff7a650cce4c9a",
+    "src/backend/nrf52840/test/fake_uarte.hpp": "d57c04b9ff3ea92fe0bd0c6e776dc36473fc8b5e151fb15883442617f24f33c7",
+    "src/backend/nrf52840/test/serial_dma_probe.cpp": "f3dd8c9b8d692065bb6a5bbd54a9fb8bd94e2654cc244ec952400dd6d3b379f4",
+    "src/backend/nrf52840/test/spim_duplicate_pin_forbidden.cpp": "0d5a1a3e3fd4a096ff866681c8e12f526f888846d629eef0583e74d27628558f",
+    "src/backend/nrf52840/test/spim_invalid_instance_forbidden.cpp": "5469ff23b25b86d9cb70ee52a198673da5bc45df71b7b902cb081d3b90ec92e1",
+    "src/backend/nrf52840/test/test_nvmc.cpp": "7f3eb37c8bc666da32d05aa1a9bcbda9ebfa0d5d025f1515da450e996157f46b",
+    "src/backend/nrf52840/test/test_qdec.cpp": "75f2691d8a8f22b9c5828c4e84203159e8271b8537b615deca76ef46efe18a18",
+    "src/backend/nrf52840/test/test_spim.cpp": "2a1c3e918417f05b51590371aba9ee1fdd0dcb4fa396ef88a5b80e7e75fe43bc",
+    "src/backend/nrf52840/test/test_temperature_rng.cpp": "bf9a5dfcc654438bb295e07f91d5885aabf7f706ed87aee0a047c5f35aa7bc81",
+    "src/backend/nrf52840/test/test_twim.cpp": "54f88b9adb619fe34bd2cc291ed7715079f390338e1fc4cfca9ab7e01ed26b60",
+    "src/backend/nrf52840/test/test_uarte.cpp": "aa099a82e4784db07141a59b02ce4bb070467524feb82e9a0de500663fe1a64e",
+    "src/backend/nrf52840/test/uart_in_dma_backend_forbidden.cpp": "2ea57aa48223240b6bbe51eb30247bdc7e19d2326cfc0c9b91276266e1db6e93",
+    "test/compile/CMakeLists.txt": "fb8f1c75a3294731f7be37d7b4ed2b3350049e82bdbfac7e09f371ff0defc0b7",
+    "test/compile/Probes.cmake": "2530ccb80d7214ee99848d24f580eea8655f01b66b3dc3c701e70612ae341cd5",
+    "test/support/ExportCoverage.py": "97ca872583bdadb3d336e23f57e3654da5375c5ea9b88b86360bd5a1bbe4a0d1",
+    "test/support/MergeResults.py": "901a1ae9705220e1641aac6acdc4958bfc0ddbe65f25292fba3ad03ff13b349f",
+    "test/workflow/run_checks.py": "74c6832a96add44083fce1efd2c6ecad17f65cc9b65c14838e687ae7b3362140"
+  },
+  "unexecuted": [
+    "physical testing and uploading",
+    "coverage instrumentation",
+    "hosted CI",
+    "independent timing/analog/RF/NFC/power/entropy measurements"
+  ],
+  "remaining_software": "See doc/acceptance/nrf52840-peripherals.md; all ten requested plans remain incomplete."
+}

@@ -43,6 +43,9 @@ mcubsp_add_compile_case(nrf52840_legacy_dma_rejected src/mcu/nrf52840/test/legac
 mcubsp_add_compile_case(nrf52840_uart_duplicate_pin_rejected src/backend/nrf52840/test/uart_duplicate_pin_forbidden.cpp FALSE "UART pins must be distinct")
 mcubsp_add_compile_case(nrf52840_uart_partial_flow_rejected src/backend/nrf52840/test/uart_partial_flow_forbidden.cpp FALSE "requires both CTS and RTS")
 mcubsp_add_compile_case(nrf52840_uarte_legacy_backend_rejected src/backend/nrf52840/test/uarte_legacy_backend_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied")
+mcubsp_add_compile_case(nrf52840_uart_dma_backend_rejected src/backend/nrf52840/test/uart_in_dma_backend_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied")
+mcubsp_add_compile_case(nrf52840_spim_duplicate_pin_rejected src/backend/nrf52840/test/spim_duplicate_pin_forbidden.cpp FALSE "SPIM pins must be distinct")
+mcubsp_add_compile_case(nrf52840_spim_invalid_instance_rejected src/backend/nrf52840/test/spim_invalid_instance_forbidden.cpp FALSE "SPIM instance must be 0 through 3")
 mcubsp_add_compile_case(exceptions_rejected test/compile/exceptions_forbidden.cpp FALSE "exception handling|exceptions disabled")
 mcubsp_add_compile_case(rtti_rejected test/compile/rtti_forbidden.cpp FALSE "not permitted.*rtti|requires.*rtti|not permitted.*RTTI|requires.*RTTI|RTTI.*disabled")
 mcubsp_add_compile_case(command_read_rejected src/core/test/command_read_forbidden.cpp FALSE "constraints not satisfied|constraints were not satisfied|no matching member function")
@@ -68,6 +71,7 @@ mcubsp_add_compile_case(esp32p4_i3c_capability_rejected src/mcu/esp32p4/test/i3c
 # startup code nor a linkable test executable.
 add_library(mcubsp_compile_probes OBJECT
     "${mcubsp_compile_source_dir}/src/backend/nrf52840/test/system_probe.cpp"
+    "${mcubsp_compile_source_dir}/src/backend/nrf52840/test/serial_dma_probe.cpp"
     "${mcubsp_compile_source_dir}/src/mcu/test/all_descriptions_probe.cpp"
     "${mcubsp_compile_source_dir}/src/io/test/composition_example.cpp"
     "${mcubsp_compile_source_dir}/src/testing/test/arch_probe.cpp"

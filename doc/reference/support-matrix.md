@@ -52,9 +52,13 @@ current, exact silicon identity and full system acceptance remain unverified.
 Optional FPB/DWT inspection and SWO/ETM-M4 debugger scripts pass software checks;
 physical debug/trace capture remains pending. Native legacy UART0 finite TX/RX
 and common DMA/resource coordination now have software support; their new
-physical tests remain pending. UARTE/SPI/ADC/PWM/concrete DMA, USB application
-classes, radio, complete core/runtime qualification and exhaustive silicon errata handling
-remain unimplemented/incomplete. See the
+physical tests remain pending. A subsequent software increment implements finite
+UARTE0/1, SPIM0–3 and TWIM0/1 DMA paths, TEMP/QDEC/RNG and explicit-region
+NVMC word/page operations. Streaming, legacy SPI/SPIS/TWIS, SAADC/comparators/PWM,
+QSPI and the remaining protection APIs, audio, USB application classes, crypto
+accelerators, radio/NFC, complete core/runtime qualification and exhaustive silicon
+errata handling remain unimplemented/incomplete. See the
+[peripheral checkpoint](../acceptance/nrf52840-peripherals.md) and
 [system checkpoint](../acceptance/nrf52840-system.md) for exact limits.
 The [coordination/UART checkpoint](../acceptance/nrf52840-dma-uart.md) records
 the new shared ownership contracts and initial native UART0 support.

@@ -2,6 +2,7 @@
 # @req REQ-0002 REQ-0015 REQ-0016 REQ-0017 REQ-0018 REQ-0019 REQ-0035 REQ-0038 REQ-0040 REQ-0041
 add_library(mcubsp_arch_probe OBJECT
     "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/system_probe.cpp"
+    "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/serial_dma_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/mcu/test/all_descriptions_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/io/test/composition_example.cpp"
     "${mcubsp_SOURCE_DIR}/src/testing/test/arch_probe.cpp"

@@ -109,13 +109,40 @@ endif()
         registry = self.root / 'registry.txt'
         registry.write_text(str(producer) + '\n')
         output = self.root / 'merged.json'
+        shards, published = self.root / 'shards', self.root / 'published'
         command = [__import__('sys').executable, ROOT / 'test/support/MergeResults.py',
-                   '--registry', registry, '--output', output]
+                   '--registry', registry, '--output', output,
+                   '--shard-dir', shards, '--publish-dir', published]
         run(*command)
         self.assertEqual(json.loads(output.read_text())['summary']['tests'], 1)
+        cases = [case for path in sorted(shards.glob('*.json'))
+                 for case in json.loads(path.read_text())['tests']]
+        self.assertEqual([case['name'] for case in cases], ['fresh/case'])
+        self.assertEqual(len(list(shards.glob('*.json'))), 8)
+        self.assertEqual([p.read_bytes() for p in sorted(shards.glob('*.json'))],
+                         [p.read_bytes() for p in sorted(published.glob('*.json'))])
         producer.unlink()
         run(*command, success=False)
         self.assertFalse(output.exists())
+        self.assertEqual(list(shards.glob('*.json')), [])
+        self.assertEqual(list(published.glob('*.json')), [])
+    def test_large_native_reports_preserve_every_case_in_bounded_trace_shards(self):
+        producer, registry = self.root / 'large.json', self.root / 'registry.txt'
+        cases = [{'name': f'{i}/' + 'long_case_name_' * 8, 'status': 'passed',
+                  'requirements': ['REQ-0052']} for i in range(1000)]
+        producer.write_text(json.dumps({'format': 'mcutest-results', 'version': 1,
+            'summary': {'tests': len(cases), 'failures': 0}, 'tests': cases}))
+        registry.write_text(str(producer) + '\n')
+        output, shards = self.root / 'merged.json', self.root / 'shards'
+        run(__import__('sys').executable, ROOT / 'test/support/MergeResults.py',
+            '--registry', registry, '--output', output, '--shard-dir', shards)
+        combined = json.loads(output.read_text())['tests']
+        imported = [case for path in sorted(shards.glob('*.json'))
+                    for case in json.loads(path.read_text())['tests']]
+        self.assertEqual(len(imported), len(cases))
+        self.assertEqual({c['name'] for c in imported}, {c['name'] for c in combined})
+        for path in shards.glob('*.json'):
+            self.assertLess(path.stat().st_size, 65534)
     def test_active_documentation_links_resolve(self):
         import re
         files = [ROOT / 'README.md', ROOT / 'doc/README.md',
@@ -201,6 +228,7 @@ names = unittest.defaultTestLoader.getTestCaseNames(Workflows)
 requirements = {
     'test_active_documentation_links_resolve': ['REQ-0051'],
     'test_merge_uses_registry_and_rejects_missing_reports': ['REQ-0039', 'REQ-0052'],
+    'test_large_native_reports_preserve_every_case_in_bounded_trace_shards': ['REQ-0039', 'REQ-0052'],
     'test_source_consumer_preserves_parent_tests': ['REQ-0047'],
     'test_library_only_install_and_relocated_consumer': ['REQ-0047'],
     'test_compile_failure_must_match_diagnostic': ['REQ-0035', 'REQ-0052'],

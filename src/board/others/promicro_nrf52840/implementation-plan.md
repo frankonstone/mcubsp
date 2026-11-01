@@ -12,7 +12,8 @@ but remains reusable by other boards on the same MCU.
 
 The user extended this board's target to every nRF52840 peripheral on
 27 October 2026 (D20). PLN-0040/PLN-0041 remain completed initial increments;
-PLN-0042/PLN-0043 are in progress; later full-peripheral stages remain planned.
+PLN-0042 through PLN-0047 and PLN-0050 are in progress; the remaining
+full-peripheral stages remain planned.
 GPIO/Blink, finite I2C and the native system-service checkpoint have independent
 software/physical records. The historical
 three-MCU gate does not establish complete Nordic descriptions or errata support.
@@ -274,8 +275,20 @@ builds link and emit UF2; installed runner planning passes without hardware.
 Current images have no new physical result; the previous RTC/watchdog records
 retain their original hashes. Both PLN-0044 and PLN-0045 remain in progress.
 
+Software follow-up, 1 November 2026: integrate the shared buffer/resource pool
+into finite UARTE0/1, SPIM0–3 and TWIM0/1 backends. Add stop-acknowledgment-gated
+memory release, native timing/configuration, bounded cancellation, late-ack
+recovery and source/installed-package examples. SPIM holds CS across bounded
+segments; SPIM3 requires a dedicated AHB slave and applies selected errata.
+TWIM supports both repeated-START orders and the 390 kHz erratum-219 setting.
+These are concrete PLN-0044 integrations as well as PLN-0045 work. Streaming,
+legacy SPI, SPIS/TWIS, remaining native modes, facade/device-lease integration
+and exhaustive errata review remain software work. Both plans remain in
+progress; all new physical acceptance remains pending. See the
+[peripheral checkpoint](../../../../doc/acceptance/nrf52840-peripherals.md).
+
 ## PLN-0046 Implement PWM, analog and quadrature decoding
-@status(planned)
+@status(in_progress)
 @link(REQ-0063, REQ-0064, REQ-0065, REQ-0062)
 
 Prerequisite: reviewed metadata plus PLN-0043/PLN-0044 resources.
@@ -290,8 +303,17 @@ Exit: native and cross-build suites pass. Measure PWM sequences, known analog
 levels, comparator/wake transitions and QDEC direction/counting with suitable
 sources, documenting sample-rate/accuracy and board-circuit constraints.
 
+Software follow-up, 1 November 2026: add calibrated one-shot TEMP with signed
+quarter-degree results and HFXO ownership, and native QDEC pin/LED/sample/report,
+debounce, atomic snapshot, overflow/double-transition and bounded stop APIs.
+QDEC exposes generation-stamped PPI endpoints with resource retention. Add
+host failure/boundary/race tests, actual cross-target service probes and a linked
+source/installed native-services composition. PWM, SAADC, COMP/LPCOMP and the
+remaining native sequencing/integration are unfinished. Physical temperature,
+encoder and other analog/PWM acceptance is unexecuted; see the peripheral checkpoint.
+
 ## PLN-0047 Implement external memory, internal flash and protection
-@status(planned)
+@status(in_progress)
 @link(REQ-0066, REQ-0072, REQ-0062)
 
 Prerequisite: reviewed memory/protection descriptions, PLN-0043/PLN-0044 resources.
@@ -306,6 +328,15 @@ Exit: bounds, XIP lifetime, alias, protection and failure tests pass. External
 flash and reserved internal regions support independently observed operations;
 provisioning/debug-lock or destructive recovery remains separately requested and
 recorded, never run merely to finish this planning item.
+
+Software follow-up, 1 November 2026: add explicit-region NVMC word programming
+and page erase with copied protected ranges, readiness bounds, erased-word
+checks, readback and shared flash-mutation ownership. Add a recoverable handoff
+through the existing power controller for erratum 242; failed readiness or
+cleanup retains the guard until read-only recovery and POF configuration restore.
+Host tests and actual target/package service-body probes pass. No physical flash
+write/erase or provisioning ran. QSPI/XIP, other NVMC modes, information/provisioning,
+ACL/MWU/APPROTECT/CTRL-AP APIs and tooling remain unfinished; see the peripheral checkpoint.
 
 ## PLN-0048 Implement I2S and PDM audio
 @status(planned)
@@ -338,7 +369,7 @@ CDC/HID exchange, endpoint-type exercises, suspend/resume and reconnect succeed;
 bootloader entry and subsequent recovery are independently observed.
 
 ## PLN-0050 Implement RNG and every cryptographic accelerator block
-@status(planned)
+@status(in_progress)
 @link(REQ-0071, REQ-0062)
 
 Prerequisite: reviewed complete crypto sources from PLN-0042 and
@@ -353,6 +384,14 @@ insufficient. Use published deterministic vectors and documented RNG health rule
 Exit: native bounds/failure/ownership tests, linked examples and on-device
 known-answer/health tests cover the implemented engines. Required unresolved
 engines stay planned; no blanket crypto or certification claim is inferred.
+
+Software follow-up, 1 November 2026: implement the standalone RNG's finite
+CPU-buffered generation, optional bias correction, VALRDY_STOP handoff,
+interrupt/poll service and cancellation. Add native tests and source/installed
+native-services compositions. This does not implement ECB, CCM, AAR or any
+CryptoCell engine; their operations, DMA/health handling and known-answer
+compositions remain software work. No entropy-quality or on-device result is
+claimed; see the peripheral checkpoint.
 
 ## PLN-0051 Implement the complete radio packet engine
 @status(planned)

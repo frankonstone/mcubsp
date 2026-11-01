@@ -33,6 +33,8 @@ ctest --preset macos-arm64
 Native reports are under `output/build/macos-arm64/artifact/native/`. CTest has the complete
 compile/build-test log under `output/build/macos-arm64/Testing/Temporary/LastTest.log`.
 Successful builds also publish the merged trace report to `output/artifact/native.json`.
+The trace server imports the same cases through eight bounded reports under
+`output/artifact/native/`; the combined report remains available for other tools.
 
 ## Optional checks
 

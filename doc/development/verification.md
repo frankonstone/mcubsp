@@ -26,16 +26,21 @@ mcubsp and MCUIP dependencies.
 
 ## Trace evidence
 
-`mcutrace.toml` imports `output/artifact/native.json`. The `host-tests` target
+`mcutrace.toml` imports eight reports under `output/artifact/native/`. The `host-tests` target
 merges only the producer files declared by the configured test registry;
 unregistered stale results cannot enter it. Individual reports remain under
 `output/build/<preset>/artifact/native/`. The merged report records their SHA-256
 identities. Build `macos-arm64` or `linux-x86_64` before loading the analyzed graph
 on a clean checkout; the server requires its declared artifact files to exist.
 Each native build retains its own merged report under `artifact/native.json` and
-publishes a copy to the shared path after its tests pass. The shared report
-represents the latest successful native build, without combining platforms.
-It is removed before native tests run so a failed test run cannot leave old canonical
+publishes the combined `output/artifact/native.json` plus eight trace reports after
+its tests pass. Stable hashing of the original prefixed test names distributes
+every case exactly once; identifiers, requirement tags and producer hashes are
+preserved. This avoids the trace importer's fixed JSON string arena limit without
+dropping tests. Local trace reports live under `artifact/native-trace/`; coverage
+graph export uses those reports from its own instrumented build.
+The shared reports represent the latest successful native build, without combining platforms.
+They are invalidated before native tests run so a failed test run cannot leave old canonical
 results. Compiler checks remain CTest results; native
 JSON files contain the actual behavior-test results.
 
