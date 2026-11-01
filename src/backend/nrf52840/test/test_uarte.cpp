@@ -325,4 +325,148 @@ TEST(nrf_uarte, stop_proof_survives_a_failed_event_clear_after_commit,
   EXPECT_EQ(f.serial.transmitted_count(), 8U);
   ASSERT_TRUE(f.serial.shutdown().has_value());
 }
+TEST(nrf_uarte_stream, bounded_buffers_handoff_without_automatic_reuse,
+     "REQ-0059", "REQ-0062") {
+  fixture f;
+  ASSERT_TRUE(f.initialize());
+  std::array slots{ram(0x20001000), ram(0x20002000)};
+  auto rx = f.serial.receive_stream(slots, 20);
+  ASSERT_TRUE(rx.has_value());
+  f.rx_done(8);
+  (void)f.serial.poll();
+  EXPECT_FALSE(rx->ready());
+  auto first = f.serial.take_received_block();
+  ASSERT_TRUE(first.has_value());
+  EXPECT_EQ(first->count, 8U);
+  EXPECT_EQ(reinterpret_cast<std::uintptr_t>(first->storage.data()),
+            0x20001000U);
+  ASSERT_TRUE(f.serial.queue_receive_buffer(first->storage).has_value());
+  f.rx_done(8);
+  (void)f.serial.poll();
+  EXPECT_EQ(f.mmio.peek(f.base() + 0x538), 4U);
+  f.rx_done(4);
+  ASSERT_TRUE(f.serial.poll());
+  EXPECT_EQ(*rx->take(), 20U);
+  auto second = f.serial.take_received_block();
+  auto third = f.serial.take_received_block();
+  ASSERT_TRUE(second.has_value());
+  ASSERT_TRUE(third.has_value());
+  EXPECT_EQ(second->count, 8U);
+  EXPECT_EQ(third->count, 4U);
+  EXPECT_TRUE(first->sequence < second->sequence &&
+              second->sequence < third->sequence);
+  EXPECT_EQ(f.serial.received_count(), 20U);
+}
+TEST(nrf_uarte_stream,
+     exhaustion_fails_explicitly_and_never_restarts_a_completed_buffer,
+     "REQ-0059", "REQ-0062") {
+  fixture f;
+  ASSERT_TRUE(f.initialize());
+  std::array slots{ram()};
+  auto rx = f.serial.receive_stream(slots, 16);
+  ASSERT_TRUE(rx.has_value());
+  f.rx_done(8);
+  EXPECT_EQ(f.mmio.starts, 1U);
+  ASSERT_TRUE(f.serial.poll());
+  EXPECT_EQ(f.mmio.starts, 1U);
+  auto r = rx->take();
+  ASSERT_FALSE(r.has_value());
+  EXPECT_TRUE(r.error().cause == driver::uart_error::overrun);
+  EXPECT_EQ(f.serial.received_count(), 8U);
+  EXPECT_EQ(f.serial.take_received_block()->count, 8U);
+}
+TEST(nrf_uarte_stream, cancellation_returns_only_the_quiescent_partial_block,
+     "REQ-0059", "REQ-0062") {
+  fixture f;
+  ASSERT_TRUE(f.initialize());
+  std::array slots{ram(), ram(0x20002000)};
+  auto rx = f.serial.receive_stream(slots, 16);
+  ASSERT_TRUE(rx.has_value());
+  f.mmio.poke(f.base() + 0x53C, 3);
+  ASSERT_TRUE(rx->cancel().has_value());
+  (void)rx->take();
+  auto block = f.serial.take_received_block();
+  ASSERT_TRUE(block.has_value());
+  EXPECT_EQ(block->count, 3U);
+  EXPECT_FALSE(f.serial.take_received_block().has_value());
+  ASSERT_TRUE(f.serial.shutdown().has_value());
+}
+TEST(nrf_uarte_stream, overlapping_or_unreachable_buffers_fail_before_start,
+     "REQ-0059", "REQ-0062") {
+  fixture f;
+  ASSERT_TRUE(f.initialize());
+  std::array overlap{ram(), ram(0x20001004)};
+  EXPECT_FALSE(f.serial.receive_stream(overlap, 16).has_value());
+  std::array bad{ram(), ram(0, 8)};
+  EXPECT_FALSE(f.serial.receive_stream(bad, 16).has_value());
+  EXPECT_EQ(f.mmio.starts, 0U);
+  ASSERT_TRUE(f.serial.shutdown().has_value());
+}
+TEST(nrf_uarte_stream,
+     late_service_reports_fifo_error_without_overwriting_returned_storage,
+     "REQ-0059", "REQ-0062") {
+  fixture f;
+  ASSERT_TRUE(f.initialize());
+  std::array slots{ram(), ram(0x20002000)};
+  auto rx = f.serial.receive_stream(slots, 16);
+  ASSERT_TRUE(rx.has_value());
+  f.rx_done(8);
+  f.mmio.poke(f.base() + 0x480, 1);
+  f.mmio.poke(f.base() + 0x124, 1);
+  ASSERT_TRUE(f.serial.poll());
+  EXPECT_EQ(f.mmio.starts, 1U);
+  auto r = rx->take();
+  ASSERT_FALSE(r.has_value());
+  EXPECT_TRUE(r.error().cause == driver::uart_error::overrun);
+  EXPECT_EQ(f.serial.take_received_block()->count, 8U);
+}
+TEST(
+    nrf_uarte_stream,
+    handoff_programming_fault_does_not_publish_stale_count_for_unstarted_buffer,
+    "REQ-0059", "REQ-0062") {
+  for (unsigned off : {0x110U, 0x14CU, 0x534U, 0x538U}) {
+    fixture f;
+    ASSERT_TRUE(f.initialize());
+    std::array blocks{ram(), ram(0x20002000)};
+    auto op = f.serial.receive_stream(blocks, 16);
+    ASSERT_TRUE(op.has_value());
+    f.rx_done(8);
+    if (off == 0x110)
+      f.mmio.failed_write_address = f.base() + off;
+    else
+      f.mmio.failed_address = f.base() + off;
+    f.mmio.fail_once = f.mmio.fail_after_commit = true;
+    (void)f.serial.poll();
+    for (unsigned i = 0; i < 4 && !op->ready(); ++i)
+      (void)f.serial.poll();
+    ASSERT_TRUE(op->ready());
+    EXPECT_FALSE(op->take().has_value());
+    auto first = f.serial.take_received_block(),
+         next = f.serial.take_received_block();
+    ASSERT_TRUE(first.has_value());
+    ASSERT_TRUE(next.has_value());
+    EXPECT_EQ(first->count, 8U);
+    EXPECT_EQ(next->count, 0U);
+    EXPECT_EQ(f.serial.received_count(), 8U);
+    EXPECT_EQ(f.mmio.starts, 1U);
+  }
+}
+TEST(nrf_uarte_stream, second_instance_serves_streams_from_the_caller_irq,
+     "REQ-0059", "REQ-0062") {
+  fixture<peripheral::uarte1> f;
+  ASSERT_TRUE(f.initialize());
+  std::array blocks{ram(), ram(0x20002000)};
+  auto op = f.serial.receive_stream(blocks, 16);
+  ASSERT_TRUE(op.has_value());
+  ASSERT_TRUE(f.serial.interrupt_delivery(true).has_value());
+  f.execution.set_isr(true);
+  f.rx_done(8);
+  (void)f.serial.poll();
+  f.rx_done(8);
+  (void)f.serial.poll();
+  f.execution.set_isr(false);
+  EXPECT_EQ(*op->take(), 16U);
+  EXPECT_FALSE(f.mmio.pending_irq());
+  EXPECT_EQ(f.mmio.starts, 2U);
+}
 } // namespace

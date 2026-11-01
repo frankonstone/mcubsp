@@ -47,6 +47,10 @@ struct uart_binding {
                   "UART pins must be distinct");
     static constexpr auto instance=P;
     static constexpr auto tx=Tx, rx=Rx, cts=Cts, rts=Rts;
+    static constexpr auto tx_pin=Tx, rx_pin=Rx;
+    static constexpr auto facade_pins=[] {
+      if constexpr(flow_control)return std::array{Tx,Rx,Cts,Rts};else return std::array{Tx,Rx};
+    }();
     static constexpr auto base=mcu::nrf52840::uart_traits<P>::base;
     [[nodiscard]] static constexpr bool supports_rate(std::uint32_t rate) noexcept {
         for(auto pin:std::array{Tx,Rx,Cts,Rts})

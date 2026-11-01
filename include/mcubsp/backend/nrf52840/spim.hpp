@@ -12,7 +12,7 @@
 namespace mcubsp::backend::nrf52840 {
 inline constexpr core::pin_id spi_disconnected{0xFFFF, 0xFFFF};
 template <unsigned I, core::pin_id Sck, core::pin_id Mosi, core::pin_id Miso,
-          core::pin_id Cs = spi_disconnected>
+          core::pin_id Cs = spi_disconnected, unsigned DedicatedAhbSlave = 9>
 struct spim_binding {
   static_assert(I < 4, "SPIM instance must be 0 through 3");
   static_assert(
@@ -35,7 +35,11 @@ struct spim_binding {
         return true;
       }(),
       "SPIM pins must be distinct");
+  static constexpr bool easy_dma = true;
   static constexpr unsigned instance = I;
+  static constexpr unsigned dedicated_ahb_slave = DedicatedAhbSlave;
+  static constexpr auto clock_pin = Sck, mosi_pin = Mosi, miso_pin = Miso,
+                        select_pin = Cs;
   static constexpr auto peripheral_id =
       std::array{peripheral::spim0, peripheral::spim1, peripheral::spim2,
                  peripheral::spim3}[I];
@@ -98,7 +102,7 @@ struct spim3_tx_reservation {
 };
 template <class Binding, class Context, class Buffers,
           class Address = native_dma_address, std::size_t SegmentCapacity = 8,
-          unsigned StopPollBudget = 1000000>
+          unsigned StopPollBudget = 1000000, bool CommonResult = false>
 class spim_controller {
   static_assert(SegmentCapacity > 0 && StopPollBudget > 0);
   using error = driver::spi_error;
@@ -106,7 +110,10 @@ class spim_controller {
       std::remove_reference_t<decltype(std::declval<Context &>().execution)>;
 
 public:
-  using pool_type = core::operation_pool<spim_result, error, 1, E>;
+  using completion_type =
+      std::conditional_t<CommonResult, driver::spi_transfer_result,
+                         spim_result>;
+  using pool_type = core::operation_pool<completion_type, error, 1, E>;
   using start_result = std::expected<typename pool_type::transfer_type,
                                      typename pool_type::error_type>;
   spim_controller(Context &c, clock_controller<Context> &clocks,
@@ -152,6 +159,7 @@ public:
       if (!revision_.reviewed_modern() || !dedicated.region())
         return std::unexpected(error::invalid_frame);
       dedicated_ = dedicated.region();
+      reservation_ = dedicated;
     }
     auto claim = c_.resources.claim(c_.execution, Binding::peripheral_id, this);
     if (!claim)
@@ -219,6 +227,66 @@ public:
     work_ = true;
     c_.work_started();
     return {};
+  }
+  using transfer_type = typename pool_type::transfer_type;
+  [[nodiscard]] bool busy() const noexcept {
+    return id_.has_value() || active_ || selected_;
+  }
+  [[nodiscard]] std::expected<void, error>
+  set_select_handler(bool (*set)(void *, bool) noexcept,
+                     void *context) noexcept {
+    if (busy())
+      return std::unexpected(error::busy);
+    select_handler_ = set;
+    select_context_ = context;
+    return {};
+  }
+  [[nodiscard]] std::expected<void, error>
+  reconfigure(spim_timing timing,
+              driver::spi_configuration config = {}) noexcept {
+    if (!ready_)
+      return std::unexpected(error::not_initialized);
+    if (busy())
+      return std::unexpected(error::busy);
+    if (fault_)
+      return std::unexpected(error::transport);
+    auto solved =
+        solve_spim_timing(Binding::instance, {timing.clock_hz, timing.target_hz,
+                                              timing.error_ppm});
+    if (!solved || solved->encoding != timing.encoding ||
+        solved->achieved_hz != timing.achieved_hz)
+      return std::unexpected(error::invalid_rate);
+    if (config.frame_width != driver::spi_frame_width::bits8 ||
+        static_cast<unsigned>(config.mode) > 3 ||
+        static_cast<unsigned>(config.bit_order) > 1 ||
+        static_cast<unsigned>(config.chip_select) > 1)
+      return std::unexpected(error::invalid_frame);
+    auto stopped = shutdown();
+    if (!stopped)
+      return stopped;
+    return initialize(timing, config, reservation_);
+  }
+  [[nodiscard]] start_result
+  transaction(std::span<const driver::spi_segment> segments) noexcept
+    requires(CommonResult)
+  {
+    if (segments.empty())
+      return failure(error::empty_transfer);
+    if (segments.size() > SegmentCapacity)
+      return failure(error::excessive_length);
+    std::array<spim_segment, SegmentCapacity> native{};
+    for (std::size_t i = 0; i < segments.size(); ++i) {
+      auto s = segments[i];
+      auto checked = s.validate(driver::spi_frame_width::bits8);
+      if (!checked)
+        return failure(checked.error());
+      if (!s.transmit.empty() || !s.receive.empty())
+        return failure(error::invalid_frame);
+      native[i] = {s.transmit_bytes, s.receive_bytes,
+                   static_cast<std::uint8_t>(s.dummy)};
+    }
+    return transaction(
+        std::span<const spim_segment>{native.data(), segments.size()});
   }
   [[nodiscard]] start_result
   transaction(std::span<const spim_segment> segments) noexcept {
@@ -318,7 +386,7 @@ public:
       if (pending_)
         (void)operations_.fail(id, *pending_);
       else
-        (void)operations_.complete(id, result_);
+        (void)operations_.complete(id, completion_result());
       return true;
     });
   }
@@ -371,7 +439,20 @@ public:
     return c_.execution.critical([&] { return fault_; });
   }
 
+  [[nodiscard]] bool owns_resource() const noexcept {
+    return owner_.has_value();
+  }
+  [[nodiscard]] bool operation_pending() const noexcept {
+    return id_.has_value();
+  }
+
 private:
+  completion_type completion_result() const noexcept {
+    if constexpr (CommonResult)
+      return {result_.frames};
+    else
+      return result_;
+  }
   start_result failure(error e) noexcept {
     return std::unexpected(
         typename pool_type::error_type{core::transfer_error_kind::failure, e});
@@ -392,6 +473,8 @@ private:
     return r.has_value();
   }
   bool chip_select(bool active) noexcept {
+    if (select_handler_)
+      return select_handler_(select_context_, active);
     if constexpr (Binding::cs == spi_disconnected)
       return true;
     bool high = active == (config_.chip_select ==
@@ -584,6 +667,8 @@ private:
   static constexpr std::uint32_t irq_mask = (1U << 1) | (1U << 6);
   static constexpr auto all_irq_mask =
       mcu::nrf52840::product::spim0::intenclr::writable_mask;
+  bool (*select_handler_)(void *, bool) noexcept {};
+  void *select_context_{};
   Context &c_;
   clock_controller<Context> &clocks_;
   Buffers &buffers_;
@@ -595,6 +680,7 @@ private:
   std::optional<dma_buffer_token> tx_, rx_;
   std::optional<error> pending_;
   std::optional<mcu::nrf52840::memory::region> dedicated_;
+  spim3_tx_reservation reservation_{};
   mcu::nrf52840::serial_revision revision_;
   driver::spi_configuration config_;
   std::array<spim_segment, SegmentCapacity> segments_{};

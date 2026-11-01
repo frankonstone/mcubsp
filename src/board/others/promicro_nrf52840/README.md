@@ -54,23 +54,22 @@ High drive is rejected on the standard-drive-only die pads described by the
 product tables. Package bonding and actual connector exposure are separate;
 follow Nordic's electrical limits and the actual board wiring.
 
-UART, SPI, ADC, PWM, generic DMA, USB serial and Bluetooth are not implemented
-by this profile. Set `.serial = false`; enabling an unsupported feature fails
-compilation. USB is used by the existing bootloader only. Blink intentionally
-does not enumerate a USB application device.
+The profile supports CPU UART0 by default (TX P0.06/RX P0.08), explicit
+UART0/UARTE0/1 selections, SPI0–2/SPIM0–3 master selections and CPU TWI0/1 or
+TWIM0/1 I²C selections. Default SPI is SPIM1 on SCK P0.20, MOSI P0.22,
+MISO P0.24 and CS P0.17. DMA byte spans must be in Data RAM. Native SPIS0–2 and
+TWIS0/1 APIs expose slave/target semaphore and clock-stretch protocols separately.
+See the [serial families and source boundaries](../../../../doc/acceptance/nrf52840-serial.md)
+for bounded receive streaming, device leases, recovery and explicit bindings.
+All selected native buses borrow one board-context clock and DMA service set.
 
-An explicit native UART0 backend and loopback example are available through the
-[coordination/UART checkpoint](../../../../doc/acceptance/nrf52840-dma-uart.md).
-This initial native API borrows the shared system context and clock controller;
-it does not enable the board serial facade. The subsequent
-[peripheral checkpoint](../../../../doc/acceptance/nrf52840-peripherals.md) adds
-finite native UARTE0/1, SPIM0–3 and TWIM0/1 DMA operations, die temperature,
-quadrature decoding, RNG and explicit-region NVMC word/page operations.
-The [UARTE](../../../../example/uarte-loopback/README.md),
-[SPIM](../../../../example/spim-loopback/README.md) and
-[native-services](../../../../example/native-services/README.md) examples build
-from the checkout and installed package. These additions have software evidence;
-their physical observations and remaining family/mode implementations are open.
+ADC, PWM, generic DMA, USB application serial and Bluetooth remain unavailable
+in this profile. USB is used by the existing bootloader only. Blink intentionally
+does not enumerate a USB application device. Native TEMP/QDEC/RNG and guarded
+NVMC APIs are described in the
+[earlier peripheral checkpoint](../../../../doc/acceptance/nrf52840-peripherals.md).
+Serial examples build from both source and relocated installed packages;
+physical serial peer/timing qualification remains pending.
 
 ## I2C and attached sensors
 

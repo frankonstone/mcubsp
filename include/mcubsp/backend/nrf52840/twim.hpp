@@ -8,6 +8,10 @@
 #include <mcubsp/mcu/nrf52840/product/twim0.hpp>
 #include <type_traits>
 namespace mcubsp::backend::nrf52840 {
+template <unsigned I, core::pin_id Scl, core::pin_id Sda>
+struct twim_binding : i2c_binding<I, Scl, Sda> {
+  static constexpr bool easy_dma = true;
+};
 struct twim_timing : driver::i2c_timing {
   std::uint32_t frequency;
 };
@@ -54,6 +58,7 @@ class twim_controller {
 public:
   using pool_type =
       core::operation_pool<driver::i2c_transfer_result, error, 1, E>;
+  using transfer_type = typename pool_type::transfer_type;
   using start_result = std::expected<typename pool_type::transfer_type,
                                      typename pool_type::error_type>;
   twim_controller(Context &c, clock_controller<Context> &clocks,
@@ -233,6 +238,10 @@ public:
   }
   [[nodiscard]] bool faulted() const noexcept {
     return c_.execution.critical([&] { return fault_; });
+  }
+
+  [[nodiscard]] bool owns_resource() const noexcept {
+    return owner_.has_value();
   }
 
 private:

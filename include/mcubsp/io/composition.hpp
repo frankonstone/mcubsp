@@ -18,7 +18,14 @@ namespace mcubsp::io {
 template<class Binding> struct serial_selection {
     template<class B> struct profile : B {
         using serial_binding = Binding;
-        static constexpr std::array serial_pins{Binding::rx_pin, Binding::tx_pin};
+        static constexpr auto serial_pins=[] {
+            if constexpr(requires{Binding::facade_pins;})return Binding::facade_pins;
+            else return std::array{Binding::rx_pin, Binding::tx_pin};
+        }();
+        static constexpr auto solve_serial(std::uint32_t hz) noexcept {
+            if constexpr(requires{B::template solve_serial_binding<Binding>(hz);})return B::template solve_serial_binding<Binding>(hz);
+            else return B::solve_serial(hz);
+        }
         template<class M, class E> using serial_backend = typename B::template serial_backend_for<Binding, M, E>;
     };
     template<class C> using feature = serial_port<C>;
@@ -26,6 +33,10 @@ template<class Binding> struct serial_selection {
 template<class Binding> struct i2c_selection {
     template<class B> struct profile : B {
         using i2c_binding = Binding;
+        static constexpr auto solve_i2c(std::uint32_t hz) noexcept {
+            if constexpr(requires{B::template solve_i2c_binding<Binding>(hz);})return B::template solve_i2c_binding<Binding>(hz);
+            else return B::solve_i2c(hz);
+        }
         static constexpr std::array i2c_pins{Binding::scl_pin, Binding::sda_pin};
         template<class M, class E> using i2c_backend = typename B::template i2c_backend_for<Binding, M, E>;
     };
@@ -34,6 +45,10 @@ template<class Binding> struct i2c_selection {
 template<class Binding> struct spi_selection {
     template<class B> struct profile : B {
         using spi_binding = Binding;
+        static constexpr auto solve_spi(std::uint32_t hz) noexcept {
+            if constexpr(requires{B::template solve_spi_binding<Binding>(hz);})return B::template solve_spi_binding<Binding>(hz);
+            else return B::solve_spi(hz);
+        }
         static constexpr std::array spi_pins{Binding::miso_pin, Binding::mosi_pin, Binding::clock_pin, Binding::select_pin};
         template<class M, class E> using spi_backend = typename B::template spi_backend_for<Binding, M, E>;
     };
@@ -80,6 +95,7 @@ public:
     explicit selected_context(Context& parent) noexcept : parent_(parent) {}
     auto& mmio() noexcept { return parent_.mmio(); }
     auto& execution() noexcept { return parent_.execution(); }
+    auto& native_services() noexcept requires requires(Context& c){c.native_services();} {return parent_.native_services();}
     [[nodiscard]] bool started() const noexcept { return parent_.started(); }
     auto claim(std::span<const core::pin_id> pins) noexcept { return parent_.claim(pins); }
     void release(std::span<const core::pin_id> pins) noexcept { parent_.release(pins); }

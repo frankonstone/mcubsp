@@ -150,6 +150,15 @@ are recorded in the [audit checkpoint](../../../../doc/acceptance/nrf52840-syste
 These table inventories do not close instance/mode/errata sequencing, board
 wiring, actual identity or revision-applicable errata acceptance.
 
+Serial-specific audit, 2 November 2026: review PS v1.11 SPI/SPIS/TWIS task,
+semaphore, event, address, pin, DMA and disable ordering against the existing
+typed descriptions. Apply SPIS anomaly 214 and its corrected timing source;
+keep TWIS Engineering A/unknown silicon explicitly excluded pending anomaly 83.
+Retain existing UARTE/SPIM/TWIM revision gates and SPIM3 AHB reservation.
+The actual board identity and complete MCU source/errata gate remain open.
+See the [serial acceptance scope](../../../../doc/acceptance/nrf52840-serial.md).
+
+
 ## PLN-0043 Implement power, event routing, core services and time
 @status(in_progress)
 @link(REQ-0056, REQ-0057, REQ-0058, REQ-0073)
@@ -214,6 +223,14 @@ Independent timeout accuracy and other watchdog configurations remain open.
 UF2 re-entry after the timeout image was then observed and the same regular
 image was verified and restored successfully. The plan remains in progress.
 
+Serial composition follow-up, 2 November 2026: provide one explicit native
+service set per common I/O board context. Default and selected UART/UARTE,
+SPI/SPIM and TWIM clients share the HFXO owner and GPIO/DMA registry; a last
+client releases HFXO only after quiescence. Existing native IRQ dispatch remains
+available, while the facade uses foreground polling. These prerequisite changes
+do not close unrelated core/power/debug or physical acceptance work.
+
+
 ## PLN-0044 Implement peripheral DMA and resource coordination
 @status(in_progress)
 @link(REQ-0062)
@@ -241,6 +258,16 @@ legacy cleanup regressions; cross-target probes and linked source/package
 compositions qualify the software slice. Concrete peripheral DMA sequencing
 and remaining driver integrations stay in their owning stages. See the
 [checkpoint](../../../../doc/acceptance/nrf52840-dma-uart.md).
+
+Serial handoff follow-up, 2 November 2026: add fixed-capacity caller-buffer
+UART/UARTE streaming with sequence/count reporting, explicit requeue and a total
+byte bound. Integrate SPIS semaphore/END_ACQUIRE and TWIS STOPPED/disable
+quiescence into the shared lease pool. Faulted cancellation keeps DMA storage
+until a late hardware acknowledgment; common SPI device leases can then release
+CS and shut down. The common board context owns one pool across selections.
+Tests cover failed starts, event acknowledgments, never-started handoff buffers,
+resource aliases and recovery. Other peripheral/crypto integrations remain open.
+
 
 ## PLN-0045 Complete UART, SPI and I2C master/slave families
 @status(in_progress)
@@ -286,6 +313,20 @@ legacy SPI, SPIS/TWIS, remaining native modes, facade/device-lease integration
 and exhaustive errata review remain software work. Both plans remain in
 progress; all new physical acceptance remains pending. See the
 [peripheral checkpoint](../../../../doc/acceptance/nrf52840-peripherals.md).
+
+Serial family delivery, 2 November 2026: implement bounded caller-buffer receive
+streams for UART0/UARTE0/1, CPU SPI0–2, semaphore-controlled SPIS0–2 and stretched
+TWIS0/1, alongside the prior finite SPIM/TWIM and CPU TWI backends. Integrate
+explicit master instances, binding-specific timing/flow-control pins, common
+serial stream methods and existing SPI/I2C device leases. Add source/package
+stream and target examples, negative bindings, per-family native failure/race
+cases and service-body probes on all target compilers. Preserve explicit silicon
+and mode exclusions documented in the
+[serial acceptance record](../../../../doc/acceptance/nrf52840-serial.md).
+The necessary serial slices of PLN-0042/43/44 are integrated. PLN-0045 remains
+in progress because no current board/peer/wire-timing acceptance has been run;
+the unrelated prerequisite scopes remain in progress too.
+
 
 ## PLN-0046 Implement PWM, analog and quadrature decoding
 @status(in_progress)

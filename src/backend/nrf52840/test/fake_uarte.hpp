@@ -7,6 +7,7 @@ public:
   std::uintptr_t base{0x40002000};
   bool tx_stop_responds{true}, rx_stop_responds{true}, flush_responds{true};
   bool fail_terminal_ack{};
+  std::optional<std::uintptr_t> failed_write_address;
   unsigned fifo_bytes{}, flushes{}, starts{};
   std::uint32_t interrupts{};
   bool pending_irq() const noexcept {
@@ -28,6 +29,10 @@ public:
                                                       T value) noexcept {
     const auto before = peek(address);
     auto r = fake_system::write<T>(address, value);
+    if (failed_write_address && address == *failed_write_address) {
+      failed_write_address.reset();
+      return std::unexpected(mcubsp::core::mmio_error::out_of_range);
+    }
     if (!r && !fail_after_commit)
       return r;
     if (address == base + 0x304)

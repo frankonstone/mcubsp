@@ -18,6 +18,16 @@ template<class Board> struct target_key<Board, std::void_t<typename Board::targe
     using type = typename Board::target_identity;
 };
 
+template<class Board,class M,class E,class=void>struct native_service_storage {
+    native_service_storage(M&,E&) noexcept {}
+    bool shutdown() noexcept{return true;}
+};
+template<class Board,class M,class E>struct native_service_storage<Board,M,E,std::void_t<typename Board::template native_services<M,E>>> {
+    typename Board::template native_services<M,E> value;
+    native_service_storage(M& m,E& e)noexcept:value(m,e){}
+    bool shutdown()noexcept{return value.shutdown();}
+};
+
 template<class Board, class Mmio, class Policy>
 class context {
     using target = typename target_key<Board>::type;
@@ -28,13 +38,14 @@ public:
     static constexpr auto default_timeout = std::chrono::milliseconds{1000};
 
     context(Mmio& mmio, Policy& policy, std::uint32_t frequency) noexcept
-        : mmio_(mmio), execution_(policy), frequency_(frequency) {}
+        : mmio_(mmio), execution_(policy), native_(mmio,execution_), frequency_(frequency) {}
     context(const context&) = delete;
     context& operator=(const context&) = delete;
 
     Mmio& mmio() noexcept { return mmio_; }
     execution_type& execution() noexcept { return execution_; }
     const execution_type& execution() const noexcept { return execution_; }
+    auto& native_services() noexcept requires requires(native_service_storage<Board,Mmio,execution_type>& s) {s.value;} {return native_.value;}
     [[nodiscard]] bool started() const noexcept { return started_; }
 
     [[nodiscard]] result<void> activate() noexcept {
@@ -53,6 +64,7 @@ public:
             if (!started_) return {};
             if (handles_ != 0U) return std::unexpected(error{errc::busy});
             for (auto word : pins_) if (word != 0U) return std::unexpected(error{errc::busy});
+            if(!native_.shutdown())return std::unexpected(error{errc::quiesce_failed});
             started_ = false;
             target_active<target> = false;
             return {};
@@ -112,6 +124,7 @@ public:
 private:
     Mmio& mmio_;
     execution_type execution_;
+    [[no_unique_address]] native_service_storage<Board,Mmio,execution_type> native_;
     std::array<std::uint32_t, (Board::pin_slots + 31U) / 32U> pins_{};
     std::uint32_t frequency_;
     std::uint16_t handles_{};

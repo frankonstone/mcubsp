@@ -27,7 +27,7 @@ public:
     using deadline_type = execution::deadline;
 
     explicit i2c_bus(Context& context) noexcept
-        : context_(context), backend_(context.mmio(), context.execution()) {}
+        : context_(context), backend_(detail::make_backend<backend_type>(context)) {}
     i2c_bus(const i2c_bus&) = delete;
     i2c_bus& operator=(const i2c_bus&) = delete;
     i2c_bus(i2c_bus&&) = delete;
@@ -47,9 +47,16 @@ public:
         const auto timing = board_type::solve_i2c(hz);
         if (!timing) return failure(timing.error());
         const auto claimed = context_.claim(board_type::i2c_pins);
-        if (!claimed) return claimed;
+        if (!claimed)
+            return claimed;
         const auto initialized = backend_.initialize(*timing);
         if (!initialized) {
+            if constexpr (requires { backend_.needs_cleanup(); })
+                if (backend_.needs_cleanup()) {
+                    initialized_ = true;
+                    context_.retain();
+                    return failure(initialized.error());
+                }
             context_.release(board_type::i2c_pins);
             return failure(initialized.error());
         }
@@ -59,7 +66,8 @@ public:
     }
 
     [[nodiscard]] result<void> shutdown() noexcept {
-        if (context_.execution().in_isr()) return std::unexpected(error{errc::invalid_context});
+        if (context_.execution().in_isr())
+            return std::unexpected(error{errc::invalid_context});
         if (!initialized_) return {};
         if (operations_ != 0U || has_devices()) return std::unexpected(error{errc::busy});
         const auto stopped = backend_.shutdown();

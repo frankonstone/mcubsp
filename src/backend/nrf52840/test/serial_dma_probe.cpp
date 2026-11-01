@@ -36,6 +36,18 @@ void uart(context &c, n::clock_controller<context> &clock, buffers &pool) {
     (void)rx->cancel();
     (void)rx->take();
   }
+  std::array<std::uint8_t, 8> other{};
+  std::array blocks{std::span<std::uint8_t>{bytes},
+                    std::span<std::uint8_t>{other}};
+  auto stream = serial.receive_stream(blocks, 32);
+  if (stream) {
+    (void)serial.poll();
+    if (auto block = serial.take_received_block())
+      (void)serial.queue_receive_buffer(block->storage);
+    (void)serial.stop_receive();
+    (void)stream->cancel();
+    (void)stream->take();
+  }
   (void)serial.interrupt_delivery(false);
   (void)serial.shutdown();
 }

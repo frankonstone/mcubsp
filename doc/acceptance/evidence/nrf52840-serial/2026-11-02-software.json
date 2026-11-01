@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "kind": "software_verification",
+  "base_commit": "40bc36828e578d5c610b12e29b93342d872e29ff",
+  "plans": [
+    "PLN-0042",
+    "PLN-0043",
+    "PLN-0044",
+    "PLN-0045"
+  ],
+  "plan_completion_claim": false,
+  "scope": "UART/UARTE bounded receive streams; SPI0-2 masters; SPIS0-2 slaves; TWIS0-1 targets; common serial/SPI/TWIM selections and device leases; shared clock and DMA service context",
+  "mcutrace": {
+    "analysis_revision": "7176e42312bba331",
+    "focused_validation_failed": false,
+    "focused_diagnostics": 0,
+    "project_validation_errors": 0,
+    "project_validation_warnings": 71,
+    "new_coverage_warnings": 3
+  },
+  "native": {
+    "ctest_passed": 74,
+    "ctest_total": 74,
+    "report": "output/artifact/native.json",
+    "report_sha256": "10454437ed1c4df86ace86ef6b5c0c55a0fc7d865ca8b575b86b9789328419d0",
+    "tests": 526,
+    "failures": 0,
+    "added_cases": 38,
+    "new_native_cases": {
+      "nrf_uart_stream": 3,
+      "nrf_uarte_stream": 7,
+      "nrf_spi": 5,
+      "nrf_spis": 7,
+      "nrf_twis": 10,
+      "nrf_serial_io": 6
+    },
+    "negative_binding_additions": 6
+  },
+  "public_headers": {
+    "count": 259,
+    "targets": [
+      "AppleClang macOS arm64",
+      "Cortex-M4F",
+      "Cortex-M7",
+      "ESP32-P4 RISC-V"
+    ],
+    "result": "passed"
+  },
+  "service_body_probes": {
+    "host": true,
+    "cortex_m4": true,
+    "cortex_m7": true,
+    "esp32p4": true,
+    "relocated_package_cortex_m4": true
+  },
+  "composition": {
+    "repository_examples": "all Pro Micro examples linked",
+    "source_consumers": 3,
+    "relocated_package_consumers": 3,
+    "installed_runner_dry_runs": 3,
+    "runner_mount": "simulated temporary directory; no device accessed",
+    "allocation_exception_symbols": false,
+    "reset_handlers_per_image": 1
+  },
+  "images": {
+    "repository": {
+      "serial-stream": {
+        "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.serial-stream.elf",
+        "elf_sha256": "0b256f9183ff990240232722db9488e2d073f8f4ac8b323f2003230db59cd739",
+        "uf2_sha256": "1525733bedd3433fa6393f15f672555eff3c6f40f4ba6582d83031d64b3d711d",
+        "selected_input_identity": "b9c0f970e959ceefec6523f9ec230447805b815f197fa9a8f249cd492181b8bc",
+        "inputs_sha256": "582427a0f8398edcf4ca4c47a6afee1f02f9dc96f5b3a183b4edbc2c2d0015d1",
+        "text_bytes": 17340,
+        "data_bytes": 4,
+        "bss_bytes": 5568,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "spis-target": {
+        "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.spis-target.elf",
+        "elf_sha256": "de6f61f8e6f009cd6e4adc0d6f94df8e601ba0b2db6a236554b6c88ddabc189e",
+        "uf2_sha256": "ae6e743d8ecb272d57b19c50f9b64e3c1b7ad21d67377af8fcc9a0d3590784b3",
+        "selected_input_identity": "0ff3be9bfb945e2bc944c6f451db0a57a1bafa3765fb77be9588bc7e39f79353",
+        "inputs_sha256": "7138a5b82480b139507e63743758ae05267d643275306266651ce6ad27e7712d",
+        "text_bytes": 8748,
+        "data_bytes": 28,
+        "bss_bytes": 4868,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "twis-target": {
+        "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.twis-target.elf",
+        "elf_sha256": "379c64fed0dea5fde3b3228570c7676b5e5fffbbc06d3abb2bdfc5b661b41218",
+        "uf2_sha256": "0b2147edeaaa333644fca388b0d1286a60531a03f9442df4797d35917cbef6bf",
+        "selected_input_identity": "2bb1f8322ff777f694dfb3925ec52ae1411da7ac57ebfb046e1a41425c9f6af6",
+        "inputs_sha256": "016800c0c469d22a5b57cbdb57c8b769f26e07d83a5ce4833590db0d442ffeac",
+        "text_bytes": 9504,
+        "data_bytes": 28,
+        "bss_bytes": 4932,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      }
+    },
+    "source": {
+      "serial-stream": {
+        "elf": "/private/tmp/mcubsp-0045.GHWg8h/source-serial-stream/serial_stream.elf",
+        "elf_sha256": "0b256f9183ff990240232722db9488e2d073f8f4ac8b323f2003230db59cd739",
+        "uf2_sha256": "1525733bedd3433fa6393f15f672555eff3c6f40f4ba6582d83031d64b3d711d",
+        "selected_input_identity": "5e140cd3d51a6739236a83860e8956555f429b62b3e9a6864fcb3cac6420d186",
+        "inputs_sha256": "15e8875ccd8de93ba5318661c5d7f5c074964b101dd197f359f95662600553cc",
+        "text_bytes": 17340,
+        "data_bytes": 4,
+        "bss_bytes": 5568,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "spis-target": {
+        "elf": "/private/tmp/mcubsp-0045.GHWg8h/source-spis-target/spis_target.elf",
+        "elf_sha256": "de6f61f8e6f009cd6e4adc0d6f94df8e601ba0b2db6a236554b6c88ddabc189e",
+        "uf2_sha256": "ae6e743d8ecb272d57b19c50f9b64e3c1b7ad21d67377af8fcc9a0d3590784b3",
+        "selected_input_identity": "f7fbef73b2601a03eb815ce23e91783a68883299f028eb0cee2eab311e0c419f",
+        "inputs_sha256": "cfd388d1ab102252b39a51e1af5c9f98ff6d3f99530a3aedac76bc6feb82e3f8",
+        "text_bytes": 8748,
+        "data_bytes": 28,
+        "bss_bytes": 4868,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "twis-target": {
+        "elf": "/private/tmp/mcubsp-0045.GHWg8h/source-twis-target/twis_target.elf",
+        "elf_sha256": "379c64fed0dea5fde3b3228570c7676b5e5fffbbc06d3abb2bdfc5b661b41218",
+        "uf2_sha256": "0b2147edeaaa333644fca388b0d1286a60531a03f9442df4797d35917cbef6bf",
+        "selected_input_identity": "f7c676e93e0a6f0f9a79517bf98626d094d6b1533c743b4ab00e24f3efa7fc9a",
+        "inputs_sha256": "9624e52d7a4763f0cffbcea124b20b0823ab341ef64f72f1650ea836a63263a9",
+        "text_bytes": 9504,
+        "data_bytes": 28,
+        "bss_bytes": 4932,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      }
+    },
+    "installed": {
+      "serial-stream": {
+        "elf": "/private/tmp/mcubsp-0045.GHWg8h/installed-serial-stream/serial_stream.elf",
+        "elf_sha256": "0b256f9183ff990240232722db9488e2d073f8f4ac8b323f2003230db59cd739",
+        "uf2_sha256": "1525733bedd3433fa6393f15f672555eff3c6f40f4ba6582d83031d64b3d711d",
+        "selected_input_identity": "2d383ed31c61b729b8a181817d75e9c7eaba6f0228296b43e45ad68665a315f6",
+        "inputs_sha256": "a62aa32f5355eb4267951bf7353bc47ef6c0cdaa12208d046651cd54853eaeaa",
+        "text_bytes": 17340,
+        "data_bytes": 4,
+        "bss_bytes": 5568,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "spis-target": {
+        "elf": "/private/tmp/mcubsp-0045.GHWg8h/installed-spis-target/spis_target.elf",
+        "elf_sha256": "de6f61f8e6f009cd6e4adc0d6f94df8e601ba0b2db6a236554b6c88ddabc189e",
+        "uf2_sha256": "ae6e743d8ecb272d57b19c50f9b64e3c1b7ad21d67377af8fcc9a0d3590784b3",
+        "selected_input_identity": "283ba62b9b9f81f2b0d39941a785d636911a87c571c9594ec39efe557bbda3b0",
+        "inputs_sha256": "d230153ac9f70781b8ad59a2ee10cd3e1dde2b3a82b19baba5524ed973fc8188",
+        "text_bytes": 8748,
+        "data_bytes": 28,
+        "bss_bytes": 4868,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      },
+      "twis-target": {
+        "elf": "/private/tmp/mcubsp-0045.GHWg8h/installed-twis-target/twis_target.elf",
+        "elf_sha256": "379c64fed0dea5fde3b3228570c7676b5e5fffbbc06d3abb2bdfc5b661b41218",
+        "uf2_sha256": "0b2147edeaaa333644fca388b0d1286a60531a03f9442df4797d35917cbef6bf",
+        "selected_input_identity": "ade1a15a09d9a1f4de94162e9787e05ed3fadd549f4d0081dc9b5f093ca58969",
+        "inputs_sha256": "b4255534bd68d62de0949f8d6aa4a43aa5f67341256520ff4aea9489215a2797",
+        "text_bytes": 9504,
+        "data_bytes": 28,
+        "bss_bytes": 4932,
+        "reset_handlers": 1,
+        "allocation_exception_symbols": false,
+        "uploaded": false,
+        "physical_result": null
+      }
+    }
+  },
+  "implementation_input_sha256": {
+    "example/serial-stream/CMakeLists.txt": "bbaa2217ffcec2ece2b3a92a4de84de20bcfe30083d28a2fc335172eedea614b",
+    "example/serial-stream/others/promicro_nrf52840.cpp": "387b3adfe968ba1491fafdbff3c9d7d0e117741b074f5ef61139ebdc30bc855a",
+    "example/spis-target/CMakeLists.txt": "d5edce1720668f18ac64f8d49b47adf72ae0d388948c0f0053f4b0fd53acaae6",
+    "example/spis-target/others/promicro_nrf52840.cpp": "6547d8462604b2839e50f49e25fb83b2c3ac0332456007894d131934864adfde",
+    "example/twis-target/CMakeLists.txt": "9b34c1d9a6b947c58441b21c54315de2a490bc994347d4d4e6b78e27c84286b2",
+    "example/twis-target/others/promicro_nrf52840.cpp": "7020b2c9a979f434fe3aacd3f568bf9e3f7b23e10e6784d07717b708fc301744",
+    "include/mcubsp/backend/nrf52840/detail/rx_queue.hpp": "45bb8898d07473d6cb198b1d6415cadce9a5ec45ed487ba5fc59d3c56002b35f",
+    "include/mcubsp/backend/nrf52840/io.hpp": "a5d784ec54fb6a0d11af770cd9facd9ca89b09ad0e265f3c7c8d3189f713308a",
+    "include/mcubsp/backend/nrf52840/spi.hpp": "92ded4a7d28529dd4c0fe990a75981a7e303cf1538b21ecf989086d7b6a3f284",
+    "include/mcubsp/backend/nrf52840/spim.hpp": "fdc66bafdce2631df57a1f82abfd9862eef3ff9b9cc089f5336226f6401c8269",
+    "include/mcubsp/backend/nrf52840/spis.hpp": "b6fba8d16e20824794b71b6910a6364eb4c0af07f21c40835784256cedd5621b",
+    "include/mcubsp/backend/nrf52840/twim.hpp": "8a1ab80961fef70d49dfc92f1166d2a52706bda92ec7f37a1be734d72761c526",
+    "include/mcubsp/backend/nrf52840/twis.hpp": "631d9add9bd28ee60e1eaadf7771c04485fbf7dcd9064ea6c913e3c6f7edb3dc",
+    "include/mcubsp/backend/nrf52840/uart.hpp": "c0aaacbe98fc3c8234679241dcae178946800d0ce311c572f188b4cec91c77cc",
+    "include/mcubsp/backend/nrf52840/uart_config.hpp": "cedbde5dbf2ba60769ce14f27cf3e1177fbb4b11135971ed272d12370e83ea67",
+    "include/mcubsp/backend/nrf52840/uarte.hpp": "b8d2273f7e865d01553e300934c1ea2ba6ed43a2da1bb57275f8b36dbee796bf",
+    "include/mcubsp/board/others/promicro_nrf52840.hpp": "bd601807d0105f16401b9dbb038256cbe3d0d1442606571354995d497147c7e1",
+    "include/mcubsp/io/composition.hpp": "4f48e57b551f989093e83a03b802a929d3ad162daa8dcce3d18aee4838c3fc5a",
+    "include/mcubsp/io/core.hpp": "185ba4b28a4225b063e6fabe4db711467f0d6437b39d078e7f0deca9528274d6",
+    "include/mcubsp/io/detail/context.hpp": "09bad01de477dc44e877c677d9de6aeda776e0f2690e1ff57efe6ce81497dd8e",
+    "include/mcubsp/io/i2c.hpp": "86e78edda50e67a7c2652b1e19f7ee439fa4c36b734e608ec8b5a92f9f17e9e5",
+    "include/mcubsp/io/serial.hpp": "ed173a5aaa09ea001b463845b207b67e1882a8e385b29edb8b3c187fb190371f",
+    "include/mcubsp/io/spi.hpp": "fa9ba444755ac8ed7d4ca7b06e387d08051bae5052610810dffa80c6ac413021",
+    "src/backend/nrf52840/test/CMakeLists.txt": "8ecd33c7b9444543b884c8274b4de25e44cdbdff3759af8fceb9ab66a28c6c7f",
+    "src/backend/nrf52840/test/fake_uarte.hpp": "bcb863be70531048eb5a5c9a69a54a2466f68954aa2faa23b91ed5f2986c73fe",
+    "src/backend/nrf52840/test/serial_dma_probe.cpp": "8c2e6933fbf68d5aa04caf8965d170b2476e729323d223da16696318269935e5",
+    "src/backend/nrf52840/test/serial_facade_probe.cpp": "9779049c895089ee885339ab35c5f551da6c8c6dc83ca0b6dc731d279286c36e",
+    "src/backend/nrf52840/test/serial_targets_probe.cpp": "ae4ef4f907064b53c7fc36d1a4be3eb6d0f03fe3003efb2f2d61b31a63d5a1af",
+    "src/backend/nrf52840/test/spi_invalid_instance_forbidden.cpp": "6b02dce690a80c2356de9fb2b33d84820339f2e27cb130c503fde411fb2aa8f9",
+    "src/backend/nrf52840/test/spis_duplicate_pin_forbidden.cpp": "717b11e7082fab61056bbb16243eb86d7ec23b98a08ae0249e9b0f979f359bdf",
+    "src/backend/nrf52840/test/spis_invalid_instance_forbidden.cpp": "959a99697a2eac16b9e5578d91dca517418d5662b0efa2c9dea46b61fd8e3f2e",
+    "src/backend/nrf52840/test/spis_missing_csn_forbidden.cpp": "2c7bf7dcaa1241e2473dadc48810d871f7f563eaa1f62b01a199aba11194101d",
+    "src/backend/nrf52840/test/test_serial_io.cpp": "8e959a885f84d651ecc5d1d8a4f8243aa0f89594c76a8d7a1f25fb3759b2a0d4",
+    "src/backend/nrf52840/test/test_spi.cpp": "9521ea724dbaacc396a01d3ad2b8b0fd37a681a3873a30d02839645ad59c6ee2",
+    "src/backend/nrf52840/test/test_spis.cpp": "4a57c3dabb6edeb5c955cea274cbb71633f7cad9c5a0eb6af55453fd06300b3a",
+    "src/backend/nrf52840/test/test_twis.cpp": "e2b429aa4482b69b4c4541e52a5c45b1a0ad7582d81888e6ddcaf5262131366d",
+    "src/backend/nrf52840/test/test_uart.cpp": "265f46bc0a54411995a9edaa19d9ce6c9decd9fa984e4d10351d8f2df37c2538",
+    "src/backend/nrf52840/test/test_uarte.cpp": "3f1eb276a83b5b8b97ee329ff2c2c27e9758d76d736efb8da3e280fea8c428d3",
+    "src/backend/nrf52840/test/twis_duplicate_pin_forbidden.cpp": "029d4d1b295eab99ebcab9772e8a4326c121910bfacc658145ca1ef9a41dc61d",
+    "src/backend/nrf52840/test/twis_master_facade_forbidden.cpp": "403ecea9c380d5c163c938d7a9914d8b0a01b25a6bdeeb7713db7a7fe007e78a",
+    "test/compile/CMakeLists.txt": "1ff9271aa96b87f375b78ff8d7b862901c4bc6e35e68018bb204847aebc35170",
+    "test/compile/Probes.cmake": "a4dc6acf87e4af0b45672fa52e28298a001e9d03ef1722a784d33690c35c7cee"
+  },
+  "plan_input_sha256": {
+    "src/board/others/promicro_nrf52840/implementation-plan.md": "efc7531b5079daaa87d5ff515c31106e0696ef2e3d3c4ae0e00f85dcb7f18735"
+  },
+  "source_boundaries": {
+    "baseline": "Nordic PS 4413_417 v1.11 and pinned nrfx v3.2.0",
+    "spis_anomaly_214": "post-disable residual-byte reset applied",
+    "twis_engineering_a_unknown": "explicitly rejected pending duplicate STOPPED anomaly-83 qualification",
+    "spim3": "explicit dedicated AHB RAM slave and reviewed stepping required",
+    "spim_ppi_suspend": "unreviewed modes not exposed",
+    "twim_400khz": "390 kHz documented workaround; actual nominal rate reported"
+  },
+  "unexecuted": [
+    "physical upload/peer traffic/flow control/independent wire timing",
+    "actual silicon identity readback",
+    "coverage instrumentation",
+    "throughput, FIFO service latency and peak-stack measurement",
+    "hosted CI"
+  ],
+  "prerequisite_scope": "Only the serial slices of PLN-0042/43/44 are addressed; unrelated MCU/core/peripheral/crypto work remains open."
+}

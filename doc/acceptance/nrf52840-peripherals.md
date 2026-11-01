@@ -5,6 +5,10 @@ This 1 November 2026 increment implements part of PLN-0044–PLN-0053. It does
 new image upload, electrical measurement or peripheral-peer result is claimed.
 Earlier image-bound observations retain their original hashes and scope.
 
+The [2 November serial delivery](nrf52840-serial.md) supersedes this record's
+serial backlog and facade availability statements. The following interface and
+verification details describe the original 1 November checkpoint.
+
 ## Implemented interfaces
 
 - `backend/nrf52840/uarte.hpp`: finite UARTE0/UARTE1 EasyDMA TX/RX with

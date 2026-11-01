@@ -27,7 +27,7 @@ public:
     using read_operation = operation<typename backend_type::rx_transfer, Context>;
 
     explicit serial_port(Context& context) noexcept
-        : context_(context), backend_(context.mmio(), context.execution()) {}
+        : context_(context), backend_(detail::make_backend<backend_type>(context)) {}
     serial_port(const serial_port&) = delete;
     serial_port& operator=(const serial_port&) = delete;
     serial_port(serial_port&&) = delete;
@@ -48,9 +48,16 @@ public:
         const auto timing = board_type::solve_serial(baud);
         if (!timing) return failure(timing.error());
         const auto claimed = context_.claim(board_type::serial_pins);
-        if (!claimed) return claimed;
+        if (!claimed)
+            return claimed;
         const auto initialized = backend_.initialize(*timing, format);
         if (!initialized) {
+            if constexpr (requires { backend_.needs_cleanup(); })
+                if (backend_.needs_cleanup()) {
+                    initialized_ = true;
+                    context_.retain();
+                    return failure(initialized.error());
+                }
             context_.release(board_type::serial_pins);
             return failure(initialized.error());
         }
@@ -83,17 +90,62 @@ public:
 
     [[nodiscard]] result<read_operation>
     read_async(std::span<std::uint8_t> bytes) noexcept {
-        if (context_.execution().in_isr()) return std::unexpected(error{errc::invalid_context});
+        if (context_.execution().in_isr())
+            return std::unexpected(error{errc::invalid_context});
         return wrap_operation(backend_.receive(bytes), context_);
     }
 
-    template<class Duration = std::chrono::milliseconds>
+    template <class B = backend_type>
+        requires requires(B &b,
+                          std::span<const std::span<std::uint8_t>> buffers) {
+            b.receive_stream(buffers, std::size_t{});
+        }
+    [[nodiscard]] result<read_operation>
+    read_stream_async(std::span<const std::span<std::uint8_t>> buffers,
+                      std::size_t maximum_bytes) noexcept {
+        if (context_.execution().in_isr())
+            return std::unexpected(error{errc::invalid_context});
+        return wrap_operation(backend_.receive_stream(buffers, maximum_bytes),
+                              context_);
+    }
+    template <class B = backend_type>
+        requires requires(B &b, std::span<std::uint8_t> bytes) {
+            b.queue_receive_buffer(bytes);
+        }
+    [[nodiscard]] result<void>
+    queue_read_buffer(std::span<std::uint8_t> bytes) noexcept {
+        if (context_.execution().in_isr())
+            return std::unexpected(error{errc::invalid_context});
+        auto r = backend_.queue_receive_buffer(bytes);
+        if (!r)
+            return failure(r.error());
+        return {};
+    }
+    template <class B = backend_type>
+        requires requires(B &b) { b.take_received_block(); }
+    [[nodiscard]] auto take_read_block() noexcept {
+        using R = decltype(backend_.take_received_block());
+        if (context_.execution().in_isr())
+            return R{};
+        return backend_.take_received_block();
+    }
+    template <class B = backend_type>
+        requires requires(B &b) { b.stop_receive(); }
+    [[nodiscard]] result<void> stop_read() noexcept {
+        if (context_.execution().in_isr())
+            return std::unexpected(error{errc::invalid_context});
+        auto r = backend_.stop_receive();
+        if (!r)
+            return failure(r.error());
+        return {};
+    }
+    template <class Duration = std::chrono::milliseconds>
         requires requires(Duration value) {
             std::chrono::duration_cast<std::chrono::nanoseconds>(value);
         }
-    [[nodiscard]] result<void> write(
-        std::span<const std::uint8_t> bytes,
-        Duration timeout = std::chrono::milliseconds{1000}) noexcept {
+    [[nodiscard]] result<void>
+    write(std::span<const std::uint8_t> bytes,
+          Duration timeout = std::chrono::milliseconds{1000}) noexcept {
         const auto limit = blocking_deadline(timeout);
         if (!limit) return std::unexpected(limit.error());
         return write_until(bytes, *limit);
@@ -135,7 +187,7 @@ public:
             const auto written = write_until(as_bytes(text), *limit);
             if (!written) return written;
         }
-        constexpr std::uint8_t newline[]{'\r', '\n'};
+        std::uint8_t newline[]{'\r', '\n'};
         return write_until(newline, *limit);
     }
 

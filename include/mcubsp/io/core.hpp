@@ -138,3 +138,10 @@ void require(result<void> value) noexcept {
 }
 
 } // namespace mcubsp::io
+
+namespace mcubsp::io::detail {
+template<class Backend,class Context> Backend make_backend(Context& c) noexcept {
+    if constexpr(requires{Backend(c.native_services());})return Backend(c.native_services());
+    else return Backend(c.mmio(),c.execution());
+}
+}

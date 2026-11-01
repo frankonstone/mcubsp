@@ -28,7 +28,7 @@ public:
     using device_type = spi_device<spi_bus>;
 
     explicit spi_bus(Context& context) noexcept
-        : context_(context), backend_(context.mmio(), context.execution()), gpio_(context.mmio()) {}
+        : context_(context), backend_(detail::make_backend<backend_type>(context)), gpio_(context.mmio()) {}
     spi_bus(const spi_bus&) = delete;
     spi_bus& operator=(const spi_bus&) = delete;
     spi_bus(spi_bus&&) = delete;
@@ -46,9 +46,21 @@ public:
         const auto claimed = context_.claim(bus_pins());
         if (!claimed) return claimed;
         const auto handler = backend_.set_select_handler(&select, this);
-        if (!handler) { context_.release(bus_pins()); return failure(handler.error()); }
+        if (!handler) {
+            context_.release(bus_pins());
+            return failure(handler.error());
+        }
         const auto initialized = backend_.initialize(*timing, configuration);
-        if (!initialized) { context_.release(bus_pins()); return failure(initialized.error()); }
+        if (!initialized) {
+            if constexpr (requires { backend_.needs_cleanup(); })
+                if (backend_.needs_cleanup()) {
+                    initialized_ = true;
+                    context_.retain();
+                    return failure(initialized.error());
+                }
+            context_.release(bus_pins());
+            return failure(initialized.error());
+        }
         default_timing_ = *timing;
         default_configuration_ = configuration;
         initialized_ = true;
@@ -56,8 +68,10 @@ public:
         return {};
     }
     [[nodiscard]] result<void> shutdown() noexcept {
-        if (context_.execution().in_isr()) return std::unexpected(error{errc::invalid_context});
-        if (!initialized_) return {};
+        if (context_.execution().in_isr())
+            return std::unexpected(error{errc::invalid_context});
+        if (!initialized_)
+            return {};
         if (devices_ || operations_ || backend_.busy() || selected_) return std::unexpected(error{errc::busy});
         shutdown_pending_ = true;
         if (default_claimed_) {
@@ -192,23 +206,43 @@ public:
     [[nodiscard]] result<void> recover_select() noexcept {
         if (auto checked = check_context(); !checked) return checked;
         if (operations_ || backend_.busy()) return std::unexpected(error{errc::busy});
-        if (!selected_) return {};
+        if (!selected_)
+            return {};
         // Controller idle cannot prove that a failed external DMA channel
         // quiesced. Such failures retain the claim and require target recovery.
-        if (last_used_dma_) return std::unexpected(error{errc::quiesce_failed});
+        if (last_used_dma_)
+            return std::unexpected(error{errc::quiesce_failed});
         cache_valid_ = false;
-        auto stopped = backend_.reconfigure(current_timing_, current_configuration_);
-        if (!stopped) return failure(stopped.error());
-        if (!select(this, false)) return failure(driver::spi_error::mmio);
-        cache_valid_ = true;
+        auto stopped = [&] {
+            if constexpr (requires { backend_.recover(); })
+                return backend_.recover();
+            else
+                return backend_.reconfigure(current_timing_,
+                                            current_configuration_);
+        }();
+        if (!stopped)
+            return failure(stopped.error());
+        if (!select(this, false))
+            return failure(driver::spi_error::mmio);
+        if constexpr (requires { backend_.recover(); }) {
+            configured_ = false;
+            cache_valid_ = false;
+        } else
+            cache_valid_ = true;
         return {};
     }
 
-private:
+  private:
     friend device_type;
-    template<class, class> friend class operation;
-    void retain() noexcept { ++operations_; context_.retain(); }
-    void drop() noexcept { --operations_; context_.drop(); }
+    template <class, class> friend class operation;
+    void retain() noexcept {
+        ++operations_;
+        context_.retain();
+    }
+    void drop() noexcept {
+        --operations_;
+        context_.drop();
+    }
     typename Context::execution_type& execution() noexcept { return context_.execution(); }
     [[noreturn]] void lifetime_violation() noexcept {
         context_.execution().fail({"spi", "live resources or failed cleanup during destruction"}); __builtin_trap();

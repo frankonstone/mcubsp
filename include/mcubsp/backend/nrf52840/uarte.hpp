@@ -2,6 +2,7 @@
 // @req-file REQ-0027 REQ-0059 REQ-0062
 // Nordic PS 4413_417 v1.11 6.34.1--6.34.9. Separate from CPU UART0.
 #include <mcubsp/backend/nrf52840/clock_power.hpp>
+#include <mcubsp/backend/nrf52840/detail/rx_queue.hpp>
 #include <mcubsp/backend/nrf52840/dma_address.hpp>
 #include <mcubsp/backend/nrf52840/dma_buffers.hpp>
 #include <mcubsp/backend/nrf52840/uart_config.hpp>
@@ -12,7 +13,8 @@
 
 namespace mcubsp::backend::nrf52840 {
 template <class Binding, class Context, class Buffers,
-          class Address = native_dma_address, unsigned StopPollBudget = 1000000>
+          class Address = native_dma_address, unsigned StopPollBudget = 1000000,
+          std::size_t StreamCapacity = 4>
   requires((Binding::instance == peripheral::uarte0 ||
             Binding::instance == peripheral::uarte1) &&
            StopPollBudget > 0)
@@ -36,7 +38,10 @@ public:
   uarte_controller(const uarte_controller &) = delete;
   uarte_controller &operator=(const uarte_controller &) = delete;
   ~uarte_controller() {
-    if (tx_buffer_ || rx_buffer_ || tail_buffer_)
+    bool queued = false;
+    for (auto t : stream_tokens_)
+      queued |= t.has_value();
+    if (tx_buffer_ || rx_buffer_ || tail_buffer_ || queued)
       c_.execution.active_transfer_destroyed();
   }
   [[nodiscard]] std::expected<void, error>
@@ -166,7 +171,8 @@ public:
     if (!ready_ || fault_ || c_.execution.in_isr())
       return failure<rx_result>(error::not_initialized);
     return c_.execution.critical([&]() -> rx_result {
-      if (rx_id_ || rx_buffer_ || tail_buffer_)
+      if (rx_id_ || rx_buffer_ || tail_buffer_ ||
+          (!setting_up_stream_ && !stream_queue_.empty()))
         return failure<rx_result>(error::busy);
       auto buffer = prepare(bytes.data(), bytes.size(), dma_access::write);
       if (!buffer)
@@ -189,6 +195,7 @@ public:
       rx_error_.reset();
       rx_count_ = bytes.size();
       rx_phase_ = phase::idle;
+      streaming_ = false;
       if (!write(0x110, 0) || !write(0x144, 0) || !write(0x124, 0) ||
           !write(0x480, 15) ||
           !write(0x534, static_cast<std::uint32_t>(
@@ -214,6 +221,79 @@ public:
         fault_ = true;
       return operation;
     });
+  }
+  // CPU/ISR-assisted continuous reception, with hardware SHORTS kept disabled:
+  // each ENDRX hands a completed buffer back before explicitly starting the
+  // next prepared buffer. No late ISR can cause automatic buffer reuse.
+  // HWFC bounds FIFO backpressure; without it the application must service
+  // the documented FIFO in time and handle observable overrun/errors.
+  [[nodiscard]] rx_result
+  receive_stream(std::span<const std::span<std::uint8_t>> initial,
+                 std::size_t maximum_bytes) noexcept {
+    if (!ready_ || fault_ || c_.execution.in_isr())
+      return failure<rx_result>(error::not_initialized);
+    if (initial.empty() || initial.size() > StreamCapacity || !maximum_bytes)
+      return failure<rx_result>(error::empty_transfer);
+    return c_.execution.critical([&]() -> rx_result {
+      if (rx_id_ || rx_buffer_ || tail_buffer_ || !stream_queue_.empty())
+        return failure<rx_result>(error::busy);
+      for (std::size_t i = 0; i < initial.size(); ++i) {
+        auto slot = stream_queue_.push(initial[i]);
+        if (!slot) {
+          (void)discard_stream_queued();
+          return failure<rx_result>(slot.error());
+        }
+        if (i) {
+          auto token =
+              prepare(initial[i].data(), initial[i].size(), dma_access::write);
+          if (!token) {
+            (void)discard_stream_queued();
+            return failure<rx_result>(error::dma);
+          }
+          stream_tokens_[*slot] = *token;
+        }
+      }
+      auto first = initial.front().first(initial.front().size() < maximum_bytes
+                                             ? initial.front().size()
+                                             : maximum_bytes);
+      if (!write(0x14C, 0)) {
+        (void)discard_stream_queued();
+        return failure<rx_result>(error::mmio);
+      }
+      setting_up_stream_ = true;
+      auto operation = receive(first);
+      setting_up_stream_ = false;
+      if (!operation || !rx_id_) {
+        (void)discard_stream_queued();
+        return operation;
+      }
+      stream_active_ = stream_queue_.activate();
+      stream_limit_ = maximum_bytes;
+      stream_received_ = 0;
+      streaming_ = true;
+      stream_start_issued_ = true;
+      return operation;
+    });
+  }
+  [[nodiscard]] std::expected<void, error>
+  queue_receive_buffer(std::span<std::uint8_t> bytes) noexcept {
+    return c_.execution.critical([&]() -> std::expected<void, error> {
+      if (!streaming_ || !rx_id_ || fault_ || rx_phase_ != phase::receiving)
+        return std::unexpected(error::not_initialized);
+      auto slot = stream_queue_.push(bytes);
+      if (!slot)
+        return std::unexpected(slot.error());
+      auto token = prepare(bytes.data(), bytes.size(), dma_access::write);
+      if (!token) {
+        stream_queue_.discard(*slot);
+        return std::unexpected(error::dma);
+      }
+      stream_tokens_[*slot] = *token;
+      return {};
+    });
+  }
+  [[nodiscard]] std::optional<received_block> take_received_block() noexcept {
+    return c_.execution.critical([&] { return stream_queue_.take(); });
   }
   // RXTO is a stop acknowledgment, not a receive-idle detector. A protocol
   // deadline may request a partial result explicitly through this method.
@@ -260,7 +340,7 @@ public:
           if (rx_error_)
             (void)rx_.fail(id, *rx_error_);
           else
-            (void)rx_.complete(id, received_);
+            (void)rx_.complete(id, streaming_ ? stream_received_ : received_);
           progress = true;
         }
       }
@@ -288,6 +368,8 @@ public:
         ((rx_buffer_ || tail_buffer_) &&
          !bounded([&] { return rx_step(true); })))
       return std::unexpected(error::transport);
+    if (!discard_stream_queued())
+      return std::unexpected(error::dma);
     if (!write(0x308, all_irq_mask) || !write(0x200, 0) || !write(0x500, 0))
       return std::unexpected(error::mmio);
     auto disabled = c_.read(base + 0x500);
@@ -313,7 +395,8 @@ public:
     return {};
   }
   [[nodiscard]] std::size_t received_count() const noexcept {
-    return c_.execution.critical([&] { return received_; });
+    return c_.execution.critical(
+        [&] { return streaming_ ? stream_received_ : received_; });
   }
   [[nodiscard]] std::size_t transmitted_count() const noexcept {
     return c_.execution.critical([&] { return sent_; });
@@ -323,6 +406,10 @@ public:
   }
   [[nodiscard]] bool faulted() const noexcept {
     return c_.execution.critical([&] { return fault_; });
+  }
+
+  [[nodiscard]] bool owns_resource() const noexcept {
+    return owner_.has_value();
   }
 
 private:
@@ -482,6 +569,45 @@ private:
       }
       if (!force_stop && !*end && !rx_error_)
         return false;
+      if (streaming_ && *end && !force_stop && !rx_error_) {
+        auto count = c_.read(base + 0x53C);
+        if (!count) {
+          fault_ = true;
+          return false;
+        }
+        if (*count != rx_count_)
+          rx_error_ = error::dma;
+        if (!publish_stream_block(*count)) {
+          fault_ = true;
+          return false;
+        }
+        if (!rx_error_ && stream_received_ < stream_limit_) {
+          auto next = stream_queue_.activate();
+          if (next) {
+            stream_active_ = *next;
+            rx_buffer_ = stream_tokens_[*next];
+            stream_tokens_[*next].reset();
+            const auto bytes = stream_queue_.buffer(*next);
+            const auto remaining = stream_limit_ - stream_received_;
+            rx_count_ = bytes.size() < remaining ? bytes.size() : remaining;
+            stream_start_issued_ = false;
+            if (!write(0x110, 0) || !write(0x14C, 0) ||
+                !write(0x534, address_(bytes.data(), bytes.size())) ||
+                !write(0x538, rx_count_) || !buffers_.arm(*rx_buffer_)) {
+              fault_ = true;
+              rx_error_ = error::mmio;
+            } else {
+              stream_start_issued_ = true;
+              if (!write(0x000, 1)) {
+                fault_ = true;
+                rx_error_ = error::mmio;
+              }
+            }
+            return false;
+          }
+          rx_error_ = error::overrun; // explicit buffer exhaustion, never reuse
+        }
+      }
       if (!request_rx_stop()) {
         fault_ = true;
         return false;
@@ -512,6 +638,15 @@ private:
         return false;
       }
       received_ = *count;
+      if (streaming_ && stream_active_) {
+        auto started = c_.read(base + 0x14C);
+        if (!started) {
+          fault_ = true;
+          return false;
+        }
+        if (!stream_start_issued_ || !*started)
+          received_ = 0;
+      }
       if (received_ > rx_count_)
         rx_error_ = error::dma;
       rx_phase_ = phase::stopped;
@@ -558,7 +693,12 @@ private:
         fault_ = true;
         return false;
       }
-      if (!release(tail_buffer_) || !release(rx_buffer_)) {
+      if (streaming_ && stream_active_ && !publish_stream_block(received_)) {
+        fault_ = true;
+        return false;
+      }
+      if (!release(tail_buffer_) || !release(rx_buffer_) ||
+          !discard_stream_queued()) {
         fault_ = true;
         return false;
       }
@@ -566,6 +706,32 @@ private:
       return true;
     }
     return false;
+  }
+  bool publish_stream_block(std::size_t count) noexcept {
+    if (!stream_active_)
+      return true;
+    if (count > rx_count_) {
+      rx_error_ = error::dma;
+      count = rx_count_;
+    }
+    if (!release(rx_buffer_))
+      return false;
+    if (!stream_queue_.publish(*stream_active_, count))
+      return false;
+    stream_received_ += count;
+    stream_active_.reset();
+    return true;
+  }
+  bool discard_stream_queued() noexcept {
+    for (unsigned i = 0; i < StreamCapacity; ++i)
+      if (stream_queue_.status(i) ==
+          detail::rx_queue<StreamCapacity>::state::queued) {
+        discard(stream_tokens_[i]);
+        if (stream_tokens_[i])
+          return false;
+        stream_queue_.discard(i);
+      }
+    return true;
   }
   template <class Step> bool bounded(Step &&step) noexcept {
     execution::deadline until{
@@ -629,6 +795,11 @@ private:
   std::uint32_t error_bits_{};
   mcu::nrf52840::serial_revision revision_{};
   phase rx_phase_{phase::idle};
+  detail::rx_queue<StreamCapacity> stream_queue_;
+  std::array<std::optional<dma_buffer_token>, StreamCapacity> stream_tokens_{};
+  std::optional<unsigned> stream_active_;
+  std::size_t stream_limit_{}, stream_received_{};
+  bool streaming_{}, setting_up_stream_{}, stream_start_issued_{};
   bool ready_{}, fault_{}, hf_{}, work_{}, tx_stopping_{}, tx_quiet_{};
 };
 } // namespace mcubsp::backend::nrf52840
