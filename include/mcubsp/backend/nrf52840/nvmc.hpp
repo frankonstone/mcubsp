@@ -105,6 +105,51 @@ public:
       return finish();
     });
   }
+  // One bounded portion, not a claim that the page is fully erased. The caller
+  // accumulates the documented erase duration before programming that page.
+  [[nodiscard]] system_result
+  erase_page_partial(std::uintptr_t address, unsigned milliseconds) noexcept {
+    if (!ready_ || fault_ || c_.execution.in_isr())
+      return std::unexpected(system_error::not_initialized);
+    if (address % page_bytes || !allowed(address, page_bytes) ||
+        !milliseconds || milliseconds > 127)
+      return std::unexpected(system_error::invalid);
+    return c_.execution.critical([&]() -> system_result {
+      auto begun = begin(2);
+      if (!begun)
+        return begun;
+      if (!c_.write(base + 0x51C, milliseconds) ||
+          !c_.write(base + 0x518, address))
+        return fail(system_error::mmio);
+      arch::data_synchronization_barrier();
+      return finish();
+    });
+  }
+  struct cache_statistics {
+    std::uint32_t hits{}, misses{};
+  };
+  [[nodiscard]] system_result
+  configure_instruction_cache(bool enabled, bool profile = false) noexcept {
+    if (!ready_ || fault_ || c_.execution.in_isr())
+      return std::unexpected(system_error::not_initialized);
+    if (mutation_ || power_.power_fail_suspended_by(this))
+      return std::unexpected(system_error::busy);
+    if (!c_.write(base + 0x540, (enabled ? 1U : 0U) | (profile ? 256U : 0U)))
+      return fail(system_error::mmio);
+    arch::data_synchronization_barrier();
+    return {};
+  }
+  [[nodiscard]] system_value<cache_statistics>
+  instruction_cache_statistics(bool reset = false) noexcept {
+    if (!ready_ || c_.execution.in_isr())
+      return std::unexpected(system_error::not_initialized);
+    auto hits = c_.read(base + 0x548), misses = c_.read(base + 0x54C);
+    if (!hits || !misses)
+      return std::unexpected(system_error::mmio);
+    if (reset && (!c_.write(base + 0x548, 0) || !c_.write(base + 0x54C, 0)))
+      return std::unexpected(system_error::mmio);
+    return cache_statistics{*hits, *misses};
+  }
   [[nodiscard]] system_result shutdown() noexcept {
     if (c_.execution.in_isr())
       return std::unexpected(system_error::busy);

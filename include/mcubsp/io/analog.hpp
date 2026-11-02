@@ -24,7 +24,7 @@ public:
     using sample_operation = operation<typename backend_type::transfer_type, Context>;
 
     explicit analog_input(Context& context) noexcept
-        : context_(context), backend_(context.mmio(), context.execution()) {}
+        : context_(context), backend_(detail::make_backend<backend_type>(context)) {}
     analog_input(const analog_input&) = delete;
     analog_input& operator=(const analog_input&) = delete;
     analog_input(analog_input&&) = delete;
@@ -45,6 +45,7 @@ public:
         if (!claimed) return claimed;
         const auto initialized = backend_.initialize(configuration);
         if (!initialized) {
+            if constexpr(requires{backend_.needs_cleanup();})if(backend_.needs_cleanup()){initialized_=true;context_.retain();return failure(initialized.error());}
             context_.release(board_type::adc_pins);
             return failure(initialized.error());
         }

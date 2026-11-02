@@ -52,14 +52,14 @@ current, exact silicon identity and full system acceptance remain unverified.
 Optional FPB/DWT inspection and SWO/ETM-M4 debugger scripts pass software checks;
 physical debug/trace capture remains pending. Native legacy UART0 finite TX/RX
 and common DMA/resource coordination now have software support; their new
-physical tests remain pending. A subsequent software increment implements finite
-UARTE0/1, SPIM0–3 and TWIM0/1 DMA paths, TEMP/QDEC/RNG and explicit-region
-NVMC word/page operations. Streaming, legacy SPI/SPIS/TWIS, SAADC/comparators/PWM,
-QSPI and the remaining protection APIs, audio, USB application classes, crypto
-accelerators, radio/NFC, complete core/runtime qualification and exhaustive silicon
-errata handling remain unimplemented/incomplete. See the
-[peripheral checkpoint](../acceptance/nrf52840-peripherals.md) and
-[system checkpoint](../acceptance/nrf52840-system.md) for exact limits.
+physical tests remain pending. The [serial delivery](../acceptance/nrf52840-serial.md)
+adds bounded UART/UARTE receive streams, SPI/SPIS/TWIS and common selections.
+The [native delivery](../acceptance/nrf52840-native-delivery.md) adds PWM/SAADC/
+comparators and common PWM/ADC, QSPI/protection, I2S/PDM, USB CDC/HID, ECB/CCM/AAR/
+CryptoCell, radio and NFC. Its [per-instance/mode matrix](nrf52840/implementation-matrix.json)
+separates the implemented APIs, representative native checks, cross/link results
+and pending physical qualification. Full board qualification remains open;
+prior observations do not qualify new images or replace absent peers/measurements.
 The [coordination/UART checkpoint](../acceptance/nrf52840-dma-uart.md) records
 the new shared ownership contracts and initial native UART0 support.
 The current regular system test requires RTC-driven pulses and watchdog feeding;

@@ -1,0 +1,780 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "kind": "software_verification",
+  "base_commit": "41211c2ae16444a3253e59f15553f30ded89892f",
+  "worktree_code_sha256": {
+    "example/analog-pwm/CMakeLists.txt": "6b0f7e0703da6275d748bfedc8ab97d86847aad67e3a7d73315dc63d622df340",
+    "example/analog-pwm/others/promicro_nrf52840.cpp": "5bcce1f30bc367d2d570b324a1407a2e19d24c948449066b311a3b5e090afb57",
+    "example/audio-capture/CMakeLists.txt": "c9ac4c0f47f1126723d843373c1342659c6cb7889d31ccdfcade9de4648547a4",
+    "example/audio-capture/others/promicro_nrf52840.cpp": "888c0fb9927fe228e39ad1a15d05b0a3e84f61f73e4d0f8ba2d4ef753f10be7a",
+    "example/crypto-vectors/CMakeLists.txt": "b87b7fc5c489876c8300acb8c0ad4a294edd4365c39c0ded867cc5a75fe0617c",
+    "example/crypto-vectors/others/promicro_nrf52840.cpp": "4552866311e3f189bdded5980a5d7a446d116d2eae53f2b4d7ec754913092335",
+    "example/memory-watch/CMakeLists.txt": "66aca98115bf130ae331405e703bee21755a618267b6a902f500a9e5420cc67d",
+    "example/memory-watch/others/promicro_nrf52840.cpp": "4d471bc54a5773d3758788f24f8f35418cecae4ba6aeef379b5b8ef04c7dd2ff",
+    "example/nfc-tag/CMakeLists.txt": "a4c64aee42df9deddc447b28a437c58d38d36f64a91d09b6971fdce2751743c6",
+    "example/nfc-tag/others/promicro_nrf52840.cpp": "19bb9eb593af26d12047604a5210b0b33ed941beb04bf3f7fa6cbdef776bcdf6",
+    "example/qspi-memory/CMakeLists.txt": "f9c72098885b6fbd71bf3e2a998de7b77572c21c7ffb2adc7bcea3c0ddc4c3e3",
+    "example/qspi-memory/others/promicro_nrf52840.cpp": "98ed26749be48f7d3bb9c53cf0c54f67572660f9cb8cc2f9b122ba9db72e105f",
+    "example/radio-rx/CMakeLists.txt": "24b1bdef099a6d9f47fcb3ef0a162f9cfd403eb69aa5f44a3a488f91e73ff376",
+    "example/radio-rx/others/promicro_nrf52840.cpp": "6880b5e65d2a0a0089e82f6947544c0ebd665caad4e54b8c460f13bc24fadedd",
+    "example/radio-tx/CMakeLists.txt": "6a992873577323a777434c199188bce9afc6a8c13dc3ea764f6ade62d5c22374",
+    "example/radio-tx/others/promicro_nrf52840.cpp": "571c84a3b37f6620c182077a508115fe1b7084b4b77ded9bff28672581018d25",
+    "example/usb-cdc/CMakeLists.txt": "2b627ba273e4fe9add9854dc514eea98fe90a33d0e189e04c3f04ab3c62eb67a",
+    "example/usb-cdc/others/promicro_nrf52840.cpp": "fdeb6ed50c9b69965df5f3cca694c48a746514300045f2b1a49794971c043ce1",
+    "example/usb-hid/CMakeLists.txt": "714a8e2d957ca0259d537e9bf4a2fd7520e8b9614bc3e41890f5be852e4ae216",
+    "example/usb-hid/others/promicro_nrf52840.cpp": "39b25541a93e4f555f57b5a1e50fbb77d0a7352a30d835f292dbd944eb399593",
+    "include/mcubsp/backend/nrf52840/aar.hpp": "00cdeaf522bc8e3feca8eba10f5cb6af89a1a219e166efd136b06ba4ae58f5fe",
+    "include/mcubsp/backend/nrf52840/acl.hpp": "385a6fff7a0fe5de527ba01603676b98858791522b4406fd8149a651159846e2",
+    "include/mcubsp/backend/nrf52840/ccm.hpp": "4f23d370c592fdde4b972161844ea74817f4f3a468e4582217a0557a6c78655a",
+    "include/mcubsp/backend/nrf52840/comparator.hpp": "8aa1975c69b211076e7836bd203b4be4fb7a7a090362b4c52f0de6a1a54fc4fe",
+    "include/mcubsp/backend/nrf52840/cryptocell.hpp": "57c69387b02ecf3a9f51e4f70d958c3fb4e5be64262bf48d4e70980e33aa5f0f",
+    "include/mcubsp/backend/nrf52840/detail/audio_storage.hpp": "958a7d7e8676ee57a7c37929036be36f02ccc4285ef4a4e849f18e01149dd376",
+    "include/mcubsp/backend/nrf52840/detail/dma_queue.hpp": "76b70d597c2a77be8910999775a3fbd3a76cebb4b9c69fbc10ddf389db61e0fb",
+    "include/mcubsp/backend/nrf52840/detail/peripheral_session.hpp": "3430b7132e51ed5c2f635a74ed550dbdfe57098a8850f2eafdcee54be4426911",
+    "include/mcubsp/backend/nrf52840/detail/poly1305.hpp": "8d2c5315bb5b893fa61903b1f1b57929153a288c09a20ced42c75adfd14b14bb",
+    "include/mcubsp/backend/nrf52840/ecb.hpp": "e1d66c6dd361fd35afb46fecaf91ea90970c3baef1109ffdb8dd087fbe205969",
+    "include/mcubsp/backend/nrf52840/factory.hpp": "250c1382a332f1461cff6a5bd6d3966d7171566f94d3b57b765af023a2beb568",
+    "include/mcubsp/backend/nrf52840/i2s.hpp": "0fb7f22b8be95b239de5ffcda9854e2a00e8f91b0b941f35be298414c8c5de27",
+    "include/mcubsp/backend/nrf52840/io_analog.hpp": "267b57468428b9085c8e9a010d0b1a354e9ba7aee71c02704c1538cd0de3f57e",
+    "include/mcubsp/backend/nrf52840/mwu.hpp": "03419085e16ab420799612cf32e6619bcec3a7ababc35f0e4b0da1bfec0690c4",
+    "include/mcubsp/backend/nrf52840/nfct.hpp": "4fd83e71085ce6cb0cf5dc63fced7470a874c881e67aba21cba6609f9c07016e",
+    "include/mcubsp/backend/nrf52840/pdm.hpp": "dd519041d0c30acb4a7654103d263ae2894588f3618d1805edf13e7387b8b76d",
+    "include/mcubsp/backend/nrf52840/provisioning.hpp": "a61c308884ad1f996947af869ee84fb225d3d40328556f05ea7f42dd95de7f0a",
+    "include/mcubsp/backend/nrf52840/pwm.hpp": "9162067ef2f50e2a1494e7c3e94829cb61b9f0780a0701b320baa93e4745b74d",
+    "include/mcubsp/backend/nrf52840/qspi.hpp": "8c97b927cfd18cd64af96c94d084295ff4381dfcd3967215c4b93e82e49e5f0c",
+    "include/mcubsp/backend/nrf52840/radio.hpp": "2ec48af5038df5a5efe6161f1d4b43477f4e3f760f02bd251c6801feca354680",
+    "include/mcubsp/backend/nrf52840/saadc.hpp": "193f08a8ac5b5c50bb391b6fdb5cf72f4efafc1636c57aa1ec970f9e87da8064",
+    "include/mcubsp/backend/nrf52840/usb_device.hpp": "210bd914b9530efee8da3102b9aa10368a2a7a3c49dbbe0d99b26c096faad9fd",
+    "include/mcubsp/backend/nrf52840/usbd.hpp": "2ee44c0b649e6e39fae6a8e3f421ff3b4b3b077c2d19cf42ccbfdd030ffa8b3c",
+    "src/backend/nrf52840/test/analog_memory_audio_probe.cpp": "f474ae26d6c4ab2589c8fb83c79618e8dae743043c4ec64fd4c9b6f252ac14f6",
+    "src/backend/nrf52840/test/crypto_reference.hpp": "d0089aead7a5fda671f1046dcf3818886af32cd43265b8bee92b1b536eae5b96",
+    "src/backend/nrf52840/test/fake_analog.hpp": "af2e238eb2710bceec3921473c8acfa7113a1b26592ea2ed5024c50e916134a4",
+    "src/backend/nrf52840/test/i2s_duplicate_pin_forbidden.cpp": "d42a07b6e2db51e7547fee4ff32690ecb13a1f6ef5a9752226fd385690342256",
+    "src/backend/nrf52840/test/pdm_reserved_pin_forbidden.cpp": "0fd96c22f5c03543e63fbe49aa117a3ff71d821341fabc9fff93dd782583ef38",
+    "src/backend/nrf52840/test/pwm_invalid_instance_forbidden.cpp": "cf3cf41bc12540475329f9f94d62c477c78ef3fb5b3197f4ba2d66a31db41109",
+    "src/backend/nrf52840/test/saadc_duplicate_input_forbidden.cpp": "940fdd870401064e7a346a0dc545400993f28c03c08b8a5ee86866c8489c5c6f",
+    "src/backend/nrf52840/test/test_analog_io.cpp": "cae150012804553113e31b94e95ba3f8d7b9734879c35f0d429ad475a7333e42",
+    "src/backend/nrf52840/test/test_audio.cpp": "8f23d0e2484cff5069901eac4d947e42d2e12922a6ed934e8f2fc0dcffddcadc",
+    "src/backend/nrf52840/test/test_comparator.cpp": "d2f82bc9bf33b56041a7af5b8a7b7d3254f3f5dc27d11367695d3fddef3f8e65",
+    "src/backend/nrf52840/test/test_crypto.cpp": "32bf3039c7c7bdcd7e2b7f1fb38298d8f9729a644a302e587ea763c7c1668145",
+    "src/backend/nrf52840/test/test_memory.cpp": "b669991caf879abac2310a18fcbe68a1a6f081eff6e49d3914f0c9fa3dcd1b04",
+    "src/backend/nrf52840/test/test_nfct.cpp": "d433b0154ad1c960a8a87ce362e51f27d355a7528ea477ddf2f43f0f11003e9e",
+    "src/backend/nrf52840/test/test_pwm.cpp": "b9e1d310972bfd373a2815edbe8e63cee11817a1e7e26966e85cd0866ff245cb",
+    "src/backend/nrf52840/test/test_qspi.cpp": "b08e8c921bdc2f0ddc68837dea3a3da96d50e68c2d37a84ef949b970e588b8cf",
+    "src/backend/nrf52840/test/test_radio.cpp": "5dd65bf89357f595e7af42c59e7a5e491619d64c29a4ebeed711ee3c4d091639",
+    "src/backend/nrf52840/test/test_saadc.cpp": "467af86f2e28f71b3eda5d4edac859f65e72085096b996c7130dfc441c203532",
+    "src/backend/nrf52840/test/test_usb.cpp": "be2079eef69fccab51ae7ab2f9dd6019a8f490711515a6a416674923d22db191",
+    "src/backend/nrf52840/test/usb_crypto_radio_probe.cpp": "47c7da7408f8b7c192dc8b1b6297d0ca363e7e1cd5720a854b992ba373bb3915",
+    "src/board/others/promicro_nrf52840/debug/recovery.tcl": "231f751c60e9e15ebe876847eaa7815c59d7e6fb39fe2286071324800f473295",
+    "include/mcubsp/backend/nrf52840/nvmc.hpp": "c39aad1263d5ac54dbae8ae1d6e17ce069934308074774579899d7cbe85a9adc",
+    "include/mcubsp/backend/nrf52840/system_context.hpp": "46a1ca5b0e5647608cbf470746d98c7f159a81b7ead60e5532150ecc5980386a",
+    "include/mcubsp/board/others/promicro_nrf52840.hpp": "15ac4d1e140c37fae432e03366baa821b160f8d8aaee2cc420f2bf543ef42aa9",
+    "include/mcubsp/driver/pwm.hpp": "22f800e228079a3c65f3a294c84e99235cad57afcaa4b908a1a27647a552b146",
+    "include/mcubsp/io/analog.hpp": "b121e989dbb7282bbc2561cbf0afedd78f2d07645024f702b768bf45f28e595b",
+    "include/mcubsp/io/pwm.hpp": "8d910665a65c5ec11473163942f1761b7c3e90c82747c87964674aaf3266ee51",
+    "include/mcubsp/mcu/nrf52840/resources.hpp": "6b773270a48f0637f1e82600918eb3da1f2c33c7d9acce0367c4db3b27823cce",
+    "src/backend/nrf52840/test/CMakeLists.txt": "fc817358f37b4082b70c703eeb489caa2ab30add6ae52e8ec9df0373c085bd4b",
+    "src/backend/nrf52840/test/test_resources.cpp": "bac0836461de0e0654766b78b280beb7c8519330523461475ddedae460d23e61",
+    "test/compile/CMakeLists.txt": "449201fc8bc5b955bee37478815eb312f2a4d3ffd7d6edde14805da1e5cba199",
+    "test/compile/Probes.cmake": "3c2b4eadb68786ccf8f3584efeca3bbaeb775958c48058bd1027dcbf51c1c26b",
+    "test/workflow/test_nrf_debug.py": "607561ecd3a1fd8689452f508a2c6b922e830e7ace9c18fe8d6772f8d9f73c63"
+  },
+  "plans": [
+    "PLN-0044",
+    "PLN-0045",
+    "PLN-0046",
+    "PLN-0047",
+    "PLN-0048",
+    "PLN-0049",
+    "PLN-0050",
+    "PLN-0051",
+    "PLN-0052",
+    "PLN-0053"
+  ],
+  "plan_completion_claim": false,
+  "scope": "Remaining native analog, memory/protection, audio, USB classes, crypto, RADIO and NFCT operations; common PWM/ADC; resource/DMA contracts; per-instance/mode inventory and linked software compositions",
+  "physical": {
+    "executed": false,
+    "board_available_now": false,
+    "available_equipment": "Pro Micro nRF52840 only, unavailable now; debug probe and peripheral peers not confirmed",
+    "qualification": "pending",
+    "upload_reset_provisioning_lock_erase_executed": false
+  },
+  "mcutrace": {
+    "analysis_revision": "b5f37c8f16250e5a",
+    "focused_requirements_and_plans_diagnostics": 0,
+    "validation_failed": false,
+    "project_errors": 0,
+    "project_warnings": 74,
+    "new_example_coverage_warnings": 10,
+    "coverage_producer_run": false,
+    "note": "Focused ID validation and source coverage diagnostics are distinct. The ten firmware examples have no line/branch coverage; representative native cases and cross/link results are not coverage evidence."
+  },
+  "native": {
+    "ctest_passed": 85,
+    "ctest_total": 85,
+    "report": "output/artifact/native.json",
+    "report_sha256": "94f49868470772040d1cbc8dba17d18b85dd683c5d43032bb66f33b06ced8270",
+    "tests": 628,
+    "failures": 0,
+    "added_cases_since_base": 102,
+    "suites": {
+      "ip_nordic_nrf52840_native": {
+        "tests": 202,
+        "failures": 0
+      },
+      "ip_nordic_nrf52840_radio": {
+        "tests": 14,
+        "failures": 0
+      },
+      "ip_nordic_nrf52840_memory": {
+        "tests": 16,
+        "failures": 0
+      },
+      "ip_nordic_nrf52840_audio": {
+        "tests": 11,
+        "failures": 0
+      },
+      "ip_nordic_nrf52840_crypto": {
+        "tests": 15,
+        "failures": 0
+      },
+      "ip_nordic_nrf52840_analog": {
+        "tests": 24,
+        "failures": 0
+      },
+      "mcu_nrf52840": {
+        "tests": 10,
+        "failures": 0
+      },
+      "ip_nordic_nrf52840_nfct": {
+        "tests": 6,
+        "failures": 0
+      },
+      "ip_nordic_nrf52840_usb": {
+        "tests": 13,
+        "failures": 0
+      }
+    },
+    "negative_bindings_added": 4
+  },
+  "public_headers": {
+    "count": 282,
+    "targets": [
+      "macOS arm64",
+      "Cortex-M4F",
+      "Cortex-M7",
+      "ESP32-P4 RISC-V"
+    ],
+    "result": "passed"
+  },
+  "service_body_probes": {
+    "host": true,
+    "cortex_m4": true,
+    "cortex_m7": true,
+    "esp32p4": true,
+    "relocated_package_cortex_m4": [
+      {
+        "probe": "analog_memory_audio_probe",
+        "passed": true,
+        "errors": ""
+      },
+      {
+        "probe": "usb_crypto_radio_probe",
+        "passed": true,
+        "errors": ""
+      }
+    ]
+  },
+  "composition": {
+    "repository_examples": "all Pro Micro examples linked",
+    "source_consumers": 10,
+    "relocated_package_consumers": 10,
+    "native_legal_compositions": [
+      "shared ADC/PWM clocks/pins",
+      "USB suspend/shutdown while RADIO retains HFXO"
+    ],
+    "no_allocating_or_exception_symbols": true,
+    "one_reset_handler_each": true,
+    "peak_stack_measured": false
+  },
+  "images": {
+    "analog-pwm": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.analog-pwm.elf",
+      "elf_sha256": "b72abbdb8b1fba51bc48cc468284ef46e6e7a19489c64bdabf97a7bf36f0ff4e",
+      "uf2_sha256": "d90aa61dddcd79f3d1fa836acd373819f04f37cca19d96acc319aca2c7478cb9",
+      "inputs_sha256": "5b31f677afcc35f5b7c8dd6eb1a2dabed46ed05320f9124afba6ee63329e323b",
+      "selected_input_identity": "e966348265f94063a16106e2d88405a7bd71b1cc567c92eeeef9f99f29162e73",
+      "text_bytes": 21156,
+      "data_bytes": 28,
+      "bss_bytes": 6352,
+      "flash_bytes": 21184,
+      "static_ram_bytes": 6380,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "audio-capture": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.audio-capture.elf",
+      "elf_sha256": "d6f6832535d145fa56d49f6b6c02f729258079cb1a48e35bc1bc20f1221c6975",
+      "uf2_sha256": "41ad429d767b8deb02dacb7cdfe8ced642bd6c1ff9494f538e4f97d9f5144d52",
+      "inputs_sha256": "b9e5e07db8b9285882d3b3dbb737bdfbb8e0b607edfcb15128c5bf8979e141f6",
+      "selected_input_identity": "dcbd29c85c5b13a817b37b1f1bcf91b2708992a59d1326db803dae83bdb5c81f",
+      "text_bytes": 14644,
+      "data_bytes": 20,
+      "bss_bytes": 15640,
+      "flash_bytes": 14664,
+      "static_ram_bytes": 15660,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "usb-cdc": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.usb-cdc.elf",
+      "elf_sha256": "921585565421b4d5b1d91620956ed0a6d3441c4e468df96b8b921fc21089a1dd",
+      "uf2_sha256": "9c55204b9ace1e1c681508ba49c8e512c23a6d2bac7a6b35cfe37ae60583b8c4",
+      "inputs_sha256": "1103feb83c414db6f64499eaa71c1a73ca99a49a4c77b949c7467127a20260c2",
+      "selected_input_identity": "d3bcb0b069d4537f34748cf3d8b653d5d5a6f7f45eb2fb025cfcf52bf6b2ccb7",
+      "text_bytes": 13046,
+      "data_bytes": 20,
+      "bss_bytes": 7172,
+      "flash_bytes": 13066,
+      "static_ram_bytes": 7192,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "usb-hid": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.usb-hid.elf",
+      "elf_sha256": "d62a782a2207c4a2c7ea48dda0d0259f2793119cc6a3d563fb89937f90470f56",
+      "uf2_sha256": "4b700d937b98d8b92b0d5873bd78bea031b29bf3ccd25b2926eb6bc12990a010",
+      "inputs_sha256": "f4277ccbff5b418ab228eba67e27378cd3f3cee571716153c7c17fb4a5e73b93",
+      "selected_input_identity": "715ab8a3c553f358ff4bba56358fa6464dba877ff3b267854e96b4215d446a34",
+      "text_bytes": 13482,
+      "data_bytes": 20,
+      "bss_bytes": 7172,
+      "flash_bytes": 13502,
+      "static_ram_bytes": 7192,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "crypto-vectors": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.crypto-vectors.elf",
+      "elf_sha256": "1535d36e1af50c2a7ef774c2ec09e4b12494ec0aeaa34a5b022e0c3522104a21",
+      "uf2_sha256": "20c8b98540d9a2660f66405d6a4493a4292a596ada6d5060c4f27f7ef45fa4da",
+      "inputs_sha256": "1a8cabd61748ce0aadf28a49dfbfd56f49013876202d15077d3c09655ff1ccf7",
+      "selected_input_identity": "0941885807b7d734315455eb9550c86d51cbe54a0d38524251c33f7ea58e386f",
+      "text_bytes": 11684,
+      "data_bytes": 24,
+      "bss_bytes": 5792,
+      "flash_bytes": 11708,
+      "static_ram_bytes": 5816,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "radio-tx": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.radio-tx.elf",
+      "elf_sha256": "c2ac98b54f7c964afb16ddcabcf9e697ed25c39b30e9ff00b126973f3aac3436",
+      "uf2_sha256": "d8073eda5240158f80352eb2d10e215392668116369f8912b974f20a5f815362",
+      "inputs_sha256": "edb9f81c8812ef70af62e6fe37a069ec213c1c2a01c429e8d98c024a35538c56",
+      "selected_input_identity": "8eff995f4f36a10068ae72b9151613ef46fd9e05aa52b9f39df0a79931b989bb",
+      "text_bytes": 9188,
+      "data_bytes": 20,
+      "bss_bytes": 5828,
+      "flash_bytes": 9208,
+      "static_ram_bytes": 5848,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "radio-rx": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.radio-rx.elf",
+      "elf_sha256": "d64a277a1c6ec5c544b643b3b8391b401e1acf80056495d35f41b0640aaa44e4",
+      "uf2_sha256": "8bac38e100cf6e2ab4ed9dae88ef3f42a0446754f3c63996636056bd7c295701",
+      "inputs_sha256": "980e773fa3989601adbad5f67f2d1f5c8e1b10b34f4772b0dd8fd9c47dde366d",
+      "selected_input_identity": "36dec16ee5d087541daf582817290981f0f1c0cf60bfa77c0c73d3420b8ebe97",
+      "text_bytes": 9088,
+      "data_bytes": 20,
+      "bss_bytes": 5836,
+      "flash_bytes": 9108,
+      "static_ram_bytes": 5856,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "nfc-tag": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.nfc-tag.elf",
+      "elf_sha256": "eac99f3c3f715e21aa9185f389d0194f03eb25fb4b1004af630ebc0a210ff04c",
+      "uf2_sha256": "6b5e304de478b892fdd95d49d05f1fa7053781e4c8854064eb7705ed618a9db7",
+      "inputs_sha256": "453bbe47c67c0388551c899f5fd7c54a1d60bcf5bf7072b563e4da0d7ab42792",
+      "selected_input_identity": "419c1c5125e168020b68cdf5996bf6f69ed2b584cf9f251797dfe106e87ecd27",
+      "text_bytes": 9404,
+      "data_bytes": 20,
+      "bss_bytes": 5636,
+      "flash_bytes": 9424,
+      "static_ram_bytes": 5656,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "qspi-memory": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.qspi-memory.elf",
+      "elf_sha256": "dbde4214ae944d48e4cec01d61447c08006d5469c94229b3e86e9013eae2f3d6",
+      "uf2_sha256": "18a08ce29bef62b9ba2fa69022bad28e2dcef3769f6e0600d2ef4a94a52b054b",
+      "inputs_sha256": "5b31385d936c846753517579c90eb9ee781090fc7d9d154bbb1ace0907f70884",
+      "selected_input_identity": "f1caa4bdbcaf4e6490d1f9a4ba8fef64c7b7b3a80dbba1fb6691de7bbc91fb21",
+      "text_bytes": 10412,
+      "data_bytes": 36,
+      "bss_bytes": 5672,
+      "flash_bytes": 10448,
+      "static_ram_bytes": 5708,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    },
+    "memory-watch": {
+      "elf": "output/build/promicro-nrf52840/example/others.promicro_nrf52840.example.memory-watch.elf",
+      "elf_sha256": "4b8254c7dda1790f148b2a0361a17b35823d4f579d5847cfcc5081e11b6be8db",
+      "uf2_sha256": "df022121268ca8363aed05c2c63faba8db83503755f69a5cf0e1e46303ca2970",
+      "inputs_sha256": "53f885a8cb2cd1367dfff9bb6d5f05504f861b07f7468aa895842f8a7b669e73",
+      "selected_input_identity": "39c6daadd8f7693ece91aefe80cfd966b7cd978f05588528d68ce22e8345f9bb",
+      "text_bytes": 3932,
+      "data_bytes": 20,
+      "bss_bytes": 5308,
+      "flash_bytes": 3952,
+      "static_ram_bytes": 5328,
+      "reset_handlers": 1,
+      "allocation_exception_guard_symbols": []
+    }
+  },
+  "consumers": [
+    {
+      "mode": "source",
+      "example": "analog-pwm",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-analog-pwm",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-analog-pwm-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-analog-pwm/analog_pwm.elf",
+        "elf_sha256": "b72abbdb8b1fba51bc48cc468284ef46e6e7a19489c64bdabf97a7bf36f0ff4e",
+        "uf2_sha256": "d90aa61dddcd79f3d1fa836acd373819f04f37cca19d96acc319aca2c7478cb9",
+        "inputs_sha256": "c0e9ba20010e9c360275ffd08c2172a7e3243738f7d8408ff040f1b5a2299922",
+        "selected_input_identity": "efb9095de89ba17a932c2cc5c9e5da552130a84d12b9ff90e82180e3cea70837",
+        "text_bytes": 21156,
+        "data_bytes": 28,
+        "bss_bytes": 6352,
+        "flash_bytes": 21184,
+        "static_ram_bytes": 6380,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "audio-capture",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-audio-capture",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-audio-capture-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-audio-capture/audio_capture.elf",
+        "elf_sha256": "d6f6832535d145fa56d49f6b6c02f729258079cb1a48e35bc1bc20f1221c6975",
+        "uf2_sha256": "41ad429d767b8deb02dacb7cdfe8ced642bd6c1ff9494f538e4f97d9f5144d52",
+        "inputs_sha256": "796c8474120ee71241fc92c762ac892315a08016450674c82a21cd1d18aa697d",
+        "selected_input_identity": "950dcb51916962fc785ed114c5f28c51abf794b0a2b88d34a33fc54bc27edc41",
+        "text_bytes": 14644,
+        "data_bytes": 20,
+        "bss_bytes": 15640,
+        "flash_bytes": 14664,
+        "static_ram_bytes": 15660,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "usb-cdc",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-usb-cdc",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-usb-cdc-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-usb-cdc/usb_cdc.elf",
+        "elf_sha256": "921585565421b4d5b1d91620956ed0a6d3441c4e468df96b8b921fc21089a1dd",
+        "uf2_sha256": "9c55204b9ace1e1c681508ba49c8e512c23a6d2bac7a6b35cfe37ae60583b8c4",
+        "inputs_sha256": "98bcf220b004a9ccc9e3f78a261bf51974e47a892141be0d020869d338d9dcf7",
+        "selected_input_identity": "bab75787cc27dcd3295ef166ecf7677f4356d26b425dad8f75abdece2fb17f34",
+        "text_bytes": 13046,
+        "data_bytes": 20,
+        "bss_bytes": 7172,
+        "flash_bytes": 13066,
+        "static_ram_bytes": 7192,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "usb-hid",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-usb-hid",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-usb-hid-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-usb-hid/usb_hid.elf",
+        "elf_sha256": "d62a782a2207c4a2c7ea48dda0d0259f2793119cc6a3d563fb89937f90470f56",
+        "uf2_sha256": "4b700d937b98d8b92b0d5873bd78bea031b29bf3ccd25b2926eb6bc12990a010",
+        "inputs_sha256": "493b6924dcaa6cc3a5197427b2f625dd0818b81c43f5672b2e60f6244cd3037e",
+        "selected_input_identity": "eff0e1dc5be7bbe631b1b9a832e57dda920ee8bdee010846f7d855e08726f523",
+        "text_bytes": 13482,
+        "data_bytes": 20,
+        "bss_bytes": 7172,
+        "flash_bytes": 13502,
+        "static_ram_bytes": 7192,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "crypto-vectors",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-crypto-vectors",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-crypto-vectors-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-crypto-vectors/crypto_vectors.elf",
+        "elf_sha256": "1535d36e1af50c2a7ef774c2ec09e4b12494ec0aeaa34a5b022e0c3522104a21",
+        "uf2_sha256": "20c8b98540d9a2660f66405d6a4493a4292a596ada6d5060c4f27f7ef45fa4da",
+        "inputs_sha256": "b1401fa4bc3d004057f96b503602736f236e2dd7536e8744490a84e499a13fd7",
+        "selected_input_identity": "172ad9004261c19771cb1135b5d5026e69d9df6e29b82686e7e912165e2f97d0",
+        "text_bytes": 11684,
+        "data_bytes": 24,
+        "bss_bytes": 5792,
+        "flash_bytes": 11708,
+        "static_ram_bytes": 5816,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "radio-tx",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-radio-tx",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-radio-tx-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-radio-tx/radio_tx.elf",
+        "elf_sha256": "c2ac98b54f7c964afb16ddcabcf9e697ed25c39b30e9ff00b126973f3aac3436",
+        "uf2_sha256": "d8073eda5240158f80352eb2d10e215392668116369f8912b974f20a5f815362",
+        "inputs_sha256": "64ba9ff7cdb8b843ed53598c201eb834c5b08baaf84a25ba7f5aefdfbe7fa307",
+        "selected_input_identity": "580461dbc6ff8024628e6f218d573dc6596d05a7fdd1705e5f9bd7700e125ee8",
+        "text_bytes": 9188,
+        "data_bytes": 20,
+        "bss_bytes": 5828,
+        "flash_bytes": 9208,
+        "static_ram_bytes": 5848,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "radio-rx",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-radio-rx",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-radio-rx-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-radio-rx/radio_rx.elf",
+        "elf_sha256": "d64a277a1c6ec5c544b643b3b8391b401e1acf80056495d35f41b0640aaa44e4",
+        "uf2_sha256": "8bac38e100cf6e2ab4ed9dae88ef3f42a0446754f3c63996636056bd7c295701",
+        "inputs_sha256": "ae9cddf4d56afe14057b09c00f18e8c1f7dc7d004915d3f327463cd1e85f003a",
+        "selected_input_identity": "ce3a3720a1d001792e6726d9147b2123bcf9fb650d3dcacf28050fb38775b21d",
+        "text_bytes": 9088,
+        "data_bytes": 20,
+        "bss_bytes": 5836,
+        "flash_bytes": 9108,
+        "static_ram_bytes": 5856,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "nfc-tag",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-nfc-tag",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-nfc-tag-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-nfc-tag/nfc_tag.elf",
+        "elf_sha256": "eac99f3c3f715e21aa9185f389d0194f03eb25fb4b1004af630ebc0a210ff04c",
+        "uf2_sha256": "6b5e304de478b892fdd95d49d05f1fa7053781e4c8854064eb7705ed618a9db7",
+        "inputs_sha256": "37c8933d090ebbea45a5d0f61dc20a1eac304f983428faaf305e44f2843c7280",
+        "selected_input_identity": "8d65408615c7ce56cec7a11f30142c51274a3fd988c521ab31f65b551423082e",
+        "text_bytes": 9404,
+        "data_bytes": 20,
+        "bss_bytes": 5636,
+        "flash_bytes": 9424,
+        "static_ram_bytes": 5656,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "qspi-memory",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-qspi-memory",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-qspi-memory-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-qspi-memory/qspi_memory.elf",
+        "elf_sha256": "dbde4214ae944d48e4cec01d61447c08006d5469c94229b3e86e9013eae2f3d6",
+        "uf2_sha256": "18a08ce29bef62b9ba2fa69022bad28e2dcef3769f6e0600d2ef4a94a52b054b",
+        "inputs_sha256": "85ff20a21dcf72ae35ae2fdb4fa9cc2d789dd257fa8b9ac04ba559c8cf0c9d97",
+        "selected_input_identity": "7b4267671be839278ae6d6b6ac23b06be0cd1a1b70e1ab66c998a4410b4a27d6",
+        "text_bytes": 10412,
+        "data_bytes": 36,
+        "bss_bytes": 5672,
+        "flash_bytes": 10448,
+        "static_ram_bytes": 5708,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "source",
+      "example": "memory-watch",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/source-memory-watch",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/source-memory-watch-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/source-memory-watch/memory_watch.elf",
+        "elf_sha256": "4b8254c7dda1790f148b2a0361a17b35823d4f579d5847cfcc5081e11b6be8db",
+        "uf2_sha256": "df022121268ca8363aed05c2c63faba8db83503755f69a5cf0e1e46303ca2970",
+        "inputs_sha256": "77212efe55b3a12af9a07080e790e3156ee9b33fdcc61756c205531ceb98700b",
+        "selected_input_identity": "66e12930dc10e33f3723c7ecb5b2e27a6f21c1a042347646b06997bc3a442aac",
+        "text_bytes": 3932,
+        "data_bytes": 20,
+        "bss_bytes": 5308,
+        "flash_bytes": 3952,
+        "static_ram_bytes": 5328,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "analog-pwm",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-analog-pwm",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-analog-pwm-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-analog-pwm/analog_pwm.elf",
+        "elf_sha256": "b72abbdb8b1fba51bc48cc468284ef46e6e7a19489c64bdabf97a7bf36f0ff4e",
+        "uf2_sha256": "d90aa61dddcd79f3d1fa836acd373819f04f37cca19d96acc319aca2c7478cb9",
+        "inputs_sha256": "eed148bfdd88fa8278efde400ef3829222070c3a5787f103188d07ee55354a97",
+        "selected_input_identity": "a8e87654354a795a4f0fd86d2ce877c487261319c58c485c322ca7d490399cff",
+        "text_bytes": 21156,
+        "data_bytes": 28,
+        "bss_bytes": 6352,
+        "flash_bytes": 21184,
+        "static_ram_bytes": 6380,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "audio-capture",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-audio-capture",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-audio-capture-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-audio-capture/audio_capture.elf",
+        "elf_sha256": "d6f6832535d145fa56d49f6b6c02f729258079cb1a48e35bc1bc20f1221c6975",
+        "uf2_sha256": "41ad429d767b8deb02dacb7cdfe8ced642bd6c1ff9494f538e4f97d9f5144d52",
+        "inputs_sha256": "3143a92208e1d954ebb0fa2cb9ecb325af06d87eb36d6540a68f259f1f4ccb23",
+        "selected_input_identity": "2f32505049bf28d426dca257c7fdd8a83de48519481583c96074244f8259ff23",
+        "text_bytes": 14644,
+        "data_bytes": 20,
+        "bss_bytes": 15640,
+        "flash_bytes": 14664,
+        "static_ram_bytes": 15660,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "usb-cdc",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-usb-cdc",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-usb-cdc-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-usb-cdc/usb_cdc.elf",
+        "elf_sha256": "921585565421b4d5b1d91620956ed0a6d3441c4e468df96b8b921fc21089a1dd",
+        "uf2_sha256": "9c55204b9ace1e1c681508ba49c8e512c23a6d2bac7a6b35cfe37ae60583b8c4",
+        "inputs_sha256": "5bd70b4d03bcae743edd530251fd8913b781540f43367f54157eaf94768ffefa",
+        "selected_input_identity": "b885a791a5f601ef9c33b0e7f56534f99537b3ea5551656bec9e0e52eb7aa6e7",
+        "text_bytes": 13046,
+        "data_bytes": 20,
+        "bss_bytes": 7172,
+        "flash_bytes": 13066,
+        "static_ram_bytes": 7192,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "usb-hid",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-usb-hid",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-usb-hid-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-usb-hid/usb_hid.elf",
+        "elf_sha256": "d62a782a2207c4a2c7ea48dda0d0259f2793119cc6a3d563fb89937f90470f56",
+        "uf2_sha256": "4b700d937b98d8b92b0d5873bd78bea031b29bf3ccd25b2926eb6bc12990a010",
+        "inputs_sha256": "e55928ae54908a6bdff2b2a5aca17d887247ef13f44706ca1e6744513bb21ad2",
+        "selected_input_identity": "9bab6b9edc796f076ab3e37cabb97b3c83e9b889bba61d3db2a3e01317160cfa",
+        "text_bytes": 13482,
+        "data_bytes": 20,
+        "bss_bytes": 7172,
+        "flash_bytes": 13502,
+        "static_ram_bytes": 7192,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "crypto-vectors",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-crypto-vectors",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-crypto-vectors-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-crypto-vectors/crypto_vectors.elf",
+        "elf_sha256": "1535d36e1af50c2a7ef774c2ec09e4b12494ec0aeaa34a5b022e0c3522104a21",
+        "uf2_sha256": "20c8b98540d9a2660f66405d6a4493a4292a596ada6d5060c4f27f7ef45fa4da",
+        "inputs_sha256": "7e380229987b8a906506461d53fa24061e520c683e018beca15aedaac27d35eb",
+        "selected_input_identity": "803d4b962327e5e40bee3d494a7ea1537e53f62cb8e9e38ea7790c9cbe794d63",
+        "text_bytes": 11684,
+        "data_bytes": 24,
+        "bss_bytes": 5792,
+        "flash_bytes": 11708,
+        "static_ram_bytes": 5816,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "radio-tx",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-radio-tx",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-radio-tx-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-radio-tx/radio_tx.elf",
+        "elf_sha256": "c2ac98b54f7c964afb16ddcabcf9e697ed25c39b30e9ff00b126973f3aac3436",
+        "uf2_sha256": "d8073eda5240158f80352eb2d10e215392668116369f8912b974f20a5f815362",
+        "inputs_sha256": "5dd1ec007b30abf920d76259f7d4058be00fc7baaa1211a771b7ea72c22b0f12",
+        "selected_input_identity": "46ae0e96aa4a8b2a70e56f0dd3851715fe8ce183788f704ef636853d0a0b7147",
+        "text_bytes": 9188,
+        "data_bytes": 20,
+        "bss_bytes": 5828,
+        "flash_bytes": 9208,
+        "static_ram_bytes": 5848,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "radio-rx",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-radio-rx",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-radio-rx-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-radio-rx/radio_rx.elf",
+        "elf_sha256": "d64a277a1c6ec5c544b643b3b8391b401e1acf80056495d35f41b0640aaa44e4",
+        "uf2_sha256": "8bac38e100cf6e2ab4ed9dae88ef3f42a0446754f3c63996636056bd7c295701",
+        "inputs_sha256": "1162dbb6df41227552cf695b2c263d77508bee59c4cbb30e1a4ca6e0953c7a5c",
+        "selected_input_identity": "99a9ff595b5624eb1911657f9e64dab5494629f7b93e731e98a7cdfd59f499e5",
+        "text_bytes": 9088,
+        "data_bytes": 20,
+        "bss_bytes": 5836,
+        "flash_bytes": 9108,
+        "static_ram_bytes": 5856,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "nfc-tag",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-nfc-tag",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-nfc-tag-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-nfc-tag/nfc_tag.elf",
+        "elf_sha256": "eac99f3c3f715e21aa9185f389d0194f03eb25fb4b1004af630ebc0a210ff04c",
+        "uf2_sha256": "6b5e304de478b892fdd95d49d05f1fa7053781e4c8854064eb7705ed618a9db7",
+        "inputs_sha256": "ba49e1ef7cd8df7a1ecdf1e28cbbab6280912dc6906e27e7ab89f9bd4e47595a",
+        "selected_input_identity": "b125886c811a52128428be2976606a13e861ad2c8035a1642c6a796beebc03bb",
+        "text_bytes": 9404,
+        "data_bytes": 20,
+        "bss_bytes": 5636,
+        "flash_bytes": 9424,
+        "static_ram_bytes": 5656,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "qspi-memory",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-qspi-memory",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-qspi-memory-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-qspi-memory/qspi_memory.elf",
+        "elf_sha256": "dbde4214ae944d48e4cec01d61447c08006d5469c94229b3e86e9013eae2f3d6",
+        "uf2_sha256": "18a08ce29bef62b9ba2fa69022bad28e2dcef3769f6e0600d2ef4a94a52b054b",
+        "inputs_sha256": "d5d71d91de4597de260c4485e256ddfd126aa5cfd16ee539449a4603bbc23184",
+        "selected_input_identity": "eafbbfcf9940106df0ddb5236d0fefc464256cd34c67c9f4b2804177ff607490",
+        "text_bytes": 10412,
+        "data_bytes": 36,
+        "bss_bytes": 5672,
+        "flash_bytes": 10448,
+        "static_ram_bytes": 5708,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    },
+    {
+      "mode": "installed",
+      "example": "memory-watch",
+      "passed": true,
+      "directory": "/private/tmp/mcubsp-remaining-fau2pguk/installed-memory-watch",
+      "refresh_log": "/private/tmp/mcubsp-remaining-fau2pguk/installed-memory-watch-refresh.log",
+      "image": {
+        "elf": "/private/tmp/mcubsp-remaining-fau2pguk/installed-memory-watch/memory_watch.elf",
+        "elf_sha256": "4b8254c7dda1790f148b2a0361a17b35823d4f579d5847cfcc5081e11b6be8db",
+        "uf2_sha256": "df022121268ca8363aed05c2c63faba8db83503755f69a5cf0e1e46303ca2970",
+        "inputs_sha256": "7707470cbc033ce753d88ad5a7cb7ede9dcb96598557b4f3f9e9933d7d455ecd",
+        "selected_input_identity": "06b7d67e87fefa78c7fc6a79b37cc33145e2680a9e1fb1270602e2ef68fbde9e",
+        "text_bytes": 3932,
+        "data_bytes": 20,
+        "bss_bytes": 5308,
+        "flash_bytes": 3952,
+        "static_ram_bytes": 5328,
+        "reset_handlers": 1,
+        "allocation_exception_guard_symbols": []
+      }
+    }
+  ],
+  "matrix": {
+    "path": "doc/reference/nrf52840/implementation-matrix.json",
+    "sha256": "b8da8738d81e286783920506f1e5ceb6992d5739cba485d284dceda2217cc5b4",
+    "product_instance_rows": 85,
+    "arm_core_rows": 12,
+    "exhaustive_register_or_physical_behavior_claim": false
+  },
+  "limitations": [
+    "Physical checks remain pending for every new image and required peer/measurement/provisioning procedure.",
+    "Native crypto vectors use independent byte-oriented models and published expected outputs, not actual accelerator execution.",
+    "AAR/BLE-CCM native cases exercise layouts and hardware sequencing/MIC status; independent on-device vector qualification remains pending.",
+    "Native PKA exposes documented arithmetic/modular operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied.",
+    "Revision gates, SPIM3 RAM-slave isolation, source-reviewed XIP contract, fixed queue/endpoint capacity and declared clock/service deadlines remain mandatory."
+  ]
+}

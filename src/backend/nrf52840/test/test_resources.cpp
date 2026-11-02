@@ -112,7 +112,8 @@ TEST(nrf_dma, cryptocell_memory_dma_has_its_own_count_start_and_busy_contract, "
     EXPECT_EQ(din::src_mem_size::writable_mask,0x3FFFFFFFU);
     EXPECT_EQ(dout::dst_mem_size::writable_mask,0x3FFFFFFFU);
     const auto constraints=crypto::constraints(4);
-    EXPECT_TRUE(constraints.accepts(0x20000000,65536,65536));
+    EXPECT_FALSE(constraints.accepts(0x20000000,65536,65536));
+    EXPECT_TRUE(constraints.accepts(0x20000000,65535,65535));
     EXPECT_FALSE(bytes.accepts(0x20000000,65536,65536));
     EXPECT_FALSE(constraints.accepts(0x20000001,16,16));
     fixture f;nrf52840_test::fake_system mmio;

@@ -3,6 +3,8 @@
 add_library(mcubsp_arch_probe OBJECT
     "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/serial_facade_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/serial_targets_probe.cpp"
+    "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/analog_memory_audio_probe.cpp"
+    "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/usb_crypto_radio_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/system_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/backend/nrf52840/test/serial_dma_probe.cpp"
     "${mcubsp_SOURCE_DIR}/src/mcu/test/all_descriptions_probe.cpp"

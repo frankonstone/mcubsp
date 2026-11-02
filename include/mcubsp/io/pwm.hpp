@@ -26,7 +26,7 @@ public:
     using driver_type = driver::pwm_channel<backend_type>;
 
     explicit pwm_output(Context& context) noexcept
-        : context_(context), backend_(context.mmio(), context.execution()), driver_(backend_) {}
+        : context_(context), backend_(detail::make_backend<backend_type>(context)), driver_(backend_) {}
     pwm_output(const pwm_output&) = delete;
     pwm_output& operator=(const pwm_output&) = delete;
     pwm_output(pwm_output&&) = delete;
@@ -54,6 +54,7 @@ public:
         if (!claimed) return claimed;
         const auto initialized = driver_.initialize(*timing, initial);
         if (!initialized) {
+            if(driver_.initialized()){context_.retain();return failure(initialized.error());}
             context_.release(board_type::pwm_pins);
             return failure(initialized.error());
         }

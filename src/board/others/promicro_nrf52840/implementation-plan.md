@@ -269,6 +269,15 @@ Tests cover failed starts, event acknowledgments, never-started handoff buffers,
 resource aliases and recovery. Other peripheral/crypto integrations remain open.
 
 
+Software delivery, 2 November 2026: Add shared peripheral sessions, bounded
+analog/audio storage, all remaining peripheral-specific DMA constraints and
+CryptoCell DIN/DOUT handling. RADIO/CCM/AAR use coordinated PPI ownership, and
+cached native task endpoints reject returned RAM. Native teardown/error and
+legal concurrent-clock compositions pass.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
+
 ## PLN-0045 Complete UART, SPI and I2C master/slave families
 @status(in_progress)
 @link(REQ-0059, REQ-0060, REQ-0061, REQ-0062)
@@ -328,6 +337,14 @@ in progress because no current board/peer/wire-timing acceptance has been run;
 the unrelated prerequisite scopes remain in progress too.
 
 
+Software delivery, 2 November 2026: The 2 November serial implementation remains
+integrated with the new shared context and board PWM/ADC selections. Existing
+serial native/negative/cross/link checks pass with this delivery; original SPIM3
+isolation and serial mode boundaries remain explicit.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
+
 ## PLN-0046 Implement PWM, analog and quadrature decoding
 @status(in_progress)
 @link(REQ-0063, REQ-0064, REQ-0065, REQ-0062)
@@ -352,6 +369,15 @@ host failure/boundary/race tests, actual cross-target service probes and a linke
 source/installed native-services composition. PWM, SAADC, COMP/LPCOMP and the
 remaining native sequencing/integration are unfinished. Physical temperature,
 encoder and other analog/PWM acceptance is unexecuted; see the peripheral checkpoint.
+
+Software delivery, 2 November 2026: Implement PWM0–3 native timing/decoder/two-
+sequence/loop operations, signed calibrated SAADC scans/queues/limits,
+COMP/LPCOMP and compatible board PWM/ADC facades. Analog native cases, negative
+bindings, actual-body probes and the simultaneous analog-pwm firmware pass
+software checks.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
 
 ## PLN-0047 Implement external memory, internal flash and protection
 @status(in_progress)
@@ -379,8 +405,17 @@ Host tests and actual target/package service-body probes pass. No physical flash
 write/erase or provisioning ran. QSPI/XIP, other NVMC modes, information/provisioning,
 ACL/MWU/APPROTECT/CTRL-AP APIs and tooling remain unfinished; see the peripheral checkpoint.
 
+Software delivery, 2 November 2026: Implement QSPI indirect/custom/DPM/XIP
+ownership, typed FICR reads, scoped UICR/protection operations, ACL/MWU and NVMC
+partial erase/cache controls. Add external CTRL-AP recovery tooling with bounded
+synthetic DAP tests. Memory native cases, body probes, qspi-memory and memory-
+watch link; no provisioning or erase was executed on hardware.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
+
 ## PLN-0048 Implement I2S and PDM audio
-@status(planned)
+@status(in_progress)
 @link(REQ-0067, REQ-0062)
 
 Prerequisite: reviewed audio descriptions and PLN-0043/PLN-0044 resources.
@@ -394,8 +429,17 @@ Exit: native boundary/event/errata tests, linked/package examples, independent
 I2S TX/RX and PDM microphone observations pass with sample-rate and continuity
 evidence. Acoustic performance is claimed only if independently measured.
 
+Software delivery, 2 November 2026: Implement all native I2S
+format/clock/direction and PDM clock/ratio/channel/gain selections,
+finite/bounded queued payload and tail storage, handoff deadlines, overrun and
+STOP recovery. Native cases, body probes and concurrent audio-capture
+source/installed images pass.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
+
 ## PLN-0049 Implement USB device operation and usable class examples
-@status(planned)
+@status(in_progress)
 @link(REQ-0068, REQ-0056, REQ-0062)
 
 Prerequisite: reviewed USBD metadata and PLN-0043/PLN-0044 resources.
@@ -408,6 +452,15 @@ request using the existing UF2 layout. Retain default non-USB Blink builds.
 Exit: endpoint/control tests and package consumers pass. Real-host enumeration,
 CDC/HID exchange, endpoint-type exercises, suspend/resume and reconnect succeed;
 bootloader entry and subsequent recovery are independently observed.
+
+Software delivery, 2 November 2026: Implement USBD EP0 control, EP1–7
+bulk/interrupt and EP8 ISO IN/OUT, shared DMA arbitration, reset/SETUP
+cancellation, END-versus-ACK, suspend/remote wake and explicit bootloader
+handoff. CDC ACM and HID keyboard enumeration/data/control models pass; both
+standalone source/installed class applications link.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
 
 ## PLN-0050 Implement RNG and every cryptographic accelerator block
 @status(in_progress)
@@ -434,8 +487,19 @@ CryptoCell engine; their operations, DMA/health handling and known-answer
 compositions remain software work. No entropy-quality or on-device result is
 claimed; see the peripheral checkpoint.
 
+Software delivery, 2 November 2026: Implement ECB, BLE CCM/AAR and direct
+control of every CC_* subblock with bounded DMA/recovery, PKA arithmetic/modular
+operations, TRNG health/retries and private SRAM interfaces. Add fixed-storage
+CCM/CCM*, HMAC and ChaCha20-Poly1305 compositions. NIST/RFC
+AES/CCM/SHA/HMAC/ChaCha/Poly1305 model vectors and native ownership/error tests
+pass. No vendor adapter was added; higher-level RSA/ECC/SRP protocol wrappers
+and a DRBG are not supplied.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
+
 ## PLN-0051 Implement the complete radio packet engine
-@status(planned)
+@status(in_progress)
 @link(REQ-0069, REQ-0062)
 
 Prerequisite: reviewed RADIO/errata metadata, PLN-0043/PLN-0044 and required
@@ -450,8 +514,17 @@ Exit: driver/API, cross-build and representative independent TX/RX/mode/PHY
 observations pass. State peer/RF conditions and retain higher-level Bluetooth,
 Thread/Zigbee/ANT behavior as separately selected integration work.
 
+Software delivery, 2 November 2026: Implement all seven RADIO PHY encodings,
+explicit packet/RF/CRC/whitening/address controls, finite TX/RX, RSSI/CCA/ED,
+native timing/PPI/stack ownership and source-reviewed revision workarounds.
+Native cases/body probes and independent radio-tx/radio-rx firmware projects
+pass software checks; no RF peer observation was made.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
+
 ## PLN-0052 Implement NFC tag operation and field wake
-@status(planned)
+@status(in_progress)
 @link(REQ-0070, REQ-0062)
 
 Prerequisite: reviewed NFCT metadata, PLN-0043/PLN-0044 and the explicit pin-role
@@ -466,8 +539,17 @@ Exit: native frame/event/lifetime tests and linked examples pass; an independent
 NFC reader verifies tag exchange, field loss and wake through a documented antenna.
 Unexecuted pin/provisioning/hardware observations remain explicitly pending.
 
+Software delivery, 2 November 2026: Implement NFCT
+field/ID/anticollision/frame/CRC/parity/timing/DMA/field-wake control and a
+bounded read-only Type 2 NDEF responder. Require dedicated antenna/pads and the
+existing UICR NFC role. Native cases/body probes and nfc-tag source/installed
+firmware pass; no NFC reader or field-wake observation was made.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.
+
 ## PLN-0053 Qualify the complete Pro Micro peripheral delivery
-@status(planned)
+@status(in_progress)
 @link(REQ-0074)
 
 Prerequisite: implementation exits from PLN-0042 through PLN-0052; accumulate
@@ -484,3 +566,14 @@ or unexplained exclusions. Record the software implementation gate separately
 from complete board qualification. Physical acceptance remains pending for any
 required unexecuted peer, pin, analog/RF/power/timing or recovery procedure;
 missing access or equipment is recorded without changing the requirement scope.
+
+Software delivery, 2 November 2026: Publish the complete 85-row product-instance
+plus selected Arm-core API/mode matrix, separate representative
+native/cross/link/physical states, legal compositions, ten new standalone
+source/relocated-package examples and actual ELF storage/input identities. Full
+host, negative compiler, isolated-header and actual-template-body cross checks
+pass. This does not assert exhaustive register/errata behavior or complete board
+qualification.
+See [native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md),
+its mode matrix and software evidence. Physical acceptance remains pending;
+this update does not claim the plan exit.

@@ -70,6 +70,8 @@ mcubsp_add_compile_case(esp32p4_i3c_capability_rejected src/mcu/esp32p4/test/i3c
 # Positive translation units are compiled as objects, so they require neither
 # startup code nor a linkable test executable.
 add_library(mcubsp_compile_probes OBJECT
+    "${mcubsp_compile_source_dir}/src/backend/nrf52840/test/analog_memory_audio_probe.cpp"
+    "${mcubsp_compile_source_dir}/src/backend/nrf52840/test/usb_crypto_radio_probe.cpp"
     "${mcubsp_compile_source_dir}/src/backend/nrf52840/test/system_probe.cpp"
     "${mcubsp_compile_source_dir}/src/backend/nrf52840/test/serial_dma_probe.cpp"
     "${mcubsp_compile_source_dir}/src/mcu/test/all_descriptions_probe.cpp"
@@ -138,3 +140,7 @@ mcubsp_add_compile_case(nrf52840_spis_missing_csn_rejected src/backend/nrf52840/
 mcubsp_add_compile_case(nrf52840_spis_duplicate_pin_rejected src/backend/nrf52840/test/spis_duplicate_pin_forbidden.cpp FALSE "SPIM pins must be distinct")
 mcubsp_add_compile_case(nrf52840_twis_duplicate_pin_rejected src/backend/nrf52840/test/twis_duplicate_pin_forbidden.cpp FALSE "TWI SCL and SDA must use distinct pins")
 mcubsp_add_compile_case(nrf52840_twis_master_facade_rejected src/backend/nrf52840/test/twis_master_facade_forbidden.cpp FALSE "I2C master facade requires a TWI or TWIM binding")
+mcubsp_add_compile_case(nrf52840_pwm_invalid_instance src/backend/nrf52840/test/pwm_invalid_instance_forbidden.cpp FALSE "PWM instance must be 0 through 3")
+mcubsp_add_compile_case(nrf52840_saadc_duplicate_input src/backend/nrf52840/test/saadc_duplicate_input_forbidden.cpp FALSE "SAADC binding inputs must be distinct")
+mcubsp_add_compile_case(nrf52840_i2s_duplicate_pin src/backend/nrf52840/test/i2s_duplicate_pin_forbidden.cpp FALSE "I2S requires distinct high-frequency GPIOs")
+mcubsp_add_compile_case(nrf52840_pdm_reserved_pin src/backend/nrf52840/test/pdm_reserved_pin_forbidden.cpp FALSE "PDM requires distinct high-frequency GPIOs")

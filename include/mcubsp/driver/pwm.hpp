@@ -155,6 +155,7 @@ public:
         }
         const auto configured = backend_.configure(timing, *compare);
         if (!configured) {
+            if constexpr(requires{backend_.needs_cleanup();})if(backend_.needs_cleanup()){timing_=timing;initialized_=true;return configured;}
             backend_.release();
             return configured;
         }

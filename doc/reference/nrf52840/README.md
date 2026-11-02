@@ -254,3 +254,12 @@ implemented and software-tested.
 The delivered APIs must not be described as the completion of either plan.
 Current software and physical observations are recorded separately in
 [the acceptance checkpoint](../../acceptance/nrf52840-system.md).
+
+## Native peripheral delivery
+
+The [native delivery guide](../../acceptance/nrf52840-native-delivery.md) and
+[per-instance/mode matrix](implementation-matrix.json) describe the current
+working APIs, fixed resource/buffer contracts, representative software tests,
+source/installed examples and pending physical acceptance for PLN-0044–0053.
+The older source audits above remain metadata evidence, separate from those
+implementation and verification states.

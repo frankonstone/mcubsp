@@ -1,0 +1,13 @@
+# @req REQ-0072 REQ-0062 REQ-0074
+cmake_minimum_required(VERSION 3.25)
+project(memory_watch LANGUAGES CXX ASM)
+set(MCUBSP_SOURCE_DIR "" CACHE PATH "mcubsp checkout; empty for an installed package")
+if(MCUBSP_SOURCE_DIR)
+  add_subdirectory("${MCUBSP_SOURCE_DIR}" mcubsp EXCLUDE_FROM_ALL)
+else()
+  find_package(mcubsp 0.1 CONFIG REQUIRED)
+endif()
+if(NOT MCUBSP_BOARD STREQUAL "others/promicro_nrf52840")
+  message(FATAL_ERROR "This example requires others/promicro_nrf52840")
+endif()
+mcubsp_add_firmware(memory_watch STARTUP supplied SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${MCUBSP_BOARD}.cpp")

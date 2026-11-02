@@ -76,12 +76,13 @@ inline constexpr dma_constraints serial_dma_constraints{serial_dma_traits<P>::ma
     serial_dma_traits<P>::unit_bytes, serial_dma_traits<P>::alignment};
 // CryptoCell DIN/DOUT AHB memory paths use 30-bit BYTE sizes, not the serial
 // EasyDMA MAXCNT protocol (PS 6.6.13.2.1.4 / 6.6.13.3.1.4). FIRST/LAST in these
-// size words are reserved. The algorithm/engine owner supplies its reviewed
+// size words are reserved. PS 6.6.7 and 6.6.13.2 limit actual transactions to
+// 65535 bytes despite the wider SIZE field. The algorithm/engine owner supplies its reviewed
 // alignment; this conservative buffer policy restricts handoff to Data RAM.
 struct cryptocell_memory_dma {
     static constexpr bool uses_easydma = false;
     static constexpr unsigned count_bits = 30;
-    static constexpr std::size_t maximum_count = 0x3FFFFFFF;
+    static constexpr std::size_t maximum_count = 0xFFFF;
     [[nodiscard]] static constexpr dma_constraints constraints(std::size_t alignment) noexcept {
         return {maximum_count,1,alignment};
     }

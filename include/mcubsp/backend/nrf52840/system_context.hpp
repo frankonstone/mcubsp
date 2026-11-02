@@ -84,6 +84,14 @@ template <class Mmio, class Execution> class system_context {
             return {};
         });
     }
+    [[nodiscard]] std::optional<resource_token> coordinated_owner(unsigned id) const noexcept {
+        return id<resource_count && owned_[id] ? coordinated_[id] : std::nullopt;
+    }
+    // Native RADIO/CCM/AAR bind a live DMA-storage predicate. Cached task
+    // tokens stop being routable when their final RAM lease is returned.
+    void bind_dma_endpoint_state(unsigned id, const bool *armed) noexcept {
+        if (id == 76 || id == 77) dma_endpoint_state_[id - 76] = armed;
+    }
     [[nodiscard]] bool referenced(unsigned id) noexcept {
         return execution.critical([&] { return id >= resource_count || references_[id] != 0; });
     }
@@ -100,6 +108,7 @@ template <class Mmio, class Execution> class system_context {
             }
             owned_[id] = false;
             published_[id] = false;
+            if (id == 76 || id == 77) dma_endpoint_state_[id-76] = nullptr;
             return {};
         });
     }
@@ -136,6 +145,8 @@ template <class Mmio, class Execution> class system_context {
             e.domain != domains_[e.resource] || e.kind != kind || e.address % 4)
             return false;
         auto id = e.resource;
+        if (kind == endpoint_kind::task && (id == 76 || id == 77) &&
+            dma_endpoint_state_[id-76] && !*dma_endpoint_state_[id-76]) return false;
         auto a = e.address;
         auto indexed = [](std::uintptr_t a, std::uintptr_t start, unsigned count) {
             return a >= start && a < start + 4 * count && (a - start) % 4 == 0;
@@ -302,6 +313,7 @@ template <class Mmio, class Execution> class system_context {
     std::array<std::uint32_t, resource_count> generation_{};
     std::array<endpoint_domain, resource_count> domains_{};
     std::array<std::optional<resource_token>, resource_count> coordinated_{};
+    std::array<const bool *,2> dma_endpoint_state_{};
     unsigned active_work_{};
 };
 } // namespace mcubsp::backend::nrf52840

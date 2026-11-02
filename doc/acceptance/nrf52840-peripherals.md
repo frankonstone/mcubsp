@@ -9,6 +9,10 @@ The [2 November serial delivery](nrf52840-serial.md) supersedes this record's
 serial backlog and facade availability statements. The following interface and
 verification details describe the original 1 November checkpoint.
 
+The [2 November native delivery](nrf52840-native-delivery.md) supersedes the
+remaining implementation backlog below. This file remains the historical
+1 November checkpoint; it is not evidence for the newer images.
+
 ## Implemented interfaces
 
 - `backend/nrf52840/uarte.hpp`: finite UARTE0/UARTE1 EasyDMA TX/RX with

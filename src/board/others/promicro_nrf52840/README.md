@@ -1,14 +1,14 @@
-# Pro Micro nRF52840: GPIO, I2C and native system services
+# Pro Micro nRF52840 peripheral services
 
 [Requirements](requirements.md) and [implementation plan](implementation-plan.md)
 record this board's scope, work and acceptance boundaries. Full-peripheral support
 is now required by REQ-0055–REQ-0074 and planned in PLN-0042–PLN-0053; the
-board facade described below remains GPIO and finite I2C. Native system services
+board facade supplies GPIO, serial, SPI, I²C, PWM and ADC selections. Native system services
 and their current limits are described in the [system guide](../../../../doc/reference/nrf52840/README.md).
 
 This profile targets the nice!nano-compatible Pro Micro / SuperMini board family
 described by [Zephyr](https://docs.zephyrproject.org/latest/boards/others/promicro_nrf52840/doc/index.html).
-It supplies GPIO and finite I2C through `mcubsp::io`, explicit native system services,
+It supplies compatible common operations through `mcubsp::io`, explicit native peripheral services,
 a P0.15 active-high LED,
 bootloader-handoff startup, and a linked Blink application with UF2 output.
 It has no dependency on Zephyr, Nordic HAL libraries or a radio stack.
@@ -17,6 +17,13 @@ It has no dependency on Zephyr, Nordic HAL libraries or a radio stack.
 PCB revision or silicon stepping. `uf2-s140-v6` names the supported **boot
 layout**, not a physical board revision. Clone-specific wiring, bootloader
 version, silicon errata and electrical behavior still need physical qualification.
+
+The [2 November native delivery](../../../../doc/acceptance/nrf52840-native-delivery.md)
+documents PWM/ADC/comparators, QSPI/protection, audio, USB CDC/HID, crypto,
+radio/NFC APIs, examples and the separate pending physical procedures. Default
+PWM0 uses P0.15; ADC uses AIN0/P0.02. All clients share one clock/resource/DMA
+context. The [mode matrix](../../../../doc/reference/nrf52840/implementation-matrix.json)
+records each instance and its exact API/verification boundary.
 
 ## Build
 

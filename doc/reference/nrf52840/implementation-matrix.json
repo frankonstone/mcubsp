@@ -1,0 +1,3363 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "requirements": [
+    "REQ-0074"
+  ],
+  "plans": [
+    "PLN-0044",
+    "PLN-0045",
+    "PLN-0046",
+    "PLN-0047",
+    "PLN-0048",
+    "PLN-0049",
+    "PLN-0050",
+    "PLN-0051",
+    "PLN-0052",
+    "PLN-0053"
+  ],
+  "complete_board_qualification": false,
+  "scope": "Implementation and verification inventory, not evidence of every register write or physical behavior. Tests are representative, not an exhaustive protocol/errata certification. Unexecuted physical procedures retain pending status.",
+  "instances": [
+    {
+      "name": "APPROTECT",
+      "base": 1073741824,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "APPROTECT",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/provisioning.hpp",
+      "requirements": [
+        "REQ-0072"
+      ],
+      "implemented_modes": [
+        "scoped UICR words",
+        "erased-word/readback guard",
+        "explicit complete UICR erase",
+        "pin/debug/regulator/bootloader categories",
+        "reset-required result",
+        "hardware/software access protection"
+      ],
+      "native_suites": [
+        "nrf52840.memory"
+      ],
+      "linked_examples": [
+        "memory-watch"
+      ],
+      "contract": "No provisioning is run by examples; mutation tests use synthetic MMIO. Scope categories default off. Protection varies with actual INFO.VARIANT.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CLOCK",
+      "base": 1073741824,
+      "fabric_id": 0,
+      "irq": 0,
+      "family": "CLOCK",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/clock_power.hpp",
+      "requirements": [
+        "REQ-0056"
+      ],
+      "implemented_modes": [
+        "HFXO/HFINT",
+        "LF crystal/RC/synth",
+        "LFRC calibration",
+        "regulator/RAM retention",
+        "System ON/OFF wake gates",
+        "reset/GPREGRET"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Measured sleep current and hardware wake qualification remain pending.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "POWER",
+      "base": 1073741824,
+      "fabric_id": 0,
+      "irq": 0,
+      "family": "POWER",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/clock_power.hpp",
+      "requirements": [
+        "REQ-0056"
+      ],
+      "implemented_modes": [
+        "HFXO/HFINT",
+        "LF crystal/RC/synth",
+        "LFRC calibration",
+        "regulator/RAM retention",
+        "System ON/OFF wake gates",
+        "reset/GPREGRET"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Measured sleep current and hardware wake qualification remain pending.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "GPIO",
+      "base": 1342177280,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "GPIO",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/gpio.hpp",
+      "requirements": [
+        "REQ-0054",
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "input/output",
+        "pull/drive/open-drain",
+        "sense/latch",
+        "atomic set/clear"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "blink"
+      ],
+      "contract": "Crystal/reset/NFC pads remain reserved; alternate roles need explicit UICR provisioning.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "P0",
+      "base": 1342177280,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "GPIO",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/gpio.hpp",
+      "requirements": [
+        "REQ-0054",
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "input/output",
+        "pull/drive/open-drain",
+        "sense/latch",
+        "atomic set/clear"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "blink"
+      ],
+      "contract": "Crystal/reset/NFC pads remain reserved; alternate roles need explicit UICR provisioning.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "P1",
+      "base": 1342178048,
+      "fabric_id": 0,
+      "irq": -1,
+      "family": "GPIO",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/gpio.hpp",
+      "requirements": [
+        "REQ-0054",
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "input/output",
+        "pull/drive/open-drain",
+        "sense/latch",
+        "atomic set/clear"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "blink"
+      ],
+      "contract": "Crystal/reset/NFC pads remain reserved; alternate roles need explicit UICR provisioning.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "RADIO",
+      "base": 1073745920,
+      "fabric_id": 1,
+      "irq": 1,
+      "family": "RADIO",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/radio.hpp",
+      "requirements": [
+        "REQ-0069",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "Nordic 1/2 Mbit",
+        "BLE 1/2 Mbit",
+        "coded 125/500 kbit",
+        "IEEE 802.15.4",
+        "TX/RX",
+        "packet/address/CRC/whitening",
+        "RSSI",
+        "CCA/ED",
+        "device/MAC match",
+        "bitcounter",
+        "TIFS preparation",
+        "PPI",
+        "stack exclusion"
+      ],
+      "native_suites": [
+        "nrf52840.radio"
+      ],
+      "linked_examples": [
+        "radio-tx",
+        "radio-rx"
+      ],
+      "contract": "Finite packet engine; precise protocol scheduling uses caller timers/PPI. No Bluetooth/Thread/Zigbee/ANT stack is implicitly selected. Coded RX requires <=500 us service.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "UART0",
+      "base": 1073750016,
+      "fabric_id": 2,
+      "irq": 2,
+      "family": "UART0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/uart.hpp",
+      "requirements": [
+        "REQ-0059"
+      ],
+      "implemented_modes": [
+        "finite TX/RX",
+        "bounded RX stream",
+        "parity/flow control",
+        "errors/deadlines/cancellation"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "uart-loopback",
+        "serial-stream"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "UARTE0",
+      "base": 1073750016,
+      "fabric_id": 2,
+      "irq": 2,
+      "family": "UARTE0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/uarte.hpp",
+      "requirements": [
+        "REQ-0059",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "independent EasyDMA TX/RX",
+        "partial RX flush",
+        "bounded RX stream",
+        "CTS/RTS",
+        "wire completion"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "uarte-loopback",
+        "serial-stream"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPI0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "SPI0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/spi.hpp",
+      "requirements": [
+        "REQ-0060"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "finite asymmetric CPU transfers",
+        "manual/automatic CS"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "serial-stream"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPIM0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/spim.hpp",
+      "requirements": [
+        "REQ-0060",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "asymmetric EasyDMA",
+        "ORC",
+        "fixed segment sequence"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "spim-loopback",
+        "serial-stream"
+      ],
+      "contract": "SPIM3 requires an isolated whole RAM AHB slave. No suspend or PPI-started SPIM operation is exposed.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPIS0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "SPIS0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/spis.hpp",
+      "requirements": [
+        "REQ-0060",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "semaphore ownership",
+        "DEF/ORC",
+        "independent TX/RX bounds",
+        "overflow"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "spis-target"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TWI0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "TWI0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/i2c.hpp",
+      "requirements": [
+        "REQ-0061"
+      ],
+      "implemented_modes": [
+        "100/250/400 kHz",
+        "CPU TX/RX",
+        "both repeated-START orders",
+        "NACK/error/stop"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "tmp102"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TWIM0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "TWIM0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/twim.hpp",
+      "requirements": [
+        "REQ-0061",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "100/250/390 kHz",
+        "EasyDMA TX/RX",
+        "both repeated-START orders",
+        "actual counts/errors"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "serial-stream"
+      ],
+      "contract": "400 kHz requests need tolerance for the erratum-219 nominal 390 kHz setting.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TWIS0",
+      "base": 1073754112,
+      "fabric_id": 3,
+      "irq": 3,
+      "family": "TWIS0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/twis.hpp",
+      "requirements": [
+        "REQ-0061",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "two slave addresses",
+        "address match/direction",
+        "finite EasyDMA",
+        "overflow/overread/backpressure"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "twis-target"
+      ],
+      "contract": "Engineering A and unidentified silicon are rejected rather than applying unreviewed behavior.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPI1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "SPI0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/spi.hpp",
+      "requirements": [
+        "REQ-0060"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "finite asymmetric CPU transfers",
+        "manual/automatic CS"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "serial-stream"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPIM1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/spim.hpp",
+      "requirements": [
+        "REQ-0060",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "asymmetric EasyDMA",
+        "ORC",
+        "fixed segment sequence"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "spim-loopback",
+        "serial-stream"
+      ],
+      "contract": "SPIM3 requires an isolated whole RAM AHB slave. No suspend or PPI-started SPIM operation is exposed.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPIS1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "SPIS0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/spis.hpp",
+      "requirements": [
+        "REQ-0060",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "semaphore ownership",
+        "DEF/ORC",
+        "independent TX/RX bounds",
+        "overflow"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "spis-target"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TWI1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "TWI0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/i2c.hpp",
+      "requirements": [
+        "REQ-0061"
+      ],
+      "implemented_modes": [
+        "100/250/400 kHz",
+        "CPU TX/RX",
+        "both repeated-START orders",
+        "NACK/error/stop"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "tmp102"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TWIM1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "TWIM0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/twim.hpp",
+      "requirements": [
+        "REQ-0061",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "100/250/390 kHz",
+        "EasyDMA TX/RX",
+        "both repeated-START orders",
+        "actual counts/errors"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "serial-stream"
+      ],
+      "contract": "400 kHz requests need tolerance for the erratum-219 nominal 390 kHz setting.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TWIS1",
+      "base": 1073758208,
+      "fabric_id": 4,
+      "irq": 4,
+      "family": "TWIS0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/twis.hpp",
+      "requirements": [
+        "REQ-0061",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "two slave addresses",
+        "address match/direction",
+        "finite EasyDMA",
+        "overflow/overread/backpressure"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "twis-target"
+      ],
+      "contract": "Engineering A and unidentified silicon are rejected rather than applying unreviewed behavior.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "NFCT",
+      "base": 1073762304,
+      "fabric_id": 5,
+      "irq": 5,
+      "family": "NFCT",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/nfct.hpp",
+      "requirements": [
+        "REQ-0070",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "4/7/10-byte ID",
+        "anticollision",
+        "field settle/activate/sense",
+        "CRC/parity/SOF/bit frames",
+        "frame timing",
+        "field loss/cancel",
+        "System OFF wake",
+        "read-only Type 2/NDEF"
+      ],
+      "native_suites": [
+        "nrf52840.nfct"
+      ],
+      "linked_examples": [
+        "nfc-tag"
+      ],
+      "contract": "Dedicated NFC pads, existing NFC UICR role and tuned antenna are explicit. RX counts include CRC bytes; Type 2 receives validated CRC-stripped frames.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "GPIOTE",
+      "base": 1073766400,
+      "fabric_id": 6,
+      "irq": 6,
+      "family": "GPIOTE",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SAADC",
+      "base": 1073770496,
+      "fabric_id": 7,
+      "irq": 7,
+      "family": "SAADC",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/saadc.hpp",
+      "requirements": [
+        "REQ-0064",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "8 channels",
+        "single-ended/differential",
+        "signed 8/10/12/14-bit",
+        "all gain/reference/acquisition/resistor settings",
+        "oversampling/burst/calibration",
+        "timer sampling",
+        "scan",
+        "limits",
+        "bounded buffer queue"
+      ],
+      "native_suites": [
+        "nrf52840.analog"
+      ],
+      "linked_examples": [
+        "analog-pwm"
+      ],
+      "contract": "14-bit requires oversampling; scan oversampling requires burst. Common facade clamps negative signed offsets to zero.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TIMER0",
+      "base": 1073774592,
+      "fabric_id": 8,
+      "irq": 8,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/timer.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TIMER1",
+      "base": 1073778688,
+      "fabric_id": 9,
+      "irq": 9,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/timer.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TIMER2",
+      "base": 1073782784,
+      "fabric_id": 10,
+      "irq": 10,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/timer.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "RTC0",
+      "base": 1073786880,
+      "fabric_id": 11,
+      "irq": 11,
+      "family": "RTC0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/rtc_watchdog.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TEMP",
+      "base": 1073790976,
+      "fabric_id": 12,
+      "irq": 12,
+      "family": "TEMP",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/temperature.hpp",
+      "requirements": [
+        "REQ-0064"
+      ],
+      "implemented_modes": [
+        "signed quarter-degree sampling",
+        "factory linearity coefficients",
+        "deadline/stop"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "native-services"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "RNG",
+      "base": 1073795072,
+      "fabric_id": 13,
+      "irq": 13,
+      "family": "RNG",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/rng.hpp",
+      "requirements": [
+        "REQ-0071"
+      ],
+      "implemented_modes": [
+        "optional bias correction",
+        "VALRDY_STOP",
+        "finite CPU-buffered generation",
+        "cancel/IRQ"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "native-services"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "ECB",
+      "base": 1073799168,
+      "fabric_id": 14,
+      "irq": 14,
+      "family": "ECB",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/ecb.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "AES-128 block",
+        "ENDECB/ERROR",
+        "bounded STOP",
+        "key/input/output layout"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "AAR",
+      "base": 1073803264,
+      "fabric_id": 15,
+      "irq": 15,
+      "family": "AAR",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/aar.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "1..16 IRKs",
+        "resolvable private address",
+        "resolved/not-resolved",
+        "key index",
+        "STOP",
+        "PPI"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CCM/AAR are exclusive. Native tests cover bounds/layout/resource flow; on-device RPA known-answer acceptance remains pending.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CCM",
+      "base": 1073803264,
+      "fabric_id": 15,
+      "irq": 15,
+      "family": "CCM",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/ccm.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "BLE CCM encrypt/decrypt",
+        "default/extended packet",
+        "39-bit nonce/counter",
+        "four rates",
+        "manual/automatic KSGEN-CRYPT",
+        "rate override",
+        "MIC status",
+        "PPI"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "Caller must reject mic_valid=false before consuming plaintext. CCM/AAR share configuration, IRQ and DMA identity.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "WDT",
+      "base": 1073807360,
+      "fabric_id": 16,
+      "irq": 16,
+      "family": "WDT",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/rtc_watchdog.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "RTC1",
+      "base": 1073811456,
+      "fabric_id": 17,
+      "irq": 17,
+      "family": "RTC0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/rtc_watchdog.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "QDEC",
+      "base": 1073815552,
+      "fabric_id": 18,
+      "irq": 18,
+      "family": "QDEC",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/qdec.hpp",
+      "requirements": [
+        "REQ-0065"
+      ],
+      "implemented_modes": [
+        "all sample/report intervals",
+        "debounce",
+        "LED polarity/precharge",
+        "signed/double-transition/overflow",
+        "PPI"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "native-services"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "COMP",
+      "base": 1073819648,
+      "fabric_id": 19,
+      "irq": 19,
+      "family": "COMP",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/comparator.hpp",
+      "requirements": [
+        "REQ-0064"
+      ],
+      "implemented_modes": [
+        "input/external-reference selection",
+        "single-ended/differential COMP",
+        "thresholds/speeds",
+        "hysteresis",
+        "cross/up/down",
+        "shortcuts",
+        "LPCOMP field wake"
+      ],
+      "native_suites": [
+        "nrf52840.analog"
+      ],
+      "linked_examples": [
+        "analog-pwm"
+      ],
+      "contract": "COMP and LPCOMP are exclusive personalities; comparator tests supply actual API compositions. They do not share ADC input pins concurrently.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "LPCOMP",
+      "base": 1073819648,
+      "fabric_id": 19,
+      "irq": 19,
+      "family": "LPCOMP",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/comparator.hpp",
+      "requirements": [
+        "REQ-0064"
+      ],
+      "implemented_modes": [
+        "input/external-reference selection",
+        "single-ended/differential COMP",
+        "thresholds/speeds",
+        "hysteresis",
+        "cross/up/down",
+        "shortcuts",
+        "LPCOMP field wake"
+      ],
+      "native_suites": [
+        "nrf52840.analog"
+      ],
+      "linked_examples": [
+        "analog-pwm"
+      ],
+      "contract": "COMP and LPCOMP are exclusive personalities; comparator tests supply actual API compositions. They do not share ADC input pins concurrently.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "EGU0",
+      "base": 1073823744,
+      "fabric_id": 20,
+      "irq": 20,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SWI0",
+      "base": 1073823744,
+      "fabric_id": 20,
+      "irq": 20,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "EGU1",
+      "base": 1073827840,
+      "fabric_id": 21,
+      "irq": 21,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SWI1",
+      "base": 1073827840,
+      "fabric_id": 21,
+      "irq": 21,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 24,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "EGU2",
+      "base": 1073831936,
+      "fabric_id": 22,
+      "irq": 22,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SWI2",
+      "base": 1073831936,
+      "fabric_id": 22,
+      "irq": 22,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "EGU3",
+      "base": 1073836032,
+      "fabric_id": 23,
+      "irq": 23,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SWI3",
+      "base": 1073836032,
+      "fabric_id": 23,
+      "irq": 23,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "EGU4",
+      "base": 1073840128,
+      "fabric_id": 24,
+      "irq": 24,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SWI4",
+      "base": 1073840128,
+      "fabric_id": 24,
+      "irq": 24,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "EGU5",
+      "base": 1073844224,
+      "fabric_id": 25,
+      "irq": 25,
+      "family": "EGU0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SWI5",
+      "base": 1073844224,
+      "fabric_id": 25,
+      "irq": 25,
+      "family": "SWI0",
+      "role": "software_interrupt_alias",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TIMER3",
+      "base": 1073848320,
+      "fabric_id": 26,
+      "irq": 26,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/timer.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "TIMER4",
+      "base": 1073852416,
+      "fabric_id": 27,
+      "irq": 27,
+      "family": "TIMER0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/timer.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "PWM0",
+      "base": 1073856512,
+      "fabric_id": 28,
+      "irq": 28,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/pwm.hpp",
+      "requirements": [
+        "REQ-0063",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "four outputs",
+        "edge/center alignment",
+        "all prescalers",
+        "common/grouped/individual/waveform decoding",
+        "two sequences",
+        "REFRESH/ENDDELAY",
+        "loops/shorts/manual stepping",
+        "STOPPED lifetime"
+      ],
+      "native_suites": [
+        "nrf52840.analog"
+      ],
+      "linked_examples": [
+        "analog-pwm"
+      ],
+      "contract": "Common facade selects one output per instance; duty update stops/restarts at a period boundary and introduces a gap.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "PDM",
+      "base": 1073860608,
+      "fabric_id": 29,
+      "irq": 29,
+      "family": "PDM",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/pdm.hpp",
+      "requirements": [
+        "REQ-0067",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all six clocks",
+        "ratios 64/80",
+        "mono/stereo",
+        "edge",
+        "independent gains",
+        "finite/bounded queued sampling",
+        "STARTED+END handoff"
+      ],
+      "native_suites": [
+        "nrf52840.audio"
+      ],
+      "linked_examples": [
+        "audio-capture"
+      ],
+      "contract": "Startup samples remain explicitly transient; partial stopped buffers are not published with invented counts.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "ACL",
+      "base": 1073864704,
+      "fabric_id": 30,
+      "irq": -1,
+      "family": "ACL",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/acl.hpp",
+      "requirements": [
+        "REQ-0072",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "8 write-once permission regions",
+        "read-execute/write/both",
+        "PERM-last commit",
+        "shared flash-mutation guard"
+      ],
+      "native_suites": [
+        "nrf52840.memory"
+      ],
+      "linked_examples": [
+        "memory-watch"
+      ],
+      "contract": "Hardware permission reset/removal is a separate reset/recovery procedure; no implicit undo.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "NVMC",
+      "base": 1073864704,
+      "fabric_id": 30,
+      "irq": -1,
+      "family": "NVMC",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/nvmc.hpp",
+      "requirements": [
+        "REQ-0072",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "explicit reserved-region word/page operations",
+        "partial erase",
+        "READY/readback",
+        "POFWARN handshake",
+        "cache configuration/statistics"
+      ],
+      "native_suites": [
+        "nrf52840.memory"
+      ],
+      "linked_examples": [
+        "memory-watch"
+      ],
+      "contract": "Physical flash/protection qualification pending. Partial erase duration does not claim a fully erased page.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "PPI",
+      "base": 1073868800,
+      "fabric_id": 31,
+      "irq": -1,
+      "family": "PPI",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/events.hpp",
+      "requirements": [
+        "REQ-0057"
+      ],
+      "implemented_modes": [
+        "GPIOTE tasks/edge/PORT",
+        "EGU/SWI shared IRQs",
+        "all 32 PPI channels/groups/forks",
+        "generation/lifetime checks"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "MWU",
+      "base": 1073872896,
+      "fabric_id": 32,
+      "irq": 32,
+      "family": "MWU",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/mwu.hpp",
+      "requirements": [
+        "REQ-0072"
+      ],
+      "implemented_modes": [
+        "4 inclusive CPU ranges",
+        "two peripheral subregions",
+        "read/write events",
+        "explicit IRQ/NMI",
+        "retained owner on failed teardown"
+      ],
+      "native_suites": [
+        "nrf52840.memory"
+      ],
+      "linked_examples": [
+        "memory-watch"
+      ],
+      "contract": "Does not observe EasyDMA accesses.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "PWM1",
+      "base": 1073876992,
+      "fabric_id": 33,
+      "irq": 33,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/pwm.hpp",
+      "requirements": [
+        "REQ-0063",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "four outputs",
+        "edge/center alignment",
+        "all prescalers",
+        "common/grouped/individual/waveform decoding",
+        "two sequences",
+        "REFRESH/ENDDELAY",
+        "loops/shorts/manual stepping",
+        "STOPPED lifetime"
+      ],
+      "native_suites": [
+        "nrf52840.analog"
+      ],
+      "linked_examples": [
+        "analog-pwm"
+      ],
+      "contract": "Common facade selects one output per instance; duty update stops/restarts at a period boundary and introduces a gap.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "PWM2",
+      "base": 1073881088,
+      "fabric_id": 34,
+      "irq": 34,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/pwm.hpp",
+      "requirements": [
+        "REQ-0063",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "four outputs",
+        "edge/center alignment",
+        "all prescalers",
+        "common/grouped/individual/waveform decoding",
+        "two sequences",
+        "REFRESH/ENDDELAY",
+        "loops/shorts/manual stepping",
+        "STOPPED lifetime"
+      ],
+      "native_suites": [
+        "nrf52840.analog"
+      ],
+      "linked_examples": [
+        "analog-pwm"
+      ],
+      "contract": "Common facade selects one output per instance; duty update stops/restarts at a period boundary and introduces a gap.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPI2",
+      "base": 1073885184,
+      "fabric_id": 35,
+      "irq": 35,
+      "family": "SPI0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/spi.hpp",
+      "requirements": [
+        "REQ-0060"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "finite asymmetric CPU transfers",
+        "manual/automatic CS"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "serial-stream"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPIM2",
+      "base": 1073885184,
+      "fabric_id": 35,
+      "irq": 35,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/spim.hpp",
+      "requirements": [
+        "REQ-0060",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "asymmetric EasyDMA",
+        "ORC",
+        "fixed segment sequence"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "spim-loopback",
+        "serial-stream"
+      ],
+      "contract": "SPIM3 requires an isolated whole RAM AHB slave. No suspend or PPI-started SPIM operation is exposed.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPIS2",
+      "base": 1073885184,
+      "fabric_id": 35,
+      "irq": 35,
+      "family": "SPIS0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/spis.hpp",
+      "requirements": [
+        "REQ-0060",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "semaphore ownership",
+        "DEF/ORC",
+        "independent TX/RX bounds",
+        "overflow"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "spis-target"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "RTC2",
+      "base": 1073889280,
+      "fabric_id": 36,
+      "irq": 36,
+      "family": "RTC0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/rtc_watchdog.hpp",
+      "requirements": [
+        "REQ-0058"
+      ],
+      "implemented_modes": [
+        "TIMER/counter widths/prescalers/capture/compare",
+        "RTC compare/overflow",
+        "watchdog reload/pause/reset"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system",
+        "system-watchdog"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "I2S",
+      "base": 1073893376,
+      "fabric_id": 37,
+      "irq": 37,
+      "family": "I2S",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/i2s.hpp",
+      "requirements": [
+        "REQ-0067",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "master/slave",
+        "all 13 MCK dividers and nine ratios",
+        "8/16/24-bit",
+        "I2S/aligned",
+        "RX right alignment",
+        "stereo/left/right",
+        "finite/queued TX/RX/duplex",
+        "tail buffer",
+        "overrun/STOP"
+      ],
+      "native_suites": [
+        "nrf52840.audio"
+      ],
+      "linked_examples": [
+        "audio-capture"
+      ],
+      "contract": "Foreground/IRQ service must be faster than one block; slave timing declares fastest LRCK. Tail storage is caller-owned and never reported as payload.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "FPU",
+      "base": 1073897472,
+      "fabric_id": 38,
+      "irq": 38,
+      "family": null,
+      "role": "interrupt_only",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "CP10/CP11 permission",
+        "FPSCR/FPCCR/context policy",
+        "documented IRQ handling"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "0x40026000 is an IRQ identity, not a memory-mapped FPU register block.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "USBD",
+      "base": 1073901568,
+      "fabric_id": 39,
+      "irq": 39,
+      "family": "USBD",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/usbd.hpp",
+      "requirements": [
+        "REQ-0068",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "control EP0 IN/OUT",
+        "bulk/interrupt EP1..7 IN/OUT",
+        "ISO EP8 IN/OUT/split",
+        "shared DMA arbitration",
+        "END versus ACK",
+        "SETUP abort/reset",
+        "stall/toggle",
+        "SOF",
+        "VBUS",
+        "low-power/remote wake",
+        "explicit bootloader handoff"
+      ],
+      "native_suites": [
+        "nrf52840.usb"
+      ],
+      "linked_examples": [
+        "usb-cdc",
+        "usb-hid"
+      ],
+      "contract": "usb_device.hpp adds chapter-9 enumeration, CDC ACM and HID boot keyboard. SET_ADDRESS is handled entirely by hardware. No CDC baud-triggered reset is implicit.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "UARTE1",
+      "base": 1073905664,
+      "fabric_id": 40,
+      "irq": 40,
+      "family": "UARTE0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/uarte.hpp",
+      "requirements": [
+        "REQ-0059",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "independent EasyDMA TX/RX",
+        "partial RX flush",
+        "bounded RX stream",
+        "CTS/RTS",
+        "wire completion"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "uarte-loopback",
+        "serial-stream"
+      ],
+      "contract": "",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "QSPI",
+      "base": 1073909760,
+      "fabric_id": 41,
+      "irq": 41,
+      "family": "QSPI",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/qspi.hpp",
+      "requirements": [
+        "REQ-0066",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "fast/dual/quad read",
+        "single/dual/quad write",
+        "24/32-bit addressing",
+        "256/512-byte pages",
+        "4k/64k/chip erase",
+        "0..8-byte custom/long frames",
+        "WIP polling",
+        "DPM",
+        "XIP borrow/copy/return"
+      ],
+      "native_suites": [
+        "nrf52840.memory"
+      ],
+      "linked_examples": [
+        "qspi-memory"
+      ],
+      "contract": "Attached geometry/protocol/quad state must be declared. XIP executable mapping needs a reviewed linker/ISR relocation contract. Cancellation drains; there is no DMA STOP task.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CRYPTOCELL",
+      "base": 1342349312,
+      "fabric_id": 42,
+      "irq": 42,
+      "family": "CRYPTOCELL",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_AES",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_AES",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_CHACHA",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_CHACHA",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_CTL",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_CTL",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_DIN",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_DIN",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_DOUT",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_DOUT",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_HASH",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_HASH",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_HOST_RGF",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_HOST_RGF",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_MISC",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_MISC",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_PKA",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_PKA",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_RNG",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_RNG",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "CC_RNG_SRAM",
+      "base": 1342353408,
+      "fabric_id": 43,
+      "irq": -1,
+      "family": "CC_RNG_SRAM",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/cryptocell.hpp",
+      "requirements": [
+        "REQ-0071",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "session AES ECB/CBC/CTR/CMAC/CBC-MAC",
+        "CCM/CCM* composition",
+        "ChaCha20 128/256-bit/64/96-bit nonce",
+        "Poly1305 key/AEAD composition",
+        "SHA-1/224/256",
+        "HMAC",
+        "DMA bypass",
+        "PKA arithmetic/modular instructions",
+        "TRNG health/retries",
+        "SRAM ports",
+        "interrupt masks/status",
+        "bounded recovery/key-SRAM cleanup"
+      ],
+      "native_suites": [
+        "nrf52840.crypto"
+      ],
+      "linked_examples": [
+        "crypto-vectors"
+      ],
+      "contract": "CC_* subblocks are one owned engine, not independent clients. DIN/DOUT physical limit is 65535 bytes. PKA accepts explicit N/Np and raw documented operations; RSA/ECC/SRP protocol wrappers and a DRBG are not supplied. Retained KDR/LCS are never provisioned or locked implicitly.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "PWM3",
+      "base": 1073926144,
+      "fabric_id": 45,
+      "irq": 45,
+      "family": "PWM0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/pwm.hpp",
+      "requirements": [
+        "REQ-0063",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "four outputs",
+        "edge/center alignment",
+        "all prescalers",
+        "common/grouped/individual/waveform decoding",
+        "two sequences",
+        "REFRESH/ENDDELAY",
+        "loops/shorts/manual stepping",
+        "STOPPED lifetime"
+      ],
+      "native_suites": [
+        "nrf52840.analog"
+      ],
+      "linked_examples": [
+        "analog-pwm"
+      ],
+      "contract": "Common facade selects one output per instance; duty update stops/restarts at a period boundary and introduces a gap.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "SPIM3",
+      "base": 1073934336,
+      "fabric_id": 47,
+      "irq": 47,
+      "family": "SPIM0",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/spim.hpp",
+      "requirements": [
+        "REQ-0060",
+        "REQ-0062"
+      ],
+      "implemented_modes": [
+        "all four modes",
+        "MSB/LSB",
+        "asymmetric EasyDMA",
+        "ORC",
+        "fixed segment sequence"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "spim-loopback",
+        "serial-stream"
+      ],
+      "contract": "SPIM3 requires an isolated whole RAM AHB slave. No suspend or PPI-started SPIM operation is exposed.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "FICR",
+      "base": 268435456,
+      "fabric_id": -1,
+      "irq": -1,
+      "family": "FICR",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/factory.hpp",
+      "requirements": [
+        "REQ-0072"
+      ],
+      "implemented_modes": [
+        "typed factory identity/geometry/device address",
+        "temperature/NFC coefficients",
+        "explicit read-only key words"
+      ],
+      "native_suites": [
+        "nrf52840.memory"
+      ],
+      "linked_examples": [
+        "memory-watch"
+      ],
+      "contract": "No whole-FICR secret dump is implicit.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "UICR",
+      "base": 268439552,
+      "fabric_id": -1,
+      "irq": -1,
+      "family": "UICR",
+      "role": "registers",
+      "page": 25,
+      "backend": "include/mcubsp/backend/nrf52840/provisioning.hpp",
+      "requirements": [
+        "REQ-0072"
+      ],
+      "implemented_modes": [
+        "scoped UICR words",
+        "erased-word/readback guard",
+        "explicit complete UICR erase",
+        "pin/debug/regulator/bootloader categories",
+        "reset-required result",
+        "hardware/software access protection"
+      ],
+      "native_suites": [
+        "nrf52840.memory"
+      ],
+      "linked_examples": [
+        "memory-watch"
+      ],
+      "contract": "No provisioning is run by examples; mutation tests use synthetic MMIO. Scope categories default off. Protection varies with actual INFO.VARIANT.",
+      "source_review": "PS v1.11 register/field/instance audits",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented native operations",
+      "native_verification": "representative tests passed; see named suite cases",
+      "cross_build": "host, Cortex-M4F, Cortex-M7, ESP32-P4 body/header probes passed",
+      "physical_acceptance": "pending; earlier observations retain their original image identity",
+      "inventory": "product"
+    },
+    {
+      "name": "NVIC",
+      "family": "NVIC",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "SCB",
+      "family": "SCB",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "SCnSCB",
+      "family": "SCnSCB",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "SysTick",
+      "family": "SysTick",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "ITM",
+      "family": "ITM",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "DWT",
+      "family": "DWT",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "TPI",
+      "family": "TPI",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "MPU",
+      "family": "MPU",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "FPU",
+      "family": "FPU",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "CoreDebug",
+      "family": "CoreDebug",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "FPB",
+      "family": "FPB",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    },
+    {
+      "name": "ETM",
+      "family": "ETM",
+      "backend": "include/mcubsp/backend/nrf52840/core.hpp",
+      "requirements": [
+        "REQ-0073"
+      ],
+      "implemented_modes": [
+        "selected Cortex-M4F typed core/IRQ/debug services; see core-facts.json and core.hpp"
+      ],
+      "native_suites": [
+        "nrf52840"
+      ],
+      "linked_examples": [
+        "system"
+      ],
+      "contract": "Debugger-only accesses use explicit debugger scripts; physical capture and full core qualification remain pending.",
+      "source_review": "pinned CMSIS/Arm core facts",
+      "typed_metadata": "reviewed generated facts",
+      "backend_status": "implemented selected core services",
+      "native_verification": "representative tests passed",
+      "cross_build": "four target header/body probes passed",
+      "physical_acceptance": "pending",
+      "inventory": "arm_core"
+    }
+  ]
+}

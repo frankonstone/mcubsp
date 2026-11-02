@@ -67,6 +67,58 @@ class DebugTrace(unittest.TestCase):
         result = subprocess.run([tcl], input=code, text=True, capture_output=True, timeout=10)
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
 
+    def run_ctrlap(self, body):
+        global SCRIPT, PRELUDE
+        saved_script, saved_prelude = SCRIPT, PRELUDE
+        SCRIPT = ROOT / 'src/board/others/promicro_nrf52840/debug/recovery.tcl'
+        PRELUDE = r'''set writes {}; set polls {}; set busy 0; set protected 0; set unlock 1; set busy_after_start 0
+proc check {condition} {if {![uplevel 1 [list expr $condition]]} {error "assertion failed: $condition"}}
+proc poll {mode} {global polls; lappend polls $mode}
+proc sleep {ms} {}
+proc nrf52.dap {command ap address args} {
+    global writes busy protected unlock busy_after_start
+    if {$command ne "apreg" || $ap != 1} {error "invalid AP access"}
+    if {[llength $args]} {
+        set v [lindex $args 0]; lappend writes [list $address $v]
+        if {$address==4 && $v==1 && $busy_after_start} {set busy 1}
+        if {$address == 0 && $v == 0 && $unlock} {set protected 1}
+        return
+    }
+    switch $address {0xFC {return 0x02880000} 8 {return $busy} 12 {return $protected}}
+    error "unexpected read"
+}
+'''
+        try:
+            self.run_script(body)
+        finally:
+            SCRIPT, PRELUDE = saved_script, saved_prelude
+
+    def test_ctrlap_loading_and_invalid_authority_do_not_mutate(self):
+        self.run_ctrlap(r'''
+check {[llength $writes] == 0 && [llength $polls] == 0}
+check {[catch {mcubsp_ctrlap_recover invalid 1}]}
+check {[catch {mcubsp_ctrlap_recover ERASE_ALL_FLASH_UICR_RAM_AND_BOOTLOADER 0}]}
+check {[catch {mcubsp_ctrlap_recover ERASE_ALL_FLASH_UICR_RAM_AND_BOOTLOADER 1 0}]}
+check {[llength $writes] == 0 && [llength $polls] == 0}
+''')
+
+    def test_ctrlap_erase_is_bounded_and_does_not_reset_a_busy_erase(self):
+        self.run_ctrlap(r'''
+set busy_after_start 1
+check {[catch {mcubsp_ctrlap_recover ERASE_ALL_FLASH_UICR_RAM_AND_BOOTLOADER 1 20 3}]}
+check {[llength $writes] == 2 && [lindex $polls end] eq "on"}
+foreach w $writes {check {[lindex $w 0] == 4}}
+''')
+
+    def test_ctrlap_success_and_watchdog_failure_restore_poll_state(self):
+        self.run_ctrlap(r'''
+mcubsp_ctrlap_recover ERASE_ALL_FLASH_UICR_RAM_AND_BOOTLOADER 1 20 2 0
+check {$protected && [llength $writes] == 5 && [lindex $polls end] eq "off"}
+set writes {}; set protected 0; set unlock 0
+check {[catch {mcubsp_ctrlap_recover ERASE_ALL_FLASH_UICR_RAM_AND_BOOTLOADER 1 20 2}]}
+check {[llength $writes] == 10 && [lindex $polls end] eq "on"}
+''')
+
     def test_loading_is_read_only_and_invalid_handoff_does_not_mutate(self):
         self.run_script(r'''
 check {[llength $writes] == 0 && $reads == 0}
@@ -161,6 +213,6 @@ if __name__ == '__main__':
         'summary': {'tests': result.testsRun, 'failures': len(failed)},
         'tests': [{'name': 'nrf_debug/' + name,
                    'status': 'failed' if f'__main__.DebugTrace.{name}' in failed else 'passed',
-                   'requirements': ['REQ-0073']}
+                   'requirements': ['REQ-0072'] if name.startswith('test_ctrlap') else ['REQ-0073']}
                   for name in unittest.defaultTestLoader.getTestCaseNames(DebugTrace)]}))
     raise SystemExit(not result.wasSuccessful())
